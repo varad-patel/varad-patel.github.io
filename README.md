@@ -1,8 +1,14 @@
 # Personal site
 
+Live at **https://varad-patel.github.io**, with the 365 projects gallery at **https://varad-patel.github.io/365projects/**.
+
 A small static site: a home page and a gallery for the **365 projects in 365 days** challenge. There is no
 build step and no framework. Open `365projects/index.html` in a browser to preview it, or run
 `python -m http.server` in this folder and visit http://localhost:8000.
+
+Working on this with Claude Code? Start with [`CLAUDE.md`](CLAUDE.md). The next planned piece, running every
+project's app in the visitor's browser at `/365projects/N/`, is in [`docs/BROWSER_APPS.md`](docs/BROWSER_APPS.md).
+The projects' code is in [NotNeverMe/365D365P](https://github.com/NotNeverMe/365D365P).
 
 ```
 index.html                         home page (edit the text freely)
