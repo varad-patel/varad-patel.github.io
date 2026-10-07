@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "name": "Economics × Data Science",
+    "first": 1,
+    "last": 50
+  },
+  {
+    "id": 2,
+    "name": "Politics × Data",
+    "first": 51,
+    "last": 100
+  },
+  {
+    "id": 3,
+    "name": "AI × PPE",
+    "first": 101,
+    "last": 150
+  },
+  {
+    "id": 4,
+    "name": "Philosophy × CS",
+    "first": 151,
+    "last": 200
+  },
+  {
+    "id": 5,
+    "name": "Game Theory × AI",
+    "first": 201,
+    "last": 250
+  },
+  {
+    "id": 6,
+    "name": "Social Science × AI",
+    "first": 251,
+    "last": 300
+  },
+  {
+    "id": 7,
+    "name": "CS-heavy",
+    "first": 301,
+    "last": 340
+  },
+  {
+    "id": 8,
+    "name": "Flagships",
+    "first": 341,
+    "last": 365
+  }
+]

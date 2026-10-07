@@ -1,0 +1,179 @@
+[
+  {
+    "id": 1,
+    "slug": "001-gdp-growth-dashboard",
+    "question": "Which economies grew fastest over a chosen window, how bumpy was the ride, and when did output actually fall?",
+    "limit": "Constant 2015 US$ is not purchasing power. Levels use a fixed base-year exchange rate. This is right for growth within a country but says little about living standards across countries.",
+    "sources": [
+      "World Bank"
+    ],
+    "finding": "China's real GDP grew 8.14% a year over 2000–2024 with no recession year, 2nd of 116 economies above $10bn.",
+    "built": "2026-10-07"
+  },
+  {
+    "id": 2,
+    "slug": "002-inflation-tracker",
+    "question": "Which parts of the US consumer basket are driving inflation, and how does US inflation compare with the rest of the world?",
+    "limit": "Weights are estimates. The official table could not be downloaded, so category weights come from a regression and carry error. Each uses the previous five years, so it lags real changes in spending patterns.",
+    "sources": [
+      "World Bank",
+      "FRED"
+    ],
+    "finding": "Housing added 1.38 pp and transportation 1.08 pp to the 3.40% rate in Aug 2026.",
+    "built": "2026-10-07"
+  },
+  {
+    "id": 3,
+    "slug": "003-unemployment-visualizer",
+    "question": "How does unemployment differ by country, gender, age and education, and where are the gaps largest?",
+    "limit": "Education data are thin. Each education series has a median of 9 years per economy against 35 for the headline series, and about half the economies report in a given year (92 report all three in 2024, 17 in 2025).",
+    "sources": [
+      "World Bank"
+    ],
+    "finding": "Female unemployment was higher in 125 of 182 economies in 2024.",
+    "built": "2026-10-07"
+  },
+  {
+    "id": 4,
+    "slug": "004-gini-calculator",
+    "question": "How unequal is a set of incomes, how sure are we of that number, and how much does it lose when only quintile shares are published?",
+    "limit": "The grouped estimator only recovers the Gini from the data the World Bank publishes as shares; it is not a substitute for microdata.",
+    "sources": [
+      "World Bank"
+    ],
+    "finding": "Quintile-only Ginis understate the published figure in all 2,430 country-years, by 2.90 points on average.",
+    "built": "2026-10-07"
+  },
+  {
+    "id": 5,
+    "slug": "005-cost-of-living-index",
+    "question": "What does the same basket of everyday goods and services cost in one place compared with another, and what salary would keep your purchasing power if you moved?",
+    "limit": "No city-level data outside the US. Country figures are national averages. Living costs in Zurich or Lagos can differ a lot from Switzerland's or Nigeria's, and nothing here tells you by how much.",
+    "sources": [
+      "World Bank",
+      "Economist Big Mac index",
+      "US Bureau of Economic Analysis"
+    ],
+    "finding": "US$100,000 in New York matches US$91,584 in Dallas (BEA regional price parities, 2024).",
+    "built": "2026-10-07"
+  },
+  {
+    "id": 6,
+    "slug": "006-purchasing-power-explorer",
+    "question": "How much can a currency actually buy at home, compared with what its exchange rate says, and does that gap follow national income?",
+    "limit": "PPP is an average over the whole economy's output, not the basket of a tourist or a student. The Big Mac prices one product, so it is a vivid check and not a cost-of-living measure.",
+    "sources": [
+      "World Bank",
+      "Economist Big Mac index"
+    ],
+    "finding": "Richer countries are pricier: a 0.196 slope of log price level on log income in 2024 (n=174).",
+    "built": "2026-10-07"
+  },
+  {
+    "id": 7,
+    "slug": "007-interest-rate-explorer",
+    "question": "How do central-bank policy rates compare with inflation and growth, and how often have real rates been negative?",
+    "limit": "Real rates here are ex post: they subtract inflation that has already happened, not the inflation people expected when the rate was set.",
+    "sources": [
+      "World Bank",
+      "FRED",
+      "Bank for International Settlements"
+    ],
+    "finding": "The US real policy rate was negative in 284 of 865 months, deepest at −8.37 pp in March 2022.",
+    "built": "2026-10-07"
+  },
+  {
+    "id": 8,
+    "slug": "008-currency-volatility-analyzer",
+    "question": "How volatile are exchange rates against the US dollar, when were they unstable, and how far did they fall at their worst?",
+    "limit": "Everything is measured against the US dollar, so a \"depreciation\" can reflect dollar strength as much as the currency's own weakness.",
+    "sources": [
+      "FRED"
+    ],
+    "finding": "Since 1999 the Brazilian real (16.5%) and South African rand (16.2%) are the most volatile of 12; the yuan is the least (2.8%).",
+    "built": "2026-10-07"
+  },
+  {
+    "id": 9,
+    "slug": "009-trade-balance-visualizer",
+    "question": "Who runs trade surpluses and deficits, how open are economies to trade, and which partners account for the flows?",
+    "limit": "Partners are goods only and cover 18 reporters. Services trade has no partner breakdown here; for the United States in 2023, WITS merchandise exports are 65.7% of the World Bank's goods-and-services exports.",
+    "sources": [
+      "World Bank",
+      "WITS"
+    ],
+    "finding": "The US has run a goods-and-services deficit every year since 1976; 2024 was −US$898.5bn.",
+    "built": "2026-10-07"
+  },
+  {
+    "id": 10,
+    "slug": "010-government-spending-explorer",
+    "question": "What do governments spend money on, and how does that differ across countries and over time?",
+    "limit": "No global COFOG. Outside Europe the data only give education, health and military by function.",
+    "sources": [
+      "World Bank",
+      "Eurostat"
+    ],
+    "finding": "Interest took 41.3% of Sri Lanka's central-government expense in 2022; the median country spent 5.2%.",
+    "built": "2026-10-07"
+  },
+  {
+    "id": 11,
+    "slug": "011-national-debt-dashboard",
+    "question": "Which governments carry the most debt once you measure it against what they collect in revenue, not just against GDP?",
+    "limit": "Patchy coverage is the main limit. Rankings only include countries that report, and the set changes year to year, so a country's rank can move because others enter or leave the sample.",
+    "sources": [
+      "World Bank",
+      "FRED"
+    ],
+    "finding": "The two rankings correlate at only 0.76 in 2022: Somalia is 32nd on debt-to-GDP but 1st at 16.8 years of revenue.",
+    "built": "2026-10-07"
+  },
+  {
+    "id": 12,
+    "slug": "012-gdp-per-capita-explorer",
+    "question": "How closely do living standards track income, are poorer countries catching up, and is the world's income distribution becoming more equal?",
+    "limit": "Cross-country averages. All three results treat a country as its mean income. Inequality within countries is outside the Gini and the convergence test.",
+    "sources": [
+      "World Bank"
+    ],
+    "finding": "Beta-convergence over 1990–2024 is −0.395 (se 0.108, n=183), and the weighted cross-country Gini fell from 0.609 to 0.455.",
+    "built": "2026-10-07"
+  },
+  {
+    "id": 13,
+    "slug": "013-productivity-analyzer",
+    "question": "Which countries produce the most per worker and per hour, how large is the gap between agriculture, industry and services, and how much of productivity growth comes from workers moving between sectors rather than from each sector improving?",
+    "limit": "Three broad sectors only. The brief asks about industries; the World Bank gives agriculture, industry (including construction) and services.",
+    "sources": [
+      "World Bank",
+      "FRED",
+      "Penn World Table"
+    ],
+    "finding": "Germany is at 82.2% of US output per worker in 2023 but 110.1% per hour.",
+    "built": "2026-10-07"
+  },
+  {
+    "id": 14,
+    "slug": "014-economic-growth-heatmap",
+    "question": "Where in the world has the economy grown, and how fast, over any window since 1960, and how many countries were going backwards?",
+    "limit": "Coverage is uneven. Early windows cover about half of today's economies, usually those with better statistics, so comparing the 1960s with later decades compares different sets of countries.",
+    "sources": [
+      "World Bank"
+    ],
+    "finding": "The share of economies with falling GDP per capita peaked at 41% in the 1980s.",
+    "built": "2026-10-07"
+  },
+  {
+    "id": 15,
+    "slug": "015-inflation-vs-wages",
+    "question": "Have US wages kept pace with consumer prices, when did prices outrun pay, and do other rich countries look the same?",
+    "limit": "Wages against CPI is not a living-standards measure. Average hourly earnings change with the mix of jobs (the April 2020 jump) and with who is employed.",
+    "sources": [
+      "World Bank",
+      "FRED"
+    ],
+    "finding": "US real wages (production workers) are 6.3% above January 2019 but only 1.6% above January 2021.",
+    "built": "2026-10-07"
+  }
+]
