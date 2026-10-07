@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>365 projects in 365 days</title>
+  <meta name="description" content="A year of projects on economics, politics, philosophy and computer science. Each starts from a question, uses real data and ships with tests and an honest page on its limits.">
+  <link rel="preload" href="../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+  <a class="skip" href="#gallery">Skip to the projects</a>
+
+  <header class="top wrap">
+    <a class="mark" href="../index.html">NotNeverMe</a>
+    <nav aria-label="Site">
+      <a href="../index.html">Home</a>
+      <a href="index.html" aria-current="page">365 projects</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="hero wrap">
+      <h1>365 projects in 365 days</h1>
+      <p class="lede">Data dashboards, simulations and models on economics, politics, philosophy and computer science. Each one starts from a question, runs on real data, and comes with tests and an honest page on what it cannot show.</p>
+      <p class="status" id="status" aria-live="polite"></p>
+    </div>
+
+    <div class="year-block wrap">
+      <h2 class="sr-only">The year at a glance</h2>
+      <div class="year" id="year" tabindex="0" role="group">
+        <div class="year-inner">
+          <div class="months" id="months" aria-hidden="true"></div>
+          <div class="weekdays" aria-hidden="true"><span>Mon</span><span></span><span>Wed</span><span></span><span>Fri</span><span></span><span></span></div>
+          <div class="cells" id="cells" aria-hidden="true"></div>
+        </div>
+      </div>
+      <div class="tip" id="tip" aria-hidden="true"></div>
+      <p class="key">Each square is one day. Solid squares are built, faint ones are scheduled, and the outlined square is today. Choose a section to filter everything below.</p>
+      <div class="sections" id="sections" role="group" aria-label="Filter by section"></div>
+    </div>
+
+    <section class="block wrap" id="gallery" aria-labelledby="built-title">
+      <div class="block-head">
+        <h2 id="built-title">Built so far<span class="count" id="built-count"></span></h2>
+        <label class="search">
+          <span class="sr-only">Search all 365 projects</span>
+          <input type="search" id="q" placeholder="Search all 365 projects" autocomplete="off">
+        </label>
+      </div>
+      <div class="plates" id="plates"></div>
+      <p class="empty" id="empty" hidden></p>
+    </section>
+
+    <section class="block wrap" id="coming" aria-labelledby="coming-title">
+      <div class="block-head">
+        <h2 id="coming-title">Coming up<span class="count" id="coming-count"></span></h2>
+      </div>
+      <ol class="rows" id="rows"></ol>
+      <button class="btn more" id="more" type="button" hidden></button>
+    </section>
+  </main>
+
+  <dialog class="detail" id="detail" aria-labelledby="d-title">
+    <div class="bar"><button class="close" id="d-close" type="button">Close</button></div>
+    <div class="layout" id="d-layout">
+      <figure id="d-fig"><img id="d-img" alt="" width="1200" height="793"></figure>
+      <div class="body">
+        <p class="eyebrow" id="d-eyebrow"></p>
+        <h2 id="d-title"></h2>
+        <dl id="d-list"></dl>
+        <div class="actions" id="d-actions"></div>
+      </div>
+    </div>
+  </dialog>
+
+  <footer class="foot wrap">
+    <p>Every project lives in <a id="repo-link" href="https://github.com/NotNeverMe/365D365P">the 365 projects repository</a>, with its own README, tests and a command that reproduces the numbers shown here.</p>
+  </footer>
+
+  <noscript><p class="wrap" style="padding-block:24px">The gallery needs JavaScript. The code and write-ups are in <a href="https://github.com/NotNeverMe/365D365P">the repository</a>.</p></noscript>
+  <script src="challenge-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
