@@ -20,9 +20,22 @@ scripts/                   import, build and screenshot helpers
 
 ## Publish it
 
-On GitHub: **Settings, Pages, Build and deployment, Deploy from a branch, `main` and `/ (root)`**. The site
-then appears at `https://<your-username>.github.io/<repo-name>/`. All paths are relative, so it works under
-that sub-path and on a custom domain.
+GitHub Pages serves a repository named `<account>.github.io` at `https://<account>.github.io/`. For the address
+`https://days365projects.github.io/`:
+
+1. Create a free GitHub organization named `days365projects` (github.com/organizations/plan). The name was
+   unregistered when this was written (github.com/days365projects returned 404).
+2. In it, create a public repository named exactly `days365projects.github.io` and push this site to its `main` branch.
+3. In that repository open **Settings, Pages, Build and deployment, Deploy from a branch**, choose `main` and
+   `/ (root)`, and save. The site is live within a minute or two.
+
+The same site also works from your own account without a new organization: a repository named
+`NotNeverMe.github.io` is served at `https://notneverme.github.io/`, and any other repository is served under a
+sub-path such as `https://notneverme.github.io/<repo-name>/`. All paths in the site are relative, so every
+variant works unchanged, and so does a custom domain.
+
+If the projects repository moves, change `repo` in `data/site.json` and run `python scripts/build_data.py` so the
+"View code" links follow it.
 
 ## Add a project
 
