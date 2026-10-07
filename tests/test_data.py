@@ -79,6 +79,6 @@ def test_real_data_is_complete_and_the_generated_file_is_current():
     assert len(data["projects"]) == 365
     assert data["projects"][-1]["date"] == "2027-10-06"  # day 365 when day 1 is 2026-10-07
     assert all(p["finding"] and p["question"] and p["limit"] and p["sources"] for p in data["projects"] if "built" in p)
-    generated = (ROOT / "365" / "challenge-data.js").read_text(encoding="utf-8")
+    generated = (ROOT / "365projects" / "challenge-data.js").read_text(encoding="utf-8")
     expected = "window.CHALLENGE = " + json.dumps(data, indent=1, ensure_ascii=False) + ";\n"
-    assert generated.endswith(expected), "365/challenge-data.js is stale: run python scripts/build_data.py"
+    assert generated.endswith(expected), "365projects/challenge-data.js is stale: run python scripts/build_data.py"

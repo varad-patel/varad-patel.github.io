@@ -1,4 +1,4 @@
-"""Generate 365/challenge-data.js from the list, the built projects and the config.
+"""Generate 365projects/challenge-data.js from the list, the built projects and the config.
 
     python scripts/build_data.py
 
@@ -16,7 +16,7 @@ from datetime import date, timedelta
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "365" / "challenge-data.js"
+OUT = ROOT / "365projects" / "challenge-data.js"
 
 
 def load() -> tuple[dict, list[dict], list[dict], list[dict]]:
@@ -29,7 +29,7 @@ def load() -> tuple[dict, list[dict], list[dict], list[dict]]:
 
 
 def assemble(site: dict, sections: list[dict], rows: list[dict], built: list[dict], img_dir: Path | None = None) -> dict:
-    img_dir = img_dir or ROOT / "365" / "img"
+    img_dir = img_dir or ROOT / "365projects" / "img"
     start = date.fromisoformat(site["start"])
     by_id = {b["id"]: b for b in built}
     ids = [int(r["id"]) for r in rows]

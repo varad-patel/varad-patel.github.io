@@ -1,4 +1,4 @@
-"""Screenshot project apps into 365/img/NNN.jpg for the gallery.
+"""Screenshot project apps into 365projects/img/NNN.jpg for the gallery.
 
     python scripts/shoot.py --repo ../365-projects 016 017
 
@@ -24,7 +24,7 @@ from pathlib import Path
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
-IMG = ROOT / "365" / "img"
+IMG = ROOT / "365projects" / "img"
 VIEWPORT = {"width": 1440, "height": 1000}
 CROP = {"x": 0, "y": 48, "width": 1440, "height": 952}  # drops Streamlit's empty header strip
 WIDTH = 1200
@@ -76,7 +76,7 @@ def shoot(browser, repo: Path, folder: Path, port: int, tab: str | None) -> None
             raise RuntimeError(f"{folder.name} shows an exception on screen; fix the app before taking a thumbnail")
         number = int(folder.name[:3])
         to_thumbnail(page.screenshot(clip=CROP), IMG / f"{number:03d}.jpg")
-        print(f"  wrote 365/img/{number:03d}.jpg")
+        print(f"  wrote 365projects/img/{number:03d}.jpg")
         page.close()
     finally:
         proc.terminate()
