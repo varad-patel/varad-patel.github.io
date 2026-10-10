@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>What Makes a Good Life? Index · 365 projects</title>
+  <meta name="description" content="Set how much you value health, freedom, income and community and get 142 countries ranked by your own definition of a good life.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+</head>
+<body class="proj" data-day="9">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>What Makes a Good Life? Index</h1>
+      <p class="lede">Every ranking of countries hides a decision about what matters. Here the decision is yours: set the weights and see the world reordered by your own definition of a good life.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Good life index builder">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>The United States is 6th of 142 countries by income per person and 37th when health, freedom, income and community count equally. An index weighted that way also tracks how people rate their own lives more closely than income does: a rank correlation of 0.89 against 0.80.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>For most of the twentieth century the standard answer to "which country is doing best?" was the one with the highest income per head. Amartya Sen's objection was that income is a means. What matters is what people are actually able to do and be: live a long life, take part in their community, choose how to live. He called these <strong>capabilities</strong>, and the argument led directly to the United Nations' Human Development Index in 1990, which put health and education beside income.</p>
+      <p>The trouble starts as soon as there is more than one good thing. To turn several measures into one ranking you have to say how much of one is worth how much of another, and there is no fact of the matter about that. This is <strong>value pluralism</strong>: the view that the things worth wanting are several, and do not reduce to a common currency. Sen himself declined to fix a list of capabilities or their weights, arguing that it was a matter for public reasoning. Martha Nussbaum thought a list was needed and wrote one.</p>
+      <p>So an index is not a measurement in the way a thermometer reading is. It is a measurement combined with an ethical position, and the position is in the weights. The honest thing an index-maker can do is show the weights and let you move them. That is what this page does.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The measures</h3>
+      <p>Six measures for each of 142 countries, averaged over 2023 to 2025. Health is life expectancy at birth and income is GDP per person at purchasing power parity, both from the World Bank. Income enters as a logarithm, so that doubling it counts the same anywhere. Freedom, community, generosity and clean institutions are the factor values published by the World Happiness Report from Gallup World Poll questions.</p>
+      <h3>A common scale</h3>
+      <p>Years of life and dollars cannot be added, so each measure is first put on a scale from 0 to 100. With the <em>distance</em> method the lowest country on a measure scores 0, the highest 100, and the rest fall in proportion:</p>
+      <p class="eq"><var>s</var><sub><var>ik</var></sub> = 100 · (<var>x</var><sub><var>ik</var></sub> − min<sub><var>k</var></sub>) / (max<sub><var>k</var></sub> − min<sub><var>k</var></sub>)</p>
+      <p>With the <em>rank</em> method a country's score is its percentile position, which throws away how far apart countries are and is not swayed by one extreme value.</p>
+      <h3>Combining them</h3>
+      <p>Your slider positions are turned into shares <var>w</var><sub><var>k</var></sub> that sum to one. <em>Averaging</em> takes the weighted arithmetic mean, and <em>multiplying</em> takes the weighted geometric mean:</p>
+      <p class="eq"><var>I</var><sub><var>i</var></sub> = Σ<sub><var>k</var></sub> <var>w</var><sub><var>k</var></sub> <var>s</var><sub><var>ik</var></sub> &nbsp;&nbsp;&nbsp; or &nbsp;&nbsp;&nbsp; <var>I</var><sub><var>i</var></sub> = Π<sub><var>k</var></sub> <var>s</var><sub><var>ik</var></sub><sup><var>w</var><sub><var>k</var></sub></sup></p>
+      <p>The choice is itself a value judgement. With an average, a country can make up for poor health with high income, point for point. With a geometric mean it cannot: a low score on anything drags the whole index down. The Human Development Index switched from the first to the second in 2010 for that reason. (In the geometric version scores are floored at 1, so that a single zero does not wipe a country out.)</p>
+      <h3>The comparisons</h3>
+      <p>The page compares your ranking with two others: the ranking by income alone, and the ranking by the Cantril ladder, which is how people in each country rate their own lives from 0 to 10. Agreement is measured by Spearman's rank correlation, which is the ordinary correlation applied to the two lists of ranks.</p>
+      <h3>How much the weights matter</h3>
+      <p>For the country you select, the page draws 1,000 random weightings of health, freedom, income and community (every way of splitting 100% between the four is equally likely), ranks all countries under each, and reports the range of positions the country takes. A narrow range means its standing does not depend on your values. A wide one means it does.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>What the right weights are.</strong> That is the point. No calculation on this page can tell you whether a year of life is worth more than a measure of freedom.</li>
+        <li><strong>Whether the measures capture the ideas.</strong> "Freedom" here is the share of people who say they are satisfied with their freedom to choose what to do with their lives, not a measure of civil liberties. "Community" is one survey question. A country can score well on reported freedom while restricting the press.</li>
+        <li><strong>Who within a country lives well.</strong> Every figure is a national average. Capabilities belong to individuals, and an average says nothing about how they are distributed.</li>
+        <li><strong>What is left out.</strong> There is no education, safety, environment or political voice here. A ranking can only reflect the things that were measured.</li>
+        <li><strong>Whether small gaps in rank mean anything.</strong> Countries a few places apart often differ by less than the survey's sampling error. A ranking makes every difference look equally sharp.</li>
+        <li><strong>Whether matching people's own ratings is the goal.</strong> A high correlation with the ladder shows your index agrees with reported satisfaction. Whether satisfaction is what a good life consists of is the philosophical question, not an answer to it.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Add education, safety and environmental quality, so the index covers more of what the capability approach has in mind.</li>
+        <li>Adjust each measure for inequality within the country, as the inequality-adjusted Human Development Index does.</li>
+        <li>Show which comparisons hold under every possible weighting: if one country beats another on all measures, no choice of weights can reverse them.</li>
+        <li>Carry the survey's margins of error through to the ranks, so that ties are shown as ties.</li>
+        <li>Let a visitor load the weights behind published indices and see which one their own values are closest to.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>Helliwell, J. F., Layard, R., Sachs, J. D., De Neve, J.-E., Aknin, L. B., and Wang, S. (eds.) (2026). <em>World Happiness Report 2026</em>. University of Oxford: Wellbeing Research Centre. Data for Figure 2.1.</li>
+        <li>World Bank, World Development Indicators: GDP per capita, PPP, constant 2021 international $ (NY.GDP.PCAP.PP.KD) and life expectancy at birth (SP.DYN.LE00.IN). CC BY 4.0. Retrieved 10 October 2026.</li>
+        <li>Sen, A. (1999). <em>Development as Freedom</em>. Oxford University Press.</li>
+        <li>Nussbaum, M. C. (2011). <em>Creating Capabilities: The Human Development Approach</em>. Harvard University Press.</li>
+        <li>United Nations Development Programme (1990). <em>Human Development Report 1990</em>, and (2010) <em>Human Development Report 2010</em>, which introduced the geometric mean.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

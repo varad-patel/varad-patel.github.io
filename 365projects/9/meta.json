@@ -1,0 +1,7 @@
+{
+  "question": "Which countries offer the best life once you decide for yourself how much health, freedom, income and community matter?",
+  "finding": "The United States is 6th of 142 countries by income per person and 37th when health, freedom, income and community count equally.",
+  "limit": "The weights are a value judgement that no data can settle, and each measure is a thin national-average proxy for the idea it stands for.",
+  "sources": ["World Happiness Report 2026", "World Bank"],
+  "built": "2026-10-10"
+}
