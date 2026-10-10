@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sleeping Beauty Simulator · 365 projects</title>
+  <meta name="description" content="Run the Sleeping Beauty experiment thousands of times and see the halfer's one half and the thirder's one third come out of the same coin tosses, depending on what is counted.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .sb-part + .sb-part { border-top: 1px solid var(--rule); padding-top: 22px; }
+    .sb-head { display: grid; gap: 6px; }
+    .sb-stage { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px 16px; align-items: center; }
+    .sb-coin { width: 56px; height: 56px; border-radius: 50%; border: 2px solid var(--ink); background: var(--sheet); display: grid; place-items: center; font-weight: 700; font-size: 1.3rem; }
+    .sb-coin.spin { animation: sb-spin 0.35s linear infinite; }
+    @keyframes sb-spin { from { transform: rotateY(0); } to { transform: rotateY(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .sb-coin.spin { animation: none; } }
+    .sb-days { display: flex; flex-wrap: wrap; gap: 6px; }
+    .sb-day { min-width: 96px; padding: 6px 10px; border: 1.5px solid var(--grid); background: var(--sheet); color: var(--slate); font-size: 0.8rem; line-height: 1.35; }
+    .sb-day b { display: block; color: var(--ink); font-size: 0.88rem; }
+    .sb-day.past { border-color: var(--ink); }
+    .sb-day.awake { border-color: var(--ink); background: var(--ink); color: var(--paper); }
+    .sb-day.awake b { color: var(--paper); }
+    .sb-day.slept { border-style: dashed; border-color: var(--rule); }
+    .sb-cap { grid-column: 1 / -1; min-height: 2.8em; }
+    .sb-tape { display: flex; flex-wrap: wrap; gap: 5px 6px; margin: 2px 0 8px; min-height: 20px; }
+    .sb-tape span { display: inline-flex; gap: 2px; padding: 2px; border: 1px solid var(--slate); border-radius: 2px; }
+    .sb-tape i { display: block; width: 8px; height: 14px; }
+    .sb-tape .h i { background: var(--ink); }
+    .sb-tape .t i { background: var(--rule); }
+    .sb-key i.sb-box { background: none; border: 1px solid var(--slate); }
+    .sb-tbl .tbl th { white-space: normal; vertical-align: bottom; }
+    .sb-f { display: block; font-size: 0.82rem; color: var(--slate); }
+    /* The serif has no true italic, and the slanted letters lean into whatever follows them. */
+    .p-sec var { margin-right: 0.1em; }
+  </style>
+</head>
+<body class="proj" data-day="19">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Sleeping Beauty Simulator</h1>
+      <p class="lede">A coin decides whether Beauty is woken once or twice, and she cannot tell one waking from another. Run the experiment and watch one half and one third come out of the same coin tosses, depending on what is counted.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Sleeping Beauty experiment simulator">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>In 101,000 simulated experiments (seed 19: the 1,000 run on load plus one press of "Run 100,000") the coin landed heads in 50.03% of experiments, yet only 33.36% of the 151,473 awakenings came after heads. A ticket that pays 1 on heads, priced at 0.40, earned Beauty 0.10 per experiment when she bought it once per experiment and cost her 0.10 per experiment when she bought it at every awakening.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>On Sunday night Beauty is put to sleep and a fair coin is tossed. If it lands heads she is woken on Monday and the experiment ends. If it lands tails she is woken on Monday, given a drug that erases her memory of that waking, and woken again on Tuesday. She knows all of this in advance. Each time she wakes she is asked one question: how confident are you that the coin landed heads? Adam Elga put the problem to philosophers in 2000, crediting the name to Robert Stalnaker; a version had already appeared in Michele Piccione and Ariel Rubinstein's work on decisions with imperfect recall.</p>
+      <p><strong>The thirder's argument</strong> is Elga's. There are three situations Beauty might be in when she wakes: heads and Monday, tails and Monday, tails and Tuesday. If she were told the coin landed tails, she would have no reason to favour Monday over Tuesday, so those two deserve equal confidence. If she were told it is Monday, the coin toss might as well not have happened yet (the experimenters could toss it on Monday night without changing anything she experiences), so heads and tails deserve equal confidence. Three situations, each as likely as the next: her credence in heads should be 1/3.</p>
+      <p><strong>The halfer's argument</strong> is David Lewis's. On Sunday Beauty's credence in heads is 1/2, and everyone agrees it should be. Between Sunday and her waking she learns nothing she did not already expect: she was certain to be woken at least once whichever way the coin fell. Credences should change only in response to new evidence, and there is none that bears on the coin, so her credence should still be 1/2. Lewis accepted the cost of this view: if Beauty is then told it is Monday, a halfer who updates in the ordinary way becomes 2/3 confident in heads, for a fair coin that may not have been tossed yet.</p>
+      <p>The dispute matters because Beauty's uncertainty is of an unusual kind. She knows exactly how the world works. What she does not know is where she is in it: which day it is, and which waking this is. The same kind of <strong>self-locating belief</strong> appears whenever theories differ in how many observers like you they contain, which is why the problem keeps turning up in cosmology, in the Doomsday argument, and in arguments about whether we live in a simulation. It also tests what a credence is for. If a credence is a betting price, or a guess to be scored for accuracy, then it should matter how the bets and the scores are counted, and the tool shows that it does. What the tool cannot show is which way of counting is the right one for belief.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The experiment</h3>
+      <p>The tool generalises the story in two ways. The coin lands heads with probability <var>p</var>, and tails leads to <var>k</var> awakenings instead of two. Heads always leads to one. The standard problem is <var>p</var> = 1/2, <var>k</var> = 2. Each simulated experiment draws one number from a seeded generator and calls it heads if the number is below <var>p</var>, so the same seed always replays the same sequence of tosses.</p>
+      <h3>Two tallies</h3>
+      <p>After <var>N</var> experiments with <var>H</var> heads, the tool keeps two shares. Counting experiments, the share that are heads is <var>H</var> / <var>N</var>. Counting awakenings, there were <var>H</var> after heads and <var>k</var>(<var>N</var> − <var>H</var>) after tails, so the share after heads is <var>H</var> / (<var>H</var> + <var>k</var>(<var>N</var> − <var>H</var>)). As <var>N</var> grows, <var>H</var> / <var>N</var> tends to <var>p</var>, which gives the exact values in the table:</p>
+      <p class="eq">share by experiment = <var>p</var><br>share by awakening = <var>p</var> / (<var>p</var> + <var>k</var>(1 − <var>p</var>))<br>awakenings per experiment = <var>p</var> + <var>k</var>(1 − <var>p</var>)</p>
+      <p>With a fair coin and two tails awakenings these are 1/2, 1/3 and 1.5. The row of boxes above the chart is the same calculation in pictures: each box is an experiment and each square inside it is an awakening, so a tails box holds <var>k</var> squares. Half the boxes are heads. A third of the squares are.</p>
+      <h3>The bets</h3>
+      <p>A ticket costs <var>c</var> and pays 1 if the coin landed heads. Buying it gains 1 − <var>c</var> on heads and loses <var>c</var> on tails. If Beauty buys one ticket per experiment, her expected profit per experiment is</p>
+      <p class="eq"><var>p</var>(1 − <var>c</var>) − (1 − <var>p</var>)<var>c</var> = <var>p</var> − <var>c</var></p>
+      <p>which is zero at <var>c</var> = <var>p</var>. If she buys one at every awakening, tails makes her pay <var>k</var> times, and her expected profit per experiment is</p>
+      <p class="eq"><var>p</var>(1 − <var>c</var>) − (1 − <var>p</var>)<var>k</var><var>c</var> = <var>p</var> − <var>c</var>(<var>p</var> + <var>k</var>(1 − <var>p</var>))</p>
+      <p>which is zero at <var>c</var> = <var>p</var> / (<var>p</var> + <var>k</var>(1 − <var>p</var>)). So the first bet breaks even at the halfer's number and the second at the thirder's. The tool works out the realised profit from the two tallies, which is why moving the price re-prices the experiments already run instead of running new ones.</p>
+      <h3>The scoring rule</h3>
+      <p>In part 3 an answer <var>x</var> is penalised by the Brier rule, (<var>x</var> − 1)² if the coin landed heads and <var>x</var>² if it landed tails. This rule is <em>proper</em>: against an ordinary chance <var>q</var> of heads, the expected penalty <var>q</var>(<var>x</var> − 1)² + (1 − <var>q</var>)<var>x</var>² is smallest at <var>x</var> = <var>q</var>, so it rewards saying what you believe. Because Beauty cannot tell her wakings apart she gives the same answer at each one. Scored once per experiment, and then at every awakening (averaged over awakenings), the expected penalty is</p>
+      <p class="eq">once per experiment: <var>p</var>(1 − <var>x</var>)² + (1 − <var>p</var>)<var>x</var>²<br>every awakening: [<var>p</var>(1 − <var>x</var>)² + <var>k</var>(1 − <var>p</var>)<var>x</var>²] / (<var>p</var> + <var>k</var>(1 − <var>p</var>))</p>
+      <p>Setting each derivative to zero gives <var>x</var> = <var>p</var> for the first and <var>x</var> = <var>p</var> / (<var>p</var> + <var>k</var>(1 − <var>p</var>)) for the second. The table scores your answer, the halfer's and the thirder's on the same simulated experiments.</p>
+      <h3>What each position says in general</h3>
+      <p>The thirder gives every awakening equal standing, so heads-and-first-day has weight <var>p</var> and each of the <var>k</var> tails awakenings has weight 1 − <var>p</var>. That gives <var>p</var> / (<var>p</var> + <var>k</var>(1 − <var>p</var>)) on waking and <var>p</var> on being told it is the first day. The halfer keeps <var>p</var> on waking and spreads 1 − <var>p</var> evenly over the tails awakenings, which gives <var>p</var> / (<var>p</var> + (1 − <var>p</var>) / <var>k</var>) on being told it is the first day: 2/3 in the standard problem.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Which answer is right.</strong> The simulation produces two frequencies and neither side disputes either of them. The disagreement is over which of them, if either, Beauty's degree of belief should equal, and no amount of counting settles that.</li>
+        <li><strong>That bets reveal credence.</strong> A halfer can turn down the 0.40 ticket at every awakening without changing her mind about the coin: she knows the bet will be placed twice if the coin landed tails, so it is one bet with stakes that depend on the outcome. Thirders reply that a credence which never shows up in fair betting prices is not doing its job. The tool shows the arithmetic both sides accept, not who is right about what it means.</li>
+        <li><strong>That accuracy settles it either.</strong> The scoring result is the counting result again. Minimising expected total inaccuracy across awakenings favours 1/3 and minimising expected average inaccuracy favours 1/2, as Kierland and Monton showed. Choosing between the two is the original question in different clothes.</li>
+        <li><strong>Whether a one-off credence has to match a long-run frequency.</strong> In the story the experiment happens once. The tool repeats it a hundred thousand times and reads off shares. Whether a rational degree of belief in a single case must equal a frequency over imagined repetitions is itself contested.</li>
+        <li><strong>Anything about the other positions.</strong> "Double halfers" hold that the answer is 1/2 both on waking and on being told it is Monday, and some writers argue the question is ambiguous as posed. The tool models only the two classic answers and does not simulate what Beauty should think once told the day.</li>
+        <li><strong>How to reason in real anthropic cases.</strong> Here the number of awakenings on each branch is known exactly. In cosmology or the Doomsday argument, what counts as "an observer like me" is the hard part, and nothing here helps choose it.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Add the Monday question: tally heads among first-day awakenings only, and set the result beside Lewis's 2/3 and Elga's 1/2.</li>
+        <li>Play part 3 as Beauty would live it: wake the visitor again and again without saying which experiment each waking belongs to, and reveal everything only at the end.</li>
+        <li>Walk through Hitchcock's Dutch book step by step, with one bet placed on Sunday and one at each awakening, to show which combinations of prices guarantee a loss.</li>
+        <li>Add the logarithmic scoring rule next to the Brier rule and check that the two best answers do not move.</li>
+        <li>Model the variants: Bostrom's extreme version with a million awakenings, duplication instead of memory loss, and the absent-minded driver.</li>
+        <li>Let the visitor choose a decision theory as well as a credence. Briggs argues that whether a halfer or a thirder can be made to lose money depends on which decision theory the credence is paired with.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Elga, A. (2000). Self-locating belief and the Sleeping Beauty problem. <em>Analysis</em>, 60(2), 143-147.</li>
+        <li>Lewis, D. (2001). Sleeping Beauty: reply to Elga. <em>Analysis</em>, 61(3), 171-176.</li>
+        <li>Piccione, M., and Rubinstein, A. (1997). On the interpretation of decision problems with imperfect recall. <em>Games and Economic Behavior</em>, 20, 3-24.</li>
+        <li>Hitchcock, C. (2004). Beauty and the bets. <em>Synthese</em>.</li>
+        <li>Kierland, B., and Monton, B. (2005). Minimizing inaccuracy for self-locating beliefs. <em>Philosophy and Phenomenological Research</em>.</li>
+        <li>Bradley, D., and Leitgeb, H. (2006). When betting odds and credences come apart: more worries for Dutch book arguments. <em>Analysis</em>.</li>
+        <li>Bostrom, N. (2007). Sleeping Beauty and self-location: a hybrid model. <em>Synthese</em>.</li>
+        <li>Briggs, R. (2010). Putting a value on Beauty. In <em>Oxford Studies in Epistemology</em>, volume 3.</li>
+        <li>Titelbaum, M. G. (2013). Ten reasons to care about the Sleeping Beauty problem. <em>Philosophy Compass</em>.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
