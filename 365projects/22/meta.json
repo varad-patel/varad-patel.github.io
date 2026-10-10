@@ -1,0 +1,7 @@
+{
+  "question": "How can a formula of arithmetic be turned into a single whole number and recovered from it again?",
+  "finding": "Of the whole numbers from 1 to 1,000,000, only 781 are the code of any string of the 17 symbols and exactly three are well-formed formulas: 2,430 (0=0), 85,050 (0=S0) and 262,500 (S0=0).",
+  "limit": "The page carries out only the numbering and a syntax check; it contains no axioms, proofs or provability predicate, so it illustrates the first step of Gödel's argument and proves nothing about incompleteness.",
+  "sources": [],
+  "built": "2026-10-10"
+}

@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gödel Numbering Encoder · 365 projects</title>
+  <meta name="description" content="Type a formula of arithmetic to get its Gödel number, or paste a number to decode it back into a formula, with the factorisation and a syntax check.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .keys { display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); gap: 6px; }
+    .keys button { display: grid; justify-items: center; padding: 4px 0 3px; border: 1.5px solid var(--ink); border-radius: 3px; background: #fff; color: var(--ink); font: inherit; cursor: pointer; }
+    .keys button:hover { background: color-mix(in srgb, var(--ink) 8%, #fff); }
+    .keys b { font: 600 1.05rem/1.25 var(--mono); }
+    .keys small { font-size: 0.68rem; line-height: 1.1; color: var(--slate); }
+    .panel > * + * { margin-top: 8px; }
+    #app input.mono { font-size: 1.12rem; }
+    #app .note .mono { font-size: 1.05em; font-weight: 600; }
+    .bignum { font: 600 1.12rem/1.45 var(--mono); overflow-wrap: anywhere; }
+    .factors { font: 0.92rem/2 var(--mono); max-height: 10em; overflow: auto; overflow-wrap: anywhere; }
+    .factors span { white-space: nowrap; }
+    .factors sup, .tbl sup { font-size: 0.72em; line-height: 0; }
+    .string { font: 600 1.1rem/1.6 var(--mono); overflow-wrap: anywhere; }
+    .string .bad { background: color-mix(in srgb, var(--bad) 22%, transparent); outline: 2px solid var(--bad); border-radius: 2px; padding: 0 2px; }
+    .scroll { max-height: 360px; overflow: auto; }
+    .sym { font: 600 1.05rem/1 var(--mono); }
+    #app .note { overflow-wrap: anywhere; }
+    @media (max-width: 560px) { .scroll .tbl th:nth-child(3), .scroll .tbl td:nth-child(3) { display: none; } }
+    .codes { border-collapse: collapse; margin-top: 14px; font: 400 0.98rem/1.4 var(--sans); }
+    .codes th, .codes td { padding: 4px 14px 4px 0; text-align: left; border-bottom: 1px solid var(--grid); }
+    .codes td:first-child, .codes td:nth-child(2) { font-family: var(--mono); }
+    .p-sec pre { margin: 14px 0 0; padding: 12px 16px; background: var(--sheet); border-left: 3px solid var(--rule); font: 0.9rem/1.6 var(--mono); overflow-x: auto; }
+  </style>
+</head>
+<body class="proj" data-day="22">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Gödel Numbering Encoder</h1>
+      <p class="lede">Type a formula of arithmetic to turn it into a single whole number, or paste a number to turn it back into a formula. This is the trick that lets arithmetic talk about its own sentences.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Gödel numbering encoder and decoder">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>Almost no number is a formula. Of the whole numbers from 1 to 1,000,000, only 781 are the code of any string of the 17 symbols, 17 of those are terms, and exactly three are well-formed formulas: 2,430 (0=0), 85,050 (0=S0) and 262,500 (S0=0). The seven-symbol sentence ∀x¬Sx=0, "zero is not the successor of anything", already needs a number 39 digits long.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>In 1931 Kurt Gödel published a paper that ended the hope, associated with David Hilbert, of a single system of axioms that would prove every truth of mathematics and could be shown to be free of contradiction. The proof starts with a piece of bookkeeping. Give each symbol of a formal language a number. Then a formula, which is a row of symbols, can be packed into one number: raise the first prime to the code of the first symbol, the second prime to the code of the second, and multiply. Because every whole number factors into primes in exactly one way, the formula can always be unpacked again.</p>
+      <p>The point of the packing is what it does to statements <em>about</em> formulas. "This string is well formed", "this formula follows from those two by a rule of inference" and "this list of formulas is a proof" all become statements about numbers: a number has a certain pattern of prime exponents, or stands in a certain computable relation to other numbers. And statements about numbers are exactly what a formal theory of arithmetic can express. So a theory of arithmetic can, in its own language, describe its own formulas and proofs.</p>
+      <p>From there the first incompleteness theorem runs, in outline, as follows. Take a consistent formal system <var>F</var> whose axioms can be listed by a mechanical procedure and which proves the basic facts of arithmetic. Gödel showed there is a formula of arithmetic, Prov(<var>x</var>), that holds of a number exactly when it is the Gödel number of a formula provable in <var>F</var>. A further construction, the diagonal lemma, yields a sentence <var>G</var> for which <var>F</var> proves "<var>G</var> if and only if not Prov(the number of <var>G</var>)". Loosely, <var>G</var> says "I am not provable in <var>F</var>". If <var>F</var> proved <var>G</var>, the proof could be checked by arithmetic, so <var>F</var> would also prove Prov(the number of <var>G</var>), which contradicts <var>G</var>: <var>F</var> would be inconsistent. So <var>F</var> does not prove <var>G</var>, which is what <var>G</var> says. Gödel showed that <var>F</var> does not prove the negation of <var>G</var> either, under a slightly stronger assumption than consistency; in 1936 J. Barkley Rosser, using a modified sentence, showed that plain consistency is enough. Either way <var>F</var> leaves a sentence of its own language undecided.</p>
+      <p>This is the Liar of day 21 with "false" replaced by "unprovable", and the replacement turns a paradox into a theorem. The same move, treating descriptions of a system as data inside the system, is what Alan Turing used five years later to define computation, and it is why a computer can store a program as a number. This page carries out only the first step: the numbering, and the simplest syntactic check on what a number encodes.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The language</h3>
+      <p>The language has 17 symbols. Each has a code from 1 to 17.</p>
+      <table class="codes">
+        <thead><tr><th scope="col">Code</th><th scope="col">Symbol</th><th scope="col">Read as</th><th scope="col">Also typed as</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>0</td><td>zero</td><td></td></tr>
+          <tr><td>2</td><td>S</td><td>the successor of (the next number after)</td><td>s</td></tr>
+          <tr><td>3</td><td>+</td><td>plus</td><td></td></tr>
+          <tr><td>4</td><td>×</td><td>times</td><td>* ·</td></tr>
+          <tr><td>5</td><td>=</td><td>equals</td><td></td></tr>
+          <tr><td>6</td><td>(</td><td>open bracket</td><td></td></tr>
+          <tr><td>7</td><td>)</td><td>close bracket</td><td></td></tr>
+          <tr><td>8</td><td>¬</td><td>not</td><td>~ !</td></tr>
+          <tr><td>9</td><td>∧</td><td>and</td><td>&amp; ^</td></tr>
+          <tr><td>10</td><td>∨</td><td>or</td><td>|</td></tr>
+          <tr><td>11</td><td>→</td><td>if … then</td><td>-&gt; =&gt; ⊃</td></tr>
+          <tr><td>12</td><td>∀</td><td>for all</td><td>A forall</td></tr>
+          <tr><td>13</td><td>∃</td><td>there exists</td><td>E exists</td></tr>
+          <tr><td>14</td><td>x</td><td>a variable</td><td></td></tr>
+          <tr><td>15</td><td>y</td><td>a variable</td><td></td></tr>
+          <tr><td>16</td><td>z</td><td>a variable</td><td></td></tr>
+          <tr><td>17</td><td>′</td><td>prime: turns a variable into a new one, x′, x′′, …</td><td>'</td></tr>
+        </tbody>
+      </table>
+      <p>There are no digits other than 0. The number two is written SS0, "the successor of the successor of zero". As a convenience a typed numeral up to 60 is expanded into that form before anything else happens. Spaces are ignored and are not part of the string.</p>
+      <p>A string of symbols is a <strong>well-formed formula</strong> if it can be built by these rules, where { } means "repeated any number of times" and [ ] means "optional":</p>
+<pre>variable ::= ( x | y | z ) { ′ }
+factor   ::= 0 | variable | S factor | ( term )
+product  ::= factor { × factor }
+term     ::= product { + product }
+unit     ::= term = term | ¬ unit | ( formula )
+           | ∀ variable unit | ∃ variable unit
+conj     ::= unit { ∧ unit }
+disj     ::= conj { ∨ conj }
+formula  ::= disj [ → formula ]</pre>
+      <p>In words: × binds tighter than +; ¬ and the quantifiers apply to the next unit only; ∧ binds tighter than ∨, which binds tighter than →; repeated +, ×, ∧ and ∨ group to the left and repeated → groups to the right. A <strong>term</strong> names a number; a formula says something. Brackets override the grouping.</p>
+
+      <h3>Encoding</h3>
+      <p>Let the symbols of the string have codes <var>c</var><sub>1</sub>, <var>c</var><sub>2</sub>, …, <var>c</var><sub><var>k</var></sub> and let <var>p</var><sub><var>i</var></sub> be the <var>i</var>-th prime. The Gödel number of the string is</p>
+      <p class="eq"><var>g</var> = 2<sup><var>c</var><sub>1</sub></sup> × 3<sup><var>c</var><sub>2</sub></sup> × 5<sup><var>c</var><sub>3</sub></sup> × … × <var>p</var><sub><var>k</var></sub><sup><var>c</var><sub><var>k</var></sub></sup></p>
+      <p>For 0=0 the codes are 1, 5, 1, so <var>g</var> = 2<sup>1</sup> × 3<sup>5</sup> × 5<sup>1</sup> = 2 × 243 × 5 = 2,430. The arithmetic is done with exact integers of any length, so nothing is rounded. Every string gets a number, whether or not it is well formed: the numbering is about spelling, not meaning.</p>
+
+      <h3>Decoding</h3>
+      <p>Given a whole number, divide by 2 as many times as it will go; the count is the first code. Do the same with 3 for the second code, with 5 for the third, and continue until nothing is left but 1. Three things can go wrong, and each is reported exactly:</p>
+      <ul>
+        <li><strong>A prime is skipped.</strong> If the next prime does not divide what remains, and what remains is not 1, some position would have no symbol. 10 = 2 × 5 skips 3, so it is not the code of any string.</li>
+        <li><strong>An unknown code.</strong> If a prime divides the number more than 17 times, the position would hold a symbol that does not exist. 2<sup>18</sup> = 262,144 is an example.</li>
+        <li><strong>A string, but not a formula.</strong> 7,776 = 2<sup>5</sup> × 3<sup>5</sup> decodes without trouble to "==", which the grammar cannot build.</li>
+      </ul>
+      <p>The fundamental theorem of arithmetic says every whole number above 1 is a product of primes in exactly one way. That is why two different strings can never share a number and why decoding always recovers what was encoded. The numbers 0 and 1 are special cases: 0 has no factorisation, and 1, the empty product, would be the code of the empty string.</p>
+
+      <h3>The syntax check</h3>
+      <p>The check is a recursive-descent parser with one function for each line of the grammar. It reads the codes from left to right and either builds a tree or stops at the first symbol that cannot continue any rule, reporting that position and what was needed there. An opening bracket is the one place where it has to try twice: "(" may start a bracketed formula, as in (x=y∧y=z), or a bracketed term, as in (x+y)=z, so it tries the formula first and falls back to the term. If the string is not a formula the parser is run again to see whether it is a term.</p>
+      <p>For a well-formed formula the page also lists its free variables (those not governed by a quantifier), writes it out with every bracket restored, and, in the one case where truth can be settled by calculation, a formula with no variables at all, says whether it is true.</p>
+
+      <h3>Counting codes</h3>
+      <p>The count at the bottom of the controls decodes every number from 1 up to the limit you choose and classifies what comes out. It is the direct way to see how thinly formulas are spread among the numbers.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>That arithmetic is incomplete.</strong> The page does the numbering and nothing more. It has no axioms, no rules of inference, no notion of proof, no provability formula and no diagonal sentence. The sketch above is a summary of Gödel's argument, not something the tool establishes.</li>
+        <li><strong>Whether a formula is true or provable.</strong> Well formed, true and provable are three different properties. S0=0 is well formed and false. The page checks truth only for formulas with no variables, where it is a matter of calculation; for sentences with quantifiers no mechanical method can decide truth in general, a result closely related to Gödel's.</li>
+        <li><strong>Anything about the numbers themselves.</strong> The code table is a convention. Gödel's own table was different (he gave his basic signs the odd numbers from 1 to 13), and any mechanical one-to-one coding would serve. A particular Gödel number means nothing apart from the table that produced it.</li>
+        <li><strong>What the real undecidable sentence looks like.</strong> Prime-power coding is wildly wasteful, and the page stops at 200 symbols and 10,000 digits. Gödel's sentence written in this language would contain the numeral for a Gödel number, and a numeral for <var>n</var> is <var>n</var> copies of S. It could not be displayed here or anywhere else.</li>
+        <li><strong>What counts as well formed in general.</strong> The grammar here lets brackets be left out and settles the reading by precedence. Many textbooks instead require every bracket, which makes "each formula can be read in only one way" a theorem about the grammar and not a rule of the parser.</li>
+        <li><strong>The factors of an arbitrary number.</strong> The decoder is not a general factoriser. For a number that is not a code it stops at the first missing prime, and it names the next prime factor only when that factor is below 110,000 or the remainder is small enough to test directly.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Number a sequence of formulas the same way, 2 to the first formula's number times 3 to the second's and so on, so that a whole proof becomes one number.</li>
+        <li>Add the axioms of a weak arithmetic such as Robinson's Q and a proof checker, so that "this number encodes a proof of that formula" becomes something the page can test.</li>
+        <li>Implement substitution as an operation on Gödel numbers and build the diagonal sentence step by step, with numerals kept symbolic instead of written out.</li>
+        <li>Offer other codings, such as reading the codes as digits in base 18, and compare how fast the numbers grow.</li>
+        <li>Draw the syntax tree the parser builds, and show the bound and free occurrences of each variable on it.</li>
+        <li>Add bounded quantifiers (for all <var>x</var> below a term) and evaluate them, to show the class of formulas whose truth can still be settled by calculation.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Gödel, K. (1931). Über formal unentscheidbare Sätze der Principia Mathematica und verwandter Systeme I. <em>Monatshefte für Mathematik und Physik</em>, 38, 173-198.</li>
+        <li>Rosser, J. B. (1936). Extensions of some theorems of Gödel and Church. <em>Journal of Symbolic Logic</em>, 1.</li>
+        <li>Turing, A. M. (1936). On computable numbers, with an application to the Entscheidungsproblem. <em>Proceedings of the London Mathematical Society</em>.</li>
+        <li>Nagel, E., and Newman, J. R. (1958). <em>Gödel's Proof</em>. New York University Press.</li>
+        <li>Hofstadter, D. R. (1979). <em>Gödel, Escher, Bach: An Eternal Golden Braid</em>. Basic Books.</li>
+        <li>Smith, P. <em>An Introduction to Gödel's Theorems</em>. Cambridge University Press.</li>
+        <li>Raatikainen, P. Gödel's incompleteness theorems. <em>Stanford Encyclopedia of Philosophy</em>.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
