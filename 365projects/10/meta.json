@@ -1,0 +1,7 @@
+{
+  "question": "At which replacement does a ship rebuilt part by part stop being the same ship, and which view of identity says so?",
+  "finding": "On a 46-part galley with the keel counted as 20 planks, half of the original weight has gone after 6 replacements if the frame goes first and after 41 if worn parts go first, while a head count of parts says step 23 either way.",
+  "limit": "The tool sorts a visitor's mark by the view it agrees with; it cannot say which view of identity is true, and both the part weights and the 50% thresholds are conventions.",
+  "sources": [],
+  "built": "2026-10-10"
+}
