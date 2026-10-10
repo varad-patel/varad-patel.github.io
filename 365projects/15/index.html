@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sorites and Fuzzy Logic · 365 projects</title>
+  <meta name="description" content="Mark where a pile of grains becomes a heap, and compare your boundary with a sharp cut-off, a fuzzy membership curve and a truth-value gap, then watch the sorites argument lose its truth one grain at a time.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .marks { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 12px; align-items: center; }
+    .marks .btn { text-align: left; }
+    .mark-value { font-size: 0.9rem; font-weight: 600; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: 12px; }
+    .card .v { display: block; font-weight: 650; font-size: 1.6rem; line-height: 1.2; margin: 6px 0; }
+    .tool .card p { font-size: 0.86rem; line-height: 1.5; }
+    .tool .card p + p { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--grid); }
+    .argument { margin: 8px 0 10px; padding-left: 1.4em; font: 400 1rem/1.55 var(--serif); }
+    .argument li + li { margin-top: 4px; }
+  </style>
+</head>
+<body class="proj" data-day="15">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Sorites and Fuzzy Logic</h1>
+      <p class="lede">One grain of sand is not a heap, and adding one grain never seems to turn a non-heap into a heap. Mark where you think a heap starts, and see what a sharp line, a fuzzy curve and a truth-value gap each make of your answer.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Heap boundary, three models of vagueness and the sorites argument">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>With the marks at 10, 100 and 1,000 grains, the sorites argument takes 990 steps from a certain heap to a certain non-heap. In Łukasiewicz logic the least true of those steps is true to degree 0.979 and the most true to 0.9998, yet the 990 shortfalls add up to exactly 1, which is all the truth there was to lose. Classical logic sees the same chain as 989 true steps and one false one.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>The paradox of the heap is credited to Eubulides of Miletus, a contemporary of Aristotle, and takes its name from <em>soros</em>, the Greek for heap. Ten thousand grains of sand make a heap. Taking one grain from a heap leaves a heap, because a single grain is too little to make the difference. Apply the second claim 9,999 times and one grain makes a heap. Both premises look true, the logic is nothing but repeated modus ponens, and the conclusion is false.</p>
+      <p>The trouble is not special to sand. "Heap" is vague: it has clear cases, clear non-cases and cases in between where nothing seems to settle the matter, and so are "bald", "tall", "rich", "adult" and "alive". Law and policy have to cut through such words with exact numbers, such as a voting age, a poverty line, a speed limit, a blood-pressure threshold or a week of pregnancy, and every such number invites the sorites reply that one day or one pound cannot matter.</p>
+      <p>Three answers dominate the modern debate. <strong>Epistemicism</strong>, defended by Timothy Williamson, keeps classical logic whole: there is an exact number at which heaps begin, the second premise is false at that number, and what we call vagueness is our incurable ignorance of where it is. <strong>Supervaluationism</strong>, set out by Kit Fine, says that "heap" could be made exact in many acceptable ways, that a sentence is true when it comes out true on all of them, and that the piles in between are neither heaps nor non-heaps. <strong>Degree theories</strong>, which grew from Lotfi Zadeh's fuzzy sets and Joseph Goguen's logic of inexact concepts, say that truth comes in degrees between 0 and 1, that heapness rises gradually, and that the second premise is very nearly true at every step.</p>
+      <p>This page asks you for three marks and then reads them in all three ways at once.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The scale and the marks</h3>
+      <p>The slider has 401 positions, and position <var>v</var> shows <var>n</var> = 10<sup><var>v</var>/100</sup> grains rounded to a whole number, so it runs from 1 to 10,000 on a logarithmic scale. Two buttons move one grain at a time. You place three marks: the largest pile that is certainly not a heap, <var>L</var>; the smallest pile you would call a heap if you had to choose, <var>b</var>; and the smallest pile that is certainly a heap, <var>U</var>. The tool keeps 1 ≤ <var>L</var> &lt; <var>b</var> ≤ <var>U</var> ≤ 10,000 and moves a neighbouring mark, with a notice, when a new one would break that order.</p>
+      <h3>The sharp line</h3>
+      <p class="eq">heap(<var>n</var>) is true when <var>n</var> ≥ <var>b</var>, and false otherwise</p>
+      <p>This is how an epistemicist reads your boundary: as a guess at a cut-off that exists whether or not anyone can know it.</p>
+      <h3>The fuzzy curve</h3>
+      <p>The membership function <var>μ</var>(<var>n</var>) gives the degree to which <var>n</var> grains make a heap. It is 0 up to <var>L</var>, 1 from <var>U</var>, and passes through ½ at <var>b</var>. With <var>p</var>(<var>x</var>) = ln <var>x</var>:</p>
+      <p class="eq"><var>μ</var>(<var>n</var>) = ½ · (<var>p</var>(<var>n</var>) − <var>p</var>(<var>L</var>)) / (<var>p</var>(<var>b</var>) − <var>p</var>(<var>L</var>)) &nbsp; for <var>L</var> &lt; <var>n</var> &lt; <var>b</var></p>
+      <p class="eq"><var>μ</var>(<var>n</var>) = ½ + ½ · (<var>p</var>(<var>n</var>) − <var>p</var>(<var>b</var>)) / (<var>p</var>(<var>U</var>) − <var>p</var>(<var>b</var>)) &nbsp; for <var>b</var> ≤ <var>n</var> &lt; <var>U</var></p>
+      <p>That is two straight lines on the log scale, the option "Line (log)". "Line (grains)" uses <var>p</var>(<var>x</var>) = <var>x</var> instead. The S-curve keeps the log scale and replaces the fraction <var>t</var> in the first line by <var>t</var>² and in the second by 1 − (1 − <var>t</var>)², which flattens the curve near 0 and near 1. Only the three marks come from you; the shape between them is an assumption you can switch.</p>
+      <h3>The gap</h3>
+      <p>For the supervaluationist the acceptable ways of making "heap" exact are the cut-offs <var>c</var> = <var>L</var> + 1, …, <var>U</var>, which is <var>U</var> − <var>L</var> of them. "<var>n</var> grains make a heap" is true if <var>n</var> ≥ <var>c</var> for every one of them, which means <var>n</var> ≥ <var>U</var>; false if for none, which means <var>n</var> ≤ <var>L</var>; and neither in between. The tool also reports the share of cut-offs on which the claim holds, (<var>n</var> − <var>L</var>) / (<var>U</var> − <var>L</var>).</p>
+      <h3>The argument in Łukasiewicz logic</h3>
+      <p>Łukasiewicz's rule for a conditional with truth values between 0 and 1 is</p>
+      <p class="eq"><var>v</var>(<var>A</var> → <var>B</var>) = min(1, 1 − <var>v</var>(<var>A</var>) + <var>v</var>(<var>B</var>))</p>
+      <p>so the step "if <var>n</var> grains make a heap then <var>n</var> − 1 do" has truth value</p>
+      <p class="eq"><var>t</var><sub><var>n</var></sub> = 1 − (<var>μ</var>(<var>n</var>) − <var>μ</var>(<var>n</var> − 1))</p>
+      <p>It falls short of 1 by exactly the drop in heapness between the two piles. Modus ponens is no longer free: from <var>A</var> and <var>A</var> → <var>B</var> the most that can be guaranteed is</p>
+      <p class="eq"><var>v</var>(<var>B</var>) ≥ max(0, <var>v</var>(<var>A</var>) + <var>v</var>(<var>A</var> → <var>B</var>) − 1)</p>
+      <p>The tool starts from "<var>U</var> grains make a heap" at truth 1 and applies this bound once for each step down to <var>L</var>. The shortfalls telescope:</p>
+      <p class="eq">(1 − <var>t</var><sub><var>U</var></sub>) + … + (1 − <var>t</var><sub><var>L</var>+1</sub>) = <var>μ</var>(<var>U</var>) − <var>μ</var>(<var>L</var>) = 1</p>
+      <p>Whatever the shape of the curve, the losses add up to exactly 1 and the conclusion is left with a guaranteed truth of 0. The shape decides only how the loss is shared out among the steps. The second chart plots both quantities for every step; when there are more than 500 steps it draws an evenly spaced sample, always including the least true step, and the figures in the tiles are computed from all of them.</p>
+      <h3>The drawing</h3>
+      <p>The pile is a simple sand model, fixed by a seed so that it is the same on every visit. Each grain is dropped near the middle and rolls downhill until neither neighbouring column is lower, which keeps every slope at one grain per column or less. Adding a grain never moves an earlier one, so the pile of <var>n</var> grains is always the first <var>n</var> grains of the same pile of 10,000.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Where a heap starts.</strong> There is no measurement the tool could check your marks against. They record how you use a word, and people differ.</li>
+        <li><strong>Which theory of vagueness is right.</strong> All three handle your marks without contradiction. They disagree about what the marks mean, and nothing computed here chooses between them.</li>
+        <li><strong>What to do about higher-order vagueness.</strong> The tool asks for exact bounds on "certainly", but the point at which a pile becomes certainly a heap is no sharper than the point at which it becomes a heap. A fuzzy value of exactly 0.389 and a gap that starts at exactly 11 grains are open to the same complaint as a sharp line at 100.</li>
+        <li><strong>That the steps are "nearly true" on every fuzzy logic.</strong> That result belongs to Łukasiewicz's conditional. Under Gödel's, a step whose consequent is less true than its antecedent is only as true as the consequent, so the steps near the bottom of the curve are nearly false. Fuzzy logics also make "this is a heap and it is not a heap" half true of a borderline pile under the usual minimum rule, which critics count as a plain falsehood.</li>
+        <li><strong>The shape of your own curve.</strong> Three marks fix three points. Everything between them comes from the shape option, and a different shape moves the least true step and its value.</li>
+        <li><strong>Anything about arrangement.</strong> A thousand grains spread across a floor are not a heap. The tool varies number alone and piles every grain by the same rule.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Ask "heap, not a heap, or unsure?" for twenty pile sizes in random order and fit the membership curve to the answers, instead of assuming its shape.</li>
+        <li>Run the piles in ascending and then descending order to look for the hysteresis that Diana Raffman describes, where the switching point depends on the direction of travel.</li>
+        <li>Add second-order marks, bounds on the bounds, and show the regress of higher-order vagueness.</li>
+        <li>Show Gödel and product logic beside Łukasiewicz, so that the dependence of the diagnosis on the conditional is visible.</li>
+        <li>Swap the predicate for one with data behind it, such as "rich" on an income distribution or "tall" on a height distribution, and compare the marks with an official threshold.</li>
+        <li>Let the grains be scattered as well as piled, to separate number from arrangement.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Hyde, D., and Raffman, D. Sorites paradox. <em>Stanford Encyclopedia of Philosophy</em>.</li>
+        <li>Sorensen, R. Vagueness. <em>Stanford Encyclopedia of Philosophy</em>.</li>
+        <li>Williamson, T. (1994). <em>Vagueness</em>. Routledge.</li>
+        <li>Fine, K. (1975). Vagueness, truth and logic. <em>Synthese</em>, 30, 265-300.</li>
+        <li>Zadeh, L. A. (1965). Fuzzy sets. <em>Information and Control</em>, 8, 338-353.</li>
+        <li>Goguen, J. A. (1969). The logic of inexact concepts. <em>Synthese</em>, 19, 325-373.</li>
+        <li>Machina, K. F. (1976). Truth, belief, and vagueness. <em>Journal of Philosophical Logic</em>, 5, 47-78.</li>
+        <li>Keefe, R. (2000). <em>Theories of Vagueness</em>. Cambridge University Press.</li>
+        <li>Keefe, R., and Smith, P. (eds.) (1997). <em>Vagueness: A Reader</em>. MIT Press.</li>
+        <li>Smith, N. J. J. (2008). <em>Vagueness and Degrees of Truth</em>. Oxford University Press.</li>
+        <li>Raffman, D. (2014). <em>Unruly Words: A Study of Vague Language</em>. Oxford University Press.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "question": "Where does a heap start, and what do a sharp line, a fuzzy curve and a truth-value gap each make of your answer?",
+  "finding": "With marks at 10, 100 and 1,000 grains the sorites argument takes 990 steps; in Łukasiewicz logic the least true step is true to degree 0.979, yet the 990 shortfalls add up to exactly 1, while classical logic makes 989 steps true and one false.",
+  "limit": "The tool reads one visitor's three marks in three ways; it cannot say where a heap really starts or which theory of vagueness is right, and its own exact bounds ignore higher-order vagueness.",
+  "sources": [],
+  "built": "2026-10-10"
+}
