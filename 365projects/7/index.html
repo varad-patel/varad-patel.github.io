@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Utilitarian Calculator · 365 projects</title>
+  <meta name="description" content="Enter the people affected, the options, their uncertain outcomes and how much each group counts, and see which option maximises expected wellbeing and which moral weight would flip the choice.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; min-width: 0; }
+    .verdict { font: 500 1.12rem/1.45 var(--serif); }
+
+    /* The editor: compact labelled boxes in rows. */
+    .ed .field { gap: 3px; }
+    .ed .field .lab { font-size: 0.78rem; color: var(--slate); }
+    .ed .field .lab label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ed input[type="text"], .ed input[type="number"] { padding: 6px 8px; font-size: 0.92rem; }
+    .ed input.invalid { border-color: var(--bad); }
+    .ed input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+    .ed input[type="number"]::-webkit-inner-spin-button, .ed input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    .ed p.hint { font-size: 0.8rem; color: var(--slate); line-height: 1.4; }
+    .ed .btn.x { padding: 4px 9px; font-size: 1rem; line-height: 1.2; }
+    .g-list { display: grid; gap: 8px; }
+    .g-row { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.2fr) minmax(0, 0.8fr) auto; gap: 8px; align-items: end; }
+    @media (min-width: 521px) {
+      .g-row + .g-row .lab { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    }
+    @media (max-width: 520px) {
+      .g-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; }
+      .g-row > :first-child { grid-column: 1 / 3; }
+      .g-row > .btn { grid-row: 1; grid-column: 3; }
+    }
+    .opt { border-left: 5px solid var(--rule); display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 12px; }
+    .o-head, .k-head { display: grid; gap: 8px; align-items: end; }
+    .o-head { grid-template-columns: minmax(0, 1fr) auto; }
+    .k-head { grid-template-columns: minmax(0, 1fr) 84px auto; }
+    .k-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; padding-top: 10px; border-top: 1px dashed var(--rule); }
+    .k-changes { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
+    .o-foot { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; }
+    .o-foot .note { font-size: 0.86rem; padding: 8px 10px; }
+    .o-foot .note .btn { margin-top: 6px; display: block; }
+
+    .flips .tbl th { white-space: normal; }
+    @media (max-width: 520px) { .flips .tbl th, .flips .tbl td { padding: 6px 6px; } }
+
+    /* Ranking bars that can run either side of zero. */
+    .rank { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 8px; }
+    .rank li { display: grid; grid-template-columns: minmax(90px, 38%) minmax(0, 1fr) auto; gap: 10px; align-items: center; font-size: 0.92rem; }
+    .rank .name { display: flex; gap: 8px; align-items: baseline; min-width: 0; overflow-wrap: anywhere; }
+    .rank .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; flex: none; }
+    .rank .track { position: relative; height: 16px; background: color-mix(in srgb, var(--ink) 7%, transparent); border-radius: 3px; }
+    .rank .fill { position: absolute; top: 0; bottom: 0; min-width: 2px; border-radius: 2px; }
+    .rank .zero { position: absolute; top: -3px; bottom: -3px; width: 1.5px; background: var(--ink); }
+    .rank .val { font-weight: 650; min-width: 4.2em; text-align: right; white-space: nowrap; }
+    .rank .top .name { font-weight: 700; }
+  </style>
+</head>
+<body class="proj" data-day="7">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Utilitarian Calculator</h1>
+      <p class="lede">Say who is affected, what could happen under each option and how much each group counts. The page adds up the expected wellbeing, ranks the options and finds the moral weight at which the ranking flips.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Expected-utility calculator with moral weights">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>In the vaccine example, with everyone counted equally, splitting the doses comes top with 183,000 expected healthy days against 168,000 for giving every dose to the over-80s. The answer survives a fair amount of disagreement, but not all of it: count a day of an over-80's life at more than 1.45 times anyone else's and oldest-first wins, count it at less than 0.58 and the doses go to the care workers.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Utilitarianism says the right choice is the one that produces the most wellbeing, added up over everyone it touches. Jeremy Bentham put it as a method: list the people affected, estimate the pleasure and pain each would feel, sum, and compare. John Stuart Mill and Henry Sidgwick refined the theory, but the arithmetic at its centre has not changed, and it is the arithmetic that most public decisions still run on. A cost-benefit analysis of a road, a health service deciding which drug to fund by its cost per year of healthy life, a charity evaluator ranking programmes: each is a utilitarian calculation with the philosophy left implicit. John Harsanyi gave the sum its best-known modern defence in 1955: someone choosing rationally and impartially, with an equal chance of turning out to be anybody, would want it maximised.</p>
+      <p>The calculation needs three things that are not facts about the world. It needs a single scale on which one person's gain can be set against another's loss. It needs a list of who is on the ledger at all: future people, foreigners, animals. And it needs to say how much each of them counts. Bentham's own answer, as Mill reported it, was "everybody to count for one, nobody for more than one", but practice is full of other answers. Early versions of the disability-adjusted life year gave a year lived in young adulthood more weight than a year in infancy or old age. The UK Treasury's appraisal guidance allows a pound to a poor household to count for more than a pound to a rich one. Every discount rate applied to climate damage is a weight on people who are not born yet.</p>
+      <p>This page makes those weights the thing you can move. Enter the groups, the options and what might happen, and it does Bentham's sum. Then it turns the question round: for each group, how far would its weight have to move before a different option came out on top? If the answer is "a long way", the choice does not depend much on that ethical judgement. If the answer is "from 1 to 1.12", then the calculation has not settled anything, and the real argument is about the weight.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The model</h3>
+      <p>There are groups of people <var>g</var>, each with a headcount <var>n</var><sub><var>g</var></sub> and a moral weight <var>w</var><sub><var>g</var></sub>. There are options <var>o</var>. Each option has a short list of outcomes <var>k</var>, exactly one of which will happen, with probabilities <var>p</var><sub><var>ok</var></sub> that sum to 1. For every outcome you enter the change in wellbeing for one typical member of each group, <var>Δ</var><sub><var>okg</var></sub>, on whatever scale you have chosen: days of healthy life, points of life satisfaction, anything that means the same for everybody.</p>
+      <h3>Expected utility</h3>
+      <p>The page builds an option's score in three steps, and the "Who gains and who loses" chart can show any of them.</p>
+      <p class="eq">per person: <var>e</var><sub><var>og</var></sub> = Σ<sub><var>k</var></sub> <var>p</var><sub><var>ok</var></sub> <var>Δ</var><sub><var>okg</var></sub> &nbsp;&nbsp;&nbsp; whole group: <var>c</var><sub><var>og</var></sub> = <var>n</var><sub><var>g</var></sub> <var>e</var><sub><var>og</var></sub> &nbsp;&nbsp;&nbsp; weighted: <var>w</var><sub><var>g</var></sub> <var>c</var><sub><var>og</var></sub></p>
+      <p class="eq"><var>U</var><sub><var>o</var></sub> = Σ<sub><var>g</var></sub> <var>w</var><sub><var>g</var></sub> <var>n</var><sub><var>g</var></sub> Σ<sub><var>k</var></sub> <var>p</var><sub><var>ok</var></sub> <var>Δ</var><sub><var>okg</var></sub></p>
+      <p>The options are ranked by <var>U</var><sub><var>o</var></sub>. With every weight at 1 this is classical utilitarianism: the expected total of wellbeing, no matter whose. An option whose probabilities do not sum to 1 is not a description of what might happen, so it is left out of the ranking until they do. The "rescale" button divides each probability by their sum, which keeps their ratios.</p>
+      <h3>The flip points, solved exactly</h3>
+      <p>Pick one group <var>h</var> and let its weight vary while everything else stays put. Each option's score is then a straight line in that weight:</p>
+      <p class="eq"><var>U</var><sub><var>o</var></sub>(<var>w</var>) = <var>a</var><sub><var>o</var></sub> + <var>c</var><sub><var>oh</var></sub> <var>w</var>, &nbsp;&nbsp; where <var>a</var><sub><var>o</var></sub> = Σ<sub><var>g</var> ≠ <var>h</var></sub> <var>w</var><sub><var>g</var></sub> <var>c</var><sub><var>og</var></sub></p>
+      <p>The slope <var>c</var><sub><var>oh</var></sub> is what the option does for that group in total; the intercept is what it does for everyone else. Two straight lines cross at most once, so the leader <var>A</var> and any rival <var>B</var> with a different slope are level at exactly</p>
+      <p class="eq"><var>w</var>* = (<var>a</var><sub><var>A</var></sub> − <var>a</var><sub><var>B</var></sub>) / (<var>c</var><sub><var>Bh</var></sub> − <var>c</var><sub><var>Ah</var></sub>)</p>
+      <p>A rival that does more for the group than the leader (a steeper line) can only overtake as the weight rises, and one that does less only as it falls. So the page computes <var>w</var>* for every rival, takes the smallest crossing above the current weight among the steeper lines and the largest crossing below it among the shallower ones, and reports those two numbers. Weights below zero are not considered. There is no search and no rounding: the table shows the exact crossing points, and the chart draws the lines so you can see them cross.</p>
+      <p>In the vaccine example the lines for the over-80s' weight are 168,000<var>w</var> for oldest-first, 48,000 + 135,000<var>w</var> for the split and 80,000 + 80,000<var>w</var> for care workers first. The first pair cross at 48,000 / 33,000 = 1.45 and the second at 32,000 / 55,000 = 0.58.</p>
+      <h3>Which weight is "most sensitive"</h3>
+      <p>To compare flips across groups the page uses the proportional change needed: a move from 1 to 2 and a move from 1 to 0.5 count as equally far. The group needing the smallest proportional change is named above the table and chosen for the chart. Because weight and headcount only ever appear multiplied together, the same numbers answer a second question: raising a group's weight by 45% changes the scores exactly as much as finding that the group is 45% larger.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Whether wellbeing can be added across people at all.</strong> The sum assumes that a point of your wellbeing and a point of mine are amounts of the same stuff. Lionel Robbins argued in 1932 that no observation could ever establish that, and nothing since has made the problem go away. The "counted in" box is where this assumption enters, and the page cannot check it.</li>
+        <li><strong>What the weights should be.</strong> The weights are the ethics. The page will tell you that a weight of 1.45 flips the answer; it has no view on whether 1.45 is defensible. A calculation that reports one ranking without showing its weights has made the moral decision out of sight.</li>
+        <li><strong>Who belongs on the list.</strong> Anyone you do not enter as a group has a weight of zero. Leaving out future generations, people abroad or animals is a choice of exactly the same kind as giving them a small weight, only less visible.</li>
+        <li><strong>Whether adding up is the right thing to do.</strong> The sum lets a large enough number of trivial gains outweigh one person's catastrophe, which is the point of the "one against a billion" example and of John Rawls's complaint that utilitarianism does not take seriously the distinction between persons. Rights, promises, fairness and desert have no place in the formula except as a weight.</li>
+        <li><strong>How to treat risk and inequality.</strong> Expected value is indifferent between a certain 5 and a coin flip between 0 and 10, and a group's average hides who inside it bears the loss. An option that is slightly better on average and ruinous for a few people will rank first.</li>
+        <li><strong>Anything about the real cases.</strong> Every number in the examples is invented to make the structure visible. The vaccine result says nothing about how vaccines should be allocated; real estimates would need epidemiology this page does not have.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Offer a prioritarian score next to the utilitarian one, in which a gain counts for more the worse off its recipient is, so the two rankings can be compared on the same inputs.</li>
+        <li>Vary two weights at once and draw the regions of the plane in which each option wins, since real disagreements rarely concern one weight.</li>
+        <li>Run the same flip-point analysis on the probabilities and the wellbeing numbers. The score is linear in each of those too, so the same exact method applies.</li>
+        <li>Replace point estimates with ranges and report how often each option comes top when the inputs are drawn at random from them.</li>
+        <li>Let each group carry a baseline level of wellbeing, so that weights can be derived from a stated rule (for example, diminishing marginal value) and not typed in by hand.</li>
+        <li>Save a model to the browser and export it as a file, as the decision tree on day 29 does.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Bentham, J. (1789). <em>An Introduction to the Principles of Morals and Legislation</em>.</li>
+        <li>Mill, J. S. (1863). <em>Utilitarianism</em>. The "everybody to count for one" dictum is quoted in chapter 5.</li>
+        <li>Sidgwick, H. (1874). <em>The Methods of Ethics</em>.</li>
+        <li>Robbins, L. (1932). <em>An Essay on the Nature and Significance of Economic Science</em>.</li>
+        <li>Harsanyi, J. C. (1955). Cardinal welfare, individualistic ethics, and interpersonal comparisons of utility. <em>Journal of Political Economy</em>, 63(4), 309-321.</li>
+        <li>Rawls, J. (1971). <em>A Theory of Justice</em>. Harvard University Press.</li>
+        <li>Scanlon, T. M. (1998). <em>What We Owe to Each Other</em>. Harvard University Press. The transmitter room case.</li>
+        <li>Murray, C. J. L. (1994). Quantifying the burden of disease: the technical basis for disability-adjusted life years. <em>Bulletin of the World Health Organization</em>, 72(3), 429-445. Sets out the original age weights.</li>
+        <li>HM Treasury. <em>The Green Book: Central Government Guidance on Appraisal and Evaluation</em>. Describes distributional weighting.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

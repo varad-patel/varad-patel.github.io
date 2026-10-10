@@ -1,0 +1,7 @@
+{
+  "question": "Which option produces the most expected wellbeing once every group is counted and weighted, and how far would a moral weight have to move to change the answer?",
+  "finding": "In the vaccine example, splitting the doses wins with 183,000 expected healthy days against 168,000 for oldest-first when everyone counts equally, but oldest-first wins once a day of an over-80's life counts for more than 1.45 times anyone else's, and care-workers-first once it counts for less than 0.58.",
+  "limit": "The sum assumes wellbeing can be compared and added across people, and the moral weights that decide the ranking are ethical judgements the page cannot supply.",
+  "sources": [],
+  "built": "2026-10-10"
+}
