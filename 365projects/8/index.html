@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hedonic Treadmill Simulator · 365 projects</title>
+  <meta name="description" content="Set an income path and a rate of adaptation, see what the hedonic treadmill predicts for happiness over time, and test it against fifteen years of survey data from 145 countries.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .block2 { border-top: 1px solid var(--rule); padding-top: 22px; }
+  </style>
+</head>
+<body class="proj" data-day="8">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Hedonic Treadmill Simulator</h1>
+      <p class="lede">A raise feels good, and then it feels normal. Set an income path and how quickly people get used to it, see what that predicts for happiness, and then check the prediction against what countries actually reported.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Hedonic adaptation simulator and data comparison">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>Across 138 countries, those whose income per person doubled between 2009-11 and 2023-25 gained about one point more on the 0 to 10 ladder than those whose income stood still (1.04, plus or minus 0.30). That is almost twice the gap between rich and poor countries at a single moment (0.55 per doubling). At the level of whole countries this panel shows no treadmill, although India, Ireland and the United States each got richer and less satisfied.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>In 1971 Philip Brickman and Donald Campbell proposed that people judge their circumstances against what they are used to, so that any improvement soon becomes the new baseline and stops giving pleasure. They called it the <strong>hedonic treadmill</strong>: you have to keep moving to stay where you are. A later study by Brickman and colleagues, comparing lottery winners with people who had been paralysed in accidents, became the standard illustration.</p>
+      <p>Richard Easterlin gave the idea its economic edge in 1974. Within a country, richer people report being happier. Yet he found that as whole countries grew richer over decades, average happiness hardly moved. Adaptation is one explanation; another is that people care about their income relative to those around them, which growth cannot improve for everyone at once.</p>
+      <p>The stakes are large. If adaptation to income is complete, economic growth does not make a rich society any happier, and policy should aim at things people do not get used to. If it is partial or absent, growth still matters. Betsey Stevenson and Justin Wolfers argued in 2008 that the paradox disappears with better data. The disagreement is empirical, which is why this page puts a model and the data side by side.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The model</h3>
+      <p>Write <var>y</var><sub><var>t</var></sub> for the logarithm of income in year <var>t</var> and <var>r</var><sub><var>t</var></sub> for the level a person has got used to, the reference level. Each year the reference level closes a share <var>α</var> of its gap to last year's income:</p>
+      <p class="eq"><var>r</var><sub><var>t</var></sub> = <var>r</var><sub><var>t</var>−1</sub> + <var>α</var> · (<var>y</var><sub><var>t</var>−1</sub> − <var>r</var><sub><var>t</var>−1</sub>)</p>
+      <p>Happiness rises with income and falls with the reference level:</p>
+      <p class="eq"><var>H</var><sub><var>t</var></sub> = <var>H</var><sub>0</sub> + <var>b</var> · [ (<var>y</var><sub><var>t</var></sub> − <var>y</var><sub>0</sub>) − <var>k</var> · (<var>r</var><sub><var>t</var></sub> − <var>r</var><sub>0</sub>) ]</p>
+      <p>The two sliders are <var>k</var> and <var>α</var>. With <var>k</var> = 0 the reference level does not matter and a raise keeps its full effect. With <var>k</var> = 1 only the gap between income and the reference level counts, so a one-off raise of size <var>Δ</var> (in logs) gives a lift that decays to nothing:</p>
+      <p class="eq">lift after <var>n</var> years = <var>b</var> · <var>Δ</var> · [ 1 − <var>k</var> · (1 − (1 − <var>α</var>)<sup><var>n</var></sup>) ]</p>
+      <p>The long-run share kept is 1 − <var>k</var>, and half of the adjustment has happened after ln(0.5) / ln(1 − <var>α</var>) years. Under steady growth of <var>g</var> a year with <var>k</var> = 1, happiness settles at a constant <var>b</var> · <var>g</var> / <var>α</var> above its starting level and stays there only as long as growth continues. That is the treadmill.</p>
+      <h3>Where <var>b</var> comes from</h3>
+      <p>The effect of income before any adaptation is set from the data: across 144 countries in 2023-25, a doubling of income per person goes with 0.55 more points of life evaluation (<var>b</var> = 0.79 per unit of log income). Using the gap between rich and poor countries as the long-run effect of income is an assumption, not a finding.</p>
+      <h3>Testing a country</h3>
+      <p>For the chosen country the model is given its actual GDP per person for each survey period and predicts life evaluation with your settings. The starting level <var>H</var><sub>0</sub> is set so the prediction is right on average, and the page reports the typical miss (root mean squared error). "Find the best-fitting settings" tries 420 combinations of <var>k</var> and <var>α</var> and picks the one with the smallest miss. It also reports what share of all the combinations come within a tenth of the best, because a best fit that hundreds of other settings nearly match tells you very little.</p>
+      <h3>Testing all countries</h3>
+      <p>For every country observed at both ends of the period, the last chart plots the change in life evaluation against the change in income, measured in doublings. A complete treadmill at national level predicts a flat line: growing faster should not help. The fitted slope is ordinary least squares, with a 95% interval of 1.96 standard errors.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Whether individuals adapt.</strong> Adaptation is something that happens to a person. This data is national averages, which can rise or fall for reasons that have nothing to do with anyone getting used to anything. Testing the idea properly needs the same people followed for years, and those panels are not openly available.</li>
+        <li><strong>Why happiness fails to rise when it does.</strong> Rising expectations, comparison with neighbours and a plain absence of any effect all draw the same curve here. The model cannot separate them.</li>
+        <li><strong>The adaptation rate of any country.</strong> Fourteen overlapping three-year averages, each uncertain by about a tenth of a point, cannot pin down two parameters. For many countries a flat line fits as well as any setting, and the page says so when that happens.</li>
+        <li><strong>That growth causes satisfaction.</strong> The cross-country result is a correlation over one period that included a pandemic. Countries that grew fast differ from the others in many ways.</li>
+        <li><strong>Anything about losses.</strong> The model treats a fall in income as a raise in reverse. There is evidence that people adapt more slowly and less completely to losses, and to events like unemployment, than to gains.</li>
+        <li><strong>What people actually take home.</strong> Income here is GDP per person, which can grow without household incomes following.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Fit the model to individual panel data, where adaptation can be observed directly around a pay rise or a job loss.</li>
+        <li>Add a second reference level, the income of comparable others, to set relative income against adaptation.</li>
+        <li>Let losses and gains have different adaptation rates.</li>
+        <li>Replace the grid search with a posterior distribution over the two parameters, so the uncertainty is drawn on the chart and not only described.</li>
+        <li>Apply the same model to things other than income, such as health or commuting time, where adaptation is known to be far from complete.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>Helliwell, J. F., Layard, R., Sachs, J. D., De Neve, J.-E., Aknin, L. B., and Wang, S. (eds.) (2026). <em>World Happiness Report 2026</em>. University of Oxford: Wellbeing Research Centre. Data for Figure 2.1.</li>
+        <li>World Bank, World Development Indicators: GDP per capita, PPP, constant 2021 international $ (NY.GDP.PCAP.PP.KD). CC BY 4.0. Retrieved 10 October 2026.</li>
+        <li>Brickman, P., and Campbell, D. T. (1971). Hedonic relativism and planning the good society. In M. H. Appley (ed.), <em>Adaptation-Level Theory</em>. Academic Press.</li>
+        <li>Brickman, P., Coates, D., and Janoff-Bulman, R. (1978). Lottery winners and accident victims: is happiness relative? <em>Journal of Personality and Social Psychology</em>, 36(8), 917-927.</li>
+        <li>Easterlin, R. A. (1974). Does economic growth improve the human lot? In <em>Nations and Households in Economic Growth</em>. Academic Press.</li>
+        <li>Stevenson, B., and Wolfers, J. (2008). Economic growth and subjective well-being: reassessing the Easterlin paradox. <em>Brookings Papers on Economic Activity</em>.</li>
+        <li>Clark, A. E., Frijters, P., and Shields, M. A. (2008). Relative income, happiness, and utility. <em>Journal of Economic Literature</em>, 46(1), 95-144.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
