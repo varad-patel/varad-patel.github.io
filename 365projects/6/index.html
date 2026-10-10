@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trolley Problem Lab · 365 projects</title>
+  <meta name="description" content="Answer ten trolley cases and see which moral theories your answers match, which features you treat as decisive, and where your answers pull against each other.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .dots { display: flex; flex-wrap: wrap; gap: 7px; }
+    .dot { width: 31px; height: 31px; padding: 0; border: 1.5px solid var(--ink); border-radius: 50%; background: transparent; font-weight: 700; font-size: 0.82rem; cursor: pointer; }
+    .dot.done { background: var(--ink); color: var(--paper); }
+    .dot[aria-current] { box-shadow: 0 0 0 2px var(--sheet), 0 0 0 5px var(--h, var(--ink)); }
+    .dg svg { display: block; width: 100%; height: auto; background: #fff; border: 1px solid var(--grid); }
+    .dg text { font: 600 11px var(--sans); fill: var(--ink); }
+    .case-text { font: 400 1.02rem/1.6 var(--serif); }
+    .case-q { font-weight: 700; }
+    .btn[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+    .coding { margin: 4px 0 0; padding-left: 1.2em; }
+    .coding li + li { margin-top: 2px; }
+    .ths { display: grid; gap: 14px; margin-top: 12px; }
+    .th-head { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; font-size: 0.93rem; }
+    .th-val { font-weight: 650; white-space: nowrap; }
+    .th.best .th-name { font-weight: 700; }
+    .th-track { height: 12px; margin: 4px 0; background: color-mix(in srgb, var(--ink) 7%, transparent); border-radius: 0 3px 3px 0; overflow: hidden; }
+    .th-fill { display: block; height: 100%; width: 0; background: #8a94a3; border-radius: 0 3px 3px 0; }
+    .th.best .th-fill { background: var(--c1); }
+    .tool p.th-rule { font-size: 0.82rem; color: var(--slate); line-height: 1.45; }
+    .checks { display: grid; gap: 10px; margin-top: 10px; }
+    .tbl .differ { color: var(--slate); text-decoration: line-through; }
+    .tbl .agree { font-weight: 650; }
+    .p-sec .tbl-wrap { margin-top: 16px; }
+    .p-sec .tbl td, .p-sec .tbl th { font: 400 0.9rem/1.4 var(--sans); }
+    .p-sec .tbl th { font-weight: 700; }
+  </style>
+</head>
+<body class="proj" data-day="6">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Trolley Problem Lab</h1>
+      <p class="lede">Ten cases in which you could save several people by causing the death of one. Say which acts are permissible, and see which moral theories your answers match and where they pull against each other.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Trolley cases, theory match and consistency check">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>The six theories coded here give the same verdict on only one of the ten cases: the tram driver, who may steer. Act utilitarianism and the doctrine of double effect agree on four. Of the 1,024 possible sets of answers, 46 never permit a harder case while forbidding an easier one, and 38 of those also draw every line evenly. Six of the 38 are the theories, so most coherent positions on these cases have no name on this page.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>In 1967 Philippa Foot asked why two acts that look alike are judged so differently. The driver of a runaway tram may steer away from five workers onto a track where there is one. A judge may not frame and execute an innocent man to stop a riot that would kill five, and doctors may not kill one person to make the serum that would save five others. Each time it is one life for five. Foot's answer was that we owe people two different things: not to harm them, and to help them. The driver will kill someone whichever way he steers, so he should kill fewer. The judge and the doctors would be killing one to avoid failing to save five, and the duty not to harm is the stronger.</p>
+      <p>Judith Jarvis Thomson gave the puzzle its name and made it harder. Take the driver out of the cab and put a passer-by at a switch. Now turning the trolley is killing one, and walking on is only failing to save five, yet most people still think the passer-by may turn it. Put the same person on a footbridge, able to stop the trolley only by pushing a large stranger into its path, and most people think he may not. The trolley problem is the problem of saying what the difference is. Every candidate explains some pairs of cases and fails on others. Is the death a means or a side effect? Thomson's loop case was built to break that answer. Is an old threat redirected or a new one made? Foot's hospital gas tests that one. In 2008 Thomson changed her own mind and argued that the passer-by may not turn the trolley after all.</p>
+      <p>The cases matter because they isolate one question: whether there are things you may not do to a person even when doing them would make the outcome better. Consequentialists say no, and only the outcome counts. Deontologists say yes, and then owe an account of where the limits are. The same question decides whether bombing a military target with foreseen civilian deaths differs from bombing civilians to break morale, how a hospital may ration organs, and what a driverless car should be built to do when every option harms someone. Psychologists have used the cases as well. Joshua Greene and colleagues found that judgements shift with whether the harm is done by one's own physical force, a feature that almost no philosopher thinks should matter.</p>
+      <p>This page turns the method of the literature into a tool. You judge ten cases. Each is coded by the features philosophers have argued over, each theory is written as a rule over those features, and the tool reports which rules your answers follow and which pairs of cases you have pulled apart.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The coding</h3>
+      <p>In every case, acting causes one death and prevents several. Seven further features are coded, each a yes or no except the number saved.</p>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th scope="col">Case</th><th scope="col">Saved</th><th scope="col">Means</th><th scope="col">Force</th><th scope="col">Redirect</th><th scope="col">Duty</th><th scope="col">Killer either way</th><th scope="col">Consent</th></tr></thead>
+          <tbody>
+            <tr><td>The tram driver</td><td>5</td><td>no</td><td>no</td><td>yes</td><td>no</td><td>yes</td><td>no</td></tr>
+            <tr><td>The switch</td><td>5</td><td>no</td><td>no</td><td>yes</td><td>no</td><td>no</td><td>no</td></tr>
+            <tr><td>The loop</td><td>5</td><td>yes</td><td>no</td><td>yes</td><td>no</td><td>no</td><td>no</td></tr>
+            <tr><td>The footbridge</td><td>5</td><td>yes</td><td>yes</td><td>no</td><td>no</td><td>no</td><td>no</td></tr>
+            <tr><td>The trapdoor</td><td>5</td><td>yes</td><td>no</td><td>no</td><td>no</td><td>no</td><td>no</td></tr>
+            <tr><td>The volunteer</td><td>5</td><td>yes</td><td>no</td><td>no</td><td>no</td><td>no</td><td>yes</td></tr>
+            <tr><td>The crowded station</td><td>1,000</td><td>yes</td><td>yes</td><td>no</td><td>no</td><td>no</td><td>no</td></tr>
+            <tr><td>Your own child</td><td>5</td><td>no</td><td>no</td><td>yes</td><td>yes</td><td>no</td><td>no</td></tr>
+            <tr><td>The transplant</td><td>5</td><td>yes</td><td>yes</td><td>no</td><td>no</td><td>no</td><td>no</td></tr>
+            <tr><td>The hospital gas</td><td>5</td><td>no</td><td>no</td><td>no</td><td>no</td><td>no</td><td>no</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Means</strong>: the one person's being hit, dropped or cut is what saves the others, so that if he were not there the act would save no one. <strong>Force</strong>: you do it with your own hands. <strong>Redirect</strong>: the act turns a threat that already exists onto fewer people; "no" means a new threat is made or a person is moved into the threat. <strong>Duty</strong>: you owe the one something you do not owe the others. <strong>Killer either way</strong>: if you do nothing, it is still you who kills. <strong>Consent</strong>: the one asks you to do it.</p>
+
+      <h3>The theories as rules</h3>
+      <p>Write <var>s</var> for lives saved and <var>d</var> for deaths caused. Each theory permits an act exactly when its condition holds.</p>
+      <p class="eq">act utilitarianism: <var>s</var> &gt; <var>d</var></p>
+      <p class="eq">Kantian means constraint: not (means and not consent)</p>
+      <p class="eq">double effect: not means, and <var>s</var> &gt; <var>d</var></p>
+      <p class="eq">rights view: consent, or (redirect and <var>s</var> &gt; <var>d</var>)</p>
+      <p class="eq">killing versus letting die: consent, or (killer either way and <var>s</var> &gt; <var>d</var>)</p>
+      <p class="eq">threshold deontology: Kantian constraint satisfied, or <var>s</var> ≥ 100 <var>d</var></p>
+      <p>Each rule is the smallest version of its theory that still gives its characteristic verdicts. <em>Act utilitarianism</em> counts lives and nothing else. The <em>Kantian constraint</em> is the idea, from Kant's formula of humanity, that a person may never be treated merely as a means; on the usual modern reading, someone who shares your end and agrees to the act is not merely used. The <em>doctrine of double effect</em> has four traditional conditions, of which two separate these cases: the harm must not be the means to the good, and the good must be large enough to justify the harm. Consent plays no part in it. The <em>rights view</em> is Thomson's 1985 proposal: you may make an existing threat fall on fewer people, but not by doing something to a person that infringes his rights, and a right can be waived. <em>Killing versus letting die</em> is Foot's distinction applied strictly; applied to the passer-by at the switch, whom Foot did not discuss, it says no. <em>Threshold deontology</em> holds a constraint until the stakes pass a threshold. The theory does not say where the threshold is, so the 100 used here is arbitrary, and the rule shown in the tool says so.</p>
+      <p>Your match with a theory is the number of answered cases on which your answer equals its verdict, divided by the number answered.</p>
+
+      <h3>The consistency check</h3>
+      <p>Among the ten cases there are eleven pairs that differ in exactly one coded feature, and one pair, the footbridge and the transplant, coded identically. For each feature one value never makes an act harder to permit under any rule above: more lives saved, a side effect instead of a means, a lever instead of hands, a redirected threat, no special duty, being the killer either way, consent. (No rule mentions force or duty; for those two the direction is the one ordinary judgement takes.) So each pair has an easier case and a harder one, and none of the six rules ever permits the harder while forbidding the easier.</p>
+      <p>Once both cases of a pair are answered, the tool sorts the pair into one of four kinds.</p>
+      <ul>
+        <li><strong>A line.</strong> You permit the easier case and forbid the harder. Since nothing else in the coding differs, that feature is doing the work, and the tool states the claim you are committed to.</li>
+        <li><strong>Against the grain.</strong> You forbid the easier case and permit the harder, for example pushing the stranger to save five but not to save a thousand. No rule here can produce this.</li>
+        <li><strong>Same coding, different answers.</strong> You split the footbridge and the transplant.</li>
+        <li><strong>An uneven line.</strong> A feature decides one pair, but in another pair that differs in the same feature you permit both acts. This is not a contradiction. It means the feature cannot be the whole of your principle.</li>
+      </ul>
+      <p>The counts in the finding come from running this check on all 2<sup>10</sup> = 1,024 complete sets of answers.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Which theory you hold.</strong> Ten yes-or-no answers about killing one to save several say nothing about promises, fairness, honesty or animals. Each rule is a one-line sketch of a large body of work, and two theories can reach the same verdict for different reasons.</li>
+        <li><strong>That the coding is right.</strong> Whether the person on the loop is used as a means is exactly what is disputed: Frances Kamm argues that you can turn the trolley because he will be hit without turning it in order that he be hit. Whether surgery is "your own physical force" is a judgement call. Change one cell and the scores change.</li>
+        <li><strong>That a flagged pair is a mistake.</strong> Two cases that differ in one coded feature differ in many uncoded ones: how sure you are that a body will stop a trolley, what would happen to hospitals if surgeons did this, whether a worker on a track has accepted a risk. The check shows where a commitment lies. It does not refute it.</li>
+        <li><strong>Whether intuitions about cases are evidence.</strong> The method assumes they are. Peter Singer and Joshua Greene argue that the reluctance to push is an emotional alarm with no moral authority; others treat it as data any theory must fit. The tool cannot settle that.</li>
+        <li><strong>What you would do.</strong> Judging a paragraph is not acting. Outcomes here are certain and nobody is watching, which is never true outside a thought experiment.</li>
+        <li><strong>How your answers compare with other people's.</strong> Large majorities of survey respondents permit turning the trolley and forbid pushing the stranger, but published figures move with wording, sample and the order of the questions, so none are quoted. The order here is fixed, and order is known to shift answers to these cases.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Add cases that separate features still tangled together here, such as a death that is a side effect of your own physical force, or a person on the track who is responsible for the threat.</li>
+        <li>Let the visitor edit the coding and the rules, including the threshold, and watch the scores and flags change.</li>
+        <li>Ask for a graded answer and, with thirty or more cases, fit a weight to each feature from the visitor's own answers.</li>
+        <li>Randomise the order of the cases and record it, to expose order effects.</li>
+        <li>Add uncertainty: a probability that the act works, to test whether a constraint weakens as the outcome becomes less sure.</li>
+        <li>Show published response distributions next to the visitor's answer for the cases whose wording matches a survey item.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Foot, P. (1967). The problem of abortion and the doctrine of the double effect. <em>Oxford Review</em>, 5, 5-15.</li>
+        <li>Thomson, J. J. (1976). Killing, letting die, and the trolley problem. <em>The Monist</em>, 59(2), 204-217.</li>
+        <li>Thomson, J. J. (1985). The trolley problem. <em>Yale Law Journal</em>, 94(6), 1395-1415.</li>
+        <li>Thomson, J. J. (2008). Turning the trolley. <em>Philosophy &amp; Public Affairs</em>, 36(4), 359-374.</li>
+        <li>Kant, I. (1785). <em>Groundwork of the Metaphysics of Morals</em>.</li>
+        <li>Kamm, F. M. (2007). <em>Intricate Ethics</em>. Oxford University Press.</li>
+        <li>McIntyre, A. Doctrine of double effect. <em>Stanford Encyclopedia of Philosophy</em>.</li>
+        <li>Alexander, L., and Moore, M. Deontological ethics. <em>Stanford Encyclopedia of Philosophy</em>.</li>
+        <li>Greene, J. D., Sommerville, R. B., Nystrom, L. E., Darley, J. M., and Cohen, J. D. (2001). An fMRI investigation of emotional engagement in moral judgment. <em>Science</em>, 293, 2105-2108.</li>
+        <li>Greene, J. D., Cushman, F. A., Stewart, L. E., Lowenberg, K., Nystrom, L. E., and Cohen, J. D. (2009). Pushing moral buttons: the interaction between personal force and intention in moral judgment. <em>Cognition</em>, 111(3), 364-371.</li>
+        <li>Singer, P. (2005). Ethics and intuitions. <em>The Journal of Ethics</em>, 9.</li>
+        <li>Schwitzgebel, E., and Cushman, F. (2012). Expertise in moral reasoning? Order effects on moral judgment in professional philosophers and non-philosophers. <em>Mind &amp; Language</em>, 27(2).</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
