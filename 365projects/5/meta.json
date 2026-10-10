@@ -1,0 +1,7 @@
+{
+  "question": "If Achilles must first reach where the tortoise was, infinitely many times over, how far and how long does the chase actually take?",
+  "finding": "With a 100 m head start at 10 m/s against 5 m/s, the tortoise still leads by 9.8 cm after 10 of Zeno's stages and by under a millimetre after 17, no stage closes the gap, and yet all infinitely many stages are over within 200 m and 20 seconds.",
+  "limit": "A convergent series shows that the stages fit into a finite time, not what it means to complete infinitely many acts or whether real space and time divide without end.",
+  "sources": [],
+  "built": "2026-10-10"
+}

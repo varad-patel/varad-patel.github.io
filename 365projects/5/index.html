@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zeno's Series Calculator · 365 projects</title>
+  <meta name="description" content="Set the tortoise's head start and both speeds, watch Achilles chase it stage by stage, and see the partial sums of distance and time close in on the catch-up point.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .zeno-readout { font-variant-numeric: tabular-nums; min-height: 2.9em; margin-top: 8px !important; }
+    @media (max-width: 560px) { .zeno-readout { min-height: 5.8em; } }
+    .zeno-series { display: grid; gap: 6px; font-size: 0.95rem; line-height: 1.55; overflow-wrap: anywhere; }
+    .tbl tr.reached td { background: color-mix(in srgb, var(--c1) 10%, transparent); }
+    .tbl tr.limit td { font-weight: 700; border-top: 1.5px solid var(--ink); }
+  </style>
+</head>
+<body class="proj" data-day="5">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Zeno's Series Calculator</h1>
+      <p class="lede">Achilles can never catch the tortoise, said Zeno, because he must first reach where it was. Set the head start and both speeds, watch the chase, and see infinitely many stages add up to a finite distance and a finite time.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Achilles and the tortoise: animated chase and partial sums">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>Give the tortoise a 100 m head start and let Achilles run at 10 m/s against its 5 m/s. Zeno's stages are 100, 50, 25 … metres and their sums close in on 200 m, 20 seconds after the start. After 10 stages the tortoise still leads by 9.8 cm, after 17 by less than a millimetre, and no stage ever brings the lead to zero. Yet every one of the infinitely many stages is over before the twentieth second.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Zeno of Elea wrote in the fifth century BC in defence of his teacher Parmenides, who held that change and motion are appearances and not reality. Zeno's book is lost. What survives is the summary Aristotle gave about a century later in the <em>Physics</em>, in order to refute it. The best-known argument is the Achilles: the fastest runner can never overtake the slowest, because the pursuer must first reach the point the pursued started from, and by then the pursued has moved on. That gives Achilles a new point to reach, and then another, without end.</p>
+      <p>The usual reply is that the stages form a geometric series. Each is a fixed fraction <var>r</var> of the one before, so the distances add up to a finite total, and so do the times. That reply needed something Zeno did not have: a precise meaning for the sum of infinitely many terms. Cauchy supplied it in 1821 by defining the sum as the limit of the partial sums, the number they approach as closely as you like.</p>
+      <p>What the mathematics shows is that Zeno's description and the everyday one do not conflict. His list of stages is a complete account of the race at every moment <em>before</em> Achilles draws level, and of no moment after. "He has not caught up at the end of any stage" is true. "He has not caught up at any time" does not follow, because the stages together cover only a finite stretch of time. Press Step and you are in Zeno's telling: there is always a next stage. Press Play and you are in the other: the clock passes all of them in a few seconds.</p>
+      <p>The same series does everyday work in economics. An extra pound of spending that is re-spent at a rate <var>c</var> in each round adds up to 1 ÷ (1 − <var>c</var>) pounds over infinitely many rounds, which is the Keynesian multiplier. A payment of one pound a year for ever, discounted at rate <var>i</var>, is worth 1 ÷ <var>i</var> pounds today. Both are Achilles and the tortoise with different labels, and both rest on the same step: treating an endless sum as its limit.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The set-up</h3>
+      <p>Achilles starts at 0 and runs at a constant speed <var>v</var><sub>A</sub>. The tortoise starts <var>d</var> metres ahead and runs the same way at a constant speed <var>v</var><sub>T</sub>. The page uses metres and seconds, but only the ratios matter.</p>
+      <h3>Zeno's stages</h3>
+      <p>In stage 1 Achilles runs the <var>d</var> metres to where the tortoise started. That takes <var>d</var> ÷ <var>v</var><sub>A</sub> seconds, during which the tortoise moves on by <var>v</var><sub>T</sub> · <var>d</var> ÷ <var>v</var><sub>A</sub> = <var>d</var><var>r</var>, where</p>
+      <p class="eq"><var>r</var> = <var>v</var><sub>T</sub> ÷ <var>v</var><sub>A</sub></p>
+      <p>Stage 2 is the run across that new lead, so it is <var>r</var> times as long as stage 1, and the tortoise's next lead is <var>r</var> times smaller again. Stage <var>k</var> has length <var>d</var><var>r</var><sup><var>k</var>−1</sup> and takes <var>d</var><var>r</var><sup><var>k</var>−1</sup> ÷ <var>v</var><sub>A</sub>. After <var>k</var> stages Achilles has run the partial sum</p>
+      <p class="eq"><var>S</var><sub><var>k</var></sub> = <var>d</var> + <var>d</var><var>r</var> + <var>d</var><var>r</var><sup>2</sup> + … + <var>d</var><var>r</var><sup><var>k</var>−1</sup> = <var>d</var> (1 − <var>r</var><sup><var>k</var></sup>) ÷ (1 − <var>r</var>)</p>
+      <p>in a time <var>T</var><sub><var>k</var></sub> = <var>S</var><sub><var>k</var></sub> ÷ <var>v</var><sub>A</sub>, and the tortoise leads by <var>d</var><var>r</var><sup><var>k</var></sup>. The closed form comes from multiplying the sum by <var>r</var> and subtracting: every term cancels except the first and the last.</p>
+      <h3>The limit</h3>
+      <p>If Achilles is faster, <var>r</var> is less than 1 and <var>r</var><sup><var>k</var></sup> shrinks towards zero as <var>k</var> grows. The partial sums then approach</p>
+      <p class="eq"><var>S</var> = <var>d</var> ÷ (1 − <var>r</var>) = <var>d</var> <var>v</var><sub>A</sub> ÷ (<var>v</var><sub>A</sub> − <var>v</var><sub>T</sub>) &nbsp;&nbsp;&nbsp; <var>T</var> = <var>d</var> ÷ (<var>v</var><sub>A</sub> − <var>v</var><sub>T</sub>)</p>
+      <p>The amount by which stage <var>k</var> falls short is exactly <var>S</var><var>r</var><sup><var>k</var></sup>, which is never zero. The same two numbers come out of ordinary kinematics with no series at all: the runners are level when <var>v</var><sub>A</sub><var>t</var> = <var>d</var> + <var>v</var><sub>T</sub><var>t</var>. The agreement is the point. The tool also reports the first stage after which the lead is under a millimetre: the smallest <var>k</var> with <var>d</var><var>r</var><sup><var>k</var></sup> below 0.001.</p>
+      <h3>When Achilles is not faster</h3>
+      <p>If the speeds are equal, <var>r</var> = 1: every stage is <var>d</var> long, the partial sums are <var>d</var>, 2<var>d</var>, 3<var>d</var> … and the lead never changes. If the tortoise is faster, <var>r</var> is more than 1 and each stage is longer than the last. In both cases the series diverges, the stages fill the whole of time, and there is no catch-up point. The page says so and draws the sums climbing with no limit line.</p>
+      <h3>The animation</h3>
+      <p>At time <var>t</var> the canvas draws Achilles at <var>v</var><sub>A</sub><var>t</var> and the tortoise at <var>d</var> + <var>v</var><sub>T</sub><var>t</var>. The clock is scaled so that the catch-up takes eight seconds of your time whatever the speeds, and it runs on to 1.15 <var>T</var> so that you see Achilles pull ahead. The number of stages complete at time <var>t</var> is the largest <var>k</var> with <var>T</var><sub><var>k</var></sub> ≤ <var>t</var>, which works out as the whole part of ln(1 − <var>t</var> ÷ <var>T</var>) ÷ ln <var>r</var>. Step sets the clock to the next <var>T</var><sub><var>k</var></sub>. The zoom slider redraws the track from <var>S</var>(1 − 1 ÷ <var>z</var>) to <var>S</var>(1 + 0.15 ÷ <var>z</var>) for a magnification <var>z</var>, so the catch-up point stays in the same place on screen.</p>
+      <h3>Precision</h3>
+      <p>The page computes with 64-bit floating-point numbers, which carry about 16 significant digits. Once <var>r</var><sup><var>k</var></sup> is below 2<sup>−53</sup> the computed partial sum is equal to the limit, although the true one is not. With <var>r</var> = 0.5 that happens after stage 53. The table works out each shortfall directly from <var>S</var><var>r</var><sup><var>k</var></sup> and not by subtraction, so that column stays accurate, and the Step button stops at the last stage the arithmetic can tell apart from the limit.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Whether an infinite sequence of acts can be completed.</strong> The series shows that the stages fit into 20 seconds. It does not show what it means to have finished a task that has no last step. Max Black argued in 1951 that adding up the lengths misses this difficulty, and James Thomson's lamp, switched on and off at each stage, has no defined state at the end although the times converge in exactly the same way.</li>
+        <li><strong>Whether space and time are really like the number line.</strong> The model divides distance without end. Whether physical space can be divided without end is a question for physics, and it is not settled. The zoom slider stops at a billionth of the track because the model has stopped describing a tortoise long before that.</li>
+        <li><strong>That the sum "is" the limit in any sense beyond definition.</strong> Calling 200 the sum of 100 + 50 + 25 + … is a convention about what "sum" means for infinitely many terms. It is a good convention because it agrees with the kinematics, but the agreement is what gives it authority here, not the other way round.</li>
+        <li><strong>What Zeno meant.</strong> There is no text by Zeno to check. The argument reaches us through Aristotle, who was arguing against it, and readers still disagree about whether it was aimed at motion, at infinite divisibility or at plurality.</li>
+        <li><strong>Anything about real runners.</strong> Both speeds are constant and both runners are points. Nobody accelerates, tires or has a width. A real tortoise is caught when a foot lands beside it, which happens after a handful of stages.</li>
+        <li><strong>Digits beyond the sixteenth.</strong> Past the precision limit described above the page cannot distinguish the partial sum from its limit. The mathematics can, for ever.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Add Zeno's dichotomy, in which the runner must first cover half the distance, then half of what is left, and compare it with the regressive version in which he cannot even start.</li>
+        <li>Add Thomson's lamp beside the chase: the same converging times, with a switch whose final state the series does not determine.</li>
+        <li>Let the tortoise speed up so that the stages are <var>d</var>, <var>d</var> ÷ 2, <var>d</var> ÷ 3 …. Every stage is shorter than the last and the sum still has no limit, which shows that shrinking terms are not enough.</li>
+        <li>Use exact rational arithmetic so that the table can run to thousands of stages without the partial sum collapsing into its limit.</li>
+        <li>Relabel the axes for the two economic twins of the problem, the spending multiplier and the value of a perpetuity, and show the rounds of spending as stages.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Aristotle. <em>Physics</em>, Book VI. The Achilles is reported in chapter 9.</li>
+        <li>Cauchy, A.-L. (1821). <em>Cours d'analyse de l'École Royale Polytechnique</em>.</li>
+        <li>Black, M. (1951). Achilles and the tortoise. <em>Analysis</em>.</li>
+        <li>Thomson, J. F. (1954). Tasks and super-tasks. <em>Analysis</em>.</li>
+        <li>Benacerraf, P. (1962). Tasks, super-tasks, and the modern Eleatics. <em>The Journal of Philosophy</em>.</li>
+        <li>Salmon, W. C. (ed.) (1970). <em>Zeno's Paradoxes</em>. Bobbs-Merrill.</li>
+        <li>Huggett, N. Zeno's paradoxes. <em>The Stanford Encyclopedia of Philosophy</em>.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
