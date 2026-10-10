@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Truth Table Playground · 365 projects</title>
+  <meta name="description" content="Type any formula of propositional logic and get its truth table, a verdict on whether it is a tautology, a contradiction or a valid argument, and a step-by-step evaluation of any row.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .formula-input { font-size: 1.15rem !important; padding: 12px 14px !important; }
+    .keys .key { font-family: var(--mono); font-size: 1.05rem; min-width: 42px; padding: 6px 10px; }
+    .caret-line { white-space: pre; overflow-x: auto; margin-top: 8px; }
+    .pairs { margin: 8px 0 0; padding-left: 1.2em; }
+    .pairs li + li { margin-top: 4px; }
+    table.truth { width: auto; min-width: min(100%, 320px); font-family: var(--mono); font-size: 0.95rem; }
+    table.truth th, table.truth td { text-align: center; padding: 6px 12px; white-space: nowrap; }
+    table.truth th { vertical-align: bottom; font-weight: 600; }
+    table.truth th .role { display: block; font: 700 0.68rem var(--sans); letter-spacing: 0.06em; text-transform: uppercase; color: var(--slate); }
+    table.truth .first { border-left: 1.5px solid var(--ink); }
+    table.truth td.f { color: var(--slate); }
+    table.truth td.t { font-weight: 700; }
+    table.truth th.main, table.truth td.main { background: color-mix(in srgb, var(--ink) 7%, transparent); }
+    table.truth tbody tr { cursor: pointer; }
+    table.truth tbody tr.counter td { background: color-mix(in srgb, var(--bad) 14%, transparent); }
+    table.truth tbody tr.sel td { box-shadow: inset 0 2px 0 var(--ink), inset 0 -2px 0 var(--ink); }
+    table.truth tbody tr:focus-visible { outline: 3px solid var(--focus); outline-offset: -3px; }
+    .steps { margin: 10px 0 0; padding-left: 1.4em; display: grid; gap: 6px; }
+    .steps .f { color: var(--slate); }
+    .forms { margin: 10px 0 0; display: grid; gap: 4px; }
+    .forms dt { font-size: 0.84rem; color: var(--slate); margin-top: 6px; }
+    .forms dd { margin: 0; overflow-x: auto; white-space: nowrap; padding-bottom: 4px; }
+  </style>
+</head>
+<body class="proj" data-day="2">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Truth Table Playground</h1>
+      <p class="lede">Type any formula of propositional logic and see every case it could face: its full truth table, a verdict, and any row worked out step by step.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Truth table generator">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>Affirming the consequent ("if p then q; q; therefore p") is invalid because of exactly one of its four rows: p false and q true. Modus ponens differs by one letter and has no such row. One row is all it takes to sink an argument, and no number of agreeable rows can save it.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>An argument is <strong>valid</strong> when its conclusion cannot be false while its premises are true. That is a claim about every possible situation, which sounds impossible to check. Propositional logic makes it checkable by a simple observation: if the only thing that matters about each basic statement is whether it is true or false, then a formula with <var>n</var> letters faces exactly 2<sup><var>n</var></sup> situations, and you can list them all.</p>
+      <p>The list is a truth table. Wittgenstein used them in the <em>Tractatus</em> and Emil Post published the method in the same year, 1921. A formula that comes out true in every row is a <strong>tautology</strong>: true whatever the world is like, and for that reason it tells you nothing about the world. One that is false in every row is a <strong>contradiction</strong>. Everything else is <strong>contingent</strong>.</p>
+      <p>This matters outside a logic class because validity is about form, not subject matter. "If the minimum wage rises, unemployment rises; unemployment rose; so the minimum wage must have risen" has the same shape as the example in the box above, and it fails for the same reason, whatever you believe about wages. Being able to separate the shape of an argument from its topic is the first tool of philosophy, and it is the one that politics most often does without.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>Reading the formula</h3>
+      <p>The text is split into tokens (letters, connectives, brackets, commas), then parsed by recursive descent, with one function for each level of binding strength. From tightest to loosest:</p>
+      <p class="eq">¬ &nbsp;then&nbsp; ∧, ↑ &nbsp;then&nbsp; ⊕ &nbsp;then&nbsp; ∨, ↓ &nbsp;then&nbsp; → &nbsp;then&nbsp; ↔</p>
+      <p>So <code>¬p ∧ q → r</code> is read as <code>((¬p) ∧ q) → r</code>. The conditional groups to the right (<code>p → q → r</code> is <code>p → (q → r)</code>); the others group to the left. The result is a tree, and the page prints it back with only the brackets it needs, so you can check it understood you.</p>
+      <h3>The connectives</h3>
+      <p>Each connective is a function from truth values to a truth value. The one that surprises people is the conditional: <var>p</var> → <var>q</var> is false in exactly one case, when <var>p</var> is true and <var>q</var> is false, and true in the other three.</p>
+      <p class="eq"><var>p</var> → <var>q</var> &nbsp;=&nbsp; ¬<var>p</var> ∨ <var>q</var> &nbsp;&nbsp;&nbsp;&nbsp; <var>p</var> ↔ <var>q</var> &nbsp;=&nbsp; (<var>p</var> → <var>q</var>) ∧ (<var>q</var> → <var>p</var>) &nbsp;&nbsp;&nbsp;&nbsp; <var>p</var> ⊕ <var>q</var> &nbsp;=&nbsp; ¬(<var>p</var> ↔ <var>q</var>)</p>
+      <h3>Building the table</h3>
+      <p>With <var>n</var> distinct letters there are 2<sup><var>n</var></sup> rows, one for each assignment of true and false. For each row the page evaluates the tree from the leaves up, and gives every compound subformula its own column, innermost first. The step-by-step panel is the same calculation for a single row, written out.</p>
+      <h3>The verdicts</h3>
+      <ul>
+        <li><strong>One formula.</strong> True in all rows: tautology. In none: contradiction. Otherwise contingent, with the count.</li>
+        <li><strong>An argument</strong> (premises ⊢ conclusion). The page looks for a row where every premise is true and the conclusion is false. If there is none, the argument is valid. If there is one, that row is a counterexample, and it is highlighted.</li>
+        <li><strong>Several formulas.</strong> Two formulas are logically equivalent when their columns agree in every row. The page checks each pair.</li>
+      </ul>
+      <h3>Normal forms</h3>
+      <p>Any truth table can be written as a formula using only ¬, ∧ and ∨. Take each row where the formula is true, write the conjunction that describes that row exactly, and join them with ∨: that is the disjunctive normal form. The conjunctive form does the mirror image with the false rows. This is the proof that those three connectives are enough to express every truth function.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Whether an argument is sound.</strong> Validity only says the conclusion follows. A valid argument with a false premise proves nothing, and the table has no opinion about which premises are true.</li>
+        <li><strong>Whether your translation is right.</strong> Turning an English sentence into letters and arrows is where most of the judgement lies. The page checks the formula you typed, not the sentence you meant.</li>
+        <li><strong>What "if" means in English.</strong> The arrow here is the material conditional, true whenever its first part is false. So "if the moon is cheese, then 2 + 2 = 5" counts as true. Ordinary conditionals carry a connection between the two parts that this logic deliberately ignores.</li>
+        <li><strong>Anything inside a statement.</strong> "All humans are mortal; Socrates is human; so Socrates is mortal" is valid, but as <var>p</var>, <var>q</var> ⊢ <var>r</var> it looks invalid, because the logic cannot see "all" or "is". That takes predicate logic, which has no finite table.</li>
+        <li><strong>Anything that is not simply true or false.</strong> Vague statements, statements about what must or might be the case, and statements about the future may need more than two values, or a different logic altogether.</li>
+        <li><strong>Large problems.</strong> The table doubles with every letter, which is why the page stops at ten. Deciding whether a formula can be true at all is the original NP-complete problem; real solvers avoid listing the rows.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Simplify the normal forms to their shortest equivalent (the Quine-McCluskey method), so the page can answer "what is the simplest way to say this?"</li>
+        <li>Give a natural-deduction proof for valid arguments, so a visitor sees why it holds and not only that it does.</li>
+        <li>Replace the brute-force table with a satisfiability solver for formulas with dozens of letters. Day 142 builds one.</li>
+        <li>Add three-valued tables (true, false, undefined) to show what changes when the two-value assumption is dropped. Day 21 needs them for the Liar.</li>
+        <li>Put the formula in the page address so a table can be shared as a link.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Wittgenstein, L. (1921). <em>Tractatus Logico-Philosophicus</em>. Truth tables appear at 4.31 and 5.101.</li>
+        <li>Post, E. L. (1921). Introduction to a general theory of elementary propositions. <em>American Journal of Mathematics</em>, 43(3), 163-185.</li>
+        <li>Cook, S. A. (1971). The complexity of theorem-proving procedures. <em>Proceedings of the Third Annual ACM Symposium on Theory of Computing</em>, 151-158.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

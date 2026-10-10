@@ -1,0 +1,179 @@
+// Day 2: Truth Table Playground. Interface.
+import { $, el, fmt, mount, segmented, button, note } from "../kit/kit.js";
+import { analyse, steps } from "./logic.js";
+
+mount();
+
+const EXAMPLES = [
+  { label: "Modus ponens", text: "p → q, p ⊢ q" },
+  { label: "Affirming the consequent", text: "p → q, q ⊢ p" },
+  { label: "De Morgan's law", text: "¬(p ∧ q) ↔ (¬p ∨ ¬q)" },
+  { label: "Excluded middle", text: "p ∨ ¬p" },
+  { label: "A contradiction", text: "p ∧ ¬p" },
+  { label: "Peirce's law", text: "((p → q) → p) → p" },
+  { label: "Hypothetical syllogism", text: "p → q, q → r ⊢ p → r" },
+  { label: "Are these the same?", text: "p → q, ¬p ∨ q, ¬q → ¬p" },
+  { label: "Exclusive or", text: "(p ⊕ q) ↔ ((p ∨ q) ∧ ¬(p ∧ q))" },
+];
+const KEYS = ["¬", "∧", "∨", "→", "↔", "⊕", "(", ")", ",", "⊢"];
+const VISIBLE_ROWS = 64;
+
+const state = { text: EXAMPLES[1].text, marks: "TF", order: "true", row: -1, showAll: false };
+const mark = (v) => (state.marks === "TF" ? (v ? "T" : "F") : v ? "1" : "0");
+
+/* ---------- input ---------- */
+const input = el("input", { type: "text", id: "formula", class: "mono formula-input", value: state.text, autocomplete: "off", autocapitalize: "off", spellcheck: "false", "aria-describedby": "formula-help" });
+input.addEventListener("input", () => { state.text = input.value; state.row = -1; state.showAll = false; update(); });
+
+function insert(symbol) {
+  const start = input.selectionStart ?? input.value.length;
+  const end = input.selectionEnd ?? start;
+  const pad = ["(", ")", "¬"].includes(symbol) ? symbol : symbol === "," ? ", " : ` ${symbol} `;
+  input.value = input.value.slice(0, start) + pad + input.value.slice(end);
+  const caret = start + pad.length;
+  input.focus();
+  input.setSelectionRange(caret, caret);
+  input.dispatchEvent(new Event("input"));
+}
+function load(text) {
+  input.value = text;
+  input.dispatchEvent(new Event("input"));
+}
+
+const keyRow = el("div", { class: "row keys", role: "group", "aria-label": "Insert a symbol" },
+  KEYS.map((k) => el("button", { type: "button", class: "btn small key", "aria-label": `Insert ${k}`, text: k, onclick: () => insert(k) })));
+const exampleRow = el("div", { class: "row", role: "group", "aria-label": "Examples" },
+  EXAMPLES.map((e) => button(e.label, () => load(e.text), { small: true })));
+
+const marksSeg = segmented({ label: "Show values as", value: "TF", options: [{ value: "TF", label: "T and F" }, { value: "10", label: "1 and 0" }], onChange: (v) => { state.marks = v; update(); } });
+const orderSeg = segmented({ label: "First row", value: "true", options: [{ value: "true", label: "All true" }, { value: "false", label: "All false" }], onChange: (v) => { state.order = v; update(); } });
+
+const verdictBox = el("div", { role: "status", "aria-live": "polite" });
+const tableBox = el("div");
+const stepsBox = el("div");
+const extraBox = el("div");
+
+$("#app").append(
+  el("div", { class: "field" },
+    el("div", { class: "lab" }, el("label", { for: "formula", text: "Formula, list of formulas, or argument" })),
+    input,
+    el("div", { class: "hint", id: "formula-help" }, "Letters are propositions. Type the symbols or the words: not, and, or, xor, implies (->), iff (<->). Separate formulas with commas. Put ⊢ (or |-) before a conclusion to test an argument.")),
+  keyRow,
+  el("div", { class: "field" }, el("div", { class: "lab" }, el("span", { text: "Try one" })), exampleRow),
+  verdictBox,
+  el("div", { class: "row", style: { gap: "20px 32px", alignItems: "flex-start" } }, marksSeg.el, orderSeg.el),
+  tableBox, stepsBox, extraBox);
+
+/* ---------- rendering ---------- */
+const plural = (n, word) => `${fmt.int(n)} ${word}${n === 1 ? "" : "s"}`;
+const describeRow = (r, vars) => (vars.length ? vars.map((v) => `${v} is ${r.env[v] ? "true" : "false"}`).join(", ") : "the only row");
+
+function verdictNote(result) {
+  const v = result.verdict;
+  const n = result.rows.length;
+  if (v.type === "formula") {
+    const f = result.columns.find((c) => c.kind === "main").text;
+    if (v.kind === "tautology") return note("good", el("strong", { text: "Tautology. " }), `${f} is true in all ${plural(n, "row")}: no assignment of truth values can make it false.`);
+    if (v.kind === "contradiction") return note("bad", el("strong", { text: "Contradiction. " }), `${f} is false in all ${plural(n, "row")}: no assignment of truth values can make it true.`);
+    return note("", el("strong", { text: "Contingent. " }), `${f} is true in ${fmt.int(v.trueRows)} of ${plural(n, "row")} and false in the other ${fmt.int(n - v.trueRows)}, so its truth depends on the facts.`);
+  }
+  if (v.type === "argument") {
+    if (v.valid) {
+      const vacuous = v.premisesTogetherTrue === 0 && result.premises.length;
+      return note("good", el("strong", { text: "Valid. " }),
+        vacuous ? "The premises are never all true together, so no row can have true premises and a false conclusion. The argument is valid, but only because its premises contradict each other."
+          : result.premises.length ? `In every one of the ${plural(v.premisesTogetherTrue, "row")} where all the premises are true, the conclusion is true as well.`
+            : "With no premises, the conclusion has to be true in every row, and it is.");
+    }
+    const first = result.rows[v.counterexamples[0]];
+    return note("bad", el("strong", { text: "Invalid. " }),
+      `${plural(v.counterexamples.length, "row")} of ${fmt.int(n)} ${v.counterexamples.length === 1 ? "has" : "have"} true premises and a false conclusion (highlighted). For example: ${describeRow(first, result.vars)}.`);
+  }
+  const lines = v.pairs.map((p) => el("li", {}, el("span", { class: "mono", text: p.a }), p.equivalent ? " and " : " and ", el("span", { class: "mono", text: p.b }),
+    p.equivalent ? " are equivalent: their columns match in every row." : ` are not equivalent: they differ in ${plural(p.differ.length, "row")}.`));
+  return note(v.pairs.every((p) => p.equivalent) ? "good" : "", el("strong", { text: `${plural(v.each.length, "formula")} compared. ` }),
+    `All of them are true together in ${plural(v.jointlyTrue, "row")} of ${fmt.int(n)}.`, el("ul", { class: "pairs" }, lines));
+}
+
+function update() {
+  const result = analyse(state.text);
+  if (result.error) {
+    input.classList.add("invalid");
+    verdictBox.replaceChildren(note("bad", result.error,
+      state.text.trim() ? el("div", { class: "mono caret-line" }, state.text, "\n", " ".repeat(Math.min(result.pos, state.text.length)), "^") : null));
+    tableBox.replaceChildren();
+    stepsBox.replaceChildren();
+    extraBox.replaceChildren();
+    return;
+  }
+  input.classList.remove("invalid");
+  verdictBox.replaceChildren(verdictNote(result));
+
+  const order = result.rows.map((_, i) => i);
+  if (state.order === "false") order.reverse();
+  const counter = new Set(result.verdict.type === "argument" ? result.verdict.counterexamples : []);
+  if (state.row >= result.rows.length) state.row = -1;
+  // Open on the row that matters: the first counterexample, otherwise the first row.
+  if (state.row < 0) state.row = counter.size ? result.verdict.counterexamples[0] : order[0];
+
+  const limit = state.showAll ? order.length : VISIBLE_ROWS;
+  const shown = order.slice(0, limit);
+  if (!shown.includes(state.row)) shown[shown.length - 1] = state.row;
+
+  const head = el("tr", {},
+    result.vars.map((v) => el("th", { scope: "col", class: "var", text: v })),
+    result.columns.map((c, i) => el("th", { scope: "col", class: `${c.kind}${i === 0 ? " first" : ""}`, title: c.role ? `This column is the ${c.role}` : "A step on the way" },
+      c.role && c.role !== "formula" ? el("span", { class: "role", text: c.role }) : null, c.text)));
+  const body = shown.map((i) => {
+    const r = result.rows[i];
+    return el("tr", { class: `${i === state.row ? "sel" : ""}${counter.has(i) ? " counter" : ""}`, tabindex: "0", "aria-selected": String(i === state.row), dataset: { row: i },
+      title: "Show how this row is worked out" },
+      result.vars.map((v) => el("td", { class: `var ${r.env[v] ? "t" : "f"}`, text: mark(r.env[v]) })),
+      r.values.map((val, j) => el("td", { class: `${result.columns[j].kind} ${val ? "t" : "f"}${j === 0 ? " first" : ""}`, text: mark(val) })));
+  });
+  const tbl = el("table", { class: "tbl truth" }, el("caption", { class: "sr-only", text: "Truth table. Select a row to see it evaluated step by step." }), el("thead", {}, head), el("tbody", {}, body));
+  const pickRow = (target) => {
+    const tr = target.closest("tr[data-row]");
+    if (tr) { state.row = Number(tr.dataset.row); update(); tableBox.querySelector(`tr[data-row="${state.row}"]`)?.focus(); }
+  };
+  tbl.addEventListener("click", (e) => pickRow(e.target));
+  tbl.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pickRow(e.target); } });
+
+  tableBox.replaceChildren(el("div", { class: "tbl-wrap" }, tbl));
+  if (order.length > limit) {
+    tableBox.append(el("div", { class: "row", style: { marginTop: "10px" } },
+      el("span", { class: "small muted", text: `Showing ${fmt.int(limit)} of ${fmt.int(order.length)} rows. The verdict above uses all of them.` }),
+      button(`Show all ${fmt.int(order.length)}`, () => { state.showAll = true; update(); }, { small: true })));
+  }
+
+  const row = result.rows[state.row];
+  const list = steps(result, state.row, mark);
+  let rowVerdict = null;
+  if (result.verdict.type === "argument") {
+    const falsePremise = result.columns.find((c, j) => c.role === "premise" && !row.values[j]);
+    const conclusionTrue = row.values[result.columns.findIndex((c) => c.role === "conclusion")];
+    rowVerdict = falsePremise
+      ? `The premise ${falsePremise.text} is false in this row, so the row cannot count against the argument, whatever the conclusion is.`
+      : conclusionTrue
+        ? `${result.premises.length ? "Every premise is true in this row and the conclusion is true as well" : "The conclusion is true in this row"}, so the row is no threat to the argument.`
+        : `${result.premises.length ? "Every premise is true in this row and the conclusion is false" : "The conclusion is false in this row"}. This is a counterexample: it shows the argument is invalid.`;
+  }
+  stepsBox.replaceChildren(el("div", { class: "panel" },
+    el("h3", { text: `Step by step: ${result.vars.length ? result.vars.map((v) => `${v} = ${mark(row.env[v])}`).join(", ") : "no letters to assign"}` }),
+    list.length
+      ? el("ol", { class: "steps" }, list.map((s) => el("li", {},
+          el("span", { class: "mono", text: s.formula }), " becomes ", el("span", { class: "mono", text: s.working }), ", which is ", el("strong", { class: s.value ? "t" : "f", text: mark(s.value) }), ".")))
+      : el("p", { class: "small muted", style: { marginTop: "8px" }, text: "Nothing to work out here: every formula is a single letter or constant, so its value is read straight from the row." }),
+    rowVerdict ? el("p", { style: { marginTop: "10px" }, text: rowVerdict }) : "",
+    el("p", { class: "small muted", style: { marginTop: "10px" }, text: "Each line replaces the parts of a subformula with the values already found, innermost first. Select another row of the table to follow it instead." })));
+
+  if (result.normal && result.vars.length <= 4) {
+    extraBox.replaceChildren(el("div", { class: "panel" },
+      el("h3", { text: "The same truth function in normal form" }),
+      el("dl", { class: "forms" },
+        el("dt", { text: "Disjunctive (one bracket for each true row)" }), el("dd", { class: "mono", text: result.normal.dnf }),
+        el("dt", { text: "Conjunctive (one bracket for each false row)" }), el("dd", { class: "mono", text: result.normal.cnf }))));
+  } else extraBox.replaceChildren();
+}
+
+update();

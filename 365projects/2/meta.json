@@ -1,0 +1,7 @@
+{
+  "question": "In which situations is a formula true, and does an argument's conclusion really follow from its premises?",
+  "finding": "Affirming the consequent (if p then q; q; therefore p) is invalid because of exactly one of its four rows: p false and q true.",
+  "limit": "A truth table checks the form of an argument, not whether its premises are true or whether the English was translated into symbols correctly.",
+  "sources": [],
+  "built": "2026-10-10"
+}
