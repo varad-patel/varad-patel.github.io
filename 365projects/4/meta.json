@@ -1,0 +1,7 @@
+{
+  "question": "If a medical test comes back positive, how likely is it that the person actually has the condition?",
+  "finding": "With a 1% base rate, 80% sensitivity and a 9.6% false-positive rate, a positive result means a 7.8% chance of the condition: of 1,000 people tested, 103 test positive and only 8 of them have it.",
+  "limit": "The scenarios use textbook or illustrative numbers and a single yes/no test, so the page explains how to read a test result and cannot interpret a real one.",
+  "sources": [],
+  "built": "2026-10-10"
+}

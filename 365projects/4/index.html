@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bayes Intuition Lab · 365 projects</title>
+  <meta name="description" content="Guess what a positive medical test means, then move the base rate, sensitivity and false-positive rate and watch a crowd of people sort itself into the answer.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    /* Question and answer first in reading order; on a wide screen the controls sit in a left column. */
+    .lab-grid { display: grid; grid-template-columns: minmax(230px, 310px) minmax(0, 1fr); grid-template-areas: "controls top" "controls rest"; gap: 24px 32px; align-items: start; }
+    .lab-grid > .controls { grid-area: controls; }
+    .lab-top { grid-area: top; }
+    .lab-rest { grid-area: rest; }
+    @media (max-width: 860px) { .lab-grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "top" "controls" "rest"; } }
+    .ask { display: grid; gap: 12px; }
+    .ask .q { font: 400 1.08rem/1.55 var(--serif); max-width: 62ch; }
+    .guess { display: grid; gap: 12px; max-width: 62ch; }
+    .summary { margin: 0 0 8px; font-size: 0.95rem; }
+    .split-bar { display: flex; gap: 2px; height: 22px; margin: 2px 0 8px; }
+    .split-bar span { display: block; min-width: 2px; border-radius: 2px; }
+  </style>
+</head>
+<body class="proj" data-day="4">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Bayes Intuition Lab</h1>
+      <p class="lede">A medical test comes back positive. How likely is it that the person has the condition? Guess first, then move the base rate, the sensitivity and the false-positive rate and watch a crowd of people sort itself into the answer.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Medical test calculator with a picture of the people behind the numbers">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>When 1% of people have a condition and a test catches 80% of them while wrongly flagging 9.6% of everyone else, a positive result means a 7.8% chance of the condition, not 80%: of 1,000 people tested, 103 test positive and only 8 of those have it. The same test would need a base rate above 10.7% before a positive result made the condition more likely than not.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>In 1978 three researchers put a question to 60 doctors, students and staff at Harvard Medical School. A condition affects 1 person in 1,000. A test for it has a false-positive rate of 5%. Someone tests positive: what is the chance they have the condition? The most common answer was 95%. The right answer is about 2%, and 11 of the 60 gave it. A few years later David Eddy posed a similar problem about mammograms, the one this page opens with, and reported that most of the physicians he asked answered about 75% where the arithmetic says under 8%.</p>
+      <p>The mistake has a name, <strong>base-rate neglect</strong>, and a shape. The test's sensitivity tells you how likely a positive result is <em>if the person has the condition</em>. The question asks the reverse: how likely the condition is <em>if the result is positive</em>. Those two numbers can be as far apart as 80% and 8%, because the second depends on something the first ignores, which is how common the condition was to begin with. When almost everybody tested is healthy, a small error rate among the healthy produces more positive results than a high hit rate among the few who are ill. Daniel Kahneman and Amos Tversky showed in the 1970s that people leave the base rate out of all kinds of judgements, not only medical ones. In a courtroom the same swap is called the prosecutor's fallacy.</p>
+      <p>The rule for getting it right was published in 1763 from the papers of Thomas Bayes, and it carries a claim about knowledge that goes well beyond medicine: evidence never speaks on its own. A result tells you how far to move, and where you end up depends on where you started. Two people who see the same positive test and begin from different base rates should end with different beliefs, and both can be reasoning correctly.</p>
+      <p>Gerd Gigerenzer and Ulrich Hoffrage found in 1995 that the difficulty lies in the format as much as in the people. Give the same facts as counts of people, "10 of every 1,000 have it; 8 of those 10 test positive; so do 95 of the other 990", and the share of correct answers rose from about one in six to nearly half, with no teaching at all. Counted this way the answer is something you can see: 8 dots out of 103. That is what the picture on this page draws.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The three inputs</h3>
+      <p>The <strong>base rate</strong> <var>p</var> is the share of the people being tested who have the condition, before any result is known. Philosophers and statisticians call it the prior. The <strong>sensitivity</strong> <var>s</var> is the share of people with the condition whom the test flags. The <strong>false-positive rate</strong> <var>f</var> is the share of people without the condition whom the test flags anyway; one minus this is the test's specificity.</p>
+      <h3>Bayes' theorem</h3>
+      <p>Everyone tested falls into one of four groups, with these shares of the whole:</p>
+      <p class="eq">true positives = <var>p</var><var>s</var> &nbsp;&nbsp;&nbsp; false negatives = <var>p</var>(1 − <var>s</var>)<br>false positives = (1 − <var>p</var>)<var>f</var> &nbsp;&nbsp;&nbsp; true negatives = (1 − <var>p</var>)(1 − <var>f</var>)</p>
+      <p>The chance of the condition after a positive result is the true positives as a share of everyone who tests positive, and likewise for a negative result:</p>
+      <p class="eq">P(condition | positive) = <var>p</var><var>s</var> / ( <var>p</var><var>s</var> + (1 − <var>p</var>)<var>f</var> )</p>
+      <p class="eq">P(condition | negative) = <var>p</var>(1 − <var>s</var>) / ( <var>p</var>(1 − <var>s</var>) + (1 − <var>p</var>)(1 − <var>f</var>) )</p>
+      <p>With the opening numbers the first line is 0.008 / (0.008 + 0.09504) = 0.0776. These are the "after a positive result" and "after a negative result" tiles.</p>
+      <h3>The odds form</h3>
+      <p>The same rule is shorter when written in odds, the chance of having the condition divided by the chance of not having it:</p>
+      <p class="eq">after a positive: &nbsp; odds after = odds before × <var>s</var> / <var>f</var><br>after a negative: &nbsp; odds after = odds before × (1 − <var>s</var>) / (1 − <var>f</var>)</p>
+      <p>The multiplier is the <strong>likelihood ratio</strong>. It is a property of the test alone and measures how strong the evidence is. The opening test multiplies the odds by 8.33, which is real evidence. It turns odds of 1 to 99 into odds of about 1 to 12, and 1 to 12 is still a long shot. The fourth tile shows this multiplier.</p>
+      <h3>The picture</h3>
+      <p>The tool multiplies the four shares by the size of the crowd and rounds them to whole people with the largest-remainder rule: round every group down, then hand out the people left over to the groups with the largest fractional parts, so the four always add up to the crowd. Each dot is one person; orange dots have the condition. Before the reveal the crowd is drawn as one block, which shows the base rate. After it, the same dots are sorted into those who tested positive and those who tested negative, and the answer is the orange share of the first block. When rounding moves that share more than half a point away from the exact answer, the page says so.</p>
+      <h3>The chart</h3>
+      <p>The chart holds the test fixed and applies the two formulas at 121 base rates from 0.01% to 100%, spaced evenly on a log scale. The dashed line is the base rate itself, so the gap between it and a curve is what a result adds. The curve for a positive result crosses 50% at</p>
+      <p class="eq"><var>p</var> = <var>f</var> / (<var>s</var> + <var>f</var>)</p>
+      <p>which for the opening test is 0.096 / 0.896 = 10.7%.</p>
+      <h3>Repeating the test</h3>
+      <p>For a second result the tool applies the theorem again with the first answer as the new base rate, which is the same as multiplying the odds by the likelihood ratio once per result. The order of the results does not matter. This is only right if the test's errors on one run are independent of its errors on the next, given whether the person has the condition.</p>
+      <h3>The guess</h3>
+      <p>A guess counts as close when it is within five percentage points of the answer. Failing that, the tool checks whether it is within five points of the sensitivity or of the specificity, the two numbers people most often give instead, and says so. "Guess a new scenario" draws a base rate from nine values between 0.1% and 30%, a sensitivity from five between 70% and 99% and a false-positive rate from six between 1% and 20%, using a seeded generator so the sequence is the same on every visit.</p>
+      <h3>The sliders</h3>
+      <p>Each slider steps through every value whose distance from the nearer of 0% and 100% has at most two significant figures: 0.11%, 9.6%, 50%, 99.89%. That gives fine steps where tests and base rates actually live and coarser ones in the middle.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Anything about your own health.</strong> Apart from the two published problems, the scenarios use round numbers chosen to show a pattern. The sensitivity and false-positive rate of a real test depend on the laboratory, the cut-off used and who is being tested. This is a way to understand a test result, not to interpret one.</li>
+        <li><strong>What the right base rate is.</strong> It is the input that matters most and the one nobody hands you. The prevalence in a whole population is the wrong starting point for someone with symptoms, a family history or an unusual age, and choosing the group a person belongs to is a judgement the theorem takes as given.</li>
+        <li><strong>How a real test behaves across patients.</strong> Sensitivity is treated here as one number. In practice tests catch advanced cases more easily than early ones, so the figure measured on hospital patients overstates what the test does in screening.</li>
+        <li><strong>What a second test adds.</strong> The repeat table assumes independent errors. If the first false alarm had a cause that is still there, such as a cross-reacting substance or dense tissue, the second test is likely to repeat it and the table is too optimistic.</li>
+        <li><strong>Whether screening is worth doing.</strong> A 7.8% chance after a positive result is not an argument against the test. That depends on what the follow-up costs the 95 people with false alarms, what early detection gains the 8, and what happens to the 2 who were missed. The tool gives probabilities and stops there.</li>
+        <li><strong>How well you reason.</strong> The guess is a prompt, not an experiment. The crowd of dots is on screen before you answer, and that is already the format that helps.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Replace the yes/no test with a continuous reading and a movable cut-off, so that sensitivity and false-positive rate trade off along a curve and the visitor can see why no cut-off removes both kinds of error.</li>
+        <li>Add costs for a false alarm and for a missed case and show the base rate above which testing does more good than harm.</li>
+        <li>Give the repeat test a dependence setting, from fully independent to an exact copy of the first result.</li>
+        <li>Let the three inputs be uncertain, each with a range, and carry that through to an interval on the answer.</li>
+        <li>Handle more than two possibilities, as in a differential diagnosis where one result shifts weight between several conditions.</li>
+        <li>Offer the question in two wordings, percentages and counts of people, chosen at random, and keep a local tally of which one the visitor answers better.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Bayes, T. (1763). An essay towards solving a problem in the doctrine of chances. <em>Philosophical Transactions of the Royal Society of London</em>, 53, 370-418.</li>
+        <li>Casscells, W., Schoenberger, A., and Graboys, T. B. (1978). Interpretation by physicians of clinical laboratory results. <em>New England Journal of Medicine</em>, 299(18), 999-1001. Source of the "Harvard Medical School question" scenario.</li>
+        <li>Eddy, D. M. (1982). Probabilistic reasoning in clinical medicine: problems and opportunities. In D. Kahneman, P. Slovic and A. Tversky (eds.), <em>Judgment under Uncertainty: Heuristics and Biases</em>. Cambridge University Press. Source of the mammogram problem.</li>
+        <li>Gigerenzer, G., and Hoffrage, U. (1995). How to improve Bayesian reasoning without instruction: frequency formats. <em>Psychological Review</em>, 102(4), 684-704. Source of the rounded numbers used in the opening scenario.</li>
+        <li>Kahneman, D., and Tversky, A. (1973). On the psychology of prediction. <em>Psychological Review</em>, 80(4), 237-251.</li>
+        <li>Bar-Hillel, M. (1980). The base-rate fallacy in probability judgments. <em>Acta Psychologica</em>, 44(3), 211-233.</li>
+        <li>Gigerenzer, G., Gaissmaier, W., Kurz-Milcke, E., Schwartz, L. M., and Woloshin, S. (2007). Helping doctors and patients make sense of health statistics. <em>Psychological Science in the Public Interest</em>, 8(2), 53-96.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
