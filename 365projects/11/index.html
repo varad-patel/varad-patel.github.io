@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Philosophy Knowledge Graph · 365 projects</title>
+  <meta name="description" content="Search 1,301 philosophers, explore who influenced whom, trace a chain of influence between any two, and see the most central thinkers ranked by PageRank.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .tool .who-name { font: 600 1.7rem/1.15 var(--serif); letter-spacing: -0.01em; }
+    .who p { margin-top: 4px; }
+    .ego { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, auto) minmax(0, 1fr); gap: 34px; align-items: center; padding: 6px 0; }
+    .ego-lines { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+    .ego .col { position: relative; z-index: 1; display: grid; gap: 6px; align-content: center; min-width: 0; }
+    .ego .col h3 { font-size: 0.8rem; color: var(--slate); font-weight: 600; margin-bottom: 2px; }
+    .ego .centre { max-width: 150px; }
+    .node { display: block; width: 100%; min-width: 0; text-align: left; padding: 6px 9px; border: 1px solid var(--rule); border-radius: 3px; background: #fff; cursor: pointer; font: inherit; color: inherit; }
+    .node .nm { display: block; font-weight: 600; font-size: 0.9rem; line-height: 1.2; overflow-wrap: anywhere; }
+    .node .yr { display: block; font-size: 0.74rem; color: var(--slate); line-height: 1.3; }
+    .node:hover { border-color: var(--ink); }
+    .node.self { background: var(--ink); color: var(--paper); border-color: var(--ink); cursor: default; text-align: center; padding: 10px 12px; }
+    .node.self .yr { color: inherit; opacity: 0.8; }
+    .chain { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; }
+    .chain .node { width: auto; }
+    .chain .arrow { color: var(--slate); }
+    .ranklist { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; counter-reset: r; }
+    .ranklist li { counter-increment: r; }
+    .ranklist button { width: 100%; display: grid; grid-template-columns: 1.7em minmax(0, 1fr) auto; gap: 3px 8px; align-items: baseline; text-align: left; background: none; border: 0; padding: 5px 6px; cursor: pointer; font: inherit; color: inherit; border-radius: 3px; }
+    .ranklist button::before { content: counter(r); color: var(--slate); font-size: 0.8rem; }
+    .ranklist .nm { font-weight: 600; font-size: 0.92rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ranklist .sc { font-size: 0.8rem; color: var(--slate); }
+    .ranklist .br { grid-column: 2 / 4; display: block; height: 4px; background: color-mix(in srgb, var(--ink) 7%, transparent); }
+    .ranklist .br span { display: block; height: 100%; background: var(--c1); }
+    .ranklist button:hover { background: color-mix(in srgb, var(--ink) 5%, transparent); }
+    .ranklist li.on button { background: color-mix(in srgb, var(--ink) 9%, transparent); }
+    @media (max-width: 560px) { .ego { gap: 14px; } .node { padding: 5px 6px; } .node .nm { font-size: 0.8rem; } .ego .centre { max-width: 96px; } }
+  </style>
+</head>
+<body class="proj" data-day="11">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Philosophy Knowledge Graph</h1>
+      <p class="lede">Who influenced whom, for 1,301 philosophers. Search any thinker, walk the links in both directions, trace a chain between two names, and see who sits at the centre of the web.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Philosopher influence graph explorer">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>Kant has the most recorded followers in the data (79), but PageRank puts Plato first. It lifts Heraclitus from 30th by number of followers to 5th: only 13 thinkers name him as an influence, but they include Plato, Aristotle, Hegel and Nietzsche. Following chains of influence, 49% of all 1,301 thinkers are downstream of Socrates.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Alfred North Whitehead said that the safest general description of European philosophy is that it consists of a series of footnotes to Plato. That is a claim about a network: philosophers respond to earlier philosophers, and some names are responded to by almost everyone. If the history of ideas is a web of influence, then "who matters most" becomes a question you can ask of the web itself.</p>
+      <p>The obvious measure is to count followers. Its weakness is that it treats every follower alike. Being named as an influence by Aristotle is not the same as being named by a minor commentator. The alternative is to let standing flow along the links: a thinker is central if they influenced people who were themselves central. That circular definition has an exact solution, and it is the one a search engine uses to rank pages. Larry Page and Sergey Brin published it in 1998 as PageRank.</p>
+      <p>What this cannot settle, and what makes it worth doing, is the difference between being influential and being right, and between history and the record of it. The graph shows who was written down as having influenced whom. Who gets written down is its own question in the politics of knowledge.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The data</h3>
+      <p>Wikidata is the structured database behind Wikipedia, released into the public domain. It has a property called "influenced by". The snapshot here contains every such statement in which both people have the occupation "philosopher": 2,582 links among 1,301 people, retrieved on 10 October 2026. Two cleaning rules were applied: a birth year later than the death year is repaired from the entry's own description or treated as unknown, and a link to an influencer born after the influenced person had died is dropped.</p>
+      <h3>PageRank</h3>
+      <p>Imagine a reader who starts with a random thinker and repeatedly asks "who influenced this person?", moving to one of the answers at random. With probability 1 − <var>d</var> the reader gets bored and jumps to a random thinker instead. A thinker's score is the share of time the reader spends on them. Writing <var>n</var> for the number of thinkers and <var>out</var>(<var>j</var>) for the number of influences recorded for <var>j</var>:</p>
+      <p class="eq"><var>r</var>(<var>i</var>) = (1 − <var>d</var>) / <var>n</var> + <var>d</var> · Σ<sub><var>j</var> influenced by <var>i</var></sub> <var>r</var>(<var>j</var>) / <var>out</var>(<var>j</var>) + <var>d</var> · <var>D</var> / <var>n</var></p>
+      <p>The last term handles thinkers with no recorded influences, where the reader has nowhere to go: their combined score <var>D</var> is shared equally among everyone. The scores are found by starting everyone at 1/<var>n</var> and applying the formula repeatedly until nothing changes by more than a trillionth, which takes about 130 rounds at the default <var>d</var> = 0.85.</p>
+      <p>The damping slider is <var>d</var>. Turn it down and the reader rarely follows a chain more than a step or two, so the ranking approaches a count of direct followers. Turn it up and standing travels far upstream, which favours the ancients.</p>
+      <h3>Reach and chains</h3>
+      <p>"Downstream" is everyone who can be reached by repeatedly asking "whom did this person influence?", found by breadth-first search. The chain tool uses the same search to find the shortest sequence in which each thinker is recorded as an influence on the next, trying both directions.</p>
+      <h3>The map</h3>
+      <p>The map shows one step in each direction from the chosen thinker, ordered by score, and every name on it can be clicked to move there. The chart underneath places every thinker by year of birth and score.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>What actually happened.</strong> This is Wikidata's record, written by volunteers. On the day of the snapshot George Berkeley's year of birth was recorded as 2000. 481 of the 1,301 thinkers have no recorded influences at all, which is a gap in the data and not a fact about them.</li>
+        <li><strong>Who is missing.</strong> Coverage follows the interests of the people who edit Wikidata, and it leans heavily European. Whole traditions are thin or absent. A ranking from this graph is a ranking of the Western canon as volunteers have encoded it.</li>
+        <li><strong>What kind of influence.</strong> A link does not say how strong the influence was or whether it was agreement. Marx is linked to Hegel, whom he set out to turn upside down.</li>
+        <li><strong>Who was the better philosopher.</strong> PageRank measures position in a web of citations. Early figures gain simply because standing flows backwards in time and they have had longer to acquire descendants.</li>
+        <li><strong>Who counts as a philosopher.</strong> The occupation tag is broad. Darwin, Goethe and Dostoyevsky are in the graph because someone tagged them.</li>
+        <li><strong>Exact dates.</strong> Years are the earliest that Wikidata records, and for ancient figures they can be off by a year or more.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Correct for age with a time-aware ranking, so that a thinker is compared with others who have had as long to be followed.</li>
+        <li>Weight each link by evidence, for example how often one author's texts cite the other, using the public-domain works indexed on Day 323.</li>
+        <li>Colour the map by school and region, and test whether community detection on the graph recovers the schools without being told them.</li>
+        <li>Compare this ranking with one built from citations in the academic literature, to see where the popular record and the professional one disagree.</li>
+        <li>Add other traditions from specialist sources, and show how much the ranking moves when they are included.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>Wikidata, "influenced by" (P737) statements between people with the occupation philosopher (Q4964182). Public domain (CC0). Retrieved 10 October 2026.</li>
+        <li>Brin, S., and Page, L. (1998). The anatomy of a large-scale hypertextual web search engine. <em>Computer Networks and ISDN Systems</em>, 30, 107-117.</li>
+        <li>Whitehead, A. N. (1929). <em>Process and Reality</em>.</li>
+        <li>Collins, R. (1998). <em>The Sociology of Philosophies: A Global Theory of Intellectual Change</em>. Harvard University Press.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
