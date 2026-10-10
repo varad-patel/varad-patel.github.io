@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Two Envelopes Paradox · 365 projects</title>
+  <meta name="description" content="Choose a prior for the amounts in two envelopes, play the keep-or-switch game, and see exactly which step of the argument for always switching fails.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .te-part + .te-part { border-top: 1px solid var(--rule); padding-top: 22px; }
+    .te-head { display: grid; gap: 6px; }
+    .te-game { display: grid; gap: 14px; }
+    .te-envs { display: flex; flex-wrap: wrap; gap: 14px 22px; }
+    .env {
+      position: relative; flex: 1 1 130px; max-width: 220px; min-height: 104px; padding: 44px 10px 8px; border: 2px solid var(--ink); border-radius: 4px;
+      background: #fff; color: var(--ink); font: inherit; cursor: pointer; display: grid; align-content: end; justify-items: center; gap: 2px; overflow: hidden;
+    }
+    .env::before {
+      content: ""; position: absolute; inset: 0 0 auto 0; height: 42px;
+      background:
+        linear-gradient(to bottom left, transparent calc(50% - 1px), var(--ink) calc(50% - 1px), var(--ink) calc(50% + 1px), transparent calc(50% + 1px)) left / 50% 100% no-repeat,
+        linear-gradient(to bottom right, transparent calc(50% - 1px), var(--ink) calc(50% - 1px), var(--ink) calc(50% + 1px), transparent calc(50% + 1px)) right / 50% 100% no-repeat;
+    }
+    .env:hover:not(:disabled) { background: var(--paper); }
+    .env:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+    .env:disabled { cursor: default; color: var(--ink); }
+    .env.open::before { opacity: 0.22; }
+    .env.held { box-shadow: inset 0 -6px 0 var(--h, var(--ink)); }
+    .env-amt { font-weight: 700; font-size: 1.3rem; line-height: 1.2; overflow-wrap: anywhere; }
+    .env-tag { font-size: 0.78rem; color: var(--slate); }
+    .te-msg { min-height: 3em; }
+    .te-steps { margin: 0; padding-left: 1.3em; display: grid; gap: 8px; font-size: 0.92rem; line-height: 1.45; }
+    .te-tag { display: inline-block; margin-left: 6px; padding: 0 6px; border: 1.5px solid var(--bad); border-radius: 3px; color: var(--bad); font-size: 0.74rem; font-weight: 700; white-space: nowrap; }
+    .te-tbl .tbl th { white-space: normal; vertical-align: bottom; }
+    .te-sub { display: block; font-size: 0.8rem; color: var(--slate); white-space: normal; }
+    @media (max-width: 520px) { .te-tbl .tbl th, .te-tbl .tbl td { padding-inline: 6px; } }
+    /* The serif has no true italic, and the slanted letters lean into whatever follows them. */
+    .p-sec var { margin-right: 0.1em; }
+  </style>
+</head>
+<body class="proj" data-day="28">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Two Envelopes Paradox</h1>
+      <p class="lede">One envelope holds twice as much as the other, and a neat argument says you should always swap the one you picked. Choose how the amounts are set, play the game, and see exactly which step of the argument gives way.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Two envelopes game, exact odds and strategy simulator">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>When the smaller amount is equally likely to be 1, 2, 4 and so on up to 512, always keeping and always switching both win exactly 153.45 a round on average, while switching only on 512 or less wins 179.05, which is 16.7% more. In 100,000 simulated rounds (seed 28) the three averaged 154.02, 153.43 and 179.16. The claim that the other envelope is as likely to hold double as half is true for nine of the eleven amounts you can see, and false at the top one, 1,024, where switching always loses 512.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>You are shown two sealed envelopes and told that one contains twice as much money as the other. You pick one. Before you open it, you are offered the chance to swap. The tempting argument runs: call my amount <var>A</var>; the other envelope holds 2<var>A</var> or <var>A</var>/2, each with probability one half; so it is worth ½ · 2<var>A</var> + ½ · <var>A</var>/2 = 5/4 <var>A</var> on average, and I should swap. The conclusion cannot be right. The envelopes are interchangeable, and once you have swapped the same argument tells you to swap back.</p>
+      <p>The puzzle descends from Maurice Kraitchik's two men arguing over whose necktie cost more. Barry Nalebuff's 1989 puzzle column put the envelope version to economists as a question about trade: two people, each holding one envelope, both of whom seem to gain by exchanging. Philosophers have concentrated on a harder case, set out by John Broome in 1995: a perfectly proper way of choosing the amounts under which swapping really does look better whatever amount you find.</p>
+      <p>The resolution has two layers, and the tool lets you stand on each. First, the argument never says how the amounts were chosen, and it cannot be right for any ordinary way of choosing them. "Half or double, equally likely, whatever <var>A</var> is" would need every amount to be exactly as probable as the amount twice its size, all the way up and all the way down, and probabilities spread that evenly over infinitely many amounts cannot add up to one. Pick any prior with a finite average and the fifty-fifty step fails somewhere, usually at large amounts, where the envelope in your hand is more likely to be the bigger one.</p>
+      <p>Second, there are priors with an <em>infinite</em> average for which the fifty-fifty step is still false but switching gains on average at every single amount. Here the failure moves to the last step: "better whatever I see, therefore better without looking" is a rule for averaging conditional expectations, and it is only valid when the thing being averaged has a finite expectation. This is why the puzzle matters beyond the classroom. "I know nothing about the amounts" is not a prior, and decisions that feel prior-free usually smuggle one in. And decision theory's most trusted shortcut, comparing options by expected value, stops giving answers once expectations are infinite, the same crack that the St Petersburg game opens.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The priors</h3>
+      <p>The smaller amount is <var>X</var> = 2<sup><var>n</var></sup> for a whole number <var>n</var> ≥ 0, so every amount is a power of two. Write π(<var>a</var>) for the probability that <var>X</var> = <var>a</var>. The tool offers three families. A <em>fixed pair</em> puts all the probability on one amount. A <em>uniform range</em> makes 1, 2, 4, …, 2<sup><var>N</var>−1</sup> equally likely, with probability 1/<var>N</var> each and mean (2<sup><var>N</var></sup> − 1)/<var>N</var>. The <em>unbounded doubling</em> prior is</p>
+      <p class="eq">π(2<sup><var>n</var></sup>) = (1 − <var>q</var>) <var>q</var><sup><var>n</var></sup> &nbsp;&nbsp; for <var>n</var> = 0, 1, 2, …</p>
+      <p>so each amount is <var>q</var> times as likely as the one half its size. Its mean is (1 − <var>q</var>) Σ (2<var>q</var>)<sup><var>n</var></sup>, which equals (1 − <var>q</var>)/(1 − 2<var>q</var>) when <var>q</var> &lt; 1/2 and is infinite otherwise. Broome's example is <var>q</var> = 2/3.</p>
+      <h3>What an amount tells you</h3>
+      <p>You are handed either envelope with probability one half. If you see <var>a</var>, then either <var>X</var> = <var>a</var> and you hold the smaller amount, or <var>X</var> = <var>a</var>/2 and you hold the larger. Bayes' rule gives the chance <var>P</var> that the other envelope holds more, and from it the expected gain <var>G</var> from switching:</p>
+      <p class="eq"><var>P</var> = π(<var>a</var>) / (π(<var>a</var>) + π(<var>a</var>/2))<br><var>G</var> = <var>a</var> <var>P</var> − (<var>a</var>/2)(1 − <var>P</var>)</p>
+      <p>For the uniform range <var>P</var> is one half at every amount except the lowest (where it is 1) and the highest (where it is 0), so the tempting argument's 5/4 is exactly right in the middle and badly wrong at the top. For the doubling prior <var>P</var> = <var>q</var>/(1 + <var>q</var>) at every amount above 1, and the expected gain is <var>a</var>(2<var>q</var> − 1)/(2(1 + <var>q</var>)): a loss when <var>q</var> &lt; 1/2, nothing at <var>q</var> = 1/2, a gain when <var>q</var> &gt; 1/2. The table shows these exact values for every amount, beside the share actually observed in the simulation.</p>
+      <h3>Why the gains cancel</h3>
+      <p>The chance of seeing <var>a</var> is (π(<var>a</var>) + π(<var>a</var>/2))/2. Multiply it by the expected gain and each amount's contribution to always-switching's expected gain is (<var>a</var> π(<var>a</var>) − (<var>a</var>/2) π(<var>a</var>/2))/2. Add these from the lowest amount upwards and every term cancels against the next, leaving</p>
+      <p class="eq">total up to amount <var>a</var> = <var>a</var> π(<var>a</var>) / 2</p>
+      <p>For a bounded prior this is zero as soon as <var>a</var> passes the top of the range: the single certain loss at the highest amount wipes out every gain below it. For the doubling prior it is (1 − <var>q</var>)(2<var>q</var>)<sup><var>n</var></sup>/2, which shrinks to zero when <var>q</var> &lt; 1/2, stays at 1/4 for ever when <var>q</var> = 1/2, and grows without limit when <var>q</var> &gt; 1/2. The bar chart draws the contributions.</p>
+      <h3>When the mean is infinite</h3>
+      <p>The step from "switching gains at every amount" to "switching gains" is the law of total expectation, and it requires the gain to have a finite expected size. The gain is always <var>X</var> in size, up or down, so that expected size is the mean of <var>X</var>. When the mean is infinite the three natural ways of adding up the same gains disagree. For <var>q</var> above 1/2, grouped by the amount in your hand they sum to plus infinity, grouped by the amount in the other envelope to minus infinity, and grouped by the pair to zero (at <var>q</var> = 1/2 exactly the three totals are +1/4, −1/4 and 0). No one of them is the answer. Always keeping and always switching are the same gamble with the labels exchanged, and both have infinite expected winnings.</p>
+      <h3>The threshold strategy</h3>
+      <p>"Switch if I see <var>T</var> or less" behaves differently from always keeping only when the smaller amount is exactly <var>T</var>. Then you switch if handed <var>T</var> and keep if handed 2<var>T</var>, and walk away with 2<var>T</var> either way, instead of 1.5<var>T</var> on average. So</p>
+      <p class="eq">E(threshold) = 1.5 E(<var>X</var>) + <var>T</var> π(<var>T</var>) / 2</p>
+      <p>which beats both fixed strategies whenever <var>T</var> is an amount the prior can produce, and equals them otherwise. The extra term is finite even when E(<var>X</var>) is not.</p>
+      <h3>The simulation</h3>
+      <p>Each round draws <var>n</var> from the prior and tosses a fair coin for which envelope you are handed, using a seeded generator, and scores all three strategies on the same deal. For the doubling prior <var>n</var> is the whole part of ln(1 − <var>u</var>)/ln <var>q</var> for a uniform <var>u</var>, which has exactly the probabilities above. The hand-played game uses the same model with its own stream of deals.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>What to do when you do not know the prior.</strong> In the tool you choose how the amounts are set, so the table can be exact. In the original puzzle you are told nothing. The tool shows that every prior with a finite mean defeats the argument; it cannot tell you which prior to hold.</li>
+        <li><strong>Anything about amounts that are not powers of two.</strong> Real sums are not confined to 1, 2, 4, 8. With whole-number amounts an odd sum can only be the smaller one, and with continuous amounts the formula picks up an extra factor of one half. The pattern survives, but the numbers here do not carry over.</li>
+        <li><strong>What an infinite-mean prior really pays.</strong> No simulation can sample one faithfully. The generator has 32 bits, so the simulated doubling prior at <var>q</var> = 2/3 never makes the smaller amount more than 2<sup>54</sup>, and its averages are driven by the largest few deals. They illustrate that the average does not settle. They do not estimate anything.</li>
+        <li><strong>Whether expected money is the right yardstick.</strong> The paradox needs you to value money in proportion to its amount, without limit. Value every doubling equally, as a logarithmic utility does, and no proper prior can make switching look better at every amount. Cap what an envelope can hold, or what money can be worth to you, and the infinite case cannot arise at all. Whether a rational agent's utilities must be bounded is a real dispute that the arithmetic does not settle.</li>
+        <li><strong>What the infinite case shows about rationality.</strong> Some writers treat it as one more oddity of infinite expectations, on a par with the St Petersburg game; others argue that pointing at the infinity does not yet explain where the reasoning goes wrong. The tool reproduces the numbers both sides agree on.</li>
+        <li><strong>How the two-person version plays out.</strong> When someone else holds the other envelope and must agree to the swap, their willingness is itself information. Nothing here models a second chooser.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Let the visitor type any prior as a list of amounts and probabilities, including whole-number priors where odd amounts give the game away.</li>
+        <li>Add continuous priors (uniform, exponential, log-uniform) with the density version of the formula, <var>f</var>(<var>a</var>) / (<var>f</var>(<var>a</var>) + <var>f</var>(<var>a</var>/2)/2).</li>
+        <li>Add Cover's randomised threshold, which picks the larger envelope more than half the time under every prior without knowing which prior it is.</li>
+        <li>Let the visitor choose a utility function, such as the logarithm of the amount, and watch the infinite-mean case become ordinary.</li>
+        <li>Hide the prior: play many rounds against an unknown rule and see how quickly a learner can find a good threshold.</li>
+        <li>Build the two-person version, where the other player can refuse the swap and a refusal tells you something.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Kraitchik, M. <em>Mathematical Recreations</em>. The puzzle of the two neckties.</li>
+        <li>Nalebuff, B. (1989). Puzzles: the other person's envelope is always greener. <em>Journal of Economic Perspectives</em>, 3(1), 171-181.</li>
+        <li>Christensen, R., and Utts, J. (1992). Bayesian resolution of the "exchange paradox". <em>The American Statistician</em>, 46(4), 274-276.</li>
+        <li>Broome, J. (1995). The two-envelope paradox. <em>Analysis</em>, 55(1), 6-11.</li>
+        <li>Clark, M., and Shackel, N. (2000). The two-envelope paradox. <em>Mind</em>, 109, 415-442.</li>
+        <li>Chalmers, D. J. (2002). The St. Petersburg two-envelope paradox. <em>Analysis</em>, 62(2), 155-157.</li>
+        <li>Cover, T. M. (1987). Pick the largest number. In T. M. Cover and B. Gopinath (eds.), <em>Open Problems in Communication and Computation</em>. Springer.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

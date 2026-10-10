@@ -1,0 +1,7 @@
+{
+  "question": "When does switching envelopes help, and which step of the argument for always switching fails?",
+  "finding": "With the smaller amount equally likely to be 1, 2, 4 and so on up to 512, always keeping and always switching both average exactly 153.45 a round, while switching only on 512 or less averages 179.05, which is 16.7% more.",
+  "limit": "The tool is exact only for a prior you choose yourself, so it cannot say what to do when you know nothing about how the amounts were set.",
+  "sources": [],
+  "built": "2026-10-10"
+}
