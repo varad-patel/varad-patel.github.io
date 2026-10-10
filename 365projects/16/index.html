@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Argument Map Builder · 365 projects</title>
+  <meta name="description" content="Draw an argument as a map of claims and reasons, then remove premises one at a time to see which of them the conclusion cannot do without.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .am-bar { display: grid; gap: 10px; }
+    .am-lab { font-weight: 700; font-size: 0.9rem; }
+    .am-mapwrap { display: grid; gap: 8px; min-width: 0; }
+    .am-map { overflow-x: auto; background: #fff; border: 1px solid var(--grid); padding: 14px; }
+    .am-map:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+    .am-map svg { display: block; margin: 0 auto; max-width: none; }
+    .am-map .m-box { fill: #fff; stroke: var(--ink); stroke-width: 1.5; }
+    .am-map .m-body { font: 12.5px var(--sans); fill: var(--ink); }
+    .am-map .m-tag, .am-map .m-num { font: 700 10.5px var(--sans); fill: var(--slate); }
+    .am-map .main .m-box { stroke-width: 3; }
+    .am-map .down .m-box { fill: var(--paper); stroke: #8a94a3; stroke-dasharray: 5 4; }
+    .am-map .down .m-body { fill: var(--slate); }
+    .am-map .off .m-body { text-decoration: line-through; }
+    .am-map .unstated .m-body { font-style: italic; }
+    .am-map .m-bar { fill: #eb6834; }
+    .am-map .premise { cursor: pointer; outline: none; }
+    .am-map .premise:hover .m-box { fill: color-mix(in srgb, var(--ink) 6%, #fff); }
+    .am-map .premise:focus-visible .m-box { stroke: var(--focus); stroke-width: 3; stroke-dasharray: none; }
+    .am-map .link path { fill: none; stroke: var(--ink); stroke-width: 1.6; }
+    .am-map .link circle, .am-map .link .m-tip { fill: var(--ink); stroke: none; }
+    .am-map .link path.dead { stroke: #8a94a3; stroke-dasharray: 4 4; }
+    .am-map .link circle.dead, .am-map .link .m-tip.dead { fill: #8a94a3; stroke: none; }
+
+    .am-legend { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 18px; }
+    .am-legend li { display: inline-flex; align-items: center; gap: 7px; }
+    .am-legend i { flex: none; display: inline-block; }
+    .k-box { width: 18px; height: 12px; border: 1.5px solid var(--ink); border-radius: 2px; background: #fff; }
+    .k-box.down { border: 1.5px dashed #8a94a3; background: var(--paper); }
+    .k-box.crit { border-left: 5px solid #eb6834; }
+    .k-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ink); }
+    .k-arrow { width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 9px solid var(--ink); }
+
+    .am-panel { display: grid; gap: 12px; align-content: start; }
+    .am-prems { display: grid; gap: 9px; }
+    .am-prem { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: start; }
+    .am-pill { display: inline-block; padding: 1px 9px; border: 1.5px solid var(--ink); border-radius: 999px; font-size: 0.76rem; font-weight: 700; line-height: 1.5; white-space: nowrap; }
+    .am-pill.critical { background: #eb6834; }
+    .am-pill.intact, .am-pill.main { background: var(--ink); color: var(--paper); }
+    .am-pill.removed, .am-pill.unused, .am-pill.idle, .am-pill.inplay { border: 1.5px dashed var(--slate); color: var(--slate); }
+    .am-pill.restores { border-style: dashed; }
+    .am-key { margin: 0; padding-left: 1.1em; display: grid; gap: 3px; }
+    .am-chip { display: inline-grid; place-items: center; min-width: 1.75em; height: 1.75em; padding: 0 5px; border: 1.5px solid var(--ink); border-radius: 3px; background: #fff; font-size: 0.8rem; font-weight: 700; cursor: default; }
+    .am-set { display: inline-flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+    .am-sets { margin: 0; padding-left: 1.5em; display: grid; gap: 8px; }
+    ul.am-sets { list-style: none; padding-left: 0; }
+    .am-sets li > * { vertical-align: middle; margin-right: 10px; }
+
+    .tool h2.am-h { font: 600 1.4rem/1.2 var(--serif); margin-top: 6px; padding-top: 20px; border-top: 1px solid var(--rule); }
+    .am-add { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: end; }
+    .am-add > div:last-child { grid-column: 1 / -1; }
+    .am-add > div:last-child:empty { display: none; }
+    .am-claims { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+    .am-claim { display: grid; gap: 8px; padding-top: 12px; border-top: 1px solid var(--grid); }
+    .am-claim-top { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; align-items: center; }
+    .am-actions .check { font-size: 0.82rem; align-items: center; }
+    .am-actions .check input { margin: 0; }
+    .am-reasons { list-style: none; margin: 0; padding: 0 0 0 12px; border-left: 3px solid var(--grid); display: grid; gap: 6px; font-size: 0.88rem; }
+    .am-reasons li { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .am-form { display: grid; gap: 10px; padding: 12px; background: var(--paper); border: 1px solid var(--grid); }
+    .am-picks { display: grid; gap: 7px; max-height: 260px; overflow: auto; }
+    .am-outline, .am-outline ul { margin: 6px 0 0; padding-left: 1.2em; font-size: 0.9rem; }
+    .am-outline li { margin-top: 3px; }
+  </style>
+</head>
+<body class="proj" data-day="16">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Argument Map Builder</h1>
+      <p class="lede">Draw an argument as claims and the reasons given for them. Then take premises away, one at a time or several together, and see which ones the conclusion cannot do without.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Argument map builder">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>The congestion-charge example has two independent lines of support and seven premises. Six of the seven can each be removed alone and the conclusion still stands. The seventh, "the charge can be enforced cheaply and reliably", sits under both lines, so removing it alone brings the conclusion down. Every other way of defeating the argument needs two premises to go together, and there are nine such pairs.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>An argument is not a list of sentences that happen to end in "therefore". Its premises do different jobs. Some only work as a team: "all humans are mortal" says nothing about Socrates until "Socrates is a human" joins it. Others are separate reasons for the same conclusion, each of which would do by itself. Stephen Thomas called the first kind <strong>linked</strong> and, following Monroe Beardsley, the second kind <strong>convergent</strong>. An argument map draws that difference: linked premises are joined before they reach the claim, and independent reasons arrive by separate arrows.</p>
+      <p>The habit of drawing arguments is older than the vocabulary. John Henry Wigmore charted the evidence in trials in 1913 so that a lawyer could see which inferences a verdict hung on. Beardsley brought diagrams into logic teaching in 1950, and Stephen Toulmin's 1958 layout added the idea that the step from grounds to claim rests on a further, often unspoken, statement that licenses it. What they share is the thought that the shape of the support matters as much as its content. A conclusion with three independent reasons survives the loss of one. A conclusion at the end of a single chain is only as secure as the weakest link in it.</p>
+      <p>This matters outside a logic class because public arguments rarely show their structure. A case for a policy usually offers several attractive reasons and leaves the reader to assume they are independent. Often they are not: they share a premise, and the whole case turns on it. Arguments also leave premises out. "A higher minimum wage makes workers dearer to employ, so it will cost jobs" needs the further claim that employers respond by employing fewer people, which is the very thing economists have disputed since Card and Krueger compared fast-food restaurants on either side of a state border in the 1990s. A map does not settle that dispute. It shows that this is where the dispute has to be.</p>
+      <p>The tool turns the picture into something you can test. Remove a premise and it recomputes which claims still have support. Engineers will recognise the method: it is the calculation used to find single points of failure in a fault tree, applied to reasons in place of components.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The map</h3>
+      <p>A map is a set of <strong>claims</strong> and a set of <strong>reasons</strong>. A reason belongs to one claim and names one or more other claims as its premises. A claim may have several reasons. A claim with no reason is a <strong>premise</strong> of the map: something it asserts and does not argue for. One claim is marked as the main conclusion. Claims that have reasons and are also used in reasons are sub-conclusions, so arguments can be several steps deep and a claim can be used in more than one place.</p>
+      <h3>What stands</h3>
+      <p>Each premise is either in play or removed. Whether any other claim stands is then fixed by one rule:</p>
+      <p class="eq">a premise stands if it is in play<br>a claim with reasons <var>R</var><sub>1</sub>, …, <var>R</var><sub><var>k</var></sub> stands if<br>(all of <var>R</var><sub>1</sub> stand) or … or (all of <var>R</var><sub><var>k</var></sub> stand)</p>
+      <p>Inside a reason the members are joined by "and"; between reasons the connective is "or". The tool evaluates the rule from the premises upward, visiting each claim once and remembering the answer, so a claim used in several places is computed a single time. A reason is drawn solid while all its members stand and broken once one of them has gone.</p>
+      <h3>Critical, redundant and idle premises</h3>
+      <p>For every premise in play the tool removes it, re-evaluates the map and puts it back. If the main conclusion falls, the premise is <strong>critical</strong>. If the conclusion survives, the premise is <strong>redundant</strong> in the engineering sense: it does real work in one line of support, but another line holds without it. A premise is <strong>idle</strong> if no smallest sufficient set of premises contains it, which happens when it appears only in a reason that another reason already makes unnecessary. A premise the conclusion does not rest on anywhere is marked as unused. All of this is relative to the premises currently removed, so the labels change as you take things away.</p>
+      <h3>Lines of support and smallest objections</h3>
+      <p>The rule above makes the conclusion a Boolean function of the premises. The tool rewrites it in two minimal forms. Writing <var>S</var>(<var>c</var>) for the family of smallest sets of premises that are enough for <var>c</var>:</p>
+      <p class="eq"><var>S</var>(<var>p</var>) = { {<var>p</var>} } for a premise <var>p</var><br><var>S</var>(<var>c</var>) = min ⋃<sub><var>i</var></sub> { <var>A</var><sub>1</sub> ∪ … ∪ <var>A</var><sub><var>n</var></sub> : <var>A</var><sub><var>j</var></sub> ∈ <var>S</var>(<var>m</var><sub><var>j</var></sub>) for each member <var>m</var><sub><var>j</var></sub> of <var>R</var><sub><var>i</var></sub> }</p>
+      <p>where "min" discards any set that contains another set in the family. Each surviving set is one <strong>line of support</strong>. Swapping the roles of "and" and "or" gives the family <var>O</var>(<var>c</var>) of smallest <strong>objections</strong>: sets of premises whose removal leaves no reason for <var>c</var> whole.</p>
+      <p class="eq"><var>O</var>(<var>p</var>) = { {<var>p</var>} } &nbsp;&nbsp; <var>O</var>(<var>c</var>) = min { <var>B</var><sub>1</sub> ∪ … ∪ <var>B</var><sub><var>k</var></sub> : <var>B</var><sub><var>i</var></sub> ∈ ⋃<sub><var>j</var></sub> <var>O</var>(<var>m</var><sub><var>ij</var></sub>) }</p>
+      <p>Reliability engineers call these minimal path sets and minimal cut sets. A premise is critical exactly when it is in every line of support, which is the same as being an objection of size one; the tests check both statements against a brute-force search over every combination of removals on random maps. When some premises are already removed, the tool subtracts them from each objection and keeps the smallest remainders, which answers "what else would have to go?". Once the conclusion has fallen it does the mirror-image calculation and lists the smallest sets to put back. The number of sets can grow exponentially, so the lists stop at 2,000; the map and the labels do not depend on them and stay exact.</p>
+      <h3>Refusing circles</h3>
+      <p>Support must run one way. After any edit that adds or changes a reason, and for every imported file, the tool searches the graph depth-first for a claim that can be reached from itself. If it finds one, the edit is refused and the loop is spelled out: "A rests on B rests on A". A circular argument gives no independent support to anything in the circle, and the rule for what stands would have no single answer on it.</p>
+      <h3>Drawing</h3>
+      <p>Each claim is placed one layer below the lowest claim it supports, so every arrow points up and the premises hang at the bottom of their branches. Claims are ordered within a layer by a depth-first walk from the top. Horizontal positions come from six rounds of pulling each claim towards the average position of the claims it supports, then of its own premises, each time restoring a minimum gap by the least-squares method of pooling neighbours that would collide. Text is measured in the page font and wrapped to the box.</p>
+      <h3>Saving</h3>
+      <p>The map is kept in this browser's local storage and nothing is sent anywhere. "Export JSON" writes the claims, the reasons and the main conclusion to a file; "Import JSON" reads one back, renumbers it and refuses anything unsound.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Whether the premises are true.</strong> A premise is "in play" because you left it switched on. The map of a case built on falsehoods stands exactly as firmly as the map of a sound one.</li>
+        <li><strong>Whether the reasons are any good.</strong> The tool takes it on trust that a reason, with all its premises in place, is enough for the claim it points to. It does not check validity or strength. Draw an arrow from "the moon is made of rock" to "taxes should rise" and it will report that the conclusion stands.</li>
+        <li><strong>How much support there is.</strong> Everything here is all or nothing. Real convergent reasons add up by degrees, and a chain of five plausible premises can be less credible than any one of them. "Stands" means "has an unbroken line of support in this map", not "is probably true".</li>
+        <li><strong>What an opponent would say.</strong> The map holds only support. There are no counter-arguments, rebuttals or exceptions in it, and the "objections" it lists are removals of premises, not reasons for doubting them.</li>
+        <li><strong>Whether the map is the argument.</strong> Deciding that two premises are linked and not convergent is a judgement, and careful readers map the same paragraph differently. Unstated premises appear only if you add them, so an argument with its awkward assumption left out will look stronger than it is.</li>
+        <li><strong>Which premises matter most in general.</strong> "Critical" and "redundant" describe this map in its current state. Add a second reason and a critical premise becomes redundant; remove a line and redundant premises become critical. A redundant premise is not an unimportant one.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Add objections and rebuttals as a second kind of edge and decide what stands with the acceptability semantics of Dung's abstract argumentation frameworks.</li>
+        <li>Let each premise carry a probability and report the chance that the conclusion keeps a whole line of support, the calculation used for system reliability, with an explicit statement of the independence it assumes.</li>
+        <li>Offer argumentation schemes with their critical questions, so that choosing "argument from expert opinion" prompts for the premises that scheme usually leaves unstated.</li>
+        <li>Route arrows that span several layers around the boxes in between, and let claims be dragged into place.</li>
+        <li>Encode a map in the page address so that it can be shared as a link without a file.</li>
+        <li>Draft a map from pasted prose by splitting on indicator words such as "because", "since" and "therefore", for the user to correct.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Wigmore, J. H. (1913). <em>The Principles of Judicial Proof</em>. Little, Brown.</li>
+        <li>Beardsley, M. C. (1950). <em>Practical Logic</em>. Prentice-Hall.</li>
+        <li>Toulmin, S. E. (1958). <em>The Uses of Argument</em>. Cambridge University Press.</li>
+        <li>Thomas, S. N. <em>Practical Reasoning in Natural Language</em>. Prentice-Hall.</li>
+        <li>Freeman, J. B. (1991). <em>Dialectics and the Macrostructure of Arguments</em>. Foris.</li>
+        <li>Vesely, W. E., Goldberg, F. F., Roberts, N. H., and Haasl, D. F. (1981). <em>Fault Tree Handbook</em> (NUREG-0492). U.S. Nuclear Regulatory Commission.</li>
+        <li>Card, D., and Krueger, A. B. (1994). Minimum wages and employment: a case study of the fast-food industry in New Jersey and Pennsylvania. <em>American Economic Review</em>, 84(4), 772-793.</li>
+        <li>Dung, P. M. (1995). On the acceptability of arguments and its fundamental role in nonmonotonic reasoning, logic programming and n-person games. <em>Artificial Intelligence</em>, 77(2), 321-357.</li>
+        <li>Walton, D., Reed, C., and Macagno, F. (2008). <em>Argumentation Schemes</em>. Cambridge University Press.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
