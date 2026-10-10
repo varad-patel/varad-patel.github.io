@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Newcomb's Problem Calculator · 365 projects</title>
+  <meta name="description" content="Set the predictor's accuracy and the two payoffs, find the accuracy at which one-boxing beats two-boxing, simulate thousands of plays, and play against a predictor that learns your choices.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; min-width: 0; align-content: start; }
+    .stack-wide { display: grid; grid-template-columns: minmax(0, 1fr); gap: 26px; min-width: 0; }
+    .block { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding-top: 22px; border-top: 1px solid var(--rule); min-width: 0; }
+    .verdict { font: 500 1.12rem/1.45 var(--serif); }
+    .reveal { font: 500 1.02rem/1.45 var(--serif); min-height: 2.9em; }
+    .sum { font-size: 0.98rem; }
+    .sim-row { align-items: flex-end; }
+    .sim-row .field { flex: 0 1 220px; }
+    .field input.invalid { border-color: var(--bad); }
+    .sim-table .tbl th { white-space: normal; }
+    .sim-table .tbl .num { white-space: normal; }
+  </style>
+</head>
+<body class="proj" data-day="18">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Newcomb's Problem Calculator</h1>
+      <p class="lede">A predictor has already guessed whether you will take one box or two, and filled the boxes to match. Set how good it is and what the boxes hold, and find where taking one box starts to beat taking both, and why half the room will never agree that it does.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Newcomb's problem calculator, simulation and game">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>With Nozick's amounts, a million and a thousand, one box has the higher evidential expected value as soon as the predictor is right more than 50.05% of the time: barely better than a coin. In 100,000 simulated plays of each strategy at 90% accuracy, one-boxers averaged $900,010 and two-boxers $100,250. And in every one of those plays, taking both boxes would have paid exactly $1,000 more.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>There are two boxes. A clear one holds $1,000. An opaque one holds either $1,000,000 or nothing. You may take the opaque box alone, or both. Yesterday a predictor that is almost never wrong studied you and made a forecast. If it forecast that you would take only the opaque box, it put the million in. If it forecast that you would take both, it left the opaque box empty. The boxes are now sealed and nothing you do can change what is in them. The puzzle was devised by the physicist William Newcomb and published by Robert Nozick in 1969. Nozick remarked that almost everyone finds the answer obvious, and that they split about evenly over which answer it is.</p>
+      <p>One argument says take one box. Nearly everyone who takes one box walks away with a million, and nearly everyone who takes both walks away with a thousand. Your choice is overwhelming evidence about what the predictor did, so choose the act you would be glad to learn you had chosen. This is <strong>evidential decision theory</strong>, in the form Richard Jeffrey gave it: weigh each outcome by its probability given that you perform the act.</p>
+      <p>The other says take both. The money is already in the box or it is not. If it is there, taking both gets you a million and a thousand, not a million. If it is not, taking both gets you a thousand, not nothing. Either way you are a thousand better off, and an act that is better in every possible state of the world is the one to choose. This is <strong>causal decision theory</strong>, developed by Allan Gibbard, William Harper, David Lewis and others: weigh each outcome by the probability that the act would bring it about, and ignore correlations your act does not cause.</p>
+      <p>It matters beyond the two boxes because the same structure appears wherever your choice is correlated with something it does not cause. Lewis argued that a prisoners' dilemma played against someone who reasons as you do is a Newcomb problem. So is the thought that your decision to vote is evidence of what people like you will do, and so is the position of any agent, human or software, whose decisions others can forecast before it makes them.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The inputs</h3>
+      <p>The opaque box's prize is <var>M</var> and the clear box holds <var>K</var>. The predictor's accuracy <var>p</var> is the probability that its forecast matches what a chooser goes on to do, taken to be the same for one-boxers and two-boxers.</p>
+      <h3>The evidential sum</h3>
+      <p>If you take one box, the predictor probably foresaw it, so the box is full with probability <var>p</var>. If you take both, it probably foresaw that, so the box is full with probability 1 − <var>p</var>.</p>
+      <p class="eq">one box: <var>p</var> <var>M</var> &nbsp;&nbsp;&nbsp;&nbsp; both boxes: (1 − <var>p</var>) <var>M</var> + <var>K</var></p>
+      <p>Setting the two equal and solving for <var>p</var> gives the accuracy at which they are level:</p>
+      <p class="eq"><var>p</var>* = (<var>M</var> + <var>K</var>) / 2<var>M</var> = ½ + <var>K</var> / 2<var>M</var></p>
+      <p>Above <var>p</var>* one box has the higher value. The threshold depends only on the ratio of the two amounts, which is what the second chart draws: with a clear box worth a thousandth of the prize it is 50.05%, with one worth half the prize it is 75%, and once the clear box is worth as much as the prize even a perfect predictor only brings the two level.</p>
+      <h3>The causal sum</h3>
+      <p>Let <var>q</var> be your probability that the opaque box is full. Your choice comes after the forecast and cannot affect it, so <var>q</var> is the same whichever you choose.</p>
+      <p class="eq">one box: <var>q</var> <var>M</var> &nbsp;&nbsp;&nbsp;&nbsp; both boxes: <var>q</var> <var>M</var> + <var>K</var></p>
+      <p>Both boxes come out ahead by <var>K</var> for every value of <var>q</var>, so the causal answer does not depend on the accuracy at all. The four-cell table on the page shows the same thing without probabilities: in each column, the "both boxes" row is <var>K</var> higher.</p>
+      <h3>The simulation</h3>
+      <p>Two crowds of the chosen size play once each. For every one-boxer the page draws a random number; with probability <var>p</var> the predictor was right, so the box is full, and otherwise it is empty. For every two-boxer it draws another; with probability <var>p</var> the predictor was right, so the box is empty, and otherwise full. Winnings are averaged for each crowd and compared with the two formulas above. For each player the page also works out what the other choice would have won with the same box in front of them. The random numbers come from a seeded generator, so a given seed and settings always reproduce the same plays.</p>
+      <p>The first comparison is the one-boxer's old taunt to the two-boxer, "if you're so smart, why ain'cha rich?", made into a table. Lewis took the taunt as the title of a paper and answered it: the predictor has arranged to reward people for a choice he held to be irrational, which shows that irrationality is sometimes rewarded and not that it is rational. The second comparison is his side of the same table.</p>
+      <h3>The learning predictor</h3>
+      <p>In the game, the predictor guesses your next choice from your earlier ones. It takes your last three choices, finds every earlier point at which you made the same three in a row, and predicts whatever you did next most often. If that run has never come up, or the count is level, it tries the last two, then the last one, then simply your commonest choice so far; if all of those are level it predicts that you will repeat yourself. On the first round it predicts one box. Its guess is fixed before you click, the box is filled or emptied to match, and its running accuracy is the share of rounds it has got right.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Which answer is right.</strong> Both sums are correct arithmetic, and both readings of the simulation table are true of the same plays. The two sides agree on every number on this page. They disagree about which probability belongs in the sum: the chance that the box is full given your choice, or the chance that it is full, full stop. That is a question about what it means for a choice to be rational, and no calculation answers it.</li>
+        <li><strong>What a free choice does.</strong> The simulated players are fixed types: a one-boxer always takes one box. That builds in the link between choice and forecast, and leaves out the thing the argument is about, which is a person deciding after the boxes are sealed. The simulation shows what each theory predicts; it cannot test them.</li>
+        <li><strong>Whether such a predictor could exist.</strong> The model takes one accuracy, equal for both kinds of chooser and unaffected by anything you do. A real forecaster might be better at spotting one type, or might be something you could second-guess.</li>
+        <li><strong>Much from the game.</strong> The learning predictor is not Newcomb's. You face it repeatedly, so your choice now does shape its later guesses, which gives even a causal reasoner a reason to build a one-box record. And it follows a fixed rule: someone who works the rule out can take the opposite of its guess every round and drive its accuracy to zero.</li>
+        <li><strong>What the money is worth to you.</strong> The sums are in dollars. If a million is worth less to you than a thousand times a thousand, the amounts should be replaced by utilities, and the threshold moves up.</li>
+        <li><strong>How either theory fares elsewhere.</strong> Each has cases that embarrass it. Evidential reasoning seems to recommend avoiding acts that are merely symptoms of bad news; causal reasoning has its own counterexamples, such as those Andy Egan collected. Arif Ahmed's book argues the evidential side at length, and Lewis's papers the causal one. Winning the argument over two boxes would not settle the wider one.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Give the predictor separate accuracies for one-boxers and two-boxers. One box then wins on the evidential sum when the two accuracies add up to more than 1 + <var>K</var> / <var>M</var>.</li>
+        <li>Let the amounts pass through a utility curve, so that the declining value of money moves the threshold.</li>
+        <li>Add the variant in which both boxes are transparent, where the two theories come apart from a third family that chooses policies and not single acts.</li>
+        <li>Replace the learning predictor with a stronger one that blends several pattern lengths and randomises when it is unsure, so that it cannot be driven to zero.</li>
+        <li>Add a medical version of the problem, where a gene causes both a habit and a disease, to show the kind of case in which the evidential sum looks wrong.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Nozick, R. (1969). Newcomb's problem and two principles of choice. In N. Rescher (ed.), <em>Essays in Honor of Carl G. Hempel</em>. Reidel.</li>
+        <li>Jeffrey, R. C. (1965). <em>The Logic of Decision</em>. McGraw-Hill.</li>
+        <li>Gibbard, A., and Harper, W. L. (1978). Counterfactuals and two kinds of expected utility. In C. A. Hooker, J. J. Leach and E. F. McClennen (eds.), <em>Foundations and Applications of Decision Theory</em>. Reidel.</li>
+        <li>Lewis, D. (1979). Prisoners' dilemma is a Newcomb problem. <em>Philosophy &amp; Public Affairs</em>, 8(3), 235-240.</li>
+        <li>Lewis, D. (1981). Causal decision theory. <em>Australasian Journal of Philosophy</em>, 59(1), 5-30.</li>
+        <li>Lewis, D. (1981). "Why ain'cha rich?" <em>Noûs</em>, 15(3), 377-380.</li>
+        <li>Egan, A. (2007). Some counterexamples to causal decision theory. <em>Philosophical Review</em>, 116(1), 93-114.</li>
+        <li>Ahmed, A. (2014). <em>Evidence, Decision and Causality</em>. Cambridge University Press.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
