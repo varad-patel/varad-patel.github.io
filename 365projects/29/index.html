@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Decision Tree Debater · 365 projects</title>
+  <meta name="description" content="Build a decision tree for your own choice, enter probabilities and utilities, and see the recommended plan and exactly which assumption would have to change to flip it.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; min-width: 0; }
+    .verdict { font: 500 1.12rem/1.45 var(--serif); }
+    .file-btn { cursor: pointer; }
+    .file-btn:focus-within { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+    /* The drawn tree. */
+    .tree-box { background: #fff; border: 1px solid var(--grid); padding: 6px 8px; min-width: 0; }
+    svg.tree { display: block; width: 100%; }
+    .tree text { font: 12px var(--sans); fill: var(--ink); font-variant-numeric: tabular-nums; }
+    .tree .p { fill: var(--slate); }
+    .tree text.ev { fill: var(--slate); font-weight: 600; }
+    .tree text.u { font-weight: 700; }
+    .tree .edge { fill: none; stroke: var(--slate); stroke-width: 1.3; stroke-linejoin: round; }
+    .tree .edge.plan { stroke: var(--ink); stroke-width: 3; }
+    .tree .slash { fill: none; stroke: var(--ink); stroke-width: 1.5; }
+    .tree .edge.off, .tree .slash.off { opacity: 0.4; }
+    .tree .node.off { opacity: 0.62; }
+    .tree .sq { fill: var(--ink); }
+    .tree .ci { fill: #fff; stroke: var(--ink); stroke-width: 2.5; }
+    .tree .tri { fill: var(--slate); }
+    .tree .bad-ring { fill: none; stroke: var(--bad); stroke-width: 2; }
+    .tree .node { cursor: pointer; }
+    .tree-legend { display: flex; flex-wrap: wrap; gap: 4px 18px; }
+    .tree-legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .sym { display: inline-block; width: 11px; height: 11px; flex: none; box-sizing: border-box; }
+    .sym.decision { background: var(--ink); border-radius: 1.5px; }
+    .sym.chance { border: 2.5px solid var(--ink); border-radius: 50%; background: #fff; }
+    .sym.end { width: 0; height: 0; border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-right: 11px solid var(--slate); }
+    .key-line { display: inline-block; width: 22px; border-top: 3px solid var(--ink); }
+
+    /* The editor: an outline of the same tree, one row for each node. */
+    .ed .field { gap: 3px; }
+    .ed .field .lab { font-size: 0.78rem; color: var(--slate); justify-content: flex-start; align-items: center; gap: 6px; }
+    .ed input[type="text"], .ed input[type="number"], .ed select { padding: 6px 8px; font-size: 0.92rem; }
+    .ed input.invalid { border-color: var(--bad); }
+    .ed input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+    .ed input[type="number"]::-webkit-inner-spin-button, .ed input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    .ed .btn.x { padding: 4px 9px; font-size: 1rem; line-height: 1.2; }
+    .n { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+    .n-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; }
+    .n-head { display: grid; grid-template-columns: minmax(0, 1fr) 116px auto; gap: 8px; align-items: end; }
+    .n-head.root { grid-template-columns: minmax(0, 1fr); }
+    .n-nums { display: flex; gap: 8px; }
+    .n-nums .field { flex: 0 0 96px; }
+    .n-kids { margin-left: 4px; padding: 4px 0 2px 12px; border-left: 2px solid var(--rule); display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+    .n-foot { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; }
+    .n-foot .note { font-size: 0.86rem; padding: 8px 10px; }
+    .n-foot .note .btn { margin-top: 6px; display: block; }
+    @media (max-width: 520px) { .n-kids { margin-left: 2px; padding-left: 8px; } }
+
+    .case { margin: 8px 0 0; padding-left: 1.3em; display: grid; gap: 4px; }
+    .flips .tbl td.num { white-space: normal; }
+    @media (max-width: 520px) { .flips .tbl th { white-space: normal; } .flips .tbl th, .flips .tbl td { padding: 6px 6px; } .n-head { grid-template-columns: minmax(0, 1fr) 108px auto; gap: 6px; } }
+  </style>
+</head>
+<body class="proj" data-day="29">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Decision Tree Debater</h1>
+      <p class="lede">Draw your decision as a tree of choices and chances, put a probability on each chance and a utility on each ending, and the page works out the best plan. Then it argues back: it finds the assumptions that would flip the choice, and how far each would have to move.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Decision tree builder with sensitivity analysis">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>In the job-offer example, staying put beats the start-up by 55 to 45 on a 0 to 100 scale. Two numbers carry the argument: the choice flips if the chance of the start-up taking off is 0.5 and not 0.3, or if its failure is rated 44 and not 30. How good success would be hardly matters. The best ending would have to be worth 172, on a scale that stops at 100.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Rational choice theory has a simple recipe for deciding under uncertainty. List what you could do. For each option, list what might happen and how likely it is. Say how much you would value each ending. Then pick the option whose endings are best on average, weighted by their probabilities. John von Neumann and Oskar Morgenstern showed in 1944 that anyone whose preferences over gambles satisfy a few consistency conditions behaves as if following this recipe, and Leonard Savage extended the result to probabilities that are personal degrees of belief. Howard Raiffa and others then turned it into a working method, decision analysis, with the decision tree as its diagram.</p>
+      <p>A tree earns its keep when choices come in sequence. Take the job and you may later face a second choice that staying put would never offer. The rule for such trees is to reason backwards: settle what you would do at the last decision, replace that decision with its value, and repeat until you reach the first. Reasoning forwards from today tempts you to compare options as if your later self had no say.</p>
+      <p>The recipe's weak point is its ingredients. Nobody knows that the start-up has a 30% chance, or that failure is worth 30 out of 100. So the useful output of a tree is rarely the number at its root. It is the list of assumptions the recommendation depends on, with a figure for how wrong each would have to be. If the choice survives any plausible value of a number, stop arguing about that number. If it flips when a guess moves from 0.3 to 0.35, the tree has not decided anything, and it has told you exactly what to go and find out.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The tree</h3>
+      <p>There are three kinds of node. At a <strong>decision</strong> (a square) you choose one branch. At a <strong>chance event</strong> (a circle) the world chooses, and each branch has a probability; the probabilities out of one circle must sum to 1. An <strong>end point</strong> (a triangle) carries a utility: a number for how good that ending is, on any scale you like as long as you use the same one throughout. The first node is always a decision, and its branches are the options you are choosing between today. Any branch can lead to a further decision or chance event, up to six levels.</p>
+      <h3>Rolling back</h3>
+      <p>The value <var>V</var> of every node is computed from the end points towards the root:</p>
+      <p class="eq">end point: <var>V</var> = <var>u</var> &nbsp;&nbsp;&nbsp; chance: <var>V</var> = Σ<sub><var>i</var></sub> <var>p</var><sub><var>i</var></sub> <var>V</var><sub><var>i</var></sub> &nbsp;&nbsp;&nbsp; decision: <var>V</var> = max<sub><var>i</var></sub> <var>V</var><sub><var>i</var></sub></p>
+      <p>The branch that attains the maximum at each decision is the one to take (the earlier branch, if two are level). The recommended plan is the first choice together with the choice at every later decision that can still be reached, drawn as the thick line. Options turned down are marked with two strokes and faded, though their values are still shown, since a faded branch is what the sensitivity analysis is trying to bring back.</p>
+      <h3>One-way sensitivity</h3>
+      <p>Take any single number <var>x</var> in the tree: a utility, or a probability. It sits under exactly one of today's options, call it <var>A</var>. As <var>x</var> moves and everything else stays put, only <var>A</var>'s value <var>f</var>(<var>x</var>) changes; the best of the other options is a constant <var>M</var>. The first choice changes hands where</p>
+      <p class="eq"><var>f</var>(<var>x</var>) = <var>M</var></p>
+      <p>When a probability moves, its sibling branches are rescaled in proportion so that the total stays 1: if <var>p</var><sub>1</sub> becomes <var>x</var>, each other <var>p</var><sub><var>j</var></sub> becomes <var>p</var><sub><var>j</var></sub> (1 − <var>x</var>) / (1 − <var>p</var><sub>1</sub>). A chance event with two branches therefore has one free probability, and the table lists it once.</p>
+      <p>The function <var>f</var> is not a straight line when there are later decisions under <var>A</var>, because the best later choice can itself switch as <var>x</var> moves. But it has a known shape. Each later decision takes a maximum of straight lines and each chance event averages them, so <var>f</var> is piecewise linear, and it only ever moves in one direction as <var>x</var> rises. A higher utility can only raise the value of every node above it. A higher probability moves its own chance event's value along a straight line, up if that branch is better than the average of its siblings and down if it is worse, and the nodes above pass the movement on without reversing it. So <var>f</var> crosses <var>M</var> at most once.</p>
+      <p>That pins the search down. For a probability the page checks which end of the range from 0 to 1, if either, puts the other side ahead, and halves the interval between there and the current value until it is narrower than one part in 10<sup>13</sup>. For a utility, which has no upper or lower limit, it steps outwards in doubling strides until <var>f</var> crosses <var>M</var> and then halves the bracket in the same way. If <var>A</var> is ahead and lowering the utility stops making any difference (the plan under <var>A</var> has stopped using that ending), no lower value will ever matter, and the answer is "never". Each number therefore has at most one flip point, and the table gives it.</p>
+      <p>In the job example the chance <var>x</var> of the start-up taking off gives <var>f</var>(<var>x</var>) = 80<var>x</var> + 30(1 − <var>x</var>), since selling the shares (80) beats holding them (77.5). Staying is worth 55, so the flip is at 30 + 50<var>x</var> = 55, <var>x</var> = 0.5.</p>
+      <h3>Most fragile first</h3>
+      <p>To put probabilities and utilities in one list, each flip is measured as a share of the number's scale. For a probability that is the change in probability. For a utility it is the change divided by the gap between the best and worst end points in the tree, which makes the measure unaffected by the units you chose for utility. The table is sorted by that share, smallest first, and the three smallest are spelled out above it. Numbers that cannot change the choice at any value are listed last as "never".</p>
+      <h3>Saving</h3>
+      <p>Each edit is written to this browser's local storage, so the tree is still here when you come back. "Export as a file" gives the same tree as a small JSON file of nested nodes, each with a <code>type</code>, a <code>name</code>, and a <code>p</code>, a <code>value</code> or <code>children</code>; "Import a file" reads one back and checks it against the same limits as the editor.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Whether your numbers are right.</strong> Every probability and utility is your own guess. The tree is exact arithmetic on those guesses and adds no information of its own. Its honest use is to show which guesses matter.</li>
+        <li><strong>What two wrong numbers do together.</strong> The analysis moves one number at a time. Two assumptions that each look safe can flip the choice when both are a little off in the same direction, and the table will not show it.</li>
+        <li><strong>That one uncertainty is one number.</strong> If the same real-world chance appears on two branches (the same flood, with and without insurance), the page treats the copies as separate numbers and moves only one. Draw the tree so that each uncertainty appears once where you can.</li>
+        <li><strong>Whether expected utility is how you should choose.</strong> The rule assumes your attitude to risk is already inside the utilities, and that you would accept the consistency conditions behind it. Maurice Allais and Daniel Ellsberg each built choices where thoughtful people knowingly break those conditions, and Kahneman and Tversky showed that ordinary people break them systematically.</li>
+        <li><strong>Whether the tree is the right tree.</strong> An option you did not think of, an outcome you could not imagine, the chance to wait and learn more before choosing: none of these can be found by varying numbers in the tree you drew.</li>
+        <li><strong>How later choices shift.</strong> "Flips the choice" means the first decision. A later decision on the plan can switch without the first one changing; the kink in a line on the chart is where that happens, but the table does not list it.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Named variables, so that one probability or utility can be used in several places and moved as one.</li>
+        <li>Two-way sensitivity: pick two numbers and draw the region of the plane in which each option wins.</li>
+        <li>The expected value of perfect information for each chance event: how much it would be worth to learn the outcome before choosing.</li>
+        <li>Enter outcomes as money and choose a utility curve, so that aversion to risk is a setting and not something to fold into each number by hand.</li>
+        <li>Give each number a range and report how often each option wins when all of them are drawn at random together.</li>
+        <li>Edit by dragging and typing on the drawing itself.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>von Neumann, J., and Morgenstern, O. (1944). <em>Theory of Games and Economic Behavior</em>. Princeton University Press.</li>
+        <li>Savage, L. J. (1954). <em>The Foundations of Statistics</em>. Wiley.</li>
+        <li>Raiffa, H. (1968). <em>Decision Analysis: Introductory Lectures on Choices under Uncertainty</em>. Addison-Wesley.</li>
+        <li>Allais, M. (1953). Le comportement de l'homme rationnel devant le risque: critique des postulats et axiomes de l'école américaine. <em>Econometrica</em>, 21(4), 503-546.</li>
+        <li>Ellsberg, D. (1961). Risk, ambiguity, and the Savage axioms. <em>Quarterly Journal of Economics</em>, 75(4), 643-669.</li>
+        <li>Kahneman, D., and Tversky, A. (1979). Prospect theory: an analysis of decision under risk. <em>Econometrica</em>, 47(2), 263-291.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
