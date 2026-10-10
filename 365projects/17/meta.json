@@ -1,0 +1,7 @@
+{
+  "question": "If a more complicated curve always fits better, how do you know when to stop adding terms?",
+  "finding": "Across 1,000 samples of 30 noisy points from a parabola, the residual sum of squares is lowest for the degree-8 polynomial every time, while BIC picks the true degree 2 in 865 samples and AIC in 607.",
+  "limit": "The criteria only rank the candidate models they are given, and AIC and BIC answer different questions, so neither can say that the chosen model is true.",
+  "sources": [],
+  "built": "2026-10-10"
+}

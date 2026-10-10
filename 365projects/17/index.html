@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Occam's Razor Lab · 365 projects</title>
+  <meta name="description" content="Add noisy points, fit polynomials of rising degree, and watch AIC, BIC and cross-validation pick the simplest model that is good enough while the raw fit keeps improving.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .controls h3:not(:first-child) { margin-top: 10px; padding-top: 16px; border-top: 1px solid var(--grid); }
+    .btn[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+    .xy { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 10px; align-items: end; }
+    .xy .btn { margin-bottom: 4px; }
+    .low { position: relative; font-weight: 700; padding: 1px 6px; border-radius: 3px; background: color-mix(in srgb, var(--good) 18%, transparent); }
+    .crit td { vertical-align: middle; }
+    .crit tr.on { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+    .crit .btn.small { min-width: 2.4em; }
+    .exp { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; padding-top: 24px; border-top: 1px solid var(--rule); }
+    .stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .modelbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 20px; align-items: center; padding: 14px 16px; background: #fff; border: 1px solid var(--grid); }
+    .modelbar > .row { grid-column: 1 / -1; gap: 8px 22px; }
+    @media (max-width: 520px) { .modelbar { grid-template-columns: minmax(0, 1fr); } }
+    .exp-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 20px 36px; align-items: start; }
+    .exp-grid td:first-child { min-width: 10.5em; }
+    @media (max-width: 900px) { .exp-grid { grid-template-columns: minmax(0, 1fr); } }
+    .exp-grid .tbl th { white-space: normal; vertical-align: bottom; line-height: 1.25; }
+  </style>
+</head>
+<body class="proj" data-day="17">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Occam's Razor Lab</h1>
+      <p class="lede">A more complicated model always fits the data in hand better. Add noisy points, raise the degree of the curve, and see where AIC, BIC and cross-validation say to stop.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Polynomial model selection lab">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>Fit polynomials of degree 0 to 8 to 30 noisy points from a parabola and the residual sum of squares falls at every step, from 59.8 to 22.2, yet AIC, BIC and leave-one-out cross-validation all choose degree 2. Across 1,000 fresh samples the lowest residual sum of squares belongs to degree 8 every time, while BIC picks the true degree in 865 and AIC in 607, overshooting in the other 393.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Occam's razor is the advice, credited to the fourteenth-century friar William of Ockham, not to multiply entities beyond necessity: of two explanations that account for the facts equally well, take the simpler. The catch is in "equally well". Two theories almost never fit equally well, because the more complicated one almost always fits better. A curve with nine adjustable coefficients can bend closer to thirty points than a curve with three, whatever produced the points. If closeness of fit were the test, the most complicated theory on the table would win every time, and the razor would never get to cut.</p>
+      <p>The way out is to notice that part of any good fit is a fit to noise. Each extra parameter buys a guaranteed drop in error on the data in hand, whether or not it has caught anything real, and noise does not repeat. So a flexible model does better on the old data and worse on the next batch. In the early 1970s Hirotugu Akaike showed how to put a number on this: a model's expected fit to new data is roughly its fit to the old data less a charge for every parameter. Malcolm Forster and Elliott Sober later argued that this takes the mystery out of parsimony. A scientist who prefers the simpler theory need not believe that nature is simple. Simpler models, fitted to limited data, tend to predict better.</p>
+      <p>There are two well-known ways to set the charge, and they answer different questions. Akaike's criterion (AIC) asks which model will predict new data best, and does not suppose that any candidate is true. Gideon Schwarz's criterion (BIC) asks which candidate is most probably the true one, supposing one of them is. BIC charges more per parameter, and more again as the sample grows. The experiment at the bottom of the tool shows the consequence. When a simple truth is among the candidates, BIC finds it more often (865 samples in 1,000 against 607), and AIC goes on choosing something too elaborate about a third of the time however much data it gets. When the truth is a sine wave that no polynomial matches, the roles swap: with 100 points, the curves AIC picks sit closer to the truth (average error 0.087) than the ones BIC picks (0.101), because the right move there is to keep adding terms as the data allow.</p>
+      <p>This matters wherever a model with many adjustable parts is fitted to a limited record: economic forecasts, epidemic curves, election models, machine learning. A close fit to the past is cheap. Asking how many knobs it took, and what each one cost, is the working form of Ockham's question.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The points</h3>
+      <p>A sample is <var>n</var> points with <var>x</var> drawn evenly at random between 0 and 10 and <var>y</var> = <var>f</var>(<var>x</var>) + noise, where the noise is normal with the standard deviation on the slider. The four choices of <var>f</var> are a straight line (2 + 0.6<var>x</var>), a parabola (2 + 2<var>x</var> − 0.2<var>x</var>²), a cubic (5 + 8(<var>u</var>³ − 0.6<var>u</var>) with <var>u</var> = (<var>x</var> − 5)/5) and a sine wave (5 + 3 sin 0.9<var>x</var>). All randomness comes from a seeded generator, so a seed names a sample exactly. Clicking the chart adds a point where the pointer is, and the two number boxes add one at typed coordinates.</p>
+
+      <h3>Fitting every degree at once</h3>
+      <p>The degree-<var>d</var> model is <var>y</var> = <var>b</var><sub>0</sub> + <var>b</var><sub>1</sub><var>x</var> + … + <var>b</var><sub><var>d</var></sub><var>x</var><sup><var>d</var></sup>, with the coefficients chosen to minimise the residual sum of squares</p>
+      <p class="eq">RSS<sub><var>d</var></sub> = Σ<sub><var>i</var></sub> ( <var>y</var><sub><var>i</var></sub> − <var>ŷ</var><sub><var>d</var></sub>(<var>x</var><sub><var>i</var></sub>) )²</p>
+      <p>Solving this with a matrix of raw powers of <var>x</var> goes wrong quickly: at <var>x</var> = 10 the eighth power is a hundred million, and the columns become nearly copies of each other. The page instead maps <var>x</var> onto <var>t</var> between −1 and 1, builds the columns from Legendre polynomials in <var>t</var>, which stay between −1 and 1 and are far from parallel, and makes them exactly orthonormal one after another (a QR factorisation by Gram-Schmidt, with each column cleaned twice). The fitted values for degree <var>d</var> are then the projection of <var>y</var> onto the first <var>d</var> + 1 orthonormal columns, so one pass gives every degree. The same polynomial is fitted as before; only the arithmetic is safer. A test fits points near <var>x</var> = 1,000,000 and gets the same answers as near zero.</p>
+      <p>The highest degree offered is 8, and less when the points cannot support it: a polynomial needs more separate <var>x</var> positions than its degree, and the page keeps at least one point to spare so the fit is never forced through every point.</p>
+
+      <h3>The criteria</h3>
+      <p>Assume the errors are independent and normal with one unknown variance. Maximising the likelihood gives the least-squares coefficients and a variance estimate of RSS/<var>n</var>, and −2 times the maximised log-likelihood is <var>n</var> ln(RSS/<var>n</var>) plus a constant, <var>n</var>(1 + ln 2π), that is the same for every model and is dropped. With <var>k</var> the number of estimated parameters:</p>
+      <p class="eq">AIC = <var>n</var> ln(RSS / <var>n</var>) + 2<var>k</var></p>
+      <p class="eq">AICc = AIC + 2<var>k</var>(<var>k</var> + 1) / (<var>n</var> − <var>k</var> − 1)</p>
+      <p class="eq">BIC = <var>n</var> ln(RSS / <var>n</var>) + <var>k</var> ln <var>n</var></p>
+      <p>Here <var>k</var> = <var>d</var> + 2: the <var>d</var> + 1 coefficients and the error variance. Counting the variance adds the same amount to every model's AIC and BIC, so it does not change their order, but it does matter for AICc. In all three the first term rewards fit and the second charges for parameters. AIC charges 2 per parameter. BIC charges ln <var>n</var>, which is 3.4 at 30 points and 4.6 at 100. AICc is AIC with a correction for small samples that grows steeply as <var>k</var> approaches <var>n</var>: at 30 points and degree 8 it adds 11.6. Only differences between models mean anything; the values themselves have no scale.</p>
+
+      <h3>Leave-one-out cross-validation</h3>
+      <p>Remove one point, fit the model to the rest, and see how far the fitted curve is from the point removed. Do that for every point and average the squared misses. For least squares this needs no refitting, because the miss for point <var>i</var> is its ordinary residual <var>e</var><sub><var>i</var></sub> scaled up by its leverage <var>h</var><sub><var>ii</var></sub>, the sum of the squares of row <var>i</var> of the orthonormal columns:</p>
+      <p class="eq">LOO = (1 / <var>n</var>) Σ<sub><var>i</var></sub> ( <var>e</var><sub><var>i</var></sub> / (1 − <var>h</var><sub><var>ii</var></sub>) )²</p>
+      <p>A test checks this shortcut against refitting without each point in turn. Leave-one-out and AIC tend to agree in large samples, a result due to Mervyn Stone.</p>
+
+      <h3>The repeated experiment</h3>
+      <p>One sample can flatter any rule. The lower panel draws 1,000 samples with the current curve, noise and size, fits all nine degrees to each, and counts which degree each rule picks. It also scores each pick against the truth, as the mean squared gap between the chosen curve and the true curve at the sampled <var>x</var> values. Theory gives a check: a polynomial that contains the truth has an expected gap of (<var>d</var> + 1)σ²/<var>n</var>, so every unnecessary coefficient costs σ²/<var>n</var>. The "best with hindsight" row is the single degree that would have done best on average, which no rule can know in advance.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>That the chosen model is true.</strong> The criteria rank the candidates they are given. If none is right, as with the sine wave, they return the least bad polynomial, and nothing in the output says so.</li>
+        <li><strong>Which criterion to use.</strong> AIC and BIC are answers to different questions, prediction and identification, and no rule wins at both. The sample size at which they part company depends on how much there is to find.</li>
+        <li><strong>How complexity should be counted.</strong> Counting coefficients works for polynomials fitted by least squares with normal errors. It is a poor measure elsewhere: one extra frequency in a sine can wiggle more than several polynomial terms, and a model with a thousand weights that are mostly shrunk to zero is not as complex as its count suggests.</li>
+        <li><strong>Anything outside the range of the points.</strong> All four rules judge a curve where the data are. Slide to degree 8 and look at the ends of the chart: a model that scores respectably can still run off the page a short step beyond the last point.</li>
+        <li><strong>How good the winner is.</strong> Once a model has been picked because it scored best, its own error estimate is too optimistic, since the picking used the same data. The page reports the choice and not an honest error bar for it.</li>
+        <li><strong>Why simpler theories deserve belief.</strong> This is a result about prediction from limited, noisy data. Whether simplicity in the wider sense, such as fewer kinds of thing or fewer independent assumptions, is a guide to truth is a separate question that curve fitting does not settle.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Offer other families alongside polynomials, such as sine series and splines, so that models with the same number of parameters but different shapes can be compared.</li>
+        <li>Add ridge and lasso fits, where complexity is turned down continuously by a penalty and not one coefficient at a time.</li>
+        <li>Show the bias-variance split directly: for each degree, how much of the average error is the curve being too stiff and how much is it chasing noise.</li>
+        <li>Compute the exact Bayesian evidence for each degree under a stated prior, to show what BIC is approximating, and average over models instead of picking one.</li>
+        <li>Let the visitor hold back a test set and compare each rule's choice with the model that actually predicts the held-back points best.</li>
+        <li>Allow other noise, such as heavy tails or a spread that grows with <var>x</var>, to see how far the criteria can be trusted when their assumptions fail.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Akaike, H. (1974). A new look at the statistical model identification. <em>IEEE Transactions on Automatic Control</em>, 19(6), 716-723.</li>
+        <li>Schwarz, G. (1978). Estimating the dimension of a model. <em>Annals of Statistics</em>, 6(2), 461-464.</li>
+        <li>Hurvich, C. M., and Tsai, C.-L. (1989). Regression and time series model selection in small samples. <em>Biometrika</em>, 76(2), 297-307.</li>
+        <li>Stone, M. (1977). An asymptotic equivalence of choice of model by cross-validation and Akaike's criterion. <em>Journal of the Royal Statistical Society, Series B</em>, 39(1), 44-47.</li>
+        <li>Burnham, K. P., and Anderson, D. R. (2002). <em>Model Selection and Multimodel Inference: A Practical Information-Theoretic Approach</em> (2nd ed.). Springer.</li>
+        <li>Forster, M., and Sober, E. (1994). How to tell when simpler, more unified, or less ad hoc theories will provide more accurate predictions. <em>British Journal for the Philosophy of Science</em>, 45(1), 1-35.</li>
+        <li>Sober, E. (2015). <em>Ockham's Razors: A User's Manual</em>. Cambridge University Press.</li>
+        <li>All data on this page are simulated in the browser.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
