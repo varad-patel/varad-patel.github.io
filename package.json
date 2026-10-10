@@ -1,0 +1,13 @@
+{
+  "name": "varad-patel-site",
+  "private": true,
+  "type": "module",
+  "description": "Dev tooling only. The site itself has no build step and no runtime dependencies.",
+  "scripts": {
+    "test": "node --test \"365projects/**/*.test.mjs\"",
+    "smoke": "node scripts/smoke.mjs"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.64.0"
+  }
+}

@@ -1,366 +1,366 @@
-id	section	title	description
-1	1	GDP Growth Dashboard	Interactive dashboard comparing GDP growth across countries and years.
-2	1	Inflation Tracker	Track CPI and identify which categories contribute most to inflation.
-3	1	Unemployment Visualizer	Explore unemployment trends by country, age, gender, and education.
-4	1	Gini Calculator	Calculate and visualize income inequality from distribution data.
-5	1	Cost-of-Living Index	Compare the cost of everyday goods and services between cities.
-6	1	Purchasing Power Explorer	Show how much different currencies can actually buy.
-7	1	Interest Rate Explorer	Visualize central-bank rates alongside inflation and economic growth.
-8	1	Currency Volatility Analyzer	Analyze exchange-rate fluctuations and identify periods of instability.
-9	1	Trade Balance Visualizer	Show imports, exports, trade partners, and trade deficits/surpluses.
-10	1	Government Spending Explorer	Break down government expenditure by sector and year.
-11	1	National Debt Dashboard	Compare government debt relative to GDP and revenue.
-12	1	GDP-per-Capita Explorer	Compare living standards using GDP per capita and related indicators.
-13	1	Productivity Analyzer	Compare output per worker/hour across countries and industries.
-14	1	Economic Growth Heatmap	Create a world map showing historical economic growth.
-15	1	Inflation vs Wages	Investigate whether wages keep pace with inflation.
-16	1	Housing Affordability Index	Compare house prices with household incomes.
-17	1	Rent-to-Income Analyzer	Calculate how much income households spend on rent.
-18	1	Food Inflation Tracker	Track food-price changes and identify major contributors.
-19	1	Energy Price Analyzer	Study electricity/fuel prices alongside economic indicators.
-20	1	Commodity Dashboard	Track oil, metals, food and other commodity prices.
-21	1	Market Sentiment Dashboard	Combine market data and news sentiment.
-22	1	Economic Calendar	Create a searchable calendar of major economic releases.
-23	1	Recession Detector	Use economic indicators to identify historical recession periods.
-24	1	Inflation Forecasting	Train a time-series model to estimate future inflation.
-25	1	GDP Forecasting	Predict GDP growth using historical macroeconomic indicators.
-26	1	Unemployment Forecast	Predict unemployment using economic variables.
-27	1	Currency Forecasting	Experiment with models predicting exchange-rate movements.
-28	1	Housing Price Predictor	Predict housing prices using location and economic variables.
-29	1	Wage Predictor	Estimate wages from education, experience, industry and geography.
-30	1	Economic Correlation Engine	Automatically find relationships between economic indicators.
-31	1	Recession Probability Model	Estimate the probability of an economy entering recession.
-32	1	Economic Similarity Finder	Find countries whose economic structures resemble each other.
-33	1	Country Economic Ranking	Build customizable rankings based on user-selected metrics.
-34	1	Development Index Builder	Build your own HDI-like index from socioeconomic variables.
-35	1	Inequality Simulator	Simulate how income distributions change under different conditions.
-36	1	Income Distribution Simulator	Generate synthetic populations and study income distributions.
-37	1	Wealth Distribution Simulator	Model how wealth accumulates and spreads through a population.
-38	1	Tax Revenue Simulator	Estimate government revenue under different tax structures.
-39	1	Government Budget Simulator	Allocate a fixed government budget between competing priorities.
-40	1	Minimum-Wage Simulator	Model potential effects of changing minimum wages.
-41	1	UBI Simulator	Simulate universal basic income under different funding mechanisms.
-42	1	Subsidy Simulator	Model how subsidies affect consumers, producers and government spending.
-43	1	Tariff Simulator	Explore how tariffs affect prices, trade and welfare.
-44	1	Trade-War Simulator	Model countries imposing tariffs and retaliatory tariffs.
-45	1	Economic Mobility Simulator	Simulate how individuals move between income classes.
-46	1	Macroeconomic Agent Simulator	Build agents representing households, firms and governments.
-47	1	Economic Shock Model	Simulate how shocks propagate through an economy.
-48	1	AI Recession Warning System	Use ML to detect combinations of indicators associated with recessions.
-49	1	Counterfactual Economy	Estimate what might happen under alternative economic policies.
-50	1	PolicySim	Full platform for experimenting with economic policies and measuring trade-offs.
-51	2	Election Explorer	Explore historical election results interactively.
-52	2	Voter Turnout Dashboard	Analyze turnout across elections and demographics.
-53	2	Party Comparison Tool	Compare parties based on policy positions.
-54	2	Election Map Generator	Generate interactive election maps.
-55	2	Constituency Analyzer	Analyze voting patterns at constituency level.
-56	2	Voting-Age Explorer	Map voting-age populations across regions.
-57	2	Demographic Voting Dashboard	Study relationships between demographics and voting.
-58	2	Political Donations Explorer	Analyze campaign contributions.
-59	2	Campaign Spending Visualizer	Compare campaign expenditure and election outcomes.
-60	2	Parliament Attendance Tracker	Analyze representative attendance.
-61	2	Parliamentary Voting Explorer	Explore how representatives vote on legislation.
-62	2	Bill Tracker	Track bills through different stages of legislation.
-63	2	Coalition Visualizer	Visualize political coalitions and alliances.
-64	2	Political Timeline	Build interactive timelines of political events.
-65	2	Speech Word Analyzer	Analyze vocabulary and rhetoric in political speeches.
-66	2	Election Swing Calculator	Calculate seat changes under different vote swings.
-67	2	Electoral System Simulator	Compare different voting systems using identical votes.
-68	2	FPTP Simulator	Demonstrate how first-past-the-post converts votes into seats.
-69	2	Ranked-Choice Simulator	Simulate ranked-choice elections.
-70	2	PR Simulator	Explore proportional representation.
-71	2	Gerrymandering Visualizer	Demonstrate how district boundaries can affect representation.
-72	2	Coalition Formation Simulator	Find possible governing coalitions after elections.
-73	2	Turnout Predictor	Predict turnout from demographic and historical variables.
-74	2	Election Simulator	Generate election outcomes under different assumptions.
-75	2	Poll Aggregator	Combine polling results using transparent weighting methods.
-76	2	Polling Error Analyzer	Study historical polling misses.
-77	2	Polarization Index	Quantify ideological distance between groups.
-78	2	Political Ideology Classifier	Classify political documents based on policy positions.
-79	2	Party Similarity Engine	Calculate similarity between political parties.
-80	2	Politician Similarity Engine	Compare politicians based on voting records.
-81	2	Legislative Network Graph	Visualize relationships between legislators and bills.
-82	2	Political Donation Network	Map connections between donors and politicians.
-83	2	Lobbying Network	Explore relationships between companies, lobbyists and policymakers.
-84	2	Political Participation Predictor	Predict likelihood of political participation.
-85	2	Political Trust Analyzer	Study what factors correlate with trust in institutions.
-86	2	Election Forecasting Model	Build a transparent statistical election forecast.
-87	2	Multi-Party Election Simulator	Model elections involving many competing parties.
-88	2	AI Gerrymandering Detector	Detect suspicious districting patterns.
-89	2	Coalition Prediction Model	Predict likely coalitions using historical relationships.
-90	2	Voter Behavior Model	Model how demographics and issues influence voting.
-91	2	Campaign Strategy Simulator	Let simulated campaigns allocate limited resources.
-92	2	Political Influence Network	Model how organizations influence political actors.
-93	2	Electoral Optimization Engine	Compare electoral systems against fairness criteria.
-94	2	Political Stability Model	Estimate political instability from socioeconomic indicators.
-95	2	Democracy Health Index	Build a transparent composite measure of democratic institutions.
-96	2	Polarization Forecast	Predict future polarization from historical trends.
-97	2	Constitutional Analyzer	Use NLP to compare constitutional structures.
-98	2	Global Democracy Explorer	Compare democratic institutions internationally.
-99	2	AI Democracy Simulator	Simulate voters, parties, media and elections.
-100	2	Computational Political Science Lab	Platform combining political datasets, models and experiments.
-101	3	Political Sentiment Analyzer	Analyze sentiment in political speeches.
-102	3	Policy Summarizer	Automatically summarize long policy documents.
-103	3	Debate Analyzer	Identify arguments and counterarguments in debates.
-104	3	Government Classifier	Categorize government documents by topic.
-105	3	Political News Classifier	Categorize political news articles.
-106	3	Economic News Classifier	Classify economic news into topics.
-107	3	Policy Keyword Extractor	Extract important concepts from policies.
-108	3	Political Claim Extractor	Identify factual claims in political text.
-109	3	Economic Claim Extractor	Extract economic assertions for later verification.
-110	3	Legislative Search Engine	Search thousands of bills semantically.
-111	3	Speech Topic Model	Discover hidden themes in political speeches.
-112	3	Parliamentary NLP	Analyze large collections of parliamentary transcripts.
-113	3	Policy Similarity Engine	Find similar policies across countries.
-114	3	Manifesto Comparator	Compare election manifestos automatically.
-115	3	Policy Embedding Map	Map policies into a semantic space.
-116	3	Politician Embedding Map	Represent politicians using their statements/votes.
-117	3	Party Ideology Embeddings	Learn ideological relationships from political text.
-118	3	Economic News Topics	Discover dominant economic narratives.
-119	3	Political Rhetoric Classifier	Identify rhetorical strategies.
-120	3	Propaganda Classifier	Detect predefined propaganda techniques.
-121	3	Political Framing Detector	Detect how the same issue is framed differently.
-122	3	Policy Contradiction Detector	Find potentially conflicting policy statements.
-123	3	Claim Verification Tool	Retrieve evidence relevant to political claims.
-124	3	Economic Fact Checker	Check economic claims against datasets.
-125	3	AI Policy Assistant	Help researchers navigate policy documents.
-126	3	Legislative Q&A	Ask questions over a corpus of bills.
-127	3	Government RAG	Build a retrieval system over government data.
-128	3	Parliament RAG	Query parliamentary debates and records.
-129	3	Constitution Assistant	Search and explain constitutional provisions.
-130	3	Treaty Assistant	Search and compare international treaties.
-131	3	Political Bias Benchmark	Test AI models for political bias.
-132	3	AI Neutrality Tester	Test whether AI responses change with political framing.
-133	3	Framing Sensitivity Benchmark	Measure how wording affects AI outputs.
-134	3	Political Persuasion Benchmark	Study whether AI-generated arguments change simulated opinions.
-135	3	AI Policy Critic	Have AI identify weaknesses in policy proposals.
-136	3	AI Policy Auditor	Check policies for evidence, contradictions and assumptions.
-137	3	Legislative Contradiction AI	Search large legislation corpora for conflicts.
-138	3	Constitutional Reasoning Benchmark	Evaluate AI on constitutional questions.
-139	3	Economic Reasoning Benchmark	Test AI on economics problems.
-140	3	Political Argument Evaluator	Evaluate argument structure and evidence.
-141	3	AI Debate Judge	Score debates according to transparent criteria.
-142	3	Argument Mapper	Convert debates into structured argument graphs.
-143	3	Misinformation Detector	Identify potentially misleading political claims.
-144	3	Propaganda Detector	Detect manipulative communication techniques.
-145	3	Deepfake Benchmark	Build a benchmark for political deepfake detection.
-146	3	Government Accountability AI	Track promises against subsequent actions.
-147	3	Policy Recommendation Engine	Recommend policies based on explicit objectives.
-148	3	Public Consultation Analyzer	Analyze thousands of public submissions.
-149	3	AI Governance Lab	Experimental platform for evaluating AI governance questions.
-150	3	PPE-AI Benchmark	Unified benchmark for AI on politics, economics and philosophy.
-151	4	Utilitarian Calculator	Compare choices using estimated aggregate welfare.
-152	4	Rawlsian Simulator	Explore policy through a maximin framework.
-153	4	Libertarian Simulator	Explore outcomes under minimal redistribution.
-154	4	Ethical Dilemma Database	Search and categorize philosophical dilemmas.
-155	4	Argument Mapper	Visualize premises, conclusions and objections.
-156	4	Moral Philosophy Quiz	Identify philosophical positions through scenarios.
-157	4	Philosophy Search Engine	Search philosophical texts semantically.
-158	4	Philosopher Comparator	Compare thinkers by philosophical positions.
-159	4	Ethical Theory Matrix	Compare how ethical systems treat the same problem.
-160	4	Moral Argument Visualizer	Turn arguments into interactive graphs.
-161	4	Trolley Simulator	Explore variations of trolley-style dilemmas.
-162	4	AI Ethics Simulator	Compare AI decisions under different ethical frameworks.
-163	4	Welfare Optimizer	Optimize aggregate welfare under constraints.
-164	4	Justice Optimizer	Optimize outcomes according to different justice criteria.
-165	4	Efficiency vs Justice	Visualize trade-offs between efficiency and distribution.
-166	4	Freedom vs Security	Model competing policy objectives.
-167	4	Equality vs Growth	Explore policy trade-offs between redistribution and growth.
-168	4	Privacy vs Security	Model competing social objectives.
-169	4	Individual vs Collective Welfare	Simulate conflicts between individual and collective interests.
-170	4	Moral Uncertainty Simulator	Make decisions when you don't know which ethical theory is correct.
-171	4	Philosophical Argument Graph	Build networks of philosophical arguments.
-172	4	Socratic Dialogue Engine	AI asks structured questions to test an argument.
-173	4	Philosophical Classifier	Classify arguments by philosophical tradition.
-174	4	Ethics Argument Evaluator	Detect unsupported premises and logical weaknesses.
-175	4	Moral Reasoning Benchmark	Test AI's reasoning across ethical scenarios.
-176	4	AI Moral Reasoning Benchmark	Compare different LLMs on ethical reasoning.
-177	4	Philosophical Bias Detector	Detect systematic philosophical assumptions in AI outputs.
-178	4	AI Ethical Consistency Tester	Test whether AI applies principles consistently.
-179	4	Moral Trade-off Optimizer	Find solutions under competing ethical objectives.
-180	4	AI Value Alignment Simulator	Study how agents behave under different value specifications.
-181	4	Multi-Agent Ethics	Let AI agents with different ethical systems interact.
-182	4	AI Rights Simulator	Explore hypothetical machine-rights scenarios.
-183	4	Machine Agency Model	Explore when an artificial system can be treated as an agent.
-184	4	Computational Justice Model	Formalize competing theories of justice.
-185	4	Ethical Policy Optimizer	Optimize policies under multiple ethical objectives.
-186	4	Moral Uncertainty Engine	Compare actions when moral probabilities are uncertain.
-187	4	AI Constitutional Ethics	Test AI decisions against constitutional principles.
-188	4	Computational Social Contract	Simulate citizens agreeing on political institutions.
-189	4	Preference Aggregator	Combine conflicting individual preferences.
-190	4	Collective Preference Simulator	Study how groups form collective choices.
-191	4	Voting Paradox Simulator	Demonstrate paradoxes in collective choice.
-192	4	Arrow's Theorem Demo	Interactive demonstration of Arrow-style voting problems.
-193	4	Condorcet Simulator	Explore cyclical group preferences.
-194	4	Prisoner's Dilemma Lab	Experiment with cooperation and defection.
-195	4	Tragedy of Commons	Simulate overuse of shared resources.
-196	4	Public Goods Game	Study cooperation in shared-resource problems.
-197	4	Ultimatum Game	Simulate bargaining and fairness.
-198	4	Dictator Game	Study distribution preferences.
-199	4	Computational Political Philosophy Lab	Combine political philosophy with simulations.
-200	4	AI Ethics Research Platform	Benchmark and experiment with AI ethical reasoning.
-201	5	Prisoner's Dilemma Game	Play repeated cooperation games.
-202	5	Nash Calculator	Calculate equilibrium in simple games.
-203	5	Auction Simulator	Compare auction mechanisms.
-204	5	Voting Game	Explore strategic voting.
-205	5	Market Competition	Simulate firms competing for customers.
-206	5	Monopoly Simulator	Explore monopoly pricing and welfare.
-207	5	Duopoly Simulator	Model two competing firms.
-208	5	Bargaining Simulator	Study negotiation outcomes.
-209	5	Negotiation Game	Let players negotiate over resources.
-210	5	Public Goods Game	Simulate free-riding and cooperation.
-211	5	Iterated Prisoner's Dilemma	Compare strategies over repeated games.
-212	5	Evolutionary Strategies	Study which strategies survive.
-213	5	Nash Finder	Automatically find equilibria in games.
-214	5	Auction Strategy Model	Optimize bidding strategies.
-215	5	Market Entry Game	Study when firms enter markets.
-216	5	Price Competition	Model firms choosing prices.
-217	5	Oligopoly Simulator	Simulate multiple competing firms.
-218	5	Labor Market Game	Model employer-worker bargaining.
-219	5	Trade Negotiation	Simulate countries negotiating trade.
-220	5	International Relations Game	Model strategic interactions between states.
-221	5	Arms Race Simulator	Model strategic military competition.
-222	5	Climate Negotiation	Simulate countries negotiating emissions.
-223	5	Sanctions Game	Model sanctions and responses.
-224	5	Tariff Negotiation	Simulate trade bargaining.
-225	5	Coalition Game	Explore coalition formation.
-226	5	RL Prisoner's Dilemma	Train agents to learn strategies.
-227	5	Multi-Agent Market	Let AI agents compete in markets.
-228	5	AI Negotiation	Train agents to negotiate.
-229	5	AI Auction Agents	Create competing AI bidders.
-230	5	AI Trading Competition	Compare algorithmic trading agents in a controlled environment.
-231	5	Campaign Competition	Simulate competing political campaigns.
-232	5	AI Coalition Formation	Let agents form political coalitions.
-233	5	AI International Relations	Simulate diplomatic interactions.
-234	5	AI Arms Race	Multi-agent strategic competition simulation.
-235	5	AI Climate Negotiation	AI countries negotiate emissions.
-236	5	AI Trade War	Simulate tariff escalation.
-237	5	AI Sanctions	Simulate sanctions and adaptation.
-238	5	AI Bargaining Agents	Compare negotiation strategies.
-239	5	Evolutionary Political Agents	Political strategies evolve over generations.
-240	5	Multi-Agent Democracy	AI citizens vote and form parties.
-241	5	Multi-Agent Economy	AI households and firms interact.
-242	5	Agent Welfare System	Simulate welfare policy with individual agents.
-243	5	Agent Labor Market	AI workers and firms match in a labor market.
-244	5	Agent Housing Market	AI households compete for housing.
-245	5	Agent Tax System	Simulate taxation across an artificial population.
-246	5	Agent Voting System	Model strategic voting.
-247	5	Agent Migration Model	Simulate migration decisions.
-248	5	AI Geopolitics Simulator	Multi-agent countries interact strategically.
-249	5	AI Society Simulator	Build an artificial society of interacting agents.
-250	5	Artificial Society Lab	Research platform for computational social science.
-251	6	Social Mobility Dashboard	Explore movement between socioeconomic classes.
-252	6	Education Inequality Dashboard	Compare educational outcomes across groups.
-253	6	Gender Gap Dashboard	Analyze gender differences across indicators.
-254	6	Health Inequality Dashboard	Visualize health disparities.
-255	6	Digital Divide Dashboard	Explore differences in technology access.
-256	6	Poverty Map	Map poverty across regions.
-257	6	Migration Map	Visualize migration flows.
-258	6	Refugee Explorer	Explore refugee movements and trends.
-259	6	Population Pyramid	Generate demographic pyramids.
-260	6	Demographic Transition	Visualize demographic changes over time.
-261	6	Social Mobility Predictor	Predict socioeconomic mobility.
-262	6	Poverty Risk Model	Estimate poverty risk using socioeconomic variables.
-263	6	Education Predictor	Predict educational outcomes.
-264	6	Dropout Model	Identify factors associated with school dropout.
-265	6	Employment Mobility	Model movement between jobs/income classes.
-266	6	Migration Predictor	Model migration using economic/demographic data.
-267	6	Urbanization Model	Model movement from rural to urban areas.
-268	6	Population Forecast	Forecast population changes.
-269	6	Demographic Simulator	Simulate births, deaths and migration.
-270	6	Social Inequality Simulator	Simulate inequality under different policies.
-271	6	Crime Data Explorer	Analyze geographic and temporal crime trends.
-272	6	Public Health Inequality	Study health outcomes across socioeconomic groups.
-273	6	Education Policy Simulator	Test hypothetical education policies.
-274	6	Housing Policy Simulator	Explore housing interventions.
-275	6	Migration Policy Simulator	Model effects of migration restrictions.
-276	6	Social Mobility Network	Represent social mobility as a graph.
-277	6	Poverty Prediction System	ML system for poverty-risk estimation.
-278	6	AI Education Advisor	Evaluate potential education interventions.
-279	6	AI Housing Advisor	Compare housing policies.
-280	6	AI Migration Advisor	Analyze migration policy trade-offs.
-281	6	AI Urban Planner	Simulate urban development.
-282	6	Inequality Forecast	Forecast inequality trends.
-283	6	Demographic Shock Simulator	Model sudden demographic changes.
-284	6	Population Policy Simulator	Compare population policies.
-285	6	AI Public Health Model	Analyze health-policy interventions.
-286	6	AI Welfare Optimizer	Optimize social-welfare allocation.
-287	6	Polarization Network	Simulate polarization in social networks.
-288	6	Echo Chamber Simulator	Model formation of information bubbles.
-289	6	Information Bubble Detector	Detect clustered information exposure.
-290	6	Social Influence Predictor	Model how people influence each other.
-291	6	Social Policy Evaluator	Compare social-policy outcomes.
-292	6	Computational Sociology Platform	Tools for computational social research.
-293	6	Digital Society Simulator	Simulate a technology-dependent society.
-294	6	Social Cohesion Index	Build a measurable social-cohesion indicator.
-295	6	Institutional Trust Model	Analyze determinants of institutional trust.
-296	6	Social Trust Model	Model interpersonal/institutional trust.
-297	6	AI Social Researcher	AI assistant for social-science research.
-298	6	Digital Society Lab	Research platform for digital society.
-299	6	Social Policy Lab	Experiment with social-policy models.
-300	6	Computational Society	Full artificial society simulation.
-301	7	Economic Data API	API serving cleaned economic indicators.
-302	7	Political Data API	API for political datasets.
-303	7	Policy Search Engine	Search policies using semantic retrieval.
-304	7	Government Dataset Browser	Explore government datasets in one interface.
-305	7	Election API	Standardize historical election data.
-306	7	Parliamentary API	Query parliamentary information.
-307	7	Economic Indicator API	Serve standardized macroeconomic indicators.
-308	7	Political News Aggregator	Aggregate political news into one dashboard.
-309	7	Policy RSS Aggregator	Track new policy documents.
-310	7	Open Government Dashboard	Unified government-data visualization.
-311	7	Election Database	Structured historical election database.
-312	7	Political Knowledge Graph	Connect politicians, parties, policies and events.
-313	7	Economic Knowledge Graph	Connect economic indicators and events.
-314	7	Government Knowledge Graph	Connect agencies, laws and policies.
-315	7	Treaty Knowledge Graph	Map international agreements.
-316	7	Political Relationship Graph	Model political relationships.
-317	7	Corporate-Government Graph	Analyze relationships between companies and governments.
-318	7	Lobbying Database	Structured database of lobbying relationships.
-319	7	Policy Dependency Graph	Identify policies dependent on other policies.
-320	7	Constitutional Knowledge Graph	Connect constitutional concepts and provisions.
-321	7	Semantic Policy Search	Search policies by meaning rather than keywords.
-322	7	Cross-Country Policy Search	Find similar policies across countries.
-323	7	Historical Policy Database	Build a searchable policy archive.
-324	7	Government Data Pipeline	Automatically ingest and clean government datasets.
-325	7	Data Quality Checker	Detect missing, inconsistent and suspicious data.
-326	7	Political Intelligence Dashboard	Monitor political events and indicators.
-327	7	Policy Monitoring System	Automatically track policy changes.
-328	7	Global Legislation Tracker	Track legislation across jurisdictions.
-329	7	Economic Shock Monitor	Detect unusual macroeconomic events.
-330	7	Political Event Detector	Extract political events from news.
-331	7	Parliamentary Researcher	Automatically search parliamentary records.
-332	7	AI Government Analyst	Ask questions across government datasets.
-333	7	Policy Comparison Engine	Compare policies across countries.
-334	7	Global Policy Graph	Knowledge graph of global policies.
-335	7	Political Entity Resolution	Identify the same political entities across datasets.
-336	7	Economic Entity Resolution	Resolve inconsistent economic entities.
-337	7	Historical Event Graph	Build a graph of historical political events.
-338	7	Legislative AI Agent	AI research agent for legislation.
-339	7	Open Government Intelligence	Open-source government research platform.
-340	7	PPE Knowledge Graph	Connect political, philosophical and economic knowledge.
-341	8	Global Inequality Engine	Model inequality across countries, generations and socioeconomic groups.
-342	8	Policy Counterfactual Engine	Ask “what if?” questions about historical or proposed policies.
-343	8	Democracy Simulator	Simulate voters, parties, institutions, media and elections.
-344	8	AI Economist	AI agents operate businesses, consume resources, earn income and respond to policy.
-345	8	AI Parliament	AI representatives debate, amend and vote on legislation.
-346	8	AI Constitutional Convention	AI agents design competing constitutional systems.
-347	8	AI United Nations	Countries represented by agents negotiate treaties.
-348	8	Global Trade Simulator	Model countries, firms, tariffs, trade and economic shocks.
-349	8	Climate Politics Simulator	Simulate international climate negotiations.
-350	8	Global Sanctions Simulator	Study economic and geopolitical consequences of sanctions.
-351	8	AI Welfare State	Optimize welfare systems under competing objectives.
-352	8	Automated Policy Lab	Automatically collect research and compare policy proposals.
-353	8	Political Forecasting Platform	Forecast elections, instability and political outcomes.
-354	8	AI Geopolitical Risk Engine	Estimate geopolitical risk from economic and political indicators.
-355	8	Global Migration Simulator	Simulate migration based on economics, demographics and policy.
-356	8	AI Public Opinion Model	Simulate how public opinion changes.
-357	8	Computational Ideology Engine	Map political ideology using NLP and behavioral data.
-358	8	AI Propaganda Laboratory	Study how different communication frames affect simulated populations.
-359	8	Democracy Stress Test	Test political institutions against economic/social shocks.
-360	8	Economic Crisis Simulator	Simulate inflation, unemployment, banking crises and government responses.
-361	8	Digital Nation	Build a complete artificial country with citizens, markets, politics and institutions.
-362	8	Artificial Society	Thousands of agents form communities, markets and political systems.
-363	8	PPE Research OS	One platform for datasets, papers, policies, simulations and AI research.
-364	8	PPE × CS Grand Simulation	Economy, politics, society and AI agents interact in one world.
-365	8	Digital Civilization	A persistent artificial civilization where economic, political and philosophical systems evolve.
+id	section	title	description	concept	skills
+1	1	Can Money Buy Happiness?	Pick countries and controls (health, freedom, social support) and see how much income explains life satisfaction, with a fitted line and clickable outliers.	Wellbeing and income	Multiple regression, log transforms, JavaScript charts
+2	1	Truth Table Playground	Type any logical formula and get its truth table, a tautology or contradiction verdict and a step-by-step evaluation.	Propositional logic, validity	Boolean algebra, parsing, JavaScript
+3	1	Monty Hall Monte Carlo	Play the game yourself, then run 100,000 simulated games under switch and stay strategies and watch the odds converge.	Rational choice under uncertainty	Monte Carlo simulation, interactive charts
+4	1	Bayes Intuition Lab	Move prior, sensitivity and false-positive sliders for a medical test and see the posterior update as natural-frequency pictures.	Epistemology, base-rate neglect	Bayes' theorem, live visualisation
+5	1	Zeno's Series Calculator	Set the tortoise's head start and both speeds and watch the chase animate while partial sums close in on the catch-up point.	Zeno's paradoxes, infinity	Geometric series, limits, canvas animation
+6	1	Trolley Problem Lab	Answer ten trolley variants and see which ethical theories your answers match and where you are inconsistent.	Consequentialism versus deontology	Rule-based scoring, consistency checks
+7	1	Utilitarian Calculator	Enter options, outcomes, probabilities and wellbeing weights and get an expected-utility ranking plus a chart of which weight would flip the choice.	Utilitarianism, moral weights	Expected value, sensitivity analysis
+8	1	Hedonic Treadmill Simulator	Set an income path and an adaptation rate and see predicted happiness over time next to open survey panel data.	Hedonic adaptation	Difference equations, curve fitting
+9	1	What Makes a Good Life? Index	Set how much you value health, freedom, income and community and get countries ranked by your own definition of a good life.	Capability approach, value pluralism	Index construction, normalisation
+10	1	Ship of Theseus Simulator	Swap parts of a virtual object one at a time, mark where you think its identity breaks, and see which theory of identity your threshold matches.	Identity over time	Similarity metrics, threshold analysis
+11	1	Philosophy Knowledge Graph	Search any thinker and explore an interactive influence graph with the most central philosophers ranked.	History of ideas	Wikidata snapshot, PageRank, graph visualisation
+12	1	Syllogism Validator	Type a syllogism and get a verdict with a Venn diagram showing why it holds or fails.	Aristotelian logic	Set theory, model checking
+13	1	Fallacy Detector	Paste an argument and get possible fallacies flagged with confidence scores and a plain explanation of each, next to the detector's own measured error rate.	Informal logic	Text classification, open labelled data
+14	1	Simpson's Paradox Finder	Drop in a CSV and the app searches for trends that reverse when groups are split, showing both charts side by side.	Causation versus correlation	Group-by analysis, in-browser data processing
+15	1	Sorites and Fuzzy Logic	Click where you think a heap starts and compare your boundary with crisp and fuzzy models.	Vagueness	Fuzzy sets, membership functions
+16	1	Argument Map Builder	Enter premises and a conclusion to draw an argument map, then remove premises to see which ones the conclusion depends on.	Argument analysis	Directed graphs, dependency analysis
+17	1	Occam's Razor Lab	Add noisy data points and watch models of rising complexity fit, with AIC and BIC picking the simplest adequate one.	Parsimony in theory choice	Regression, information criteria
+18	1	Newcomb's Problem Calculator	Set the predictor's accuracy and the payoffs and find where one-boxing beats two-boxing.	Causal versus evidential decision theory	Expected value
+19	1	Sleeping Beauty Simulator	Run the experiment live and see how 'halfer' and 'thirder' answers come from counting different things.	Self-locating belief	Conditional probability, simulation
+20	1	Bertrand's Paradox Simulator	Choose a method for picking random chords and watch the probability change with it.	Principle of indifference	Geometric probability
+21	1	Liar Paradox Evaluator	Type self-referential sentences and see which the evaluator calls true, false or looping.	Truth and self-reference	Recursion, fixed points
+22	1	Gödel Numbering Encoder	Type a formula to get its Gödel number, or paste a number to decode it back into a formula.	Incompleteness	Prime factorisation, number theory
+23	1	Infinity Lab: Hilbert's Hotel and Cantor's Diagonal	Check in guests, coaches and infinitely many coaches and watch the room rule animate, then write a list of infinite binary sequences and see the one that is missing from it.	Infinity, countable versus uncountable	Bijections, proof by construction
+24	1	Personal Forecast Log	Log predictions with probabilities, resolve them later and see your scorecard build. Built early so that a year of forecasts exists by the Forecasting League on Day 314.	Forecasting	Brier score, local storage
+25	1	Game of Life Emergence Meter	Draw patterns and run them while a live meter tracks entropy and complexity.	Emergence, reductionism	Cellular automata, entropy
+26	1	Nature versus Nurture Simulator	Set gene and environment parameters and see simulated traits and the heritability estimate.	Nature versus nurture, determinism	Variance decomposition, simulation
+27	1	Raven Paradox Evidence Meter	Pick an observation (a black raven, a white shoe) and see how much it confirms 'all ravens are black'.	Confirmation theory	Bayesian confirmation measures
+28	1	Two Envelopes Paradox	Choose a prior for the envelope amounts and play the game to see when switching helps.	Decision under uncertainty	Priors, expected value
+29	1	Decision Tree Debater	Build a tree for your own decision, enter probabilities and utilities, and see which assumption flips the choice.	Rational choice	Expected value, sensitivity analysis
+30	1	Sunrise and Induction Calculator	Enter how often something has happened and get the probability it happens next, comparing different priors.	Problem of induction	Beta-binomial updating
+31	2	What Is Driving Inflation?	Choose a country and period and see which categories of spending pushed inflation up or down, auto-updating, with a plain-English reading of each change.	Price stability	Open-data pipeline, scheduled refresh, contribution decomposition
+32	2	Personal Inflation Calculator	Enter your monthly spending and get your personal inflation rate next to the official figure.	Cost of living	Weighted price indices
+33	2	The Real Cost of Living	Enter a salary and two cities and see what each can actually buy.	Real wages, purchasing power	PPP data, index numbers
+34	2	Coffee Index and Big Mac Economics	Pick two currencies and see whether they look over- or undervalued against the price of a standard basket.	Purchasing-power parity	PPP maths, regression
+35	2	Where Your Tax Rupee Goes	Enter the tax you pay and see it split across India's Union Budget, ministry by ministry, with ten years of change.	Public finance	Budget data parsing, treemaps
+36	2	House Price Predictor	Enter a property and get a price estimate plus what each feature adds to it.	Hedonic pricing	Hedonic regression
+37	2	Housing Affordability Map	Enter your income and see which cities you could afford on an interactive map, over time.	Housing and inequality	Geospatial analysis
+38	2	Price Elasticity Lab	Upload sales data and get a demand-curve estimate and the revenue-maximising price.	Demand and elasticity	Log-log regression
+39	2	Demand Curve Simulator	Change price, income and preferences and watch a consumer's best basket and demand curve move.	Consumer theory	Constrained optimisation
+40	2	Supply Shock Simulator	Choose a shock such as a drought or strike and see price and quantity move and who gains or loses.	Supply and demand	Equilibrium solving
+41	2	Oil Price Shock Economy	Set an oil price jump and see which sectors are hit hardest and how it spreads.	Energy economics	Leontief input-output matrices
+42	2	Minimum Wage Simulator	Set a wage floor and pick a labour-market model (competitive or monopsony) to see effects on jobs and incomes.	Labour economics	Model comparison
+43	2	Basic Income Microsimulation	Set a basic income and tax schedule and see cost, poverty rate and winners and losers across a synthetic population.	Welfare policy	Microsimulation
+44	2	Tax Systems Compared	Enter a household profile and compare what it pays under flat, progressive and consumption taxes, with India's old and new regimes as presets.	Tax fairness	Piecewise functions
+45	2	Laffer Curve Explorer	Choose behavioural responses and see the revenue curve and the revenue-maximising rate.	Tax policy	Optimisation, sensitivity analysis
+46	2	Income Inequality Explorer	Pick countries and see Lorenz curves and Gini over time with plain explanations.	Inequality	Lorenz curve, Gini coefficient
+47	2	Wealth Distribution Simulator	Set trading rules and watch wealth concentrate in real time.	Distributive justice	Agent-based modelling
+48	2	Monopoly Pricing Simulator	Set demand and costs and see monopoly price, output and welfare loss against competition.	Market power	Marginal revenue optimisation
+49	2	Market Structure Lab	Change the number of firms and competition type and see prices and profits shift.	Industrial organisation	Nash equilibria
+50	2	Price War Simulator	Set up competing pricing bots and watch whether they undercut each other or settle into collusion.	Competition policy	Reinforcement learning
+51	2	Cartel Stability Simulator	Set patience, number of firms and punishment and see whether the cartel holds together.	Collusion, repeated games	Folk theorem
+52	2	Auction Simulator	Bid in live auctions against bots under different formats and see revenue and strategy.	Mechanism design	Game theory
+53	2	Social Mobility Markov Chain	Pick a country's transition matrix and see how a family's income evolves across generations.	Equality of opportunity	Markov chains
+54	2	The Education Premium	Enter your education and profile and see expected earnings gains with uncertainty.	Human capital	Mincer regression
+55	2	Unemployment and Okun's Law Explorer	Pick countries and see how output and unemployment move together over time.	Macroeconomics	Panel regression
+56	2	Price Discrimination Lab	Split buyers into segments and compare one price, tiered prices and personalised prices on profit and consumer surplus.	Price discrimination, welfare	Optimisation, surplus calculation
+57	2	Phillips Curve Fitter	Choose eras and countries and see the inflation-unemployment relationship change.	Macro trade-offs	Rolling regression
+58	2	Commodity Seasonality Decomposer	Pick a commodity such as onions or wheat and see trend, season and noise with a forecast for the next season.	Commodity markets	STL decomposition
+59	2	Comparative Advantage Trader	Set what two countries can produce, find who should make what and negotiate a price both gain from.	Opportunity cost, gains from trade	Ricardian model, linear constraints
+60	2	Stable Matching Marketplace	Enter preferences for candidates and employers and get a stable matching with an explanation.	Market design	Gale-Shapley algorithm
+61	3	Gold Price Forecaster	Pick a horizon and see forecasts with uncertainty bands and a running scorecard of past forecasts against a naive baseline.	Forecasting, market efficiency	ARIMA, backtesting, scheduled data refresh
+62	3	Random Walk versus Reality	Choose any stock or index from a built-in list and get a verdict on whether its price behaves like a random walk.	Efficient market hypothesis	Variance-ratio tests
+63	3	Momentum versus Mean Reversion	Choose a strategy and assets and see out-of-sample results against buy-and-hold, with overfitting warnings.	Market efficiency	Backtesting, validation
+64	3	Portfolio Optimiser	Choose assets and risk tolerance and get a portfolio on the efficient frontier.	Risk and return	Quadratic optimisation
+65	3	Risk Calculator	Enter a portfolio and see volatility, drawdown and Sharpe ratio.	Risk	Return statistics
+66	3	Black-Scholes Playground	Set an option's inputs and see its price, Greeks and payoff diagram update live.	Pricing uncertainty	Closed-form pricing
+67	3	Monte Carlo Market and VaR	Enter a portfolio and see thousands of simulated futures and the chance of a given loss.	Risk and uncertainty	Monte Carlo, Brownian motion
+68	3	Crypto Volatility Lab	Pick a coin from open price data and see volatility regimes and a risk forecast.	Speculation	GARCH
+69	3	Bubble Detector	Pick an asset and get a bubble score based on whether prices look explosive.	Bubbles, rationality	SADF unit-root test
+70	3	Fear and Greed Index	See an index built from volatility, momentum and market-breadth signals, with history and an explainer.	Behavioural finance	Composite indices
+71	3	News and Markets Event Study	Choose a dated event and see abnormal returns around it.	Information and prices	Event-study methods
+72	3	Market Regime Detector	See the current market regime and how it has switched over time.	Market regimes	Hidden Markov models
+73	3	Central Bank Language Tracker	Paste a central bank statement and get a hawkish or dovish score against past statements.	Monetary policy communication	Lexicon-based NLP
+74	3	Central Bank Simulator	Play central banker: set rates each quarter and see inflation and output respond, with a score.	Monetary policy	New Keynesian model
+75	3	Yield Curve Recession Model	See the yield curve and a recession probability with its historical accuracy.	Macro forecasting	Logistic regression, ROC curves
+76	3	Time Preference from Bond Yields	Move a horizon slider and see the market's implied patience.	Time preference	Yield-curve mathematics
+77	3	Compound Interest Universe	Enter savings and return assumptions and see how small differences compound over decades.	Patience and wealth	Exponential growth
+78	3	Government Debt Dynamics	Set growth, interest and deficit and see debt-to-GDP paths.	Fiscal sustainability	Difference equations
+79	3	Sovereign Default Simulator	Set debt levels and shocks and see when a government would rationally default.	Sovereign debt	Dynamic optimisation
+80	3	Currency Prediction Lab	Pick a currency pair and see model forecasts against a random walk with a scorecard.	Exchange rates	Forecast evaluation
+81	3	Bank Run Simulation	Set depositor beliefs and bank assets and see whether a run happens.	Coordination, financial fragility	Coordination games
+82	3	Banking Contagion Network	Shock one bank and watch failures spread through a network.	Systemic risk	Network simulation
+83	3	Credit Risk Model	Enter a borrower profile and get a default probability with a fairness check.	Credit and fairness	Logistic regression, calibration
+84	3	Taylor Rule versus the Central Bank	Set the rule's weights and compare the rate it prescribes with what the Fed and the RBI actually set, month by month.	Rules versus discretion	Policy rules, time series
+85	3	Kelly Criterion Lab	Enter your edge and odds and get the optimal stake with simulated ruin risk.	Risk and decision theory	Log utility, Monte Carlo
+86	4	Election Forecast Model	See a probabilistic forecast built from open polling data and change the polling-error assumptions yourself.	Democratic uncertainty	Bayesian aggregation, Monte Carlo
+87	4	Polling Error and House Effects	Choose pollsters and see how much each leans and how correlated errors shift the forecast.	Measuring public opinion	Hierarchical Bayesian models
+88	4	Electoral College Simulator	Change state swings and see how often the popular-vote and electoral winners differ.	Representation	Monte Carlo simulation
+89	4	Voting Method Comparer	Rank candidates on a shared ballot and see how plurality, ranked choice, approval and Borda give different winners.	Social choice	Voting algorithms, simulation
+90	4	Ranked-Choice Election Engine	Enter or upload ballots, or generate a simulated electorate, and see round-by-round transfers and results.	Electoral design	Algorithms, CSV handling
+91	4	Strategic Voting and Spoiler Effect	Set voter preferences and see when voting insincerely or adding a third candidate changes the winner.	Strategic behaviour	Game-theoretic simulation
+92	4	Arrow's Theorem Explorer	Enter preferences and see which fairness criteria a voting rule breaks.	Impossibility results	Combinatorial search
+93	4	Condorcet Cycle Probability	Choose voters and candidates and see how often majority preferences cycle.	Collective rationality	Monte Carlo simulation
+94	4	Apportionment Paradoxes	Enter populations and seats and see how different methods allocate them, paradoxes included, with India's Lok Sabha delimitation as a preset.	Fair representation	Allocation algorithms
+95	4	Median Voter Model	Place voters and move parties to see where competition drives them.	Party competition	Spatial voting model
+96	4	Gerrymandering Metrics	Pick a district map and see compactness and efficiency-gap scores.	Electoral fairness	Computational geometry
+97	4	Redistricting Ensemble	Draw a district map on a grid and see how it ranks against thousands of random maps.	Electoral fairness	MCMC sampling
+98	4	Voting Power Calculator	Enter seat counts and see real voting power compared with seat share.	Power in institutions	Banzhaf and Shapley-Shubik indices
+99	4	Coalition Builder	Enter seat counts and policy positions and see which coalitions are viable.	Coalition politics	Subset enumeration, bargaining
+100	4	Roll-Call Ideology Map	Pick a legislature and see legislators placed on an ideology map.	Political ideology	SVD, NOMINATE-style scaling
+101	4	Parliament Voting Network	Search a legislator and see who they vote with and who bridges factions.	Party discipline	Network analysis
+102	4	Polarisation Index	Pick a country and period and see how polarisation changes over time.	Polarisation	Distance metrics, word-frequency embeddings
+103	4	Speech Topic Explorer	Search a topic and see how often and how differently parties talk about it.	Political agenda	Topic modelling
+104	4	Turnout Predictor	Enter a district's demographics and get predicted turnout with its drivers.	Participation	Logistic regression
+105	4	Seats versus Votes	Pick an election from India, the UK or elsewhere and see each party's vote share against its seat share, with a disproportionality score.	Representation	Gallagher index, election returns
+106	4	Democracy Indices Disagree	Pick a country and see where the major democracy indices rate it differently and which components cause the gap.	Measuring democracy	Data cleaning, index comparison
+107	4	Democracy and Development	Pick indicators and see relationships plus caveats about causation.	Modernisation theory	Regression, lagged effects
+108	4	Backsliding Detector	Pick a country and see detected shifts in its democracy scores.	Democratic erosion	Change-point detection
+109	4	Regime Instability Model	Pick a country and get an instability risk estimate and its drivers.	Political stability	Survival analysis
+110	4	Protest Trends and Predictors	Pick a country and issue and see protest trends and associated factors.	Collective action	Time series, regression
+111	4	Candidate Wealth and Winning	Pick a state and election and see how declared wealth and criminal cases relate to winning, from candidate affidavits.	Money in politics	Correlation, confounding
+112	4	Corruption and Development	Compare countries on corruption and development with notes on causation.	Institutions and growth	Regression, instrumental-variable ideas
+113	4	Policy Diffusion Curves	Pick a policy and see how it spread across jurisdictions.	Policy diffusion	Logistic curve fitting
+114	4	Referendum Wording Lab	Answer two differently worded versions of the same question and see whether you flipped, next to a simulated electorate with adjustable framing sensitivity.	Framing, direct democracy	Simulation, A/B logic
+115	4	The Political Compass Rebuilt	Answer a survey and get your position on data-derived axes next to open survey respondents.	Ideology	PCA, factor analysis
+116	5	P-Hacking Game	Play a researcher who tests hypotheses on pure noise and see how often something looks 'significant', then switch on a correction.	Scientific method	Multiple comparisons, p-values
+117	5	Replication Crisis Simulator	Set study size, bias and publication rules and watch the published literature distort.	Science and incentives	Power analysis, meta-analysis
+118	5	Regression to the Mean Simulator	Pick a scenario such as 'the worst performers improve' and see the effect appear with no cause at all.	Causal reasoning	Simulation, correlation
+119	5	Belief Updater	Enter a claim and a prior, add evidence items one by one, and watch your confidence update with a saved history.	Bayesian epistemology	Sequential Bayesian updating
+120	5	Bayesian Event Forecaster	Enter an event, pick a reference class and update as you add news, then see how the forecast compared with what happened.	Forecasting	Bayesian updating
+121	5	Calibration Trainer	Answer quiz questions with a confidence level and get a calibration curve and Brier score.	Rational belief	Proper scoring rules
+122	5	Close Elections as Experiments	Slide the margin window on close elections and see the estimated effect of barely winning on winning next time.	Causal inference, incumbency	Regression discontinuity
+123	5	Base Rate Library	Search an event type and get its historical base rate with sources.	The outside view	Empirical distributions
+124	5	Prediction Market versus Market Maker	Trade play money on questions that resolve automatically from open data and see the market-implied probability move.	Information aggregation	LMSR market maker, scheduled resolution
+125	5	Wisdom of Crowds Simulator	Set crowd size, bias and correlation and see when averaging beats the best individual, then add your own guesses.	Collective intelligence	Aggregation statistics
+126	5	Condorcet Jury Simulator	Set voter competence and correlation and see how group accuracy changes.	Epistemic democracy	Binomial probability
+127	5	Source Reliability Network	Add sources with reliabilities and see the posterior belief in a claim.	Testimony and trust	Bayesian networks
+128	5	Can Style Detect Fake News?	Paste an article and get a style-based credibility score, then see the small edits that fool the classifier and why style is not truth.	Misinformation	Text classification, adversarial examples
+129	5	Rumour Spread Model	Choose a network, seed a rumour and test interventions that slow it.	Information spread	SIR models on graphs
+130	5	Wikipedia Edit War Analyser	Enter a topic and see how contested its page is from its edit history.	Knowledge as a social product	Wikipedia API, time series
+131	5	Black Swan Tail Fitter	Upload data and see whether extremes are fat-tailed and how often to expect them.	Uncertainty and risk	Maximum-likelihood tail fitting
+132	5	Survivorship Bias Simulator	Run a world where only survivors are seen and compare what you observe with the truth.	Selection effects	Simulation
+133	5	Correlation Is Not Causation Lab	Pick a correlated pair and draw or test the causal stories that could explain it.	Causation	Causal diagrams, confounding
+134	5	Causal Inference with DAGs	Upload data, draw a causal graph and get adjusted effect estimates.	Causal inference	Adjustment sets, regression
+135	5	A/B Testing Philosophies	Enter experiment results and get frequentist and Bayesian verdicts side by side.	Statistical inference	Hypothesis tests, posteriors
+136	5	Does the Future Resemble the Past?	Pick a series and see how predictors fail after structural breaks.	The problem of induction	Rolling-window evaluation
+137	5	Bias-Variance Playground	Drag model complexity and watch underfitting and overfitting appear.	Theory choice	Cross-validation
+138	5	Entropy of Languages	Paste text and see its entropy compared with other languages and authors.	Information versus meaning	Information theory
+139	5	Compression as Simplicity	Paste anything and see how compressible it is, from text to random noise.	Simplicity	Compression, Kolmogorov complexity
+140	5	Benford's Law Detector	Upload numbers and see whether they follow Benford's law, with a suspicion score.	Evidence of fraud	Digit distributions, chi-squared tests
+141	5	Falsifiability Scorer	Enter a hypothesis and the observations that could refute it and get a falsifiability score.	Popper	Likelihood ratios
+142	5	Knights and Knaves SAT Solver	Enter or generate a liar-and-truth-teller puzzle and get the solution with its reasoning.	Logic	SAT solving
+143	5	Modal Logic Model Checker	Draw worlds and accessibility arrows and test statements with 'necessarily' and 'possibly'.	Modality	Graph semantics
+144	5	Turing Machine Simulator	Write or load a machine and run it step by step.	Computation	Finite-state machines
+145	5	Epistemic Dashboard	Bring your forecast log, belief updates and calibration scores into one view of how your confidence has changed over time.	Intellectual honesty	Local storage, data visualisation
+146	6	Ultimatum Game	Play proposer or responder against bots and get your fairness profile, estimated with a Fehr-Schmidt model.	Fairness, rationality	Nonlinear estimation, bot design
+147	6	Dictator and Trust Games	Play both games against bots and see your generosity and reciprocity next to typical experimental ranges.	Altruism, trust	Parameter estimation
+148	6	Risk Preference Test	Choose among lotteries and get your risk-aversion estimate with a plain explanation.	Risk attitudes	Utility estimation
+149	6	Loss Aversion Estimator	Make lottery choices and get your own loss-aversion estimate with a confidence interval.	Prospect theory	Maximum likelihood
+150	6	Anchoring Experiment	Estimate quantities after seeing random numbers and see how far the anchors moved you.	Cognitive bias	Regression, effect sizes
+151	6	Framing Effect Experiment	Choose between gain-framed and loss-framed versions of the same options and see how often your choice flipped.	Framing and rationality	Within-subject design
+152	6	Gambler's Fallacy and Hot Hands	Predict coin flips to see your streak beliefs, then test real sports data for hot hands.	Probability reasoning	Runs tests, simulation
+153	6	Sunk Cost Experiment	Make continue-or-quit decisions in a project game and see how past spending influenced you.	Rational choice	Logistic regression
+154	6	Present Bias and Time Preference	Choose sooner or later rewards and get your discount rate and present-bias score.	Time preference	Hyperbolic discounting, estimation
+155	6	Nudge and Default Experiment	Make choices under different defaults and see how defaults would shift a simulated population.	Libertarian paternalism	A/B testing, simulation
+156	6	Scarcity Experiment	Play a budget game under tight and loose conditions and compare your own decisions.	Poverty and decision-making	Experimental design
+157	6	Inequality Aversion Estimator	Choose between income distributions and see how much you dislike inequality.	Fairness preferences	Preference estimation
+158	6	Revealed Preference Consistency Test	Make a series of choices and get a consistency score with violations highlighted.	Rational choice	GARP, graph cycles
+159	6	Market Bubble Game	Trade an asset with a known fundamental value against bots and watch bubbles form.	Market rationality	Agent-based simulation
+160	6	Human versus Algorithm Experiment	Predict outcomes and compare your accuracy with a simple statistical rule.	Expert judgment	Error analysis
+161	6	Public Goods Game	Play a contribution game against bots with an optional punishment round.	Cooperation, free riding	Game design, simulation
+162	6	Beauty Contest	Guess two-thirds of the average against a simulated crowd and see your depth of reasoning next to published experiments.	Common knowledge of rationality	Level-k models
+163	6	Endowment Effect Experiment	Price items you 'own' and items you could buy and see the gap between your selling and buying prices.	Endowment effect	Within-subject design, effect sizes
+164	6	Allais and Ellsberg Test	Make the classic lottery and urn choices and see whether you break expected utility or avoid ambiguity.	Rationality under risk and ambiguity	Axiom checks
+165	6	Centipede Game	Play pass-or-take against bots and compare when you stop with what backward induction says.	Backward induction, trust	Game trees, bot design
+166	6	Mental Accounting Experiment	Answer paired money scenarios and see where you treat equal sums differently.	Mental accounting	Paired comparisons
+167	6	Dunning-Kruger Reanalysis	Take a quiz, guess your rank and see whether the 'effect' is a statistical artefact.	Self-knowledge	Simulation
+168	6	Colour Naming Map	Name colours and see how your category boundaries compare with an open colour-naming reference.	Language and thought	Clustering in CIELAB space
+169	6	Focal Points Game	Answer coordination questions with no communication and see how often you match a reference crowd.	Coordination, convention	Reference distributions
+170	6	Behavioural Economics Dashboard	Run any of these experiments in one place and export your results with effect sizes.	Behavioural economics	Web development, statistics
+171	7	Self-Quantification Dashboard	Log mood, sleep and activity daily and see your own correlations and trends.	Self-knowledge	Correlation, rolling averages, local storage
+172	7	Big Five Factor Analysis	Take a short personality test and see where you sit among open-data respondents.	Personality and identity	PCA, factor analysis
+173	7	Stream of Consciousness Topic Model	Paste journal entries and see the themes your mind returns to over time.	Inner life	Topic modelling
+174	7	Keystroke Signature	Type a few sentences and see whether the app can tell it is you from your rhythm.	Personal identity	Feature engineering, classification
+175	7	Identity Across Contexts	Describe yourself at work, at home and online and see how far the descriptions drift.	Self and social roles	In-browser text embeddings
+176	7	Teletransporter and Fission Cases	Answer Parfit's cases one by one and see which theory of personal identity fits your answers and where it strains.	Personal identity	Rule-based scoring, consistency checks
+177	7	Free Will and the Libet Experiment	Run a decision-timing task and compare your results with a simulated noise-accumulation model.	Free will	Drift-diffusion models
+178	7	Determinism and Chaos Explorer	Nudge a starting value by a tiny amount and watch two trajectories diverge.	Determinism	Dynamical systems
+179	7	Integrated Information Toy	Wire small networks and see a consciousness-style score for each wiring.	Consciousness	Information theory on networks
+180	7	Consciousness Theory Matcher	Answer questions and see which theories of consciousness fit your intuitions.	Philosophy of mind	Weighted scoring, vector similarity
+181	7	Looking Inside a Tiny Mind	Draw a digit and watch a small neural network's hidden units respond as it trains in your browser.	Mind and machines	Neural networks, TensorFlow.js
+182	7	Chinese Room Experiment	Chat with a lookup-table bot and a statistical n-gram bot and guess which one 'understands'.	Syntax and semantics	Rule-based versus statistical models
+183	7	Human or Markov Chain? Quiz	Judge whether short passages were written by a person or generated by a Markov model and see your accuracy.	Machine intelligence	n-gram models, binomial test
+184	7	Theory of Mind Bayesian Agent	Set what a character saw and see the agent's beliefs about that character's beliefs.	Understanding other minds	Bayesian modelling
+185	7	Memento Mori Grid	Enter your age and see your life as weeks lived and likely remaining, with uncertainty.	Mortality	Mortality statistics
+186	7	Life Tables and Gompertz Fit	Enter your profile and see remaining life expectancy and how it differs by country and era.	Ageing and mortality	Survival analysis
+187	7	Micromort Risk Ledger	Add your habits and see cumulative risk compared with everyday activities.	Risk and choice	Risk arithmetic
+188	7	Pascal's Wager Explorer	Set priors and payoffs, including infinite ones, and see when the wager works or breaks.	Decision theory and religion	Expected utility
+189	7	Doomsday and Simulation Arguments	Set the inputs to each argument and see what they imply.	Anthropic reasoning	Bayesian inference
+190	7	Drake Equation Monte Carlo	Give each factor an uncertain range and see how wide the answer really is.	Life in the universe	Monte Carlo simulation
+191	7	Entropy and the Arrow of Time	Watch particles mix and test whether a time series runs forward or backward.	Time's direction	Statistical mechanics, classification
+192	7	Regret Minimiser	Enter a decision and scenarios and see projected regret for each option.	Life decisions	Decision analysis
+193	7	Optimal Stopping Simulator	Choose how many options you will see and test the 37% rule in a live game.	Rational search	Probability, simulation
+194	7	Explore versus Exploit	Play a slot-machine game and compare your choices with an optimal bandit strategy.	Curiosity versus commitment	Multi-armed bandits
+195	7	Habit Formation Curves	Log a habit and see your own curve and the predicted time for it to stick.	Habits and character	Nonlinear regression
+196	7	Stoic Journal: Control and Virtue	Log events as in or out of your control, score courage, temperance and generosity, and see both over time.	Stoicism, virtue ethics	Categorisation, time series
+197	7	Experience Machine Poll	Decide whether to plug in under several versions of the offer and see what your choices say about hedonism, next to published survey results.	Hedonism, wellbeing	Survey design, reference data
+198	7	Meaning Responses Clusterer	Answer 'what gives your life meaning?' and see your answer placed among themes from open survey responses.	Meaning of life	Text embeddings, clustering
+199	7	Sisyphus Random Walk Art	Set effort and failure rates and watch a random walk make slow progress.	Absurdism	Stochastic processes, generative art
+200	7	Life Dashboard: Who Am I?	Combine your own logs into a personal portrait that updates as you add data.	Self-knowledge	D3, data integration
+201	8	Veil of Ignorance Simulator	Design a society's rules without knowing your place, then see where you would land and how maximin and expected-utility choosers differ.	Rawlsian justice	Simulation, random draws
+202	8	Social Welfare Function Plotter	Enter income distributions and see rankings under total welfare, maximin and Atkinson measures.	Welfare economics	Welfare functions
+203	8	Equality versus Efficiency Optimiser	Move an equality dial and see how much total output is traded away.	Equity and efficiency	Linear programming
+204	8	Justice Calculator	Write your own formula for justice and see which policies it picks next to other theories.	Theories of justice	Constrained optimisation
+205	8	Wilt Chamberlain Test	Start from equal holdings, let voluntary trades run and see where inequality comes from and what redistribution does.	Nozick versus Rawls	Agent-based modelling
+206	8	Repugnant Conclusion Explorer	Set population size and wellbeing and see where total and average utility disagree.	Population ethics	Parameter sweeps
+207	8	Moral Discounting Calculator	Choose a discount rate and see how much future lives and climate benefits count.	Intergenerational ethics	Present-value mathematics
+208	8	Moral Uncertainty Decision Tool	Assign credences to ethical theories and see which action is best under uncertainty.	Moral uncertainty	Weighted decision analysis
+209	8	Moral Foundations Text Scorer	Paste an article and see its moral emphasis profile.	Moral psychology	Lexicon-based NLP
+210	8	Missing Women Calculator	Choose a reference sex ratio and see the implied number of missing women by country and Indian state.	Gender justice	Demographic arithmetic, sensitivity analysis
+211	8	Shapley Credit Splitter	Enter team contributions and get a fair split of credit or profit.	Fair distribution	Cooperative game theory
+212	8	Blame as Counterfactual	Describe an accident and see each actor's counterfactual contribution to the harm.	Responsibility	Structural causal models
+213	8	Moral Luck Simulator	Set intentions and random outcomes and see how outcomes alone change blame.	Moral luck	Probability, correlation
+214	8	Fair Division and Cake Cutting	Enter people's preferences and get a fair split of a cake, chores or rent.	Fair division	Fair-division algorithms
+215	8	Kidney Exchange Matching	Enter donor-patient pairs and see the exchange cycles that save the most lives.	Allocation ethics	Graph cycles
+216	8	Health Budget Allocator	Set a budget and treatments and see the allocation that maximises QALYs.	Health ethics	Linear programming
+217	8	Charity Cost-Effectiveness Model	Enter a giving budget and see impact estimates with uncertainty ranges.	Effective giving	Monte Carlo analysis
+218	8	Poverty Line and Index Builder	Move the poverty line and the index weights and see who counts as poor.	Measuring poverty	Sensitivity analysis, PCA weights
+219	8	Great Gatsby Curve Explorer	Pick countries and see inequality plotted against mobility.	Equality of opportunity	Regression
+220	8	Piketty Dynamics Simulator	Set returns and growth rates and see wealth concentration over generations.	Capital and inequality	Difference equations
+221	8	Talent versus Luck Model	Set the mix of talent and luck and see who ends up rich.	Meritocracy	Monte Carlo simulation
+222	8	Inheritance and Dynasties	Set an inheritance tax rate and see dynastic wealth over generations.	Inheritance and fairness	Dynamic simulation
+223	8	Global Income Rank Calculator	Enter your income and see your percentile in the world distribution.	Global justice	Percentiles, interpolation
+224	8	Carbon Tax Dividend Calculator	Enter household details and see what you would pay and receive.	Climate and distribution	Distributional analysis
+225	8	Moral Progress Timeline	Pick a practice and see when and how it was abolished across countries.	Moral progress	S-curve fitting
+226	9	Prisoner's Dilemma Tournament	Build a strategy from simple rules, enter it against a library of classic strategies and see how it ranks, with a noise slider that shows why forgiving strategies survive mistakes.	Cooperation, forgiveness	Iterated games, simulation under noise
+227	9	Evolution of Cooperation	Set a population mix of strategies and watch them rise and fall.	Evolution of morality	Replicator dynamics
+228	9	Nash Equilibrium Solver	Enter a payoff matrix and get its equilibria with an explanation.	Strategic reasoning	Linear algebra, equilibrium computation
+229	9	Stag Hunt Trust Threshold	Set the payoffs and see how much trust cooperation needs.	Trust	Expected payoffs
+230	9	Hawk-Dove Strategy Model	Set the costs of fighting and see the stable mix of aggression.	Conflict	Evolutionary game theory
+231	9	Colonel Blotto	Divide campaign resources across battlegrounds against bots and see which allocations win.	Strategic allocation	Mixed strategies, simulation
+232	9	Schelling Segregation Model	Set tolerance and watch a city segregate.	Segregation	Agent-based modelling
+233	9	Rubinstein Bargaining Calculator	Set each side's patience and see the equilibrium split.	Bargaining	Backward induction
+234	9	VCG Mechanism Calculator	Enter bids and see the payments and why honesty is the best policy.	Mechanism design	Vickrey-Clarke-Groves payments
+235	9	Commons Governance Simulator	Set rules and watch a shared resource thrive or collapse.	Tragedy of the commons	Differential equations
+236	9	Hobbes, Locke and Rousseau Simulated	Pick a philosopher's assumptions about human nature and watch the society play out.	Social contract	Agent-based modelling
+237	9	Law Enforcement and Corruption Game	Play police or citizen against bots and see when bribery becomes stable.	Corruption	Inspection games
+238	9	Liberty versus Security	Set surveillance levels and see crime, false alarms and trust.	Privacy and security	Bayes' theorem, policy simulation
+239	9	Democracy versus Technocracy	Set information quality and bias and compare decisions by voters, experts and a single ruler.	Political legitimacy	Simulation, wisdom-of-crowds maths
+240	9	Separation of Powers Simulator	Set powers and vetoes and see policy gridlock or abuse of power.	Constitutional design	Veto-player models
+241	9	Federalism and Decentralisation	Let simulated citizens sort between jurisdictions with different policies.	Federalism	Tiebout model
+242	9	Climate Cooperation Game	Play a country in a climate treaty game against AI countries.	Collective action	Public-goods games
+243	9	Liquid Democracy Simulator	Delegate votes and see whether power concentrates.	Democratic innovation	Graph algorithms
+244	9	Quadratic Funding Simulator	Allocate funds to projects and compare matching with one-person-one-vote.	Public goods	Mechanism design
+245	9	Participatory Budgeting Optimiser	Vote on projects and see what the budget funds.	Democratic participation	Knapsack optimisation
+246	9	Kuhn Poker Solver	Play poker against an equilibrium bot and see bluffing emerge.	Strategic deception	Regret minimisation
+247	9	Monte Carlo Tree Search Player	Play tic-tac-toe or Connect Four against a search-based AI.	Rational agents	Monte Carlo tree search
+248	9	School Choice Mechanisms	Enter family preferences and see how different mechanisms allocate places.	Fair allocation	Matching algorithms
+249	9	Spatial Prisoner's Dilemma	Paint a lattice of players and watch cooperation form.	Cooperation and geography	Cellular automata
+250	9	Principal-Agent Simulator	Design a contract and see how an agent responds.	Incentives	Incentive modelling
+251	10	Small-World Network Builder	Add shortcuts to a network and watch average path length collapse.	Social networks	Graph theory
+252	10	Rich-Get-Richer Networks	Grow a network by preferential attachment and compare it with real degree distributions.	Inequality in networks	Power laws
+253	10	Friendship Paradox Checker	Load a sample or uploaded network and see why your friends have more friends than you do.	Social perception	Degree statistics
+254	10	Structural Holes Analyser	Load a network and see who brokers between groups and why that confers advantage.	Social capital	Network constraint metrics
+255	10	Opinion Dynamics and Polarisation	Set persuasion rules and watch a society converge or split.	Polarisation	Agent-based modelling
+256	10	Information Cascade Simulator	Run a crowd that copies earlier choices and watch it herd.	Herd behaviour	Bayesian updating
+257	10	Threshold Model of Collective Behaviour	Set individual thresholds and see when a riot or trend starts.	Collective action	Cascade models
+258	10	Cultural Evolution Simulator	Set copying biases and watch ideas spread through a population.	Cultural evolution	Agent-based modelling
+259	10	Zipf's Law and Power Laws Everywhere	Upload data or pick a built-in dataset and test whether it follows a rank-size law.	Social regularities	Log-log regression
+260	10	Urban Scaling Laws	Pick cities and see how output and crime scale with population.	Urban economics	Log-log regression
+261	10	Braess's Paradox Traffic Game	Build a road network and see how adding a road can slow everyone down.	Selfishness versus social good	Network equilibria
+262	10	Gravity Model of Migration	Pick countries and see predicted migration flows against actual ones.	Migration	Gravity-equation regression
+263	10	Cultural Values World Map	Answer questions and see where you sit among countries' values.	Culture and values	PCA
+264	10	Global Trade Network Explorer	Pick a country and see its trade partners and dependence.	Interdependence	Graph centrality
+265	10	UN Voting Network	Pick a country and see who it votes with.	Alignment and blocs	Similarity clustering
+266	10	Alliance Network and Treaty Stability	Pick an alliance and see what makes it hold.	Alliances	Graph analysis
+267	10	Trade War Simulator	Set tariffs and see retaliation and the resulting equilibrium.	Trade policy	Nash equilibria
+268	10	Sanctions and Interdependence Model	Choose a sanction and see who it hurts most.	Economic statecraft	Network shocks
+269	10	Strategic Dependencies Map	Pick a critical good and see who supplies it.	Supply-chain security	Concentration indices
+270	10	Energy Security Model	Pick a country and see how exposed it is to energy disruption.	Energy security	Herfindahl index
+271	10	Country Power Index	Set your own weights and see countries ranked by power.	Power in international relations	PCA, composite indices
+272	10	Arms Race and Deterrence Model	Set budgets and see whether a race escalates or stabilises.	Deterrence	Differential equations
+273	10	Security Dilemma and Rising Powers	Set how each side reads the other's moves and see the conflict risk.	International security	Game theory
+274	10	Crisis Game Tree	Play a standoff against a bot and see the equilibrium path.	Crisis bargaining	Game trees, backward induction
+275	10	India Atlas	Explore district-level health, education and wealth indicators on a map and build your own comparison between districts and states.	Regional inequality	Geospatial visualisation
+276	11	AI Morality Benchmark	Pick or add dilemmas and watch Gemini, DeepSeek and rule-based utilitarian, deontological and virtue agents decide, with an agreement matrix and each model's stated reasoning.	Normative ethics, machine ethics	LLM key (Gemini or DeepSeek), rule-based agents, agreement statistics
+277	11	Language Model Bias Audit	Run paired prompts that differ only in a name or group through a real chat model and see, with significance tests, where its answers shift.	Algorithmic fairness	LLM key (Gemini or DeepSeek), paired-prompt design, hypothesis testing
+278	11	AI Political Compass	Put standardised political questions to a chat model and see its answers placed on ideological axes, then paste any text to see where it lands.	Political language	LLM key (Gemini or DeepSeek), embeddings, vector projection
+279	11	Explainable AI Playground	Train a classifier in the browser and see which features drive each prediction, then judge whether that counts as an explanation.	Explanation and understanding	Permutation importance, classification
+280	11	Moral Machine Conjoint	Choose in self-driving-car dilemmas and get your own estimated weights on factors such as age, number and law-abidingness.	Moral psychology	Conjoint analysis, logistic regression
+281	11	AI Socrates	State a position and be questioned in real time from your own premises, while a commitment tracker flags contradictions in what you have said.	Socratic method	LLM key (Gemini or DeepSeek), dialogue state tracking, consistency checking
+282	11	Reward Hacking Gridworld	Design a reward function and watch an agent find the loophole.	AI alignment	Q-learning
+283	11	Goodhart's Law Demonstrator	Optimise a metric and watch the true goal fall.	Measurement and incentives	Simulation, correlation
+284	11	Fairness Metrics Lab	Upload predictions and see which fairness metrics hold and which conflict.	Algorithmic fairness	Classification metrics
+285	11	Bias in Word Embeddings	Enter words and see their gender and other associations in open word vectors.	Bias in language	WEAT, permutation tests
+286	11	Privacy Lab	Set a privacy level and see accuracy against re-identification risk.	Privacy	Differential privacy, k-anonymity
+287	11	Recommender Feedback Loop Simulator	Set up a recommender and users and watch diversity shrink and tastes drift.	Filter bubbles	Collaborative filtering
+288	11	Virality versus Accuracy Simulator	Tune how much a feed rewards emotion over accuracy and watch accurate and sensational stories spread.	Misinformation	Cascade models on networks
+289	11	Human Knowledge Map	Search a field and see how it connects to others.	The structure of knowledge	Open concept data, embeddings, graphs
+290	11	Job Exposure Index	Enter an occupation and see how exposed its tasks are to automation.	Future of work	Text matching, open occupational data
+291	11	Secret Ballot Cryptography	Cast encrypted votes and watch them tallied without any single ballot being opened.	Privacy and verifiable elections	Homomorphic encryption
+292	11	Hyperbolic Growth and the Singularity	Change assumptions and see long-run growth projections.	Long-run growth	Nonlinear regression
+293	11	Social Cost of Carbon Monte Carlo	Set discount rates and damages and see the cost of a tonne of carbon.	Climate ethics	Monte Carlo simulation
+294	11	Existential Risk Model	Set probabilities for catastrophes and see overall risk with ranges.	Catastrophic risk	Monte Carlo, sensitivity analysis
+295	11	RSA and Blockchain from Scratch	Encrypt a message and then try to tamper with a hash-linked chain.	Trust without authority	Modular arithmetic, hash functions
+296	11	Zero-Knowledge Demo	Prove you know a solution without revealing it.	Trust and privacy	Probability, cryptography
+297	11	AI Oracle	See an LLM forecaster and a baseline model make weekly predictions on open-data questions, scored automatically against what happened.	Forecasting honesty	LLM key (Gemini or DeepSeek), scheduled jobs, scoring rules
+298	11	AI Debate Arena	Pick a topic and watch two chat models debate it, then vote on the winner and see ratings and argument-quality scores build up.	Dialectic and public reason	LLM key (Gemini or DeepSeek), Elo and Bradley-Terry rating
+299	11	Which AI Rules Apply?	Describe an AI system and see what the EU, US, Indian and Chinese approaches would each require of it.	Technology governance	Rule engines, decision trees
+300	11	Tech Policy Trade-off Calculator	Weigh innovation, safety, privacy and equity for a regulation and see which options are on the efficient frontier.	Technology governance	Multi-criteria decision analysis, Pareto fronts
+301	12	PolicySim	Set taxes and transfers for a synthetic population and see revenue, poverty and inequality, scored by utilitarian, Rawlsian and libertarian standards.	Policy analysis, theories of justice	Microsimulation, web front end
+302	12	Economics Playground	Play with interactive models of supply and demand, markets, auctions and inflation.	Teaching economics	Front-end development, simulation
+303	12	Politics Playground	Try voting systems, district maps and coalitions in one place.	Political institutions	Front-end development, simulation
+304	12	Philosophy Playground	Try thought experiments, each with a small simulation behind it.	Philosophy	Front-end development, simulation
+305	12	Which Philosopher Are You?	Take a 20-question quiz and get matched to philosophical positions with an explanation.	Philosophical positions	Cosine similarity, weighted scoring
+306	12	Daily Dilemma	Get a new dilemma each day, answer it and watch your reasoning profile build over time.	Moral psychology	Scheduled content, local storage, statistics
+307	12	Argument Graph with Live Statistics	Paste a debate or article and get an argument map of its claims and support relations, with relevant public statistics attached to each claim.	Public reasoning	LLM key (Gemini or DeepSeek), information extraction, graph visualisation, open data
+308	12	Economic and Political Claim Checker	Type a claim in plain English and see it turned into a data query, tested against open data and answered with the evidence and its caveats.	Public discourse	LLM key (Gemini or DeepSeek), data retrieval, trend tests
+309	12	Country and Policy Comparison Engine	Build your own metrics and rank countries or policies.	Comparative politics	Composite indices
+310	12	Economy Simulator	Set taxes, interest rates and spending and watch the economy respond over years.	Macroeconomics	Macro simulation
+311	12	Govern a Virtual Country	Run a nation with an economy, elections and public opinion, and see your score.	Governance	Agent-based simulation, game design
+312	12	Democracy Designer	Design a political system and see it scored on fairness and stability.	Constitutional design	Simulation, scoring functions
+313	12	Virtual Stock Exchange	Trade against bots in a simulated market with an order book.	Financial markets	Agent-based simulation
+314	12	Forecasting League	Forecast open questions that resolve automatically and compete with baseline bots on a score table.	Epistemics	Brier scores, scheduled resolution
+315	12	Policy Tournament	Submit a policy and see how it fares in simulated economies against others.	Policy evaluation	Simulation, ranking
+316	12	Economic Strategy Game	Run a firm or a country against bots in a game with real equilibrium models behind it.	Economics	Game design, optimisation
+317	12	Coalition Builder Game	Form governments against AI parties starting from real seat counts.	Coalition politics	Cooperative game theory
+318	12	Geopolitics Game	Run a country with trade and alliances against AI states.	International relations	Multi-agent simulation
+319	12	Resource Allocation Game	Allocate limited resources across a society under different objectives and see the trade-offs.	Distributive justice	Optimisation, scoring
+320	12	Game Theory Arcade	Play all the year's games in one arcade with a local score history.	Game theory	Web development
+321	12	Belief Coherence and Dutch Book Checker	Enter probabilities and see violations and the bets that would guarantee a loss.	Rational belief	Linear programming
+322	12	Decision Journal	Log decisions and outcomes and see calibration and hindsight bias.	Judgment	Calibration statistics, local storage
+323	12	Semantic Search over Classical Texts	Ask a question and get passages from public-domain philosophical works.	History of philosophy	Open embeddings, vector search
+324	12	Stylometry of Philosophers	Paste text and see which philosopher it resembles.	Authorship	Burrows' Delta
+325	12	Adaptive Philosophy Tutor	Learn with questions that adapt to what you get right.	Education	Item response theory
+326	12	Values-Aligned Budget Optimiser	Enter your values and spending and see a suggested reallocation.	Values and consumption	Constrained optimisation
+327	12	Court Backlog Clock	Set judges appointed and cases filed and see how long India's pending cases would take to clear, by court level.	Access to justice	Queueing models, open judicial data
+328	12	Community Data Dashboard	See open city data on one issue such as air quality, refreshed weekly.	Civic data	Scheduled data pipelines
+329	12	Society-as-Code	Write rules for a society in a small language and simulate it.	Political philosophy	DSL design, interpreter
+330	12	Portfolio and Project Index Site	Search every project by tag, method and PPE concept.	Presenting PPE work	Static site, search indexing
+331	13	Artificial Economy	Tune households, firms and policies and watch prices, wages and unemployment emerge.	Macro emergence	Agent-based macroeconomics
+332	13	Artificial Democracy	Set voters, parties and rules and run elections across many terms.	Democratic institutions	Agent-based modelling
+333	13	Artificial Society	Seed thousands of agents and watch work, trade, voting and relationships develop.	Social theory	Agent-based modelling at browser scale
+334	13	Emergence Engine	Change simple rules and see a live measure of emergent order.	Emergence	Information theory
+335	13	Inequality Evolution Simulator	Set institutions and see how inequality evolves across generations.	Inequality	Dynamic simulation, calibration
+336	13	Political Polarisation Simulator	Tune a model fitted to open survey data and test what splits societies.	Polarisation	Opinion dynamics, model fitting
+337	13	Democracy Stability Model	Choose conditions and see predicted democratic survival.	Regime stability	Survival analysis, simulation
+338	13	Authoritarian Stability Model	Set repression, patronage and information and see how long a regime lasts.	Authoritarianism	Game-theoretic simulation
+339	13	Revolution Simulator	Set private grievances and the cost of speaking out and see how hidden opposition suddenly becomes open revolt.	Preference falsification	Threshold models with private and public preferences
+340	13	Civilization Collapse Model	Set resources and inequality and see whether a society collapses.	Collapse and resilience	Coupled differential equations
+341	13	Global Climate Game	Run countries through climate scenarios and see the outcome of different treaties.	Climate cooperation	Multi-agent simulation
+342	13	AI Governance Simulator	Set regulation and competition and see how states fare.	Technology governance	Game theory, agent-based modelling
+343	13	AI Economy and Future of Work	Set automation scenarios and see wages and jobs by task type.	Labour economics	Task-based models
+344	13	Post-Scarcity Simulator	Set production costs and see prices, work and distribution.	Post-scarcity	Dynamic modelling
+345	13	Universal Basic Income World	Compare welfare systems with behavioural responses built in.	Welfare	Microsimulation
+346	13	Energy Transition Simulator	Set costs and policy and see the energy mix over decades.	Energy transition	System dynamics
+347	13	Global Trade Simulator	Set tariffs and shocks across countries and see who gains.	International trade	General-equilibrium modelling
+348	13	Geopolitical World Model	Set military, economic and demographic variables and see the balance of power, projected forward with uncertainty ranges.	Geopolitics, power transitions	Multi-variable simulation, scenario analysis
+349	13	Which Assumptions Matter?	Pick one of the year's simulations and see which parameters drive its results and which barely matter.	Models and evidence	Global sensitivity analysis, Sobol indices
+350	13	Human Capital Simulator	Set education investment and see growth over generations.	Economic growth	Growth models, calibration
+351	13	Demographic Transition Simulator	Set development paths and see population structure change.	Demography	Cohort models
+352	13	Counterfactual Economy	Pick a historical event and see a synthetic-control alternative history.	Causation in history	Synthetic control
+353	13	Counterfactual Elections	Pick a past election and change the rules to see who would have won.	Electoral systems	Simulation from historical returns
+354	13	The Human Decision Model	Enter a decision and see predicted choices under several theories of rationality.	Choice theory	Bayesian utility models
+355	13	The Digital Philosopher	Talk through questions in conversation and see an evolving worldview profile and your nearest philosophers, with the reasoning shown.	Worldviews	LLM key (Gemini or DeepSeek), embeddings, vector similarity
+356	13	Pandemic Trade-offs	Set restrictions through an outbreak and see health and economic outcomes together, with the value placed on a life made explicit.	Health versus wealth	Coupled epidemic and economic models
+357	13	Treaty Negotiation Agents	Watch chat-model agents negotiate treaties and compare their outcomes with what bargaining theory predicts, including when agreements hold.	Diplomacy	LLM key (Gemini or DeepSeek), multi-agent design, bargaining theory
+358	13	Replication Explorer	Change analytic choices in a published study and see how the result changes.	Scientific credibility	Specification curves
+359	13	Natural Experiment Policy Evaluation	Pick a policy change and see its estimated effect.	Policy evaluation	Difference-in-differences
+360	13	Calibrate an Agent-Based Model	Fit a simulation to real data and see the uncertainty in its parameters.	Models and evidence	Approximate Bayesian computation
+361	13	Evidence Dashboard for Philosophical Claims	Choose a claim and see which of the year's data supports or undermines it.	Philosophy and evidence	Meta-analysis
+362	13	Explorable Paper	Read a paper and change its assumptions to watch the results update.	Scholarly communication	Reproducible notebooks
+363	13	Political Philosophy Operating System	Set philosophical assumptions as parameters and run a society.	Political philosophy	Modular architecture
+364	13	The PPE Laboratory	Open one site with all the best experiments, saved scenarios and links.	PPE	Systems integration, deployment
+365	13	The World Simulator	Final capstone: set beliefs, resources, jobs, governments, markets and preferences, change fundamental assumptions, watch the civilisation evolve, then share your scenario as a link.	Everything	Agent-based modelling at browser scale

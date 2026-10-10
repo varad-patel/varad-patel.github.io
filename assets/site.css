@@ -1,4 +1,4 @@
-/* Ledger-paper theme: pale graph paper, navy ink, one hue per section of the year. */
+/* Ledger-paper theme: pale graph paper, navy ink, one hue per part of the year. */
 
 @font-face {
   font-family: "Literata";
@@ -33,6 +33,11 @@
   --s6: #0e7c86;
   --s7: #a63d75;
   --s8: #4b5a70;
+  --s9: #6f7d1f;
+  --s10: #4046a8;
+  --s11: #86563a;
+  --s12: #b32d4e;
+  --s13: #23303f;
 
   --serif: "Literata", Georgia, "Times New Roman", serif;
   --sans: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -67,9 +72,10 @@ button { font: inherit; color: inherit; }
 .skip { position: absolute; left: var(--gutter); top: -60px; background: var(--ink); color: var(--paper); padding: 8px 12px; z-index: 20; }
 .skip:focus { top: 8px; }
 
-/* Section hue hooks: any element with .s1 to .s8 gets --h. */
+/* Section hue hooks: any element with .s1 to .s13 gets --h. */
 .s1 { --h: var(--s1); } .s2 { --h: var(--s2); } .s3 { --h: var(--s3); } .s4 { --h: var(--s4); }
 .s5 { --h: var(--s5); } .s6 { --h: var(--s6); } .s7 { --h: var(--s7); } .s8 { --h: var(--s8); }
+.s9 { --h: var(--s9); } .s10 { --h: var(--s10); } .s11 { --h: var(--s11); } .s12 { --h: var(--s12); } .s13 { --h: var(--s13); }
 
 /* ---------- top bar ---------- */
 .top { display: flex; justify-content: space-between; align-items: baseline; padding-block: 22px 0; }
@@ -169,7 +175,7 @@ h2 { margin: 0; font: 600 clamp(1.7rem, 3vw, 2.3rem) / 1.1 var(--serif); letter-
 .plate { display: flex; flex-direction: column; min-width: 0; }
 .shot {
   appearance: none; display: block; width: 100%; aspect-ratio: 3 / 2; padding: 0; margin: 0; overflow: hidden;
-  border: 1px solid var(--rule); background: var(--sheet); cursor: zoom-in;
+  border: 1px solid var(--rule); background: var(--sheet); cursor: pointer;
 }
 .shot img { width: 100%; height: 100%; object-fit: cover; object-position: top left; transition: transform 0.25s; }
 .shot:hover { border-color: var(--h); outline: 2px solid var(--h); }

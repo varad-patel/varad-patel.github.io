@@ -38,13 +38,15 @@
     return node;
   };
 
-  const codeUrl = (p) => `${D.repo}/tree/${D.branch}/projects/${p.slug}`;
-  const readmeUrl = (p) => `${D.repo}/blob/${D.branch}/projects/${p.slug}/README.md`;
+  const codeUrl = (p) => `${D.repo}/tree/${D.branch}/365projects/${p.id}`;
+  // Built projects open in a new tab at 365projects/<N>/.
+  const openLink = (p, attrs, ...kids) => el("a", { href: p.url, target: "_blank", rel: "noopener", ...attrs }, ...kids);
+  const dataLine = (p) => ((p.sources || []).length ? `Data: ${p.sources.join(", ")}` : "No external data: computed in your browser");
 
   const matches = (p) => {
     if (state.section && p.section !== state.section) return false;
     if (!state.query) return true;
-    const hay = [p.title, p.desc, p.question, p.finding, (p.sources || []).join(" ")].join(" ").toLowerCase();
+    const hay = [p.title, p.desc, p.concept, p.skills, p.question, p.finding, (p.sources || []).join(" ")].join(" ").toLowerCase();
     return state.query.split(/\s+/).every((word) => hay.includes(word));
   };
 
@@ -172,20 +174,20 @@
     return el(
       "article",
       { class: `plate s${p.section}` },
-      el(
-        "button",
-        { class: "shot", type: "button", "aria-label": `Open details for ${p.title}`, "data-open": p.id },
-        el("img", { src: p.img, alt: `Screenshot of the ${p.title} app`, width: 1200, height: 793, loading: "lazy" })
+      openLink(
+        p,
+        { class: "shot", "aria-label": `Open ${p.title} in a new tab` },
+        el("img", { src: p.img, alt: `Screenshot of ${p.title}`, width: 1200, height: 793, loading: "lazy" })
       ),
       el("p", { class: "meta" }, el("span", { class: "day", text: `Day ${p.id}` }), el("span", { text: fmt(p.date) })),
       el("h3", { text: p.title }),
       el("p", { class: "q", text: p.question }),
       p.finding ? el("p", { class: "f", text: p.finding }) : null,
-      el("p", { class: "src", text: `${s.name}. Data: ${(p.sources || []).join(", ")}` }),
+      el("p", { class: "src", text: `${s.name}. ${p.concept}. ${dataLine(p)}.` }),
       el(
         "div",
         { class: "actions" },
-        el("a", { class: "btn primary", href: codeUrl(p), text: "View code" }),
+        openLink(p, { class: "btn primary", text: "Open the tool" }),
         el("button", { class: "btn", type: "button", "data-open": p.id, text: "Details" })
       )
     );
@@ -253,20 +255,25 @@
     $("d-layout").classList.toggle("no-fig", !isBuilt(p));
     if (isBuilt(p)) {
       $("d-img").src = p.img;
-      $("d-img").alt = `Screenshot of the ${p.title} app`;
+      $("d-img").alt = `Screenshot of ${p.title}`;
     }
 
     const rows = [];
     const add = (term, text) => text && rows.push(el("div", {}, el("dt", { text: term }), el("dd", { text })));
     if (isBuilt(p)) {
+      add("What you can do", p.desc);
       add("The question", p.question);
-      add("What the data say", p.finding);
-      add("Limits", p.limit);
-      add("Data", (p.sources || []).join(", "));
+      add("One finding", p.finding);
+      add("What it cannot tell you", p.limit);
+      add("Concept", p.concept);
+      add("Method", p.skills);
+      add("Data", dataLine(p).replace(/^Data: /, ""));
       const ahead = p.built < p.date ? `Built ahead of schedule on ${fmt(p.built)}.` : `Built on ${fmt(p.built)}.`;
       add("Schedule", `Day ${p.id} falls on ${fmt(p.date)}. ${ahead}`);
     } else {
       add("The idea", p.desc);
+      add("Concept", p.concept);
+      add("Method", p.skills);
       add("Schedule", `Not started. Scheduled for ${fmt(p.date)}.`);
     }
     $("d-list").replaceChildren(...rows);
@@ -274,8 +281,8 @@
     $("d-actions").replaceChildren(
       ...(isBuilt(p)
         ? [
-            el("a", { class: "btn primary", href: codeUrl(p), text: "View code" }),
-            el("a", { class: "btn", href: readmeUrl(p), text: "Read the write-up" }),
+            openLink(p, { class: "btn primary", text: "Open the tool" }),
+            el("a", { class: "btn", href: codeUrl(p), target: "_blank", rel: "noopener", text: "View code" }),
           ]
         : [])
     );
