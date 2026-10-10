@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nature versus Nurture Simulator · 365 projects</title>
+  <meta name="description" content="Set how much genes and environments vary in a simulated population, run a twin study on it, and see what a heritability estimate does and does not say.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .split-bar { display: flex; gap: 2px; height: 22px; margin: 2px 0 8px; }
+    .split-bar span { display: block; min-width: 2px; border-radius: 2px; }
+    .stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .stack:empty { display: none; }
+    .people th, .people th.num { white-space: normal; vertical-align: bottom; line-height: 1.25; }
+    .soil { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; padding-top: 24px; border-top: 1px solid var(--rule); }
+    .soil > p { max-width: 86ch; }
+  </style>
+</head>
+<body class="proj" data-day="26">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Nature versus Nurture Simulator</h1>
+      <p class="lede">Build a population in which you decide how much genes and environments vary. Then run a twin study on it and see what the heritability estimate does, and does not, tell you.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Heritability and twin study simulator">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>With genetic variance held at 50, heritability is 0.50 when environmental variance is also 50, 0.91 when environments are made nearly equal, and 0.20 when they are made very unequal. The genes never changed. A simulated study of 500 identical and 500 fraternal twin pairs puts the first figure at 0.57, with a 95% interval from 0.40 to 0.73.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Francis Galton set "nature and nurture" side by side in the 1870s and suggested that twins could be used to tell them apart. The question most people then want to ask is how much of a trait is due to genes and how much to environment. For one person the question has no answer. Someone's height is not four parts genes and one part food, any more than the area of a rectangle is four parts length and one part width: both are needed for there to be any height at all. What can be asked is a question about differences. Across a population, how much of the variation in a trait goes with variation in genes? That share is called heritability, and it comes from R. A. Fisher's 1918 paper, which introduced the word variance and the idea of dividing it into parts with different causes.</p>
+      <p>The classic way to estimate it uses two kinds of twins. Identical twins have the same genes. Fraternal twins share, on average, half of the genetic differences that vary between people. If both kinds share their family surroundings to the same degree, then whatever makes identical twins more alike than fraternal twins must be genetic, and doubling the gap between the two correlations gives the heritability. A large 2015 review of fifty years of such studies put the average across human traits at about a half.</p>
+      <p>The number is real, and it is narrow, and it is misread in at least four ways. It is not a property of a trait but of a population in a particular range of environments: make environments more alike and heritability rises, make them more unequal and it falls, with no gene altered. It describes the spread across people, not the make-up of any one of them. It says nothing about why two groups differ on average, which is Richard Lewontin's point about seed sown in two soils: inside each field the differences between plants can be almost wholly genetic while the difference between the fields is wholly the soil. And it is not a measure of how fixed a trait is. Phenylketonuria is caused by a single gene, and a diet started in infancy prevents most of the harm. Height is among the most heritable of human traits, yet average heights in many countries rose by several centimetres over the twentieth century as food and health improved.</p>
+      <p>These points matter outside the classroom because heritability figures are quoted in arguments about schooling, health, inequality and differences between groups, often as if they settled what can be changed or who is responsible. They do not, in either direction: a high figure does not show that a gap between groups is genetic, and it does not show that it is environmental. This page takes no position on any real trait. It builds populations where the truth is known, so that what a heritability estimate can and cannot recover is visible.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The population</h3>
+      <p>Each simulated person has a trait value made of an average and four pushes above or below it:</p>
+      <p class="eq"><var>P</var> = 100 + <var>G</var> + <var>C</var> + <var>E</var> + <var>I</var></p>
+      <p><var>G</var> is the push from the person's genes, with variance <var>V</var><sub>A</sub>. <var>C</var> is the push from the environment a family shares, with variance <var>V</var><sub>C</sub>. <var>E</var> is everything unique to the person, including chance, with variance <var>V</var><sub>E</sub>. All are drawn from normal distributions. Writing <var>g</var> and <var>c</var> for the genetic and family-environment values scaled to variance 1, the interaction term is</p>
+      <p class="eq"><var>I</var> = √<var>V</var><sub>I</sub> · (<var>g</var> <var>c</var> − <var>ρ</var>)</p>
+      <p>so that the effect of a person's genes is larger in some family environments than in others. The last setting, <var>ρ</var>, is the correlation between <var>g</var> and <var>c</var>: how far family environments follow the parents' genes, as when parents pass on both.</p>
+      <p>Families are built to respect how inheritance works. Each family has a mid-parent genetic value <var>m</var> with variance one half. Each child's <var>g</var> is <var>m</var> plus an independent draw with variance one half, which makes the correlation between siblings one half. Identical twins receive the same draw; fraternal twins receive separate ones. The family environment is <var>c</var> = 2<var>ρ</var><var>m</var> + √(1 − 2<var>ρ</var>²) <var>z</var> with <var>z</var> a fresh standard normal, which gives <var>c</var> variance 1 and correlation <var>ρ</var> with every child's <var>g</var>. This construction is why <var>ρ</var> stops at 0.7.</p>
+
+      <h3>The true decomposition</h3>
+      <p>Because the page made the population, it knows where the variance comes from without estimating anything:</p>
+      <p class="eq"><var>V</var><sub>P</sub> = <var>V</var><sub>A</sub> + <var>V</var><sub>C</sub> + <var>V</var><sub>E</sub> + <var>V</var><sub>I</sub>(1 + <var>ρ</var>²) + 2<var>ρ</var>√(<var>V</var><sub>A</sub><var>V</var><sub>C</sub>)</p>
+      <p class="eq"><var>h</var>² = <var>V</var><sub>A</sub> / <var>V</var><sub>P</sub></p>
+      <p>The fourth term is the variance of the interaction and the fifth is twice the covariance of genes and family environment. Neither is "genetic" or "environmental": the bar in the tool shows them as their own segments. With both set to zero the bar has three parts and heritability is the first.</p>
+
+      <h3>The twin study</h3>
+      <p>The simulated researcher sees only trait values for <var>n</var> identical and <var>n</var> fraternal pairs. For each kind the page computes the intraclass correlation, which treats the two twins of a pair symmetrically:</p>
+      <p class="eq"><var>r</var> = Σ (<var>x</var><sub>1</sub> − <var>x̄</var>)(<var>x</var><sub>2</sub> − <var>x̄</var>) / ( ½ Σ [ (<var>x</var><sub>1</sub> − <var>x̄</var>)² + (<var>x</var><sub>2</sub> − <var>x̄</var>)² ] )</p>
+      <p>with <var>x̄</var> the mean of all twins of that kind. In the plain model identical twins share <var>G</var> and <var>C</var>, so their expected correlation is (<var>V</var><sub>A</sub> + <var>V</var><sub>C</sub>)/<var>V</var><sub>P</sub>, and fraternal twins share half of the genetic variance, giving (½<var>V</var><sub>A</sub> + <var>V</var><sub>C</sub>)/<var>V</var><sub>P</sub>. Falconer's formulas follow by subtraction:</p>
+      <p class="eq"><var>h</var>² = 2(<var>r</var><sub>MZ</sub> − <var>r</var><sub>DZ</sub>) &nbsp;&nbsp; <var>c</var>² = 2<var>r</var><sub>DZ</sub> − <var>r</var><sub>MZ</sub> &nbsp;&nbsp; <var>e</var>² = 1 − <var>r</var><sub>MZ</sub></p>
+      <p>The interval shown is the estimate plus or minus 1.96 standard errors, taking each correlation to have variance (1 − <var>r</var>²)²/<var>n</var>, so the standard error of <var>h</var>² is 2√[ ((1 − <var>r</var><sub>MZ</sub>²)² + (1 − <var>r</var><sub>DZ</sub>²)²) / <var>n</var> ]. A test compares this with the spread of the estimate across 400 simulated studies. The doubling is what makes twin estimates noisy: with 500 pairs of each kind the interval is about 0.17 either side.</p>
+
+      <h3>What interaction and correlation do to the estimate</h3>
+      <p>Working the same subtraction through the full model gives</p>
+      <p class="eq">2(<var>r</var><sub>MZ</sub> − <var>r</var><sub>DZ</sub>) → (<var>V</var><sub>A</sub> + <var>V</var><sub>I</sub>) / <var>V</var><sub>P</sub></p>
+      <p>Identical twins share the interaction completely and fraternal twins share about half of it, which is the pattern genes themselves show, so the twin method counts interaction with the shared environment as genetic. The covariance term is shared equally by both kinds of twin and drops out of the subtraction, to reappear in the estimate of shared environment. The tool states both mismatches when they occur, and the tests check the algebra against simulated studies of 50,000 pairs.</p>
+
+      <h3>The environment chart</h3>
+      <p>The line plots <var>h</var>² = <var>V</var><sub>A</sub>/<var>V</var><sub>P</sub> as the non-shared environmental variance runs from 0 to 200 with every other setting held where it is. The dot is the current population. Nothing genetic changes along the line.</p>
+
+      <h3>The two fields</h3>
+      <p>Two thousand plants grow in each field. A plant's height is 100 plus a genetic value with variance <var>h</var>² × 100 plus a soil-and-chance value with variance (1 − <var>h</var>²) × 100, and plants in the poor field are shorter on average by the chosen gap. The last slider decides how the gap is caused: a share <var>s</var> of it is subtracted from the genetic values of the poor field's seed and the rest from its environment. The heights are the same numbers whatever <var>s</var> is, since only the sum is ever observed, and so are the heritabilities inside each field. With <var>s</var> at zero this is Lewontin's example: the same seed in both fields.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Anything about a real trait.</strong> Every variance here is a slider. The page shows what follows from a set of assumptions, not what is true of height, health, schooling or anything else in people.</li>
+        <li><strong>How much of one person's trait is genetic.</strong> Heritability is a ratio of variances across a population. The table of five people shows why it does not carry over: in one person the pushes can cancel, and with interaction there is no way to split them at all.</li>
+        <li><strong>Why two groups differ.</strong> Heritability inside groups is compatible with a gap between them that is entirely environmental, entirely genetic, or any mixture. The two-field panel produces identical data in all three cases.</li>
+        <li><strong>Whether a trait can be changed.</strong> The figure describes the environments that happened to exist in the population measured. It is silent about environments nobody in it experienced, such as a new diet, treatment or school.</li>
+        <li><strong>Whether real twin studies meet their assumptions.</strong> Here identical and fraternal twins share their surroundings equally, parents pair at random and genetic effects add up, because the simulation was written that way. In real data each of these can fail and bias the estimate, and none can be checked from twin correlations alone.</li>
+        <li><strong>What the environment is.</strong> "Shared" and "non-shared" are labels for variance, not causes. The non-shared part includes measurement error and chance in development. A variance component does not name anything that could be acted on.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Simulate actual genes: many locations with two variants each, with dominance and interaction between them, so that broad and narrow heritability come apart.</li>
+        <li>Let parents pair by similarity, and let identical twins share more of their surroundings than fraternal twins, to show the size and direction of the bias each causes.</li>
+        <li>Add adoption and wider family designs, and fit the full variance-components model by maximum likelihood in place of Falconer's subtraction.</li>
+        <li>Draw reaction norms, the trait each genetic value produces across a range of environments, which is the picture Lewontin argued should replace a single percentage.</li>
+        <li>Add interaction with the non-shared environment, which the twin method files under non-shared environment, alongside the kind modelled here.</li>
+        <li>Add a cross-sowing experiment to the two fields, so the visitor can do the one thing that reveals where the gap comes from.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Galton, F. (1874). <em>English Men of Science: Their Nature and Nurture</em>. Macmillan.</li>
+        <li>Fisher, R. A. (1918). The correlation between relatives on the supposition of Mendelian inheritance. <em>Transactions of the Royal Society of Edinburgh</em>, 52, 399-433.</li>
+        <li>Falconer, D. S. (1960). <em>Introduction to Quantitative Genetics</em>. Oliver and Boyd.</li>
+        <li>Lewontin, R. C. (1970). Race and intelligence. <em>Bulletin of the Atomic Scientists</em>, 26(3). The source of the two-soils example.</li>
+        <li>Lewontin, R. C. (1974). The analysis of variance and the analysis of causes. <em>American Journal of Human Genetics</em>, 26, 400-411.</li>
+        <li>Purcell, S. (2002). Variance components models for gene-environment interaction in twin analysis. <em>Twin Research</em>, 5(6), 554-571.</li>
+        <li>Polderman, T. J. C., and others (2015). Meta-analysis of the heritability of human traits based on fifty years of twin studies. <em>Nature Genetics</em>, 47, 702-709.</li>
+        <li>Turkheimer, E. (2000). Three laws of behavior genetics and what they mean. <em>Current Directions in Psychological Science</em>, 9(5), 160-164.</li>
+        <li>Visscher, P. M., Hill, W. G., and Wray, N. R. (2008). Heritability in the genomics era: concepts and misconceptions. <em>Nature Reviews Genetics</em>, 9, 255-266.</li>
+        <li>All data on this page are simulated in the browser.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
