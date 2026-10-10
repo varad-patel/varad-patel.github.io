@@ -1,0 +1,7 @@
+{
+  "question": "Should you switch doors in the Monty Hall game, and why does the answer depend on what the host knows?",
+  "finding": "In 100,000 simulated games switching won 66.9% and staying 33.1%; when the host opens a door at random instead, the two strategies tie.",
+  "limit": "The 2/3 answer holds only under the stated rules: a host who knows where the car is, must open a goat door and must offer the switch.",
+  "sources": [],
+  "built": "2026-10-10"
+}
