@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fallacy Detector · 365 projects</title>
+  <meta name="description" content="Paste an argument and get possible fallacies flagged with confidence scores and a plain explanation of each, next to the detector's own measured error rate.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .block2 { border-top: 1px solid var(--rule); padding-top: 22px; }
+    #app .controls .hbar { grid-template-columns: 10.5em minmax(0, 1fr) auto; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .chip { font: 0.84rem var(--mono); padding: 2px 8px; border: 1px solid var(--rule); border-radius: 3px; background: #fff; }
+    table.matrix th, table.matrix td { white-space: nowrap; }
+    table.matrix td.diag { font-weight: 700; box-shadow: inset 0 0 0 1.5px var(--ink); }
+    table.matrix tbody th { font-weight: 600; border-bottom: 1px solid var(--grid); }
+  </style>
+</head>
+<body class="proj" data-day="13">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Fallacy Detector</h1>
+      <p class="lede">Paste an argument and a small classifier flags the fallacies it thinks it sees, says how confident it is, and explains each one. Then it shows you how often it is wrong, which is often.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Fallacy detector">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>Tested on 1,297 labelled arguments it had not seen, the detector named the right label 50% of the time, against 31% for always guessing the commonest label. When it was at least 50% confident it was right 83% of the time, but it was that confident about only one argument in ten. A machine that reads words can notice the vocabulary of bad arguments. It cannot follow the reasoning.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>A fallacy is an argument that persuades without giving a good reason. Aristotle catalogued thirteen in the <em>Sophistical Refutations</em>, and the list has grown ever since: attacking the speaker, appealing to pity, generalising from one case, leaning on a famous name, changing the subject. Learning the names is supposed to make people harder to fool.</p>
+      <p>There are two problems with that hope, and this page is built around both. The first is that the labels are easy to misuse. C. L. Hamblin argued in 1970 that the textbook treatment was a list of names with no theory behind it. Pointing at a fallacy does not show that a conclusion is false, and an attack on someone's character is perfectly relevant when their honesty is the question.</p>
+      <p>The second is that fallacies are not properties of sentences. Whether an appeal to authority is a fallacy depends on whether the person is an expert on that question. Whether a generalisation is hasty depends on how many cases there were. Whether a remark is a red herring depends on what was being discussed. None of that is in the words. So a detector that reads only the words is bound to be wrong a good deal of the time, and the useful thing it can do is tell you exactly how often.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The training data</h3>
+      <p>The examples come from Argotario, a game built by researchers at the Technical University of Darmstadt in which players were given an everyday question ("Should cellphones be used during class?") and asked to write a short argument that commits a named fallacy, or none. After removing duplicates and fragments there are 1,297 English arguments: 396 with no fallacy, 234 appeals to emotion, 191 red herrings, 162 ad hominem attacks, 157 hasty generalisations and 157 appeals to irrelevant authority. The label is the fallacy the writer was aiming for. The data are in the public domain.</p>
+      <h3>From text to numbers</h3>
+      <p>Each argument becomes a list of the words and adjacent word pairs it contains. Each of those gets a weight that is larger when it is repeated and when it is rare across the whole collection (TF-IDF), and the list is scaled to length one so that long and short arguments are comparable:</p>
+      <p class="eq"><var>x</var><sub><var>j</var></sub> ∝ (1 + ln <var>count</var><sub><var>j</var></sub>) · (ln((1 + <var>N</var>) / (1 + <var>df</var><sub><var>j</var></sub>)) + 1)</p>
+      <p>Only words and pairs that occur in at least two arguments are kept: 3,846 of them.</p>
+      <h3>The classifier</h3>
+      <p>A softmax regression gives every label a score that is a weighted sum of those numbers, and turns the scores into probabilities:</p>
+      <p class="eq"><var>P</var>(label <var>c</var> | text) = exp(<var>w</var><sub><var>c</var></sub> · <var>x</var> + <var>b</var><sub><var>c</var></sub>) / Σ<sub><var>k</var></sub> exp(<var>w</var><sub><var>k</var></sub> · <var>x</var> + <var>b</var><sub><var>k</var></sub>)</p>
+      <p>The weights are found by gradient descent, lowering the cross-entropy between these probabilities and the true labels, with a penalty on large weights so that the model does not memorise. Rare labels are given somewhat more say during training so that the commonest label does not swallow the rest. The "confidence" shown is the probability of the top label. The words listed under the bars are the ones whose weight for that label most exceeds their average weight across labels.</p>
+      <h3>Measuring the error rate</h3>
+      <p>The numbers under "How far to trust it" come from five-fold cross-validation. The arguments are split into five parts with the same mix of labels. The model is trained from scratch on four parts and asked to label the fifth, which it has never seen, and this is repeated five times so that every argument is tested once. The table of rows and columns shows every kind of mistake it made. The chart shows what happens if it is only allowed to answer when its confidence clears a bar: accuracy goes up, and the share of arguments it will say anything about goes down.</p>
+      <p>The model that runs on this page is trained on all 1,297 arguments. Everything is computed in your browser, and the text you type is not sent anywhere.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Whether an argument is fallacious.</strong> Its top answer is wrong about half the time. Use a flag as a reason to reread, never as a ruling.</li>
+        <li><strong>Anything that depends on context.</strong> It never sees the question being argued, so it cannot know that a subject has been changed. It cannot check whether a cited person is an expert, or how many cases a generalisation rests on. It finds 14% of red herrings and 21% of hasty generalisations.</li>
+        <li><strong>Anything outside its five types.</strong> Circular arguments, false dilemmas, straw men and slippery slopes are all invisible to it, and will come back as "no fallacy" or as the wrong one.</li>
+        <li><strong>How real debates are argued.</strong> The examples are short, casual and written by people playing a game who were trying to be fallacious. Parliamentary speeches and newspaper columns do not look like that.</li>
+        <li><strong>That an argument is sound.</strong> "No fallacy flagged" means only that the wording is unlike the training examples. It has no view on whether the premises are true.</li>
+        <li><strong>That a conclusion is false.</strong> A bad argument can have a true conclusion. Rejecting a claim because it was badly argued is itself a fallacy.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Give the classifier the question as well as the answer, which is the minimum needed to recognise a change of subject.</li>
+        <li>Replace word counts with sentence embeddings from a small open model running in the browser, and measure whether the error rate actually falls.</li>
+        <li>Train on a larger and more varied collection covering more types of fallacy, and report the error rate separately for each source.</li>
+        <li>Check calibration: when it says 70%, is it right 70% of the time?</li>
+        <li>Combine it with the argument map from Day 16, so that a flag points at the specific step in the reasoning it doubts.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>Habernal, I., Hannemann, R., Pollak, C., Klamm, C., Pauli, P., and Gurevych, I. (2017). Argotario: computational argumentation meets serious games. <em>Proceedings of EMNLP 2017: System Demonstrations</em>. Data: github.com/UKPLab/argotario, CC0.</li>
+        <li>Aristotle. <em>Sophistical Refutations</em>.</li>
+        <li>Hamblin, C. L. (1970). <em>Fallacies</em>. Methuen.</li>
+        <li>Jin, Z., et al. (2022). Logical fallacy detection. <em>Findings of EMNLP 2022</em>. A larger benchmark, on which large language models also did poorly.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

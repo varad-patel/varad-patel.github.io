@@ -1,0 +1,7 @@
+{
+  "question": "Can a classifier that reads only the words of an argument tell which fallacy it commits, and how often is it wrong?",
+  "finding": "On 1,297 labelled arguments it had not seen, the detector named the right label 50% of the time, against 31% for always guessing the commonest label.",
+  "limit": "It reads wording and not reasoning, so its top answer is wrong about half the time and it cannot see anything that depends on context.",
+  "sources": ["Argotario (UKP Lab, TU Darmstadt)"],
+  "built": "2026-10-10"
+}
