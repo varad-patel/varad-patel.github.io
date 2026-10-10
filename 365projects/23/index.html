@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Infinity Lab: Hilbert's Hotel and Cantor's Diagonal · 365 projects</title>
+  <meta name="description" content="Check guests, coaches and infinitely many coaches into a full hotel and watch the room rule work, then build a list of infinite binary sequences and see the one it leaves out.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .lab-part { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; min-width: 0; }
+    .lab-part + .lab-part { border-top: 1px solid var(--rule); padding-top: 24px; }
+    .tool .lab-part > h2 { font-size: 1.2rem; }
+    .hotel-log { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font-size: 0.86rem; line-height: 1.4; }
+    .ask { display: grid; gap: 12px; }
+    .ask-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: 16px 24px; align-items: start; }
+    .ask-item { display: grid; gap: 6px; align-content: start; min-width: 0; }
+    .ask-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; align-items: end; }
+    .answer { min-height: 1.5em; }
+    .answer.bad { color: var(--bad); }
+    .seq { border-collapse: collapse; font-family: var(--mono); font-size: 0.98rem; line-height: 1.5; }
+    .seq th, .seq td { padding: 2px 0; text-align: center; min-width: 1.75em; }
+    .seq thead th { font: 600 0.76rem/1.6 var(--sans); color: var(--slate); border-bottom: 1.5px solid var(--ink); }
+    .seq .lab { font: 600 0.82rem/1.6 var(--sans); color: var(--ink); text-align: left; padding-right: 12px; white-space: nowrap; }
+    .seq thead .lab { color: var(--slate); font-size: 0.76rem; }
+    .seq .src { font: 400 0.78rem/1.6 var(--sans); color: var(--slate); text-align: left; padding-right: 12px; }
+    .seq .more { color: var(--slate); }
+    .seq td.diag { background: var(--ink); color: var(--paper); font-weight: 700; }
+    .seq tbody tr.cmp > * { background: color-mix(in srgb, var(--c4) 24%, transparent); }
+    .seq tbody tr.cmp td.diag { background: var(--ink); box-shadow: 0 0 0 2px var(--c4); position: relative; }
+    .seq tfoot tr:first-child > * { border-top: 1.5px solid var(--ink); padding-top: 5px; }
+    .seq tfoot tr.miss td { font-weight: 700; background: color-mix(in srgb, var(--c2) 16%, transparent); }
+    .seq tfoot tr.miss td.hit { box-shadow: inset 0 0 0 2px var(--ink); }
+    .seq tfoot tr.miss td.more { background: none; font-weight: 400; }
+    @media (max-width: 560px) { .seq th, .seq td { min-width: 1.4em; } .seq .lab, .seq .src { padding-right: 7px; } }
+  </style>
+</head>
+<body class="proj" data-day="23">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Infinity Lab: Hilbert's Hotel and Cantor's Diagonal</h1>
+      <p class="lede">A full hotel with infinitely many rooms can always take more guests, even infinitely many coachloads of them. A list of infinite sequences of 0s and 1s can never take them all. Try both and see where the difference lies.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Hilbert's Hotel and Cantor's diagonal argument">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>When infinitely many coaches arrive at the full hotel, each with infinitely many passengers, one rule houses everybody: the guest in room <var>n</var> moves to room <var>n</var>(<var>n</var> + 1) ÷ 2 and seat <var>s</var> of coach <var>c</var> gets room (<var>c</var> + <var>s</var> − 1)(<var>c</var> + <var>s</var>) ÷ 2 + <var>s</var>. Room 100 goes to seat 9 of coach 5, and no room is shared or left empty. No rule can do the same for sequences of 0s and 1s: list every repeating pattern, and the flipped diagonal, which begins 1010 0011 1110, differs from row <var>k</var> at digit <var>k</var>.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>How do you compare the sizes of two collections that never end? Counting is no use. Galileo noticed in 1638 that the whole numbers can be paired off one-to-one with their squares, 1 with 1, 2 with 4, 3 with 9, although most numbers are not squares, and concluded that "more" and "fewer" make no sense for the infinite. Georg Cantor drew the opposite conclusion in the 1870s. Pairing <em>is</em> what "the same size" means: two sets are equally large when their members can be matched one-to-one with nothing left over on either side.</p>
+      <p>Hilbert's Hotel is that definition turned into a story. David Hilbert used it in lectures in the 1920s and George Gamow made it famous in 1947. The hotel has a room for every whole number and every room is occupied. A new guest arrives, and the manager asks everyone to move up one room. A coach with infinitely many passengers arrives, and everyone moves to double their room number. Infinitely many such coaches arrive, and there is still a rule that works. In each case the guests plus the newcomers can be matched exactly with the rooms. Richard Dedekind had turned this oddity into a definition in 1888: a set is infinite exactly when it can be matched with a part of itself. Sets that can be matched with the whole numbers are called countable.</p>
+      <p>The hotel suggests that every infinity is the same size. Cantor's diagonal argument of 1891 shows that it is not so. Take the infinite sequences of 0s and 1s and suppose someone hands you a list of them, one for each whole number. Go down the diagonal, flipping each digit, and you have written a sequence that differs from the first row in its first digit, from the second in its second, and so on for ever. It is not in the list. The list was arbitrary, so no list contains them all: the sequences are uncountable, a strictly larger infinity than the rooms of the hotel.</p>
+      <p>This matters beyond set theory. Alan Turing used the same diagonal move in 1936 to show that some questions about programs cannot be decided by any program. There are only countably many programs, descriptions and proofs, and uncountably many sequences, so almost every sequence can never be described at all. And the hotel's rearrangements are a standing problem for anyone who adds up welfare over an endless future: an infinite stream of good and bad years can be reshuffled to look better without changing a single year, which is why Peter Diamond could show in 1965 that treating all generations equally clashes with other requirements that look harmless.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The four room rules</h3>
+      <p>Rooms, guests, coaches and seats are numbered 1, 2, 3 …. Each rule says where the guest now in room <var>n</var> goes and where each newcomer goes.</p>
+      <p class="eq">one guest: &nbsp; <var>n</var> → <var>n</var> + 1, &nbsp; the newcomer → 1<br><var>k</var> guests: &nbsp; <var>n</var> → <var>n</var> + <var>k</var>, &nbsp; newcomer <var>j</var> → <var>j</var><br>one coach: &nbsp; <var>n</var> → 2<var>n</var>, &nbsp; seat <var>s</var> → 2<var>s</var> − 1<br>every coach: &nbsp; <var>n</var> → <var>n</var>(<var>n</var> + 1) ÷ 2, &nbsp; coach <var>c</var>, seat <var>s</var> → (<var>c</var> + <var>s</var> − 1)(<var>c</var> + <var>s</var>) ÷ 2 + <var>s</var></p>
+      <p>The last rule is Cantor's pairing function. Treat the guests already in the hotel as coach 0, so that everyone is a pair (<var>c</var>, <var>s</var>) with <var>c</var> ≥ 0 and <var>s</var> ≥ 1. Arrange the pairs in a grid and number them along the diagonals on which <var>c</var> + <var>s</var> is constant. The diagonals before the one with <var>c</var> + <var>s</var> = <var>t</var> hold 1 + 2 + … + (<var>t</var> − 1) = (<var>t</var> − 1)<var>t</var> ÷ 2 pairs, and within a diagonal the pairs are taken in order of seat, which gives the formula. With <var>c</var> = 0 it reduces to <var>n</var>(<var>n</var> + 1) ÷ 2.</p>
+      <p>All four rules are bijections, not merely injections: every person gets a room, no two people share, and no room is left empty. The page holds each rule together with its inverse. To find who gets room <var>m</var> under the pairing rule it finds the largest <var>w</var> with <var>w</var>(<var>w</var> + 1) ÷ 2 below <var>m</var>, sets <var>s</var> = <var>m</var> − <var>w</var>(<var>w</var> + 1) ÷ 2 and <var>c</var> = <var>w</var> + 1 − <var>s</var>. The tests apply a rule and then its inverse to thousands of rooms and people and check that each comes back to where it started.</p>
+      <h3>Arrivals in a row</h3>
+      <p>Arrivals accumulate. To say who is in room <var>m</var> after several of them the page walks backwards: the latest rule's inverse says either that the room went to one of its newcomers, or that it went to whoever was in some room <var>n</var> before, in which case the question is asked again of the arrival before that. The labels on the picture record the result. A plain number is the room that guest started in. A letter marks a newcomer and the arrival they came with, followed by a seat, or by coach · seat.</p>
+      <h3>The lists</h3>
+      <p>A list assigns an infinite sequence to every row number. The page builds one in layers: any rows you type, each a finite pattern repeated for ever, followed by rows from a formula. The formula gives digit <var>j</var> of generated row <var>i</var> for every <var>i</var> and <var>j</var>, so every row is infinitely long and there are infinitely many rows, although only a corner is drawn. "Counting in binary" writes <var>i</var> − 1 in binary, lowest digit first, and so lists every sequence with finitely many 1s. "Every repeating pattern" runs through 0, 1, 00, 01, 10, 11, 000 … and repeats each, so some sequences appear more than once, which does no harm. "Multiples" puts a 1 where <var>i</var> divides <var>j</var>. "Coin flips" draws each digit from a seeded generator.</p>
+      <h3>The diagonal</h3>
+      <p>Write <var>a</var><sub><var>k</var>,<var>j</var></sub> for digit <var>j</var> of row <var>k</var>. The new sequence is</p>
+      <p class="eq"><var>d</var><sub><var>k</var></sub> = 1 − <var>a</var><sub><var>k</var>,<var>k</var></sub> &nbsp;&nbsp; for every <var>k</var> = 1, 2, 3 …</p>
+      <p>It differs from row <var>k</var> at position <var>k</var>, whatever <var>k</var> is. The comparison box computes <var>a</var><sub><var>k</var>,<var>k</var></sub> for any row up to the millionth and also reports the first position at which the two sequences differ, which may come earlier.</p>
+      <h3>Adding the missing sequence</h3>
+      <p>The button puts <var>d</var> into row 1 and moves every old row down one, exactly as the hotel takes one new guest. The result is again a list with one sequence per row number, so it has a diagonal and a new flipped sequence <var>d</var>′, with <var>d</var>′<sub>1</sub> = 1 − <var>d</var><sub>1</sub> and <var>d</var>′<sub><var>k</var></sub> = 1 − <var>a</var><sub><var>k</var>−1,<var>k</var></sub> after that. You can repeat this twelve times on the page. The proof says it can never succeed: every list of this kind, however it was assembled, is refuted by its own diagonal.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>That the real numbers are uncountable, quite yet.</strong> The argument here is about sequences of digits. Real numbers between 0 and 1 are almost the same thing in binary, but not quite, because 0.0111… and 0.1000… are one number written two ways. Closing that gap takes one more step, which the page does not show.</li>
+        <li><strong>Anything a window cannot.</strong> The page draws at most twenty digits of twenty rows and can check one row at a time. The theorem is about every row at once. It holds because of the argument, not because any amount of checking was done.</li>
+        <li><strong>Whether completed infinities exist.</strong> Both halves treat an infinite hotel and an infinite list as finished objects. Mathematicians in the constructive tradition accept the diagonal as a recipe, given a list, here is a sequence outside it, but dispute that this makes one infinity "bigger" than another.</li>
+        <li><strong>What lies between the two sizes.</strong> Whether some set is larger than the whole numbers and smaller than the set of sequences is the continuum hypothesis. Gödel and Cohen showed that the usual axioms of set theory can neither prove nor refute it.</li>
+        <li><strong>How to move infinitely many guests.</strong> A rule tells each guest where to go. Whether infinitely many moves can all be carried out is the question raised on day 5, and the hotel assumes it away.</li>
+        <li><strong>What a typical sequence looks like.</strong> Every row on the page comes from a short rule, because nothing else can be typed or computed. The counting argument says that almost all sequences have no finite description, so the page can never display one of the sequences that make the set uncountable.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Offer other room rules for the infinite coaches, such as 2<sup><var>c</var></sup>(2<var>s</var> − 1), which is also a bijection, and powers of primes, which is only an injection and leaves infinitely many rooms empty.</li>
+        <li>List the fractions in the same way, to show that the rational numbers fit in the hotel.</li>
+        <li>Carry the diagonal over to real numbers, with the extra care that two expansions of the same number require.</li>
+        <li>Show Cantor's theorem in its general form on small finite sets: no assignment of subsets to members can cover every subset.</li>
+        <li>Add Turing's version, with rows as programs and columns as inputs, where the flipped diagonal is a behaviour that no program has.</li>
+        <li>Let visitors enter their own formula for digit <var>j</var> of row <var>i</var>.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Cantor, G. (1891). Über eine elementare Frage der Mannigfaltigkeitslehre. <em>Jahresbericht der Deutschen Mathematiker-Vereinigung</em>, 1, 75-78.</li>
+        <li>Galilei, G. (1638). <em>Discorsi e dimostrazioni matematiche intorno a due nuove scienze</em>.</li>
+        <li>Dedekind, R. (1888). <em>Was sind und was sollen die Zahlen?</em></li>
+        <li>Gamow, G. (1947). <em>One Two Three … Infinity</em>. Viking Press.</li>
+        <li>Kragh, H. (2014). The true (?) story of Hilbert's infinite hotel. arXiv preprint.</li>
+        <li>Turing, A. M. (1936). On computable numbers, with an application to the Entscheidungsproblem. <em>Proceedings of the London Mathematical Society</em>.</li>
+        <li>Diamond, P. A. (1965). The evaluation of infinite utility streams. <em>Econometrica</em>.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

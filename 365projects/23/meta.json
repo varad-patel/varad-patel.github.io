@@ -1,0 +1,7 @@
+{
+  "question": "Why can a full infinite hotel always fit infinitely many more guests, when no list can ever hold every infinite sequence of 0s and 1s?",
+  "finding": "Cantor's pairing rule houses infinitely many coachloads in the full hotel with no room shared or empty (room 100 goes to seat 9 of coach 5), but even the list of every repeating binary pattern misses a sequence, beginning 1010 0011 1110, that differs from row k at digit k.",
+  "limit": "The page can only draw and check finite windows of infinite objects; the theorems rest on the arguments, and on accepting completed infinite sets, not on anything computed here.",
+  "sources": [],
+  "built": "2026-10-10"
+}
