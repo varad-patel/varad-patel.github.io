@@ -1,0 +1,7 @@
+{
+  "question": "How much of the link between national income and life satisfaction is left once health, freedom and social support are held fixed?",
+  "finding": "Across 142 countries in 2023 to 2025, income alone accounts for 63% of the differences in life evaluation, but less than one percentage point is unique to income once five other factors are held fixed.",
+  "limit": "A cross-section of country averages cannot show that money causes happiness, and it says nothing about individuals inside a country.",
+  "sources": ["World Happiness Report 2026", "World Bank"],
+  "built": "2026-10-10"
+}

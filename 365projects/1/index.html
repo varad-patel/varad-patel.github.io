@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Can Money Buy Happiness? · 365 projects</title>
+  <meta name="description" content="Pick the countries and what to hold fixed, and see how much of the link between national income and life satisfaction is really about income.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .split-bar { display: flex; gap: 2px; height: 22px; margin: 2px 0 8px; }
+    .split-bar span { display: block; min-width: 2px; border-radius: 2px; }
+  </style>
+</head>
+<body class="proj" data-day="1">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Can Money Buy Happiness?</h1>
+      <p class="lede">Richer countries report more satisfying lives. Pick the countries and what to hold fixed, and see how much of that link is really about income.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Income and life evaluation explorer">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>Across 142 countries in 2023 to 2025, income alone accounts for 63% of the differences in average life evaluation, and each doubling of income goes with 0.55 more points on the 0 to 10 ladder. Hold health, social support, freedom, generosity and corruption fixed and the same doubling goes with 0.16 points. Less than one percentage point of the variation can be pinned on income and nothing else.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Ask people in 140 countries to rate their lives from 0 to 10 and the national averages line up with national income almost embarrassingly well. Angus Deaton showed in 2008 that the line is straight when income is on a log scale: going from $2,000 to $4,000 a head goes with about the same gain as going from $20,000 to $40,000. Money matters, and each extra dollar matters less.</p>
+      <p>But rich countries are not only rich. They are also healthier, freer, less corrupt and better at looking after people who fall. So "income explains 63% of life satisfaction" could mean that money buys happiness, or that money travels with the things that do. This is the oldest problem in empirical social science, <strong>omitted variable bias</strong>, and it sits underneath a live argument in welfare economics: whether governments that want happier citizens should chase growth, or chase the things growth is correlated with.</p>
+      <p>The tool lets you run that argument yourself. Tick a control and you are no longer comparing rich countries with poor ones. You are comparing countries that are alike on that measure and differ in income.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The data</h3>
+      <p>Life evaluation is the Cantril ladder from the Gallup World Poll, as published in the World Happiness Report 2026: "imagine a ladder with steps from 0 to 10, where 10 is the best possible life for you; which step are you on?" Each value is a national average over three survey years. Income is the World Bank's GDP per person at purchasing power parity in constant 2021 international dollars, averaged over the same three years.</p>
+      <h3>The model</h3>
+      <p>For each country <var>i</var> the tool fits, by ordinary least squares,</p>
+      <p class="eq"><var>ladder</var><sub><var>i</var></sub> = <var>a</var> + <var>b</var> · log<sub>2</sub>(<var>income</var><sub><var>i</var></sub>) + <var>c</var><sub>1</sub> · <var>control</var><sub>1<var>i</var></sub> + … + <var>e</var><sub><var>i</var></sub></p>
+      <p>Because income enters as a base-2 logarithm, <var>b</var> reads directly as "ladder points per doubling of income". With no controls ticked, <var>b</var> is the slope of the line in the chart. With controls ticked, the tool fits both models on the same set of countries so the two slopes are comparable.</p>
+      <h3>The controls</h3>
+      <p>Health is life expectancy at birth from the World Bank. The other four come from the report itself, which publishes each factor as a contribution to a country's score. A contribution is the survey average shifted and multiplied by a constant, so it carries the same information as the underlying average, but not in natural units. The table therefore reports every effect per standard deviation: the gap between a typical country and one that is noticeably higher.</p>
+      <h3>Splitting the variation</h3>
+      <p>The bar under the headline numbers comes from three regressions: income alone (<var>R</var>²<sub>I</sub>), the controls alone (<var>R</var>²<sub>C</sub>), and both together (<var>R</var>²<sub>F</sub>).</p>
+      <p class="eq">only income = <var>R</var>²<sub>F</sub> − <var>R</var>²<sub>C</sub> &nbsp;&nbsp; shared = <var>R</var>²<sub>I</sub> + <var>R</var>²<sub>C</sub> − <var>R</var>²<sub>F</sub> &nbsp;&nbsp; only controls = <var>R</var>²<sub>F</sub> − <var>R</var>²<sub>I</sub></p>
+      <p>The shared part is the variation that income and the controls could each explain equally well. The data cannot say which of them deserves it, and that is usually most of the bar.</p>
+      <h3>The second chart</h3>
+      <p>"Controls held fixed" is an added-variable plot. The tool regresses life evaluation on the controls and keeps what is left over, does the same for income, and plots one leftover against the other. By the Frisch-Waugh-Lovell theorem the slope of that cloud is exactly the coefficient <var>b</var> from the full model, so you can see how much of the tidy raw line survives.</p>
+      <h3>Uncertainty</h3>
+      <p>Intervals are the estimate plus or minus 1.96 classical standard errors. They assume each country is an independent draw with similar noise, which is generous: neighbours share history, and small countries are measured less precisely.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Whether money causes happiness.</strong> This is a cross-section of countries. Happier, more trusting societies may grow faster; something unmeasured may drive both. Nothing here separates those stories.</li>
+        <li><strong>What the "right" income effect is.</strong> Health and freedom may be things income buys. If so, holding them fixed strips out part of income's real effect, and the smaller number is too small. The raw slope is too large for the opposite reason. The truth is somewhere between, and this data cannot place it.</li>
+        <li><strong>Anything about people.</strong> A national average says nothing about who inside the country is satisfied. A relationship between countries need not hold between households.</li>
+        <li><strong>Day-to-day feeling.</strong> The ladder measures how people judge their lives, not how often they laugh or worry. Those respond differently to income.</li>
+        <li><strong>Household income.</strong> GDP per person includes corporate profits and oil revenue that never reach most households. Ireland and the Gulf states look richer here than their residents are.</li>
+        <li><strong>Countries with no data.</strong> About 140 countries have every measure in a given period. Places at war or without survey access are missing, and they are not missing at random.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Replace GDP per person with median household income where it exists, to measure what people actually have.</li>
+        <li>Use the panel instead of one cross-section: compare each country with its own past, which removes everything about a country that does not change. Day 8 starts on this.</li>
+        <li>Test for satiation by letting the slope differ above an income threshold, the question Kahneman and Deaton raised in 2010.</li>
+        <li>Swap the classical intervals for bootstrap intervals that resample countries.</li>
+        <li>Add individual-level data, such as the World Values Survey, to check whether the country pattern holds between people.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>Helliwell, J. F., Layard, R., Sachs, J. D., De Neve, J.-E., Aknin, L. B., and Wang, S. (eds.) (2026). <em>World Happiness Report 2026</em>. University of Oxford: Wellbeing Research Centre. Data for Figure 2.1.</li>
+        <li>World Bank, World Development Indicators: GDP per capita, PPP, constant 2021 international $ (NY.GDP.PCAP.PP.KD) and life expectancy at birth (SP.DYN.LE00.IN). CC BY 4.0. Retrieved 10 October 2026.</li>
+        <li>Deaton, A. (2008). Income, health, and well-being around the world: evidence from the Gallup World Poll. <em>Journal of Economic Perspectives</em>, 22(2), 53-72.</li>
+        <li>Easterlin, R. A. (1974). Does economic growth improve the human lot? In <em>Nations and Households in Economic Growth</em>. Academic Press.</li>
+        <li>Stevenson, B., and Wolfers, J. (2008). Economic growth and subjective well-being: reassessing the Easterlin paradox. <em>Brookings Papers on Economic Activity</em>.</li>
+        <li>Kahneman, D., and Deaton, A. (2010). High income improves evaluation of life but not emotional well-being. <em>PNAS</em>, 107(38), 16489-16493.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
