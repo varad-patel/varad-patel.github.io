@@ -1,0 +1,7 @@
+{
+  "question": "If something has happened every time so far, how likely is it to happen next time?",
+  "finding": "After 1,826,213 sunrises in a row, Laplace's rule puts the odds of another at 1,826,214 to 1, Jeffreys' prior at 3,652,427 to 1 and a sceptical prior at 182,621 to 1: within 0.0006 percentage points on the probability, twentyfold apart on the chance of failure.",
+  "limit": "Every number assumes the next trial is exchangeable with the ones on record, which is exactly what Hume's problem of induction calls into question.",
+  "sources": [],
+  "built": "2026-10-10"
+}
