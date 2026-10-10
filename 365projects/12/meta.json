@@ -1,0 +1,7 @@
+{
+  "question": "Does the conclusion of a three-term argument have to follow from its two premises, and if not, what would a world look like where it fails?",
+  "finding": "Of the 256 possible syllogistic forms, exhaustive model checking finds 15 valid on the modern reading and 24 once every term is assumed to have at least one member.",
+  "limit": "Validity is not truth: the tool checks whether the conclusion follows from the premises, not whether the premises are right or the words mean the same thing each time.",
+  "sources": [],
+  "built": "2026-10-10"
+}

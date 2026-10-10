@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Syllogism Validator · 365 projects</title>
+  <meta name="description" content="Type two premises and a conclusion in plain English and see whether the conclusion follows, with a Venn diagram that shows why and a counterexample when it does not.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 20px 24px; align-items: start; }
+    .venn { display: block; width: 100%; max-width: 400px; height: auto; margin: 8px 0; }
+    .venn text { font: 600 15px var(--sans); fill: var(--ink); }
+    .venn text.on-dot { fill: #fff; font-weight: 700; font-size: 14px; }
+    .faults { margin: 8px 0 0; padding-left: 1.2em; font-size: 0.93rem; line-height: 1.5; }
+    .faults li + li { margin-top: 6px; }
+    .forms { display: flex; flex-wrap: wrap; gap: 18px 30px; }
+    .forms table { border-collapse: collapse; }
+    .forms caption { text-align: left; font-weight: 700; font-size: 0.86rem; padding-bottom: 4px; white-space: nowrap; }
+    .forms caption span { font-weight: 400; }
+    .forms th { font: 600 0.78rem var(--mono); color: var(--slate); padding: 0 0 3px; text-align: center; }
+    .forms tbody th { padding: 0 6px 0 0; }
+    .forms td { padding: 1px; }
+    .forms button {
+      display: block; width: 26px; height: 26px; padding: 0; border: 1px solid var(--grid); border-radius: 2px;
+      background: #fff; color: var(--slate); font: 700 0.85rem/1 var(--sans); cursor: pointer;
+    }
+    .forms button.both { background: var(--good); border-color: var(--good); color: #fff; }
+    .forms button.trad { background: color-mix(in srgb, var(--warn) 24%, #fff); border-color: var(--warn); color: var(--ink); }
+    .forms button:hover { border-color: var(--ink); }
+    .forms button[aria-pressed="true"] { outline: 3px solid var(--focus); outline-offset: 1px; }
+    @media (max-width: 480px) { .forms { gap: 16px 14px; } .forms button { width: 24px; height: 24px; } }
+  </style>
+</head>
+<body class="proj" data-day="12">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Syllogism Validator</h1>
+      <p class="lede">Type two premises and a conclusion in plain English. The tool says whether the conclusion has to follow, draws the Venn diagram that shows why, and builds a small world where it fails when it does not.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Syllogism validator">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>There are 256 ways to build a syllogism. Checking every one against every possible world, the tool finds 15 that are valid on the modern reading and 24 once each term is assumed to have at least one member. The nine in between all draw a "some" conclusion from two universal premises, and each is rescued by the existence of a single term.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>"All humans are mortal; all Greeks are humans; so all Greeks are mortal." You do not need to know anything about Greeks to see that this works. Swap in any three nouns and it still works. Aristotle's discovery, set out in the <em>Prior Analytics</em>, was that the goodness of an argument like this lives in its shape and not in its subject matter, and that the shapes can be listed and sorted into those that always carry truth from premises to conclusion and those that do not. That was the first formal logic, and for about two thousand years it was most of logic: Kant wrote in 1787 that the subject had not had to take a step back since Aristotle and had not been able to take one forward.</p>
+      <p>A syllogism has three statements and three terms. Each statement takes one of four forms, which medieval logicians labelled with vowels: <strong>A</strong> "All S are P", <strong>E</strong> "No S are P", <strong>I</strong> "Some S are P" and <strong>O</strong> "Some S are not P". The term that appears in both premises and not in the conclusion is the middle term; its job is to connect the other two. An argument is <strong>valid</strong> when there is no possible situation in which the premises are true and the conclusion false. Validity says nothing about whether the premises are in fact true: "All fish can fly; all whales are fish; so all whales can fly" is valid and wrong from the first word.</p>
+      <p>In the nineteenth century George Boole and John Venn turned the forms into statements about classes being empty or not. That made them mechanical to check, and it exposed a disagreement that the old logic had hidden. If there are no unicorns, is "All unicorns have horns" true? The modern answer is yes: it only says that there is no hornless unicorn. The traditional answer is that "all" is used of things that exist, so "All S are P" lets you infer "Some S are P". The choice is called <strong>existential import</strong>, and it decides the fate of nine forms.</p>
+      <p>This matters outside the classroom because the invalid shapes are persuasive. "All extremists criticise the government; this journalist criticises the government; so this journalist is an extremist" has the same form as "All cats are animals; all dogs are animals; so all dogs are cats". Seeing the second makes it easier to refuse the first.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>Reading the statements</h3>
+      <p>Each line is stripped of a leading "therefore", "so" or "hence" and of final punctuation, and its opening word decides the form: "all", "every", "each" or "any" gives A; "no" or "none of" gives E; "some" or "at least one" gives I, or O if "not" follows the verb; "not all" gives O; "only X are Y" is read as "all Y are X". The line is then split at "is" or "are" into a subject and a predicate. A line with no quantifier and "are" is read as universal ("Whales are mammals"); with "is" and a bare name it is read as a statement about one individual ("Socrates is a man"). "All X are not Y" is refused, because English uses it for both "No X are Y" and "Some X are not Y".</p>
+      <p>Two pieces of text count as the same term when they match after dropping case, a leading article and the plural ending of the last word, so "a man", "men" and "Men" are one term. The three statements must then contain exactly three terms, each used twice. The subject of the conclusion is called S, its predicate P and the remaining term M. The premise that contains P is the major premise, whichever order the premises were typed in.</p>
+      <h3>Mood and figure</h3>
+      <p>The <strong>mood</strong> is the three vowels of the major premise, minor premise and conclusion, for example AAA. The <strong>figure</strong>, 1 to 4, records where the middle term sits: subject of the major and predicate of the minor (1), predicate of both (2), subject of both (3), or predicate of the major and subject of the minor (4). Four forms for each of three statements and four figures give 4 × 4 × 4 × 4 = 256 forms. The 24 that survive have medieval names whose vowels spell the mood: Barbara is AAA in figure 1, Celarent is EAE.</p>
+      <h3>Checking every world</h3>
+      <p>Three overlapping circles cut the page into eight regions: one for each combination of being in or out of S, M and P. As far as the four forms are concerned, all that matters about a world is which regions have something in them. That gives 2<sup>8</sup> = 256 possible worlds (the same number as there are forms, by coincidence). In a given world,</p>
+      <p class="eq">All <var>X</var> are <var>Y</var>: nothing is in <var>X</var> outside <var>Y</var></p>
+      <p class="eq">No <var>X</var> are <var>Y</var>: nothing is in both <var>X</var> and <var>Y</var></p>
+      <p class="eq">Some <var>X</var> are <var>Y</var>: something is in both <var>X</var> and <var>Y</var></p>
+      <p class="eq">Some <var>X</var> are not <var>Y</var>: something is in <var>X</var> outside <var>Y</var></p>
+      <p>The tool goes through all 256 worlds, keeps those in which both premises are true, and looks among them for one in which the conclusion is false. If there is none the form is valid. If there is one, that world is the counterexample. Nothing is assumed about the rules of logic beyond these four truth conditions, so the verdict is a proof by exhaustion and not a lookup in a table of known forms.</p>
+      <h3>The two readings</h3>
+      <p>On the <strong>modern</strong> reading every one of the 256 worlds counts, including those in which a circle is entirely empty. On the <strong>traditional</strong> reading only worlds in which S, M and P each have at least one member count. Fewer worlds means fewer chances for a counterexample, so everything valid on the modern reading stays valid and nine more forms join. When the readings disagree, the tool also finds which single term has to be non-empty for the form to hold: S for Barbari, Celaront, Cesaro, Camestros and Camenop; M for Darapti, Felapton and Fesapo; P for Bramantip.</p>
+      <p>A term that names one individual is handled by keeping only worlds in which exactly one of that circle's four regions is inhabited. That makes "Socrates is a man" behave as it should on both readings: it is universal (all of Socrates is a man) and it also guarantees that there is a Socrates.</p>
+      <h3>The diagram</h3>
+      <p>The first diagram summarises every world in which the premises hold. A region is shaded if it is empty in all of them, and gets a cross if it is inhabited in all of them. When a "some" premise leaves two regions open, the cross sits on the line between them. The area the conclusion talks about is tinted. A universal conclusion is valid exactly when its whole area is shaded; a particular one, when a cross is forced into its area. On the traditional reading a cross also appears wherever shading has left a circle with a single open region, which is how the nine extra forms go through.</p>
+      <h3>The counterexample</h3>
+      <p>Among the worlds that refute a form, the tool shows the one with as many non-empty terms as possible and then as few inhabitants as possible, so that the counterexample is small without being the unhelpful "suppose nothing exists". Each inhabitant is drawn as a lettered dot, and a table says which of the three statements are true there and why.</p>
+      <h3>The classical names</h3>
+      <p>Traditional logic diagnoses invalid forms with rules about <strong>distribution</strong>. A statement distributes a term when it says something about every member of it: A distributes its subject, E both terms, I neither, O its predicate. The rules are: the middle term must be distributed at least once; a term distributed in the conclusion must be distributed in its premise (otherwise an illicit major or illicit minor); two negative premises prove nothing; a negative premise and a negative conclusion go together; and, on the modern reading only, two universal premises cannot give a particular conclusion. The tests confirm that these rules agree with the model checker on all 256 forms on each reading. The tool reports a broken rule by name only when the model checker has already found the form invalid, and reports the existential fallacy only when it is the sole problem.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Whether the conclusion is true.</strong> Validity is about the link between premises and conclusion. A valid argument with a false premise proves nothing, and an invalid argument can have a true conclusion by luck.</li>
+        <li><strong>Whether a word means the same thing twice.</strong> The tool matches terms by spelling. "All banks are beside rivers; all lenders are banks; so all lenders are beside rivers" is reported as a valid Barbara. Equivocation is a fault of meaning and cannot be seen in the form.</li>
+        <li><strong>Anything outside the four forms.</strong> "Most", "few", relations such as "taller than", and conditionals are beyond syllogistic. Augustus De Morgan's example, "all horses are animals, so every head of a horse is the head of an animal", is plainly valid and cannot even be written here.</li>
+        <li><strong>Which reading is right.</strong> Existential import is a decision about what "all" means, and ordinary speech goes both ways ("all trespassers will be prosecuted" does not claim there are any). The traditional reading used here, in which no term is empty, is the textbook reconstruction; historians have defended others, including one in which only affirmative statements carry existence.</li>
+        <li><strong>Why an argument fails, beyond one witness.</strong> The counterexample proves invalidity. The classical fault names are bookkeeping that happens to agree with it; a form can break several rules at once, and the names add vocabulary more than explanation.</li>
+        <li><strong>What you meant.</strong> The reader looks for a quantifier and "is" or "are". It cannot read "All birds fly" without rewording, and it treats any bare name before "is" as an individual, which is wrong for "Gold is a metal".</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Allow chains of more than two premises (sorites). The same method works with <var>n</var> terms and 2<sup><var>n</var></sup> regions, though the picture stops being three circles.</li>
+        <li>Supply the missing premise: given one premise and a conclusion, list every second premise that would make the argument valid.</li>
+        <li>Add negated terms ("non-smokers") and the immediate inferences of conversion, obversion and contraposition.</li>
+        <li>Read verb predicates and relative clauses properly, so that "All birds fly" and "Everyone who votes is a citizen" need no rewording.</li>
+        <li>Show the reduction of each valid form to the first figure, which is what the consonants in the medieval names encode.</li>
+        <li>Add counting quantifiers such as "most" and "at least three", which need worlds that record how many things are in each region and not just whether any are.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Aristotle. <em>Prior Analytics</em>, Book I.</li>
+        <li>Boole, G. (1854). <em>An Investigation of the Laws of Thought</em>.</li>
+        <li>Venn, J. (1880). On the diagrammatic and mechanical representation of propositions and reasonings. <em>Philosophical Magazine</em>.</li>
+        <li>Kant, I. (1787). <em>Critique of Pure Reason</em>, preface to the second edition.</li>
+        <li>Hurley, P. J. <em>A Concise Introduction to Logic</em>. For the five rules and the two standpoints.</li>
+        <li>Parsons, T. The traditional square of opposition. <em>Stanford Encyclopedia of Philosophy</em>.</li>
+        <li>Smith, R. Aristotle's logic. <em>Stanford Encyclopedia of Philosophy</em>.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
