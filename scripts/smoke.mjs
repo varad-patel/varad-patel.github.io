@@ -198,14 +198,23 @@ if (!ids.length) {
 
 const server = base ? null : await serve();
 const origin = base || `http://127.0.0.1:${server.address().port}`;
-const browser = await launch();
+let browser = await launch();
 let failed = 0;
 for (const id of ids) {
   let problems;
-  try { problems = await checkProject(browser, origin, id, shoot); } catch (e) { problems = [`smoke test crashed: ${e.message}`]; }
+  // Headless Chromium occasionally dies under load. That is not the page's fault: start a new browser and try once more.
+  for (let attempt = 0; attempt < 2; attempt++) {
+    if (!browser.isConnected()) browser = await launch();
+    try { problems = await checkProject(browser, origin, id, shoot); break; } catch (e) {
+      problems = [`smoke test crashed: ${String(e.message).slice(0, 160)}`];
+      if (!/has been closed|crash/i.test(String(e.message))) break;
+      await browser.close().catch(() => {});
+      browser = await launch();
+    }
+  }
   if (problems.length) { failed++; console.log(`FAIL ${id}\n  ${problems.join("\n  ")}`); } else console.log(`ok   ${id}`);
 }
-await browser.close();
+await browser.close().catch(() => {});
 server?.close();
 console.log(`${ids.length - failed} of ${ids.length} passed. Screenshots are in .smoke/`);
 process.exit(failed ? 1 : 0);

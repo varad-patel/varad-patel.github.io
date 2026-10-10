@@ -316,7 +316,8 @@ export function slider({ label, min = 0, max = 100, step = 1, value = min, forma
 /** Number box. onInput fires only for a valid number inside [min, max]. value is NaN while the box is invalid. */
 export function numberField({ label, min, max, step = "any", value = 0, hint, onInput }) {
   const id = nextId();
-  const input = el("input", { type: "number", id, min, max, step, value, inputmode: "decimal" });
+  // "decimal" keyboards on phones have no minus key, so only ask for one when negatives are impossible.
+  const input = el("input", { type: "number", id, min, max, step, value, inputmode: min != null && min >= 0 ? "decimal" : null });
   const read = () => {
     const v = input.value.trim() === "" ? NaN : Number(input.value);
     return Number.isFinite(v) && (min == null || v >= min) && (max == null || v <= max) ? v : NaN;

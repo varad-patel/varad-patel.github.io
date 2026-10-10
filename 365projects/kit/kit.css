@@ -56,6 +56,7 @@
 .field textarea, .tool textarea { resize: vertical; min-height: 5.5em; line-height: 1.45; }
 .field input.mono, .field textarea.mono { font-family: var(--mono); font-size: 0.95rem; }
 .field input:invalid, .field .invalid { border-color: var(--bad); }
+.tool input[type].invalid, .tool textarea.invalid, .tool select.invalid { border-color: var(--bad); }
 .check { display: flex; gap: 9px; align-items: flex-start; font-size: 0.92rem; cursor: pointer; }
 .check input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--ink); flex: none; }
 
