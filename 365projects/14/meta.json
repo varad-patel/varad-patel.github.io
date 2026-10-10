@@ -1,0 +1,7 @@
+{
+  "question": "Does a trend in a whole table still point the same way once the table is split into groups?",
+  "finding": "At Berkeley in 1973 men were admitted at 44.5% and women at 30.4% across the six largest departments, yet women had the higher rate in four of the six and are 4.3 points ahead once both sexes are given the same spread of applications.",
+  "limit": "The whole table and the split table are both correct, and only a view about what causes what, which no CSV contains, can say which one answers the question.",
+  "sources": ["Bickel, Hammel and O'Connell (1975)", "Charig et al. (1986)"],
+  "built": "2026-10-10"
+}

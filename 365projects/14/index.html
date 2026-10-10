@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Simpson's Paradox Finder · 365 projects</title>
+  <meta name="description" content="Drop in a CSV and this page searches it for trends that point one way in the whole table and the other way inside its groups, and draws both views side by side.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .drop { display: block; padding: 14px 16px; border: 2px dashed var(--rule); border-radius: 3px; background: #fff; font-size: 0.9rem; line-height: 1.45; cursor: pointer; }
+    .drop.over, .drop:focus-within { border-color: var(--ink); }
+    .drop.over { background: color-mix(in srgb, var(--ink) 6%, #fff); }
+    .drop input { display: block; width: 100%; margin-top: 10px; font: inherit; font-size: 0.85rem; }
+    .stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; justify-items: start; }
+    .stack > .note, .stack > .tbl-wrap { justify-self: stretch; }
+    .stack:empty { display: none; }
+    .btn[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+    .finds th, .finds th.num { white-space: normal; vertical-align: bottom; line-height: 1.25; }
+    .finds td:nth-child(2) { min-width: 190px; }
+    .finds td { vertical-align: middle; }
+    .detail { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; padding-top: 24px; border-top: 1px solid var(--rule); }
+    .detail h3 { font-size: 1.05rem; font-weight: 400; }
+    .verdict { font: 400 1.1rem/1.55 var(--serif); max-width: 80ch; }
+    .pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 36px; align-items: start; }
+    .pair.diff { grid-template-columns: minmax(260px, 1fr) minmax(0, 2.4fr); }
+    @media (max-width: 760px) { .pair, .pair.diff { grid-template-columns: minmax(0, 1fr); } }
+  </style>
+</head>
+<body class="proj" data-day="14">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Simpson's Paradox Finder</h1>
+      <p class="lede">A trend in a whole table can point the other way inside every part of it. Drop in a CSV and this page searches for those reversals and draws both views side by side.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Simpson's paradox finder">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>At Berkeley in 1973, 44.5% of the men who applied to the six largest graduate departments were admitted, against 30.4% of the women: a gap of 14.2 points. Split the same 4,526 applications by department and women have the higher rate in four of the six. Give both sexes the same spread of applications across departments and women are ahead by 4.3 points, so the whole 14.2-point gap, and more, comes from where people applied.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Simpson's paradox is the name for a pattern that holds in a whole table and reverses in its parts. A treatment can have the better success rate overall and the worse one in every kind of patient. A line can slope up through a cloud of points and down through each cluster inside it. Edward Simpson set the problem out in 1951, Udny Yule had described it in 1903, and Colin Blyth gave it its name in 1972.</p>
+      <p>There is no trick in the arithmetic. An overall rate is an average of the group rates, weighted by how many of that side's cases fall in each group, and the two sides being compared use different weights. Two things have to be true for a reversal: the groups must differ in how the outcome usually goes, and the two sides must be spread across the groups differently. At Berkeley, the departments differed enormously in how many applicants they took, and women applied mostly to the ones that turned most people away. The third column, the one that does this, is called a lurking variable or a confounder.</p>
+      <p>The hard part is what to conclude, and here the data stop helping. In the kidney stone example the split table is the one to trust: the size of the stone was fixed before anyone chose a treatment, it steered doctors towards one operation, and it affects the chance of success on its own. Comparing within stone sizes compares like with like. But suppose the grouping column were something the treatment itself changes, such as a patient's blood pressure a week after taking a drug that works by lowering blood pressure. Splitting by it would compare patients who ended up alike and throw away the drug's effect. Judea Pearl makes the point with one table of numbers and two stories: the same figures call for the split table under one story and the whole table under the other.</p>
+      <p>That is why "correlation is not causation" has teeth. Pay gaps, hospital death rates, school results and police stops are all argued over with tables that can be cut more than one way, and each cut answers a different question. Berkeley's departmental table answers "did admissions committees treat men and women who applied to them differently?" It does not answer why women and men applied to different departments. A tool can find the reversal. Choosing between the tables takes a view about what causes what.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>Reading the table</h3>
+      <p>The first line is taken as column names; commas, tabs and semicolons are all accepted as separators. Blank cells and the entries NA, N/A, NaN, null, none, ?, - and . count as missing. A column is read as numbers if at least 95% of its filled cells parse as numbers (thousands separators, decimal commas, percent signs and currency symbols are allowed). Then each column gets a role:</p>
+      <ul>
+        <li><strong>A number:</strong> a numeric column with three or more different values.</li>
+        <li><strong>Two values:</strong> any column with exactly two different values, such as yes and no, or 0 and 1. Its rate is the share of rows holding the value that reads as the positive one.</li>
+        <li><strong>A category:</strong> a text column with three to twelve different values.</li>
+        <li><strong>Ignored:</strong> empty columns, columns with one value, and text columns with more than twelve values, which are usually names or identifiers.</li>
+      </ul>
+      <p>If the table is already counted up, one column says how many observations each row stands for. The page guesses this when a whole-number column is called something like "count" or "n", or when it is the only whole-number column, every other column has at most twelve values, and no combination of those values appears twice. The guess can be changed under "Count column". Every sum below then counts each row that many times, which gives exactly the same answer as writing the rows out one by one.</p>
+
+      <h3>What gets compared</h3>
+      <p>The search takes every pair of columns that can form an association, and every third column that can form groups:</p>
+      <ul>
+        <li>two number columns give a <strong>slope</strong>: the later column regressed on the earlier one;</li>
+        <li>a number and a category give a <strong>difference in means</strong> between each pair of the category's values;</li>
+        <li>a two-valued column and a category, or two two-valued columns, give a <strong>difference in rates</strong>. When both have two values, the later column is taken as the outcome.</li>
+      </ul>
+      <p>The groups come from any other column with two to twelve values, or from a number column cut into thirds that hold equal numbers of observations. Each such triple is one comparison, or several when the category has more than two values.</p>
+
+      <h3>Rates and means</h3>
+      <p>Call the two sides <var>a</var> and <var>b</var>, the outcome <var>y</var>, and the groups <var>g</var> = 1 … <var>G</var>. With <var>n</var><sub><var>ag</var></sub> observations of side <var>a</var> in group <var>g</var> and <var>ȳ</var><sub><var>ag</var></sub> their mean outcome (a rate is the mean of a 0 or 1 column), the overall gap is</p>
+      <p class="eq"><var>D</var> = <var>ȳ</var><sub><var>a</var></sub> − <var>ȳ</var><sub><var>b</var></sub>, &nbsp; where <var>ȳ</var><sub><var>a</var></sub> = Σ<sub><var>g</var></sub> (<var>n</var><sub><var>ag</var></sub> / <var>n</var><sub><var>a</var></sub>) <var>ȳ</var><sub><var>ag</var></sub></p>
+      <p>Each side's overall figure uses its own mix of groups. The like-for-like gap gives both sides the same mix, the one of everybody taken together. This is direct standardisation:</p>
+      <p class="eq"><var>D</var>* = Σ<sub><var>g</var></sub> <var>w</var><sub><var>g</var></sub> (<var>ȳ</var><sub><var>ag</var></sub> − <var>ȳ</var><sub><var>bg</var></sub>), &nbsp; <var>w</var><sub><var>g</var></sub> = (<var>n</var><sub><var>ag</var></sub> + <var>n</var><sub><var>bg</var></sub>) / <var>N</var></p>
+      <p>The difference <var>D</var> − <var>D</var>* is the part of the overall gap that is due to the mix alone. For Berkeley it is 14.2 − (−4.3) = 18.4 points.</p>
+
+      <h3>Slopes</h3>
+      <p>The overall slope is the least-squares slope through every point, <var>b</var> = <var>S</var><sub><var>xy</var></sub> / <var>S</var><sub><var>xx</var></sub>, with the sums of squares and products taken about the overall means. The slope inside the groups is one common slope fitted with a separate intercept for each group, which is the same as taking the sums about each group's own means and adding them up:</p>
+      <p class="eq"><var>b</var><sub>W</sub> = Σ<sub><var>g</var></sub> <var>S</var><sub><var>xy</var>,<var>g</var></sub> / Σ<sub><var>g</var></sub> <var>S</var><sub><var>xx</var>,<var>g</var></sub></p>
+      <p>What is left over is the slope through the group averages, <var>b</var><sub>B</sub>. The overall slope is a weighted average of the two, with weights proportional to how much of the spread in <var>x</var> lies inside groups and how much between them. When the groups sit far apart, the overall line mostly follows the gaps between them.</p>
+
+      <h3>When it counts as a reversal</h3>
+      <p>A comparison is listed as a reversal when the effect inside the groups (<var>D</var>* or <var>b</var><sub>W</sub>) has the opposite sign from the overall effect (<var>D</var> or <var>b</var>). It is a reversal <em>in every group</em> when each group on its own also points against the whole table, which is Simpson's paradox in its strict form, and a reversal <em>on average</em> when only some do. Berkeley is the second kind: four departments of six.</p>
+
+      <h3>Strength</h3>
+      <p>Each effect has a standard error, a measure of how much it would move if the same process produced a fresh table. For a gap, the squared standard error of <var>D</var> is <var>s</var><sub><var>a</var></sub>²/<var>n</var><sub><var>a</var></sub> + <var>s</var><sub><var>b</var></sub>²/<var>n</var><sub><var>b</var></sub>, and that of <var>D</var>* is Σ <var>w</var><sub><var>g</var></sub>² (<var>s</var><sub><var>ag</var></sub>²/<var>n</var><sub><var>ag</var></sub> + <var>s</var><sub><var>bg</var></sub>²/<var>n</var><sub><var>bg</var></sub>), where <var>s</var>² is <var>p</var>(1 − <var>p</var>) for a rate and the sample variance for a mean. For slopes it is the usual regression standard error, with <var>N</var> − 2 degrees of freedom overall and <var>N</var> − <var>G</var> − 1 inside groups. Strength is then</p>
+      <p class="eq">strength = min( |<var>D</var>| / se(<var>D</var>), |<var>D</var>*| / se(<var>D</var>*) )</p>
+      <p>A reversal needs two effects that are both real, so it is only as strong as the weaker one. Below about 2, one of them could be chance. Berkeley scores 2.3. The kidney stone table, the best-known example of all, scores 1.5: with 700 patients, neither the overall gap nor the gap inside stone sizes is firmly established.</p>
+
+      <h3>Small groups and large files</h3>
+      <p>A group enters a comparison only if both sides have at least the chosen number of observations in it (five by default, and never fewer than two for a mean or three for a slope). Groups that fail are left out of both the overall figure and the split one, so the two charts always describe the same rows, and the page says how many observations were set aside. The size of the smallest group kept is shown for every comparison.</p>
+      <p>The page reads the first 100,000 rows of a file and checks up to 3,000 column triples, working in slices of about 30 milliseconds so the page stays responsive. Scatter plots draw at most 1,200 points; the fitted lines always use every row.</p>
+
+      <h3>The synthetic example</h3>
+      <p>The exercise and cholesterol table is made up, by a seeded random number generator, so that the truth is known: cholesterol = 140 + 2.2 × age − 7 × weekly hours of exercise + noise, and older people exercise more. Across all 300 people, cholesterol rises by 6.7 points per hour of exercise. Inside ten-year age bands it falls by 5.9, and inside thirds of age by 2.7. Neither recovers the true −7, because age still varies inside a band and the wider the band, the more of its effect leaks through.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Which table to believe.</strong> The whole table and the split table are both correct summaries of the same rows. Which one answers a causal question depends on whether the grouping column comes before the thing being compared or is produced by it, and nothing in a CSV records that.</li>
+        <li><strong>Whether a reversal is real.</strong> A table with ten columns yields hundreds of comparisons, and some will reverse by chance. Strength is a guide to each one taken alone; it is not corrected for the number of comparisons tried.</li>
+        <li><strong>Anything about columns that are not in the file.</strong> The search can only split by what it is given, one column at a time. A reversal that needs two columns together, or a variable nobody measured, will be missed.</li>
+        <li><strong>That splitting removes the lurking variable.</strong> Groups are coarse. The synthetic example recovers −5.9 from decades of age and −2.7 from thirds when the truth is −7. A split that does not reverse the sign may still be hiding a different answer.</li>
+        <li><strong>Which column is the outcome.</strong> The page chooses by column type and order, not by meaning. In the Berkeley table it also compares the share of women among applicants to one department and another, split by decision: a real pattern, but not a question anyone asked about admissions.</li>
+        <li><strong>How sure to be when rows are related.</strong> The standard errors treat every observation as independent. Repeated measurements of the same people, or pupils in the same class, carry less information than their count suggests, and strength will be overstated.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Accept tables laid out as successes and totals in two columns, the form most published tables take, without reshaping them first.</li>
+        <li>Split by two columns at once, or adjust for several with a regression, and report odds ratios with the Mantel-Haenszel estimate alongside the gap in rates.</li>
+        <li>Replace the strength score with a permutation test, and control the false discovery rate across everything the search tried.</li>
+        <li>Let the visitor draw the causal diagram (which column affects which) and have the page say which table answers their question, using Pearl's back-door criterion.</li>
+        <li>Let the visitor choose the cut points for number columns, and show how the answer changes as the bands narrow.</li>
+        <li>Export the list of findings and the group table as CSV.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>Bickel, P. J., Hammel, E. A., and O'Connell, J. W. (1975). Sex bias in graduate admissions: data from Berkeley. <em>Science</em>, 187(4175), 398-404. The table for the six largest departments is the one reproduced in Freedman, D., Pisani, R., and Purves, R., <em>Statistics</em>.</li>
+        <li>Charig, C. R., Webb, D. R., Payne, S. R., and Wickham, J. E. A. (1986). Comparison of treatment of renal calculi by open surgery, percutaneous nephrolithotomy, and extracorporeal shockwave lithotripsy. <em>British Medical Journal</em>, 292, 879-882.</li>
+        <li>Julious, S. A., and Mullee, M. A. (1994). Confounding and Simpson's paradox. <em>British Medical Journal</em>, 309, 1480-1481.</li>
+        <li>Simpson, E. H. (1951). The interpretation of interaction in contingency tables. <em>Journal of the Royal Statistical Society, Series B</em>, 13(2), 238-241.</li>
+        <li>Yule, G. U. (1903). Notes on the theory of association of attributes in statistics. <em>Biometrika</em>, 2.</li>
+        <li>Blyth, C. R. (1972). On Simpson's paradox and the sure-thing principle. <em>Journal of the American Statistical Association</em>, 67, 364-366.</li>
+        <li>Pearl, J., Glymour, M., and Jewell, N. P. (2016). <em>Causal Inference in Statistics: A Primer</em>. Wiley. The exercise and cholesterol example follows the one in its first chapter; the numbers here are generated by this page.</li>
+        <li>Pearl, J. (2014). Understanding Simpson's paradox. <em>The American Statistician</em>, 68(1), 8-13.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
