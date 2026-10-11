@@ -5,14 +5,22 @@ import { T, F, U, MAX_SENTENCES, parse, step, assignment, analyse, revision, rin
 mount();
 
 const PRESETS = [
-  { label: "A mixed page", text: "A: this sentence is false\nB: this sentence is true\nC: 2 + 2 = 4\nD: A is true or C is true\nE: C is false" },
-  { label: "The Liar", text: "A: this sentence is false" },
-  { label: "The Truth-teller", text: "A: this sentence is true" },
-  { label: "Postcard", text: "A: B is true\nB: A is false" },
-  { label: "Two accusers", text: "A: B is false\nB: A is false" },
-  { label: "Curry", text: "C: if this sentence is true then 2 + 2 = 5" },
-  { label: "Grounded chain", text: "A: 2 + 2 = 4\nB: A is true\nC: B is false\nD: C is false and A is true" },
-  { label: "Contradicts itself", text: "A: A is true and A is false" },
+  { label: "A mixed page", text: "A: this sentence is false\nB: this sentence is true\nC: 2 + 2 = 4\nD: A is true or C is true\nE: C is false",
+    about: "A Liar, a Truth-teller, a plain fact and two sentences built on them. Between them they get all four calls." },
+  { label: "The Liar", text: "A: this sentence is false",
+    about: "It says of itself that it is false. Paradoxical: neither value is consistent, and revision flips for ever." },
+  { label: "The Truth-teller", text: "A: this sentence is true",
+    about: "It says of itself that it is true. Not a paradox: either value is consistent, and nothing chooses between them." },
+  { label: "Postcard", text: "A: B is true\nB: A is false",
+    about: "Jourdain's card: one side says the other side is true, the other says the first side is false. Paradoxical, with a loop of four stages." },
+  { label: "Two accusers", text: "A: B is false\nB: A is false",
+    about: "Each says the other is false. Not a paradox: one true and one false is consistent, either way round, so the definitions leave it open." },
+  { label: "Curry", text: "C: if this sentence is true then 2 + 2 = 5",
+    about: "Curry's sentence. With a false sum at the end it behaves as a Liar. Change the 5 to a 4 and it is grounded and true." },
+  { label: "Grounded chain", text: "A: 2 + 2 = 4\nB: A is true\nC: B is false\nD: C is false and A is true",
+    about: "Each sentence rests on the one before and the first on a plain fact, so every sentence gets a value and the three methods agree." },
+  { label: "Contradicts itself", text: "A: A is true and A is false",
+    about: "It says it is both. False classically and under revision; Kripke's least fixed point leaves it without a value." },
 ];
 const WORD = { true: "True", false: "False", looping: "Looping", unsettled: "Unsettled" };
 const SHOWN_STAGES = 24;
@@ -22,19 +30,20 @@ const guess = new Map(); // sentence name -> guessed true?
 const run = debounce(() => update(), 120);
 const input = textArea({
   label: "Sentences", value: PRESETS[0].text, rows: 8, mono: true,
-  hint: "One per line, as “Name: sentence”. A sentence can say that a named sentence, or “this sentence”, is true or false, joined with and, or, not, if … then, iff. Sums such as 2 + 2 = 4 are plain facts.",
-  onInput: run,
+  hint: "One per line, as “Name: sentence”. A sentence can say that a named sentence, or “this sentence”, is true or false, joined with and, or, not, if … then, iff. “Is not true” is read as “is false”. Sums such as 2 + 2 = 4 are plain facts.",
+  onInput: () => { about.textContent = ""; run(); },
 });
-const load = (text) => { input.value = text; update(); };
+const about = el("div", { class: "hint", role: "status" }); // what the example just loaded is
+const load = (p) => { input.value = p.text; about.textContent = `${p.label}. ${p.about}`; update(); };
 const ringSlider = slider({
   label: "Or build a ring of", min: 1, max: MAX_SENTENCES, step: 1, value: 3, format: (n) => `${n} sentence${n === 1 ? "" : "s"}`,
   hint: "Each sentence says the next one is false; the last points back to the first.",
-  onInput: (n) => { input.value = ring(n); run(); },
+  onInput: (n) => { input.value = ring(n); about.textContent = ""; run(); },
 });
 const guessBox = el("div", { class: "field" });
 const controls = el("div", { class: "controls" },
   input.el,
-  el("div", { class: "field" }, el("div", { class: "lab" }, el("span", { text: "Examples" })), el("div", { class: "row" }, PRESETS.map((p) => button(p.label, () => load(p.text), { small: true })))),
+  el("div", { class: "field" }, el("div", { class: "lab" }, el("span", { text: "Examples" })), el("div", { class: "row" }, PRESETS.map((p) => button(p.label, () => load(p), { small: true }))), about),
   ringSlider.el, guessBox);
 
 /* ---------- outputs ---------- */
@@ -52,10 +61,11 @@ const letter = (x) => (x === T ? "T" : x === F ? "F" : "–");
 const tv = (x, extra = "") => el("span", { class: `tv ${x === T ? "t" : x === F ? "f" : "u"} ${extra}`, title: x === T ? "true" : x === F ? "false" : "no value", text: letter(x) });
 const list = (items) => (items.length <= 1 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items.at(-1)}`);
 const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+const hidden = (text) => el("span", { class: "sr-only", text }); // a column heading for screen readers only
 /** A grid of truth values: one row per entry of `rows` ({ head, values, cls, tail }), one column per sentence. */
-function grid(sentences, rows, { corner = "", tailHead = "" } = {}) {
+function grid(sentences, rows, { corner = "Stage", tailHead = "What happens" } = {}) {
   return el("div", { class: "tbl-wrap" }, el("table", { class: "tbl grid" },
-    el("thead", {}, el("tr", {}, el("th", { scope: "col", text: corner }), sentences.map((s) => el("th", { scope: "col", class: "c", text: s.name })), el("th", { scope: "col", text: tailHead }))),
+    el("thead", {}, el("tr", {}, el("th", { scope: "col" }, hidden(corner)), sentences.map((s) => el("th", { scope: "col", class: "c", text: s.name })), el("th", { scope: "col" }, hidden(tailHead)))),
     el("tbody", {}, rows.map((r) => el("tr", { class: r.cls || null },
       el("th", { scope: "row", text: r.head }), r.values.map((x, i) => el("td", { class: "c" }, tv(x, r.mark?.[i] ? "mark" : ""))), el("td", { class: "small" }, r.tail || ""))))));
 }
@@ -84,6 +94,7 @@ function revisionWords(r) {
 function update() {
   const p = parse(input.value);
   input.input.classList.toggle("invalid", !p.ok);
+  input.input.setAttribute("aria-invalid", String(!p.ok));
   if (!p.ok) {
     for (const s of [sClassical, sKripke, sRevision]) s.set("–", "");
     message.replaceChildren(el("div", { class: "note bad" }, p.error));
@@ -125,7 +136,7 @@ function update() {
     classicalBody = [
       el("p", { class: "small" }, "Each row is one assignment. “Comes out” is what each sentence says when the others have the guessed values; a row is consistent when nothing changes."),
       el("div", { class: "tbl-wrap" }, el("table", { class: "tbl grid" },
-        el("thead", {}, el("tr", {}, S.map((s) => el("th", { scope: "col", class: "c", text: s.name })), el("th", { class: "c", text: "" }), S.map((s) => el("th", { scope: "col", class: "c", text: s.name })), el("th", { scope: "col", text: "" }))),
+        el("thead", {}, el("tr", {}, S.map((s) => el("th", { scope: "col", class: "c" }, s.name, hidden(" as given"))), el("th", { scope: "col", class: "c" }, hidden("then")), S.map((s) => el("th", { scope: "col", class: "c" }, s.name, hidden(" as it comes out"))), el("th", { scope: "col" }, hidden("Result")))),
         el("tbody", {}, Array.from({ length: cl.total }, (_, k) => {
           const v = assignment(k, n), w = step(S, v);
           const changed = S.filter((_, i) => v[i] !== w[i]).map((s) => s.name);
@@ -137,7 +148,7 @@ function update() {
     const shown = cl.consistent.slice(0, 12);
     classicalBody = [
       el("p", { class: "small" }, `Of the ${cl.total} assignments, ${cl.consistent.length === 1 ? "this one is" : `these ${cl.consistent.length} are`} consistent: every sentence comes out with the value it was given.${cl.consistent.length > shown.length ? ` The first ${shown.length} are shown.` : ""}`),
-      grid(S, shown.map((v, k) => ({ head: `${k + 1}`, values: v }))),
+      grid(S, shown.map((v, k) => ({ head: `${k + 1}`, values: v })), { corner: "Assignment", tailHead: "Note" }),
     ];
   } else classicalBody = [el("p", { class: "small" }, `None of the ${cl.total} assignments is consistent: in every one, at least one sentence comes out with a different value from the one it was given.`)];
   const verdict = cl.consistent.length === 0 ? "Paradoxical: the definitions cannot all be satisfied." : cl.consistent.length === 1 ? "Determinate: exactly one assignment works." : `Underdetermined: ${cl.consistent.length} assignments work, and nothing chooses between them.`;
@@ -164,13 +175,13 @@ function update() {
   const fate = [...fates].map(([key, group]) => `${list(group.map((g) => g.name))} ${group[0].settles ? (group.length === 1 ? "is" : "are") : group.length === 1 ? "repeats" : "repeat"} ${key}`);
 
   details.replaceChildren(
-    el("div", { class: "panel" }, el("h3", { text: "1. Classical: try every assignment" }), el("p", { class: "small lead" }, el("strong", { text: verdict })), classicalBody),
-    el("div", { class: "panel" }, el("h3", { text: "2. Kripke: start with no values and build up" }),
+    el("div", { class: "panel" }, el("h2", { text: "1. Classical: try every assignment" }), el("p", { class: "small lead" }, el("strong", { text: verdict })), classicalBody),
+    el("div", { class: "panel" }, el("h2", { text: "2. Kripke: start with no values and build up" }),
       el("p", { class: "small lead" }, el("strong", { text: open.length ? `The least fixed point leaves ${list(open)} without a value.` : "Every sentence is grounded." }),
         ` Counting the least one, the definitions have ${plural(kr.fixedPoints, "fixed point")}.`),
       grid(S, stageRows),
       el("p", { class: "small muted" }, "A dash means no value; a ringed value is new at that stage. A sentence gets a value only when the values already fixed force it, whatever the rest turn out to be.")),
-    el("div", { class: "panel" }, el("h3", { text: "3. Revision: guess, re-evaluate, repeat" }),
+    el("div", { class: "panel" }, el("h2", { text: "3. Revision: guess, re-evaluate, repeat" }),
       el("p", { class: "small lead" }, el("strong", { text: rv.period === 1 ? `From this guess the sequence stops changing at stage ${rv.loopStart}.` : `From this guess the sequence falls into a loop of ${rv.period} stages${rv.loopStart ? ` at stage ${rv.loopStart}` : " straight away"}.` }),
         ` ${fate.join(". ")}.`),
       grid(S, seqRows),
@@ -179,4 +190,5 @@ function update() {
         : `Stage ${total} would repeat stage ${rv.loopStart}, so the marked rows recur for ever. Ringed values have just changed.`))));
 }
 
+about.textContent = `${PRESETS[0].label}. ${PRESETS[0].about}`;
 update();

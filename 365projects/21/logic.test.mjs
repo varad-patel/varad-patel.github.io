@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { rng } from "../kit/kit.js";
-import { T, F, U, MAX_SENTENCES, parse, evaluate, step, assignment, closure, classical, kripke, revision, revisionAll, analyse, ring } from "./logic.js";
+import { T, F, U, MAX_SENTENCES, MAX_TOKENS, parse, evaluate, step, assignment, closure, classical, kripke, revision, revisionAll, analyse, ring } from "./logic.js";
 
 const sys = (text) => { const p = parse(text); assert.ok(p.ok, p.error); return p.sentences; };
 const run = (text) => analyse(sys(text));
@@ -60,7 +60,7 @@ test("the postcard: a loop of period four from every guess", () => {
 });
 
 test("rings: paradoxical exactly when the ring is odd (the finding)", () => {
-  for (let n = 1; n <= 8; n++) {
+  for (let n = 1; n <= MAX_SENTENCES; n++) {   // every position of the page's ring slider
     const a = run(ring(n));
     const odd = n % 2 === 1;
     assert.equal(a.classical.consistent.length, odd ? 0 : 2, `ring of ${n}`);
@@ -123,11 +123,75 @@ test("where the methods part company", () => {
 
 test("a sentence that settles at every finite stage although it is built on a Liar", () => {
   // S says that A and B disagree. After two passes they always do, so S is true from then on, whatever the guess.
-  // (The full theory continues past the finite stages, where S can be unsettled again; see the write-up.)
   const s = sys("A: A is false\nB: A is true\nS: A is true iff B is false");
   assert.deepEqual(revisionAll(s).map((t) => t.call), ["looping", "looping", "true"]);
-  for (let k = 0; k < 8; k++) assert.ok(revision(s, assignment(k, 3)).perSentence[2].settledAt <= 2);
   assert.equal(kripke(s).status[2], "paradoxical");
+  for (let k = 0; k < 8; k++) {
+    const r = revision(s, assignment(k, 3));
+    assert.ok(r.perSentence[2].settledAt <= 2);
+    // The write-up's remark about the full theory. Herzberger's limit rule: at the first infinite stage a sentence that
+    // has settled keeps its value and every other sentence is false. That makes A and B agree, so S is false one stage
+    // later and true again the stage after: carried through the limit, S does not settle.
+    const omega = r.perSentence.map((p) => (p.settles ? p.value : F));
+    assert.deepEqual(omega, [F, F, T]);
+    const next = step(s, omega);
+    assert.deepEqual(next, [T, F, F]);
+    assert.deepEqual(step(s, next), [F, T, T]);
+  }
+});
+
+test("every example on the page is what its description says", () => {
+  const liar = run("A: this sentence is false");
+  assert.deepEqual([liar.classical.consistent.length, liar.kripke.status[0], liar.revision[0].call], [0, "paradoxical", "looping"]);
+  const teller = run("A: this sentence is true");
+  assert.deepEqual([teller.classical.consistent.length, teller.kripke.status[0], teller.revision[0].call], [2, "ungrounded", "unsettled"]);
+  // Jourdain's card is paradoxical; two sentences that each call the other false are not.
+  const card = run("A: B is true\nB: A is false");
+  assert.deepEqual([card.classical.consistent.length, ...card.kripke.status, ...card.revision.map((t) => t.call)], [0, "paradoxical", "paradoxical", "looping", "looping"]);
+  for (let k = 0; k < 4; k++) assert.equal(revision(sys("A: B is true\nB: A is false"), assignment(k, 2)).period, 4);
+  const accusers = run("A: B is false\nB: A is false");
+  assert.deepEqual(accusers.classical.consistent.map(letters), ["TF", "FT"]);
+  assert.deepEqual([...accusers.kripke.status, ...accusers.revision.map((t) => t.call)], ["ungrounded", "ungrounded", "unsettled", "unsettled"]);
+  // The mixed page gets all four calls.
+  const mixed = run("A: this sentence is false\nB: this sentence is true\nC: 2 + 2 = 4\nD: A is true or C is true\nE: C is false");
+  assert.deepEqual(mixed.revision.map((t) => t.call), ["looping", "unsettled", "true", "true", "false"]);
+  assert.deepEqual(letters(mixed.kripke.least), "UUTTF");
+  assert.equal(mixed.kripke.fixedPoints, 3);
+  // Contradicts itself: false classically and under revision, no value in the least fixed point.
+  const both = run("A: A is true and A is false");
+  assert.deepEqual([both.classical.consistent.map(letters).join(), both.revision[0].call, letters(both.kripke.least)], ["F", "false", "U"]);
+});
+
+test("Kripke's example (12), either this sentence or its negation is true: ungrounded, true in some fixed points, false in none", () => {
+  const a = run("A: A is true or A is not true");
+  assert.equal(a.kripke.status[0], "ungrounded");
+  assert.deepEqual(a.kripke.canBe[0], { true: true, false: false });
+  assert.equal(a.kripke.fixedPoints, 2);
+  assert.deepEqual(a.classical.consistent, [[T]]);
+  assert.equal(a.revision[0].call, "true");
+});
+
+test("awkward input: a real minus sign, a full stop, sums too large to be exact, and sentences too long to nest safely", () => {
+  assert.deepEqual(sys("A: 5 \u2212 3 = 2\nB: 7 \u2212 2 \u2212 1 = 4").map((q) => q.ast.v), [T, T]);
+  assert.deepEqual(sys("This sentence is false.")[0].ast, { t: "not", a: { t: "ref", name: "A", i: 0 } });
+  assert.equal(sys("A: 2 + 2 = 5.")[0].ast.v, F);
+  // 99999999 squared is 9999999800000001, beyond 2^53, where adding 1 changes nothing in floating point. It must not be called a truth.
+  assert.equal(99999999 * 99999999 + 1 === 99999999 * 99999999, true);
+  assert.match(parse("A: 99999999 * 99999999 + 1 = 99999999 * 99999999").error, /too large to work out exactly/);
+  assert.equal(sys("A: 94906265 * 94906265 > 1")[0].ast.v, T);   // 9007199136250225, just inside the exact range
+  assert.match(parse("A: 94906267 * 94906267 > 1").error, /too large/);
+  // Deep nesting used to end in "Maximum call stack size exceeded", or in an uncaught error after parsing.
+  for (const long of [`A: ${"not ".repeat(20000)}A is true`, `A: ${"A is true and ".repeat(14000)}A is true`, `A: ${"(".repeat(3000)}A${")".repeat(3000)}`]) {
+    assert.match(parse(long).error, /too long; keep it to 200 words and symbols/);
+  }
+  const deepest = sys(`A: ${"not ".repeat(MAX_TOKENS - 1)}A`);   // exactly at the limit
+  assert.equal(evaluate(deepest[0].ast, [T]), F);                 // an odd number of nots
+  assert.equal(analyse(deepest).revision[0].call, "looping");
+  assert.match(parse("1: this sentence is false").error, /Line 1: The name before the colon must be one word that starts with a letter/);
+  assert.match(parse("My liar: this sentence is false").error, /name before the colon/);
+  // A very long name would push the page sideways.
+  assert.equal(sys(`${"N".repeat(20)}: this sentence is false`)[0].name.length, 20);
+  assert.match(parse(`${"N".repeat(21)}: this sentence is false`).error, /Line 1: The name N{20}\.\.\. is too long\. A name can have at most 20 characters\./);
 });
 
 test("on random systems the three methods are related as the theory says", () => {

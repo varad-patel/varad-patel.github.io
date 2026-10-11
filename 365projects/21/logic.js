@@ -5,16 +5,18 @@
 /** Truth values. Classical evaluation uses only T and F; U is "no value (yet)". */
 export const T = 1, F = 0, U = 0.5;
 export const MAX_SENTENCES = 10;
+export const MAX_TOKENS = 200; // words and symbols in one sentence
+export const MAX_NAME = 20;    // characters in a sentence's name
 
 /* =================================================================== parsing */
 
 const KEYWORDS = new Set(["and", "or", "not", "if", "then", "is", "are", "true", "false", "this", "sentence", "statement", "iff", "implies", "only", "it", "the", "case", "that"]);
 const SCOPE = "A sentence here can only say that a named sentence is true or false, or state a sum such as 2 + 2 = 4.";
-const TOKEN = /\s*(?:(\d+)|([A-Za-z][A-Za-z0-9_]*)|(<->|->|<=|>=|!=|&&|\|\||[()+\-*×=≠<>≤≥~¬!&∧|∨→↔]))/y;
+const TOKEN = /\s*(?:(\d+)|([A-Za-z][A-Za-z0-9_]*)|(<->|->|<=|>=|!=|&&|\|\||[()+\-−*×=≠<>≤≥~¬!&∧|∨→↔]))/y;
 
 function tokenise(src) {
   const tokens = [];
-  const text = src.replace(/,/g, " ");
+  const text = src.replace(/,/g, " ").replace(/[.\s]+$/, ""); // commas are ignored, and so is a full stop at the end
   let pos = 0;
   while (text.slice(pos).trim()) {
     TOKEN.lastIndex = pos;
@@ -26,6 +28,7 @@ function tokenise(src) {
     } else if (m[2] != null) tokens.push({ kind: "word", value: m[2].toLowerCase(), text: m[2] });
     else tokens.push({ kind: "sym", value: m[3], text: m[3] });
     pos = TOKEN.lastIndex;
+    if (tokens.length > MAX_TOKENS) throw new Error(`the sentence is too long; keep it to ${MAX_TOKENS} words and symbols`);
   }
   return tokens;
 }
@@ -44,15 +47,17 @@ function parseBody(src, self) {
   const found = () => (peek() ? `"${peek().text}"` : "the end of the sentence");
   const fail = (expected) => { throw new Error(`expected ${expected} but found ${found()}`); };
 
+  // Whole-number arithmetic is exact only up to 2^53, so anything larger is refused instead of being compared wrongly.
+  const exact = (value) => { if (!Number.isSafeInteger(value)) throw new Error("that sum is too large to work out exactly; keep the numbers small"); return value; };
   const sum = () => {
     const product = () => {
       if (peek()?.kind !== "num") fail("a number");
       let value = tokens[i++].value;
-      while (sym("*", "×")) { i++; if (peek()?.kind !== "num") fail("a number"); value *= tokens[i++].value; }
+      while (sym("*", "×")) { i++; if (peek()?.kind !== "num") fail("a number"); value = exact(value * tokens[i++].value); }
       return value;
     };
     let value = product();
-    while (sym("+", "-")) value = tokens[i++].value === "+" ? value + product() : value - product();
+    while (sym("+", "-", "−")) value = exact(tokens[i++].value === "+" ? value + product() : value - product());
     return value;
   };
   const atom = () => {
@@ -140,7 +145,7 @@ export function parse(text) {
     const s = raw.trim();
     if (!s) return;
     const m = s.match(/^([A-Za-z][A-Za-z0-9_]*)\s*:(.*)$/);
-    rows.push(m ? { line: k + 1, name: m[1], body: m[2].trim() } : { line: k + 1, name: null, body: s });
+    rows.push(m ? { line: k + 1, name: m[1], body: m[2].trim() } : { line: k + 1, name: null, body: s, badName: s.includes(":") });
   });
   const bad = (line, message) => ({ ok: false, line, error: line ? `Line ${line}: ${message}` : message });
   if (!rows.length) return bad(null, 'Type at least one sentence, for example "this sentence is false".');
@@ -148,7 +153,9 @@ export function parse(text) {
 
   const index = new Map(); // upper-case name -> position
   for (const [k, r] of rows.entries()) {
+    if (r.badName) return bad(r.line, "The name before the colon must be one word that starts with a letter, such as A or L1.");
     if (!r.name) continue;
+    if (r.name.length > MAX_NAME) return bad(r.line, `The name ${r.name.slice(0, MAX_NAME)}... is too long. A name can have at most ${MAX_NAME} characters.`);
     if (KEYWORDS.has(r.name.toLowerCase())) return bad(r.line, `"${r.name}" is a word of the language and cannot be used as a name.`);
     if (index.has(r.name.toUpperCase())) return bad(r.line, `${r.name} is defined twice. Give each sentence its own name.`);
     index.set(r.name.toUpperCase(), k);

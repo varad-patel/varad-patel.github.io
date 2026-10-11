@@ -30,6 +30,8 @@
     .tv.mark { outline: 2px solid var(--c2); outline-offset: 1px; }
     .tbl.grid { width: auto; }
     .tbl.grid .c { text-align: center; padding: 4px 5px; }
+    /* Headings for screen readers only are absolutely placed; this keeps them inside the table when it scrolls sideways. */
+    .tbl.grid th { position: relative; }
     .tbl.grid th[scope="row"] { font-weight: 600; white-space: nowrap; border-bottom: 1px solid var(--grid); }
     .tbl.grid tr.loop th[scope="row"] { box-shadow: inset 4px 0 0 var(--c2); }
     .tbl.grid tr.hit { background: color-mix(in srgb, var(--good) 10%, transparent); }
@@ -55,7 +57,7 @@
       <h2>The idea</h2>
       <p>"This sentence is false." If it is true, then what it says holds, so it is false. If it is false, then what it says fails, so it is true. The puzzle is credited to Eubulides in the fourth century BC and has never gone away, because it uses nothing exotic: a sentence, the word "false", and the ability of a sentence to refer to itself. None of the three is easy to give up.</p>
       <p>Alfred Tarski's response in the 1930s was to forbid the combination. A language may not contain its own truth predicate; "true in L" belongs to a richer language one level up, and so on in a hierarchy. That blocks the Liar, at the price of ruling out harmless sentences such as "everything in this paragraph is true". In 1975 Saul Kripke showed that a language can contain its own truth predicate if some sentences are allowed to have no truth value. Sentences whose truth traces back to facts that are not about truth are <strong>grounded</strong>; the Liar is not, and gets nothing. Kripke also stressed that whether a sentence is paradoxical can depend on the facts and not on its form: his example is a claim that most of Nixon's assertions about Watergate are false, which is harmless or paradoxical depending on what else was said.</p>
-      <p>Anil Gupta, Hans Herzberger and Nuel Belnap took a different line in the 1980s. Treat the definition of truth as a rule for improving a guess: start with any assignment of truth values, re-evaluate every sentence against it, and repeat. Ordinary sentences settle down whatever you start with. The Liar flips for ever, and that flipping is the theory's account of what the sentence means, not a failure of the theory.</p>
+      <p>Anil Gupta, Hans Herzberger and Nuel Belnap took a different line in the 1980s. Treat the definition of truth as a rule for improving a guess: start with any assignment of truth values, re-evaluate every sentence against it, and repeat. Ordinary sentences settle down whatever you start with. The Liar flips for ever, and the theory takes that instability as its description of the sentence, not as a failure to give one.</p>
       <p>The same structure turns up wherever a system can describe itself: a spreadsheet cell that depends on its own value, a rule that governs its own amendment, and the self-referring sentence at the centre of Gödel's incompleteness theorem (day 22), which swaps "false" for "unprovable" and gets a theorem where the Liar gets a paradox.</p>
     </section>
 
@@ -64,10 +66,11 @@
       <h3>The language</h3>
       <p>Each line defines one sentence as <code>Name: formula</code>; a line with no name is given the next free letter. A formula is built from these pieces:</p>
       <ul>
-        <li><code>X is true</code>, <code>X is false</code> (also <code>is not true</code>, <code>is not false</code>), where X is a name or <code>this sentence</code>. A bare name means "X is true".</li>
-        <li>a plain fact written as a sum: <code>2 + 2 = 4</code>, <code>3 * 4 &lt; 10</code>, with +, −, ×, and =, ≠, &lt;, &gt;, ≤, ≥ on whole numbers;</li>
+        <li><code>X is true</code> and <code>X is false</code>, where X is a name or <code>this sentence</code>. A bare name means "X is true". <code>X is not true</code> is read as <code>X is false</code>, and <code>X is not false</code> as <code>X is true</code>: the language has no way to say that a sentence lacks a value.</li>
+        <li>a plain fact written as a sum: <code>2 + 2 = 4</code>, <code>3 * 4 &lt; 10</code>, with +, −, × (or *), and =, ≠, &lt;, &gt;, ≤, ≥ on whole numbers. Sums are worked out exactly, and one whose numbers pass 2<sup>53</sup> is refused;</li>
         <li><code>not</code>, <code>and</code>, <code>or</code>, <code>if … then …</code> (or <code>implies</code>), <code>iff</code> (or <code>if and only if</code>), and brackets. The symbols ~ &amp; | -&gt; &lt;-&gt; work too. "Not" binds tightest, then "and", "or", the conditional and "iff".</li>
       </ul>
+      <p>Names ignore capitals and can have up to 20 characters. Commas, and a full stop at the end, are ignored. A sentence may hold at most 200 words and symbols.</p>
       <p>Write <var>φ</var><sub><var>X</var></sub> for the formula that defines sentence <var>X</var>, and ⟦<var>φ</var>⟧<sub><var>v</var></sub> for its value when every "<var>Y</var> is true" inside it is given the value <var>v</var>(<var>Y</var>). All three methods are ways of looking for a <var>v</var> that the definitions agree with.</p>
 
       <h3>1. Classical consistency</h3>
@@ -99,7 +102,7 @@
       <ul>
         <li><strong>Which theory of truth is right.</strong> The three methods are rival accounts of what "true" means for sentences like these. The tool runs each faithfully on a small language; it does not adjudicate, and the single-word call is a convenience that takes one side.</li>
         <li><strong>How to escape the revenge problem.</strong> The language cannot say "this sentence has no value" or "this sentence loops". If it could, that sentence would be a new Liar about the evaluator itself. Here "is not true" is read as "is false", which avoids the question and does not answer it. Kripke's own remark was that the ghost of the Tarski hierarchy is still with us.</li>
-        <li><strong>What happens beyond the finite stages.</strong> The full revision theory carries sequences on through infinite stages, with a rule for what to keep at each limit. This page reads its verdict off the finite loop. The two can differ: in "<var>A</var>: <var>A</var> is false; <var>B</var>: <var>A</var> is true; <var>S</var>: <var>A</var> is true iff <var>B</var> is false", <var>S</var> is true from stage 2 on from every guess, but a limit stage can reset the two unstable sentences to agree, which makes <var>S</var> false at the next stage.</li>
+        <li><strong>What happens beyond the finite stages.</strong> The full revision theory carries sequences on through infinite stages, with a rule for what to keep at each limit. This page reads its verdict off the finite loop. The two can differ: in "<var>A</var>: <var>A</var> is false; <var>B</var>: <var>A</var> is true; <var>S</var>: <var>A</var> is true iff <var>B</var> is false", <var>S</var> is true from stage 2 on from every guess, because from stage 1 on <var>A</var> and <var>B</var> disagree. At the first infinite stage Herzberger's rule keeps what has settled and makes every unsettled sentence false, so <var>A</var> and <var>B</var> are both false there, and <var>S</var> is false at the stage after. Under that rule <var>S</var> never settles; this page calls it true.</li>
         <li><strong>Anything about infinitely many sentences.</strong> There are no quantifiers, so "everything I say is false" and Yablo's paradox, an endless list in which each sentence says that all later ones are untrue, cannot be written. The limit of ten sentences is practical: the tool enumerates every assignment.</li>
         <li><strong>What other gap logics would say.</strong> Only the strong Kleene scheme is implemented. Under supervaluation "<var>A</var>: <var>A</var> is true or <var>A</var> is false" would be grounded true; here it is ungrounded.</li>
         <li><strong>Whether a real sentence is paradoxical.</strong> The only facts available are sums. Kripke's point that paradox can turn on empirical facts can be imitated by editing a sum from true to false, but ordinary English sentences have to be translated by hand, and the translation is where the judgement lies.</li>
@@ -121,15 +124,16 @@
     <section class="p-sec">
       <h2>Sources</h2>
       <ul class="refs">
-        <li>Tarski, A. The concept of truth in formalized languages. In <em>Logic, Semantics, Metamathematics</em>.</li>
+        <li>Tarski, A. (1935). The concept of truth in formalized languages. Translated by J. H. Woodger in <em>Logic, Semantics, Metamathematics</em>, second edition, Hackett, 1983, 152-278.</li>
         <li>Kripke, S. (1975). Outline of a theory of truth. <em>Journal of Philosophy</em>, 72(19), 690-716.</li>
-        <li>Kleene, S. C. (1952). <em>Introduction to Metamathematics</em>. For the strong three-valued tables.</li>
-        <li>Gupta, A. (1982). Truth and paradox. <em>Journal of Philosophical Logic</em>, 11.</li>
-        <li>Herzberger, H. G. (1982). Notes on naive semantics. <em>Journal of Philosophical Logic</em>, 11.</li>
+        <li>Kleene, S. C. (1952). <em>Introduction to Metamathematics</em>. North-Holland. For the strong three-valued tables.</li>
+        <li>Gupta, A. (1982). Truth and paradox. <em>Journal of Philosophical Logic</em>, 11(1), 1-60.</li>
+        <li>Herzberger, H. G. (1982). Notes on naive semantics. <em>Journal of Philosophical Logic</em>, 11(1), 61-102.</li>
         <li>Gupta, A., and Belnap, N. (1993). <em>The Revision Theory of Truth</em>. MIT Press.</li>
-        <li>Curry, H. B. (1942). The inconsistency of certain formal logics. <em>Journal of Symbolic Logic</em>, 7.</li>
-        <li>Yablo, S. (1993). Paradox without self-reference. <em>Analysis</em>, 53.</li>
-        <li>Beall, J., Glanzberg, M., and Ripley, D. Liar paradox. <em>Stanford Encyclopedia of Philosophy</em>.</li>
+        <li>Curry, H. B. (1942). The inconsistency of certain formal logics. <em>Journal of Symbolic Logic</em>, 7(3), 115-117.</li>
+        <li>Yablo, S. (1993). Paradox without self-reference. <em>Analysis</em>, 53(4), 251-252.</li>
+        <li>Beall, Jc, Glanzberg, M., Ripley, E., and Rossi, L. Liar paradox. <em>Stanford Encyclopedia of Philosophy</em> (first published 2011, revised 2026).</li>
+        <li>Kremer, P., and Rivello, E. The revision theory of truth. <em>Stanford Encyclopedia of Philosophy</em> (revised 2023). For the limit rules of Herzberger, Gupta and Belnap.</li>
       </ul>
     </section>
   </main>
