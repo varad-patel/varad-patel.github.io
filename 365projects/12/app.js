@@ -1,6 +1,6 @@
 // Day 12: Syllogism Validator. Interface.
 import { $, el, svgEl, mount, textField, segmented, button, stat, table } from "../kit/kit.js";
-import { TERMS, FORMS, RULES, MODERN, TRADITIONAL, inTerm, regionsOf, parseSyllogism, verdict, readOff, bestCounterexample, explain, faults, census, formOf, wording } from "./logic.js";
+import { TERMS, FORMS, RULES, MODERN, TRADITIONAL, inTerm, regionsOf, parseSyllogism, verdict, readOff, bestCounterexample, explain, faults, brokenRules, census, formOf, wording, asKind, fullName } from "./logic.js";
 
 mount();
 
@@ -41,12 +41,14 @@ const sModern = stat("Modern reading");
 const sTraditional = stat("Traditional reading");
 const sForm = stat("Mood and figure");
 const verdictBox = el("div", { role: "status" });
+const nameBox = el("div");
+const wordsBox = el("details", { class: "chart-table" });
 const readBox = el("div");
 const diagramBox = el("div", { class: "pair" });
 const keyBox = el("p", { class: "small muted", text: "Shaded: nothing is there. Cross: something is there. Cross on a line: something is on one side or the other. Blue: what the conclusion is about. A lettered dot is one thing." });
 const worldBox = el("div");
 const faultBox = el("div");
-const out = el("div", { class: "out" }, el("div", { class: "stats" }, sModern.el, sTraditional.el, sForm.el), verdictBox, diagramBox, keyBox, worldBox, faultBox, readBox);
+const out = el("div", { class: "out" }, el("div", { class: "stats" }, sModern.el, sTraditional.el, sForm.el), verdictBox, nameBox, diagramBox, keyBox, wordsBox, worldBox, faultBox, readBox);
 const mapBox = el("div", { class: "panel" });
 $("#app").append(el("div", { class: "tool-grid wide-controls" }, controls, out), mapBox);
 
@@ -93,7 +95,22 @@ function venn({ label, names, shaded = [], tint = [], crosses = [], floating = [
 // The text speaks in the visitor's own terms; the letters S, M and P are kept for the table of forms.
 const q = (name) => `“${name}”`;
 const zone = (st, n) => (st.form === "A" || st.form === "O" ? `the part of ${q(n[st.subject])} outside ${q(n[st.predicate])}` : `the overlap of ${q(n[st.subject])} and ${q(n[st.predicate])}`);
-const within = (r, n) => TERMS.filter((t) => inTerm(r, t)).map((t) => n[t]).join(" and ");
+/** One of the seven regions in words that cannot be mistaken for another: “dogs” and “animals” but not “cats”. */
+function regionName(r, n) {
+  const inside = TERMS.filter((t) => inTerm(r, t)).map((t) => q(n[t])), outside = TERMS.filter((t) => !inTerm(r, t)).map((t) => q(n[t]));
+  return outside.length ? `${inside.join(" and ")} but not ${outside.join(" or ")}` : "all three at once";
+}
+const some = (list) => (list.length ? list.join("; ") : "none");
+/** What the first diagram shows, as sentences: the text equivalent of the picture. */
+function premisesInWords(d, n) {
+  return [
+    `Three overlapping circles: ${TERMS.map((t) => q(n[t])).join(", ")}.`,
+    `Shaded, so nothing is there: ${some(d.empty.map((r) => regionName(r, n)))}.`,
+    `A cross, so something is there: ${some(d.inhabited.map((r) => regionName(r, n)))}.`,
+    ...d.floating.map((pair) => `A cross on the line between two regions, so something is in one or the other: ${pair.map((r) => regionName(r, n)).join(", or ")}.`),
+    `Tinted blue, the area the conclusion is about: ${some(d.target.map((r) => regionName(r, n)))}. The conclusion says ${d.wants === "empty" ? "nothing is there" : "something is there"}.`,
+  ];
+}
 
 function whyText(p, v, d, reading) {
   const c = p.syl.conclusion, n = p.terms;
@@ -128,15 +145,17 @@ const FAULT_TEXT = {
   "exclusive-premises": (n) => `Both premises only say what is kept apart. Two exclusions give no link from ${q(n.S)} to ${q(n.P)} through ${q(n.M)}.`,
   "affirmative-from-negative": (n) => `One premise keeps two terms apart, yet the conclusion joins ${q(n.S)} and ${q(n.P)}. An affirmative conclusion needs two affirmative premises.`,
   "negative-from-affirmatives": (n) => `Both premises join terms together, yet the conclusion keeps ${q(n.S)} and ${q(n.P)} apart. A negative conclusion needs a negative premise.`,
-  "existential": (n, v) => `Both premises are universal, and on the modern reading a universal statement does not say that anything exists. The conclusion does. It follows only if ${q(n[v.needs])} has at least one member.`,
+  "existential": (n, v) => `Both premises are universal, and on the modern reading a universal statement does not say that anything exists. The conclusion does. It follows only if ${needed(n, v)}.`,
 };
+// The term whose existence the form depends on. (With named individuals there may be no single such term.)
+const needed = (n, v) => (v.needs ? `${q(n[v.needs])} has at least one member` : "every term has at least one member");
 
 /* ---------- the map of all 256 forms ---------- */
 const all = census();
 const cells = new Map();
 const LAYOUT = { 1: "M–P, S–M", 2: "P–M, S–M", 3: "M–P, M–S", 4: "P–M, M–S" };
 function buildMap() {
-  const describe = (r) => `${r.key}${r.name ? `, ${r.name}` : ""}: ${r.modern ? "valid on both readings" : r.traditional ? `valid only if there is at least one ${r.needs}` : "invalid"}`;
+  const describe = (r) => `${r.key}${r.name ? `, ${fullName(r.key)}` : ""}: ${r.modern ? "valid on both readings" : r.traditional ? `valid only if there is at least one ${r.needs}` : "invalid"}`;
   const cell = (r) => {
     const b = el("button", { type: "button", class: r.modern ? "both" : r.traditional ? "trad" : "", title: describe(r), "aria-label": describe(r), "aria-pressed": "false", text: r.modern ? "✓" : r.traditional ? "+" : "·",
       onclick: () => { const f = formOf(r.mood, r.figure); load([wording(f.major), wording(f.minor), wording(f.conclusion)]); } });
@@ -148,24 +167,48 @@ function buildMap() {
     el("h3", { text: "All 256 forms" }),
     el("p", { class: "small", style: { margin: "6px 0 12px" } },
       el("strong", { text: `${count((r) => r.modern)} are valid on both readings` }), ` (✓), ${count((r) => r.traditional && !r.modern)} more are valid only on the traditional reading (+), and ${count((r) => !r.traditional)} are invalid on both (·). `,
-      "Rows are the two premises, columns the conclusion. Pick a square to load that form."),
+      "Rows are the two premises, columns the conclusion. Pick a square to load that form. From the keyboard, Tab moves from one figure to the next and the arrow keys move between the squares of a figure."),
     el("div", { class: "forms" }, [1, 2, 3, 4].map((figure) => el("table", {},
       el("caption", {}, `Figure ${figure} `, el("span", { class: "muted", text: LAYOUT[figure] })),
       el("thead", {}, el("tr", {}, el("td", {}), FORMS.map((c) => el("th", { scope: "col", text: c })))),
       el("tbody", {}, FORMS.flatMap((a) => FORMS.map((b) => el("tr", {}, el("th", { scope: "row", text: a + b }),
         FORMS.map((c) => cell(all.find((r) => r.key === `${a}${b}${c}-${figure}`)))))))))));
+  for (const grid of mapBox.querySelectorAll("table")) roving(grid);
+}
+/** Make one square of a figure the place Tab lands; the rest are reached with the arrow keys. */
+function stopAt(button) {
+  for (const b of button.closest("table").querySelectorAll("button")) b.tabIndex = b === button ? 0 : -1;
+}
+// One Tab stop per figure, not 256 for the map: the arrow keys, Home and End move within a figure.
+function roving(grid) {
+  const rows = [...grid.querySelectorAll("tbody tr")].map((tr) => [...tr.querySelectorAll("button")]);
+  stopAt(rows[0][0]);
+  grid.addEventListener("focusin", (e) => { if (e.target.matches("button")) stopAt(e.target); });
+  grid.addEventListener("keydown", (e) => {
+    const r = rows.findIndex((row) => row.includes(e.target));
+    if (r < 0) return;
+    const c = rows[r].indexOf(e.target);
+    const to = { ArrowRight: rows[r][c + 1], ArrowLeft: rows[r][c - 1], ArrowDown: rows[r + 1]?.[c], ArrowUp: rows[r - 1]?.[c], Home: rows[r][0], End: rows[r].at(-1) }[e.key];
+    if (!to) return;
+    e.preventDefault();
+    to.focus();
+  });
 }
 buildMap();
 
 /* ---------- rendering ---------- */
 function update() {
   const p = parseSyllogism(...fields.map((f) => f.value));
-  fields.forEach((f, i) => f.input.classList.toggle("invalid", !p.ok && p.field === i));
-  for (const [key, b] of cells) b.setAttribute("aria-pressed", String(p.ok && !p.singular.length && key === p.key));
+  fields.forEach((f, i) => { const bad = !p.ok && p.field === i; f.input.classList.toggle("invalid", bad); f.input.setAttribute("aria-invalid", String(bad)); });
+  for (const [key, b] of cells) {
+    const on = p.ok && !p.singular.length && key === p.key;
+    b.setAttribute("aria-pressed", String(on));
+    if (on && !mapBox.contains(document.activeElement)) stopAt(b);
+  }
   if (!p.ok) {
     for (const s of [sModern, sTraditional, sForm]) s.set("–", "");
     verdictBox.replaceChildren(el("div", { class: "note bad" }, p.error));
-    for (const box of [diagramBox, worldBox, faultBox, readBox]) { box.replaceChildren(); box.hidden = true; }
+    for (const box of [nameBox, diagramBox, worldBox, faultBox, readBox, wordsBox]) { box.replaceChildren(); box.hidden = true; }
     keyBox.hidden = true;
     return;
   }
@@ -175,20 +218,27 @@ function update() {
   const opts = reading === "modern" ? MODERN : TRADITIONAL;
   sModern.set(v.modern.valid ? "Valid" : "Invalid", "a term may be empty");
   sTraditional.set(v.traditional.valid ? "Valid" : "Invalid", "every term has a member");
-  sForm.set(p.key, p.name || `figure ${p.figure}, no traditional name`);
+  sForm.set(p.key, fullName(p.key) || `figure ${p.figure}, no traditional name`);
 
   const cls = v.modern.valid ? "good" : v.traditional.valid ? "warn" : "bad";
   verdictBox.replaceChildren(el("div", { class: `note ${cls}` },
     v.modern.valid ? el("span", {}, el("strong", { text: "Valid. " }), "If both premises are true the conclusion must be true, on either reading. Whether the premises are true is a separate question.")
-      : v.traditional.valid ? el("span", {}, el("strong", { text: "The two readings disagree. " }), `The conclusion follows only if ${q(p.terms[v.needs])} has at least one member. The traditional reading takes that for granted; the modern reading does not.`)
+      : v.traditional.valid ? el("span", {}, el("strong", { text: "The two readings disagree. " }), `The conclusion follows only if ${needed(p.terms, v)}. The traditional reading takes that for granted; the modern reading does not.`)
       : el("span", {}, el("strong", { text: "Invalid. " }), "The premises can both be true while the conclusion is false, on either reading. A world where that happens is drawn below.")));
+
+  // A name read as one individual: say so where it happens, and offer the other reading.
+  const named = p.singular.map((t) => q(p.terms[t]));
+  nameBox.replaceChildren(...(named.length ? [el("div", { class: "note" },
+    `${named.join(" and ")} ${named.length === 1 ? "is read as the name of one individual, which" : "are each read as the name of one individual, and each"} is taken to exist on both readings. Traditional logic files such statements under A and E. If you mean a kind of thing or a material, as in “Gold is a metal”, the tool cannot tell: `,
+    button(named.length === 1 ? "Read it as a kind" : "Read them as kinds", () => load(p.statements.map((st) => (st.singular ? asKind(st) : st.text))), { small: true }))] : []));
 
   // What the premises say, and what the conclusion needs.
   const d = readOff(p.syl, opts, p.singular);
   const names = p.terms;
+  const inWords = premisesInWords(d, names);
   const first = el("div", {},
     el("h3", { text: `What the premises say, ${reading} reading` }),
-    venn({ label: `Venn diagram of the two premises. Empty regions: ${d.empty.map((r) => within(r, names)).join("; ") || "none"}. Inhabited regions: ${d.inhabited.map((r) => within(r, names)).join("; ") || "none"}.`, names, shaded: d.empty, tint: d.target, crosses: d.inhabited, floating: d.floating }),
+    venn({ label: `Venn diagram of the two premises. ${inWords.join(" ")}`, names, shaded: d.empty, tint: d.target, crosses: d.inhabited, floating: d.floating }),
     el("p", { class: "small" }, whyText(p, v, d, reading)));
 
   let second = null;
@@ -196,12 +246,13 @@ function update() {
   if (model != null) {
     const letterOf = new Map(regionsOf(model).map((r, i) => [r, "abcdefg"[i]]));
     const things = [...letterOf].map(([region, letter]) => ({ region, letter }));
+    const worldText = things.length
+      ? `This world holds ${things.length === 1 ? "one thing" : `${things.length} things`}: ${things.map((t) => `${t.letter} is ${TERMS.map((x) => `${inTerm(t.region, x) ? "in" : "not in"} ${q(names[x])}`).join(", ")}`).join("; ")}. Everything else is empty.`
+      : "This world holds nothing at all.";
     second = el("div", {},
       el("h3", { text: "A world where it fails" }),
-      venn({ label: `Counterexample with ${things.length} thing${things.length === 1 ? "" : "s"}: ${things.map((t) => `${t.letter} in ${within(t.region, names)}`).join("; ")}.`, names, shaded: [1, 2, 3, 4, 5, 6, 7].filter((r) => !letterOf.has(r)), tint: d.target, dots: things }),
-      el("p", { class: "small" }, things.length
-        ? `This world holds ${things.length === 1 ? "one thing" : `${things.length} things`}: ${things.map((t) => `${t.letter} is ${TERMS.map((x) => `${inTerm(t.region, x) ? "in" : "not in"} ${q(names[x])}`).join(", ")}`).join("; ")}. Everything else is empty.`
-        : "This world holds nothing at all."));
+      venn({ label: `Venn diagram of a world where the premises are true and the conclusion is false. ${worldText}`, names, shaded: [1, 2, 3, 4, 5, 6, 7].filter((r) => !letterOf.has(r)), tint: d.target, dots: things }),
+      el("p", { class: "small" }, worldText));
     worldBox.replaceChildren(table({
       caption: "The three statements in that world",
       columns: [{ key: "text", label: "Statement" }, { key: "truth", label: "Here" }, { key: "why", label: "Because" }],
@@ -211,12 +262,17 @@ function update() {
     worldBox.replaceChildren(...(v.modern.valid !== v.traditional.valid ? [el("div", { class: "note" }, "On the traditional reading the form is valid, so there is no failing world to show. Switch to the modern reading to see one.")] : []));
   }
   diagramBox.replaceChildren(...[first, second].filter(Boolean));
-  for (const box of [diagramBox, keyBox, readBox]) box.hidden = false;
+  wordsBox.replaceChildren(el("summary", { text: "The first diagram in words" }), el("ul", { class: "faults" }, inWords.map((line) => el("li", { text: line }))));
+  for (const box of [diagramBox, keyBox, wordsBox, readBox]) box.hidden = false;
 
   const found = faults(p.syl, p.singular)[reading];
+  // Two universal premises and a particular conclusion also break the rule behind the existential fallacy. The name is kept
+  // for forms where that is the only fault; where another rule is broken as well, a line says that the fifth is broken too.
+  const fifthToo = reading === "modern" && !p.singular.length && !found.includes("existential") && brokenRules(p.syl).includes("existential");
   faultBox.replaceChildren(...(found.length ? [el("div", { class: "panel" },
     el("h3", { text: found.length === 1 ? "The classical name for this mistake" : "The classical names for these mistakes" }),
-    el("ul", { class: "faults" }, found.map((k) => el("li", {}, el("strong", { text: `${RULES[k]}. ` }), FAULT_TEXT[k](names, v)))))] : []));
+    el("ul", { class: "faults" }, found.map((k) => el("li", {}, el("strong", { text: `${RULES[k]}. ` }), FAULT_TEXT[k](names, v)))),
+    fifthToo ? el("p", { class: "small muted", style: { marginTop: "8px" }, text: "Both premises are universal and the conclusion is particular, so on the modern reading this form also breaks the rule behind the existential fallacy. Applied to the letter, that rule would put the name here too; this page keeps it for forms where it is the only fault, because giving every term a member would not rescue this one." }) : null)] : []));
 
   // How the three statements were read.
   const shape = (st) => (st.singular ? `${st.subject} is ${st.form === "E" ? "not " : ""}${st.predicate} (one thing)` : wording(st));
@@ -224,18 +280,18 @@ function update() {
   const ordered = p.majorFirst ? [p1, p2] : [p2, p1];
   const notes = [
     !p.majorFirst && "The premises are listed in the standard order, major premise first. The order you type them in makes no difference.",
-    p.singular.length && `${p.singular.map((t) => p.terms[t]).join(" and ")} is read as naming exactly one thing. Traditional logic files such statements under A and E; here the name also guarantees that the thing exists, on both readings.`,
     p.statements.some((s) => s.swapped) && "“Only X are Y” is read as “All Y are X”.",
   ].filter(Boolean);
   readBox.replaceChildren(
     table({
       caption: "How the tool read it",
-      columns: [{ key: "role", label: "Role" }, { key: "text", label: "As typed" }, { key: "shape", label: "Form" }, { key: "type", label: "Type" }],
-      rows: [["Major premise", ordered[0]], ["Minor premise", ordered[1]], ["Conclusion", c]].map(([role, st]) => ({ role, text: st.text, shape: shape(st), type: TYPE[st.form] })),
+      // Three columns, with the type under the form, so that the table stays readable on a phone.
+      columns: [{ key: "role", label: "Role" }, { key: "text", label: "As typed" }, { key: "shape", label: "Read as" }],
+      rows: [["Major premise", ordered[0]], ["Minor premise", ordered[1]], ["Conclusion", c]].map(([role, st]) => ({ role, text: st.text, shape: el("span", {}, shape(st), el("span", { class: "small muted", style: { display: "block" }, text: TYPE[st.form] })) })),
     }),
     el("p", { class: "small", style: { marginTop: "8px" } }, TERMS.flatMap((t, i) => [i ? " · " : "", el("strong", { text: t }), p.terms[t] === t ? ` (${ROLE[t]})` : ` is ${q(p.terms[t])} (${ROLE[t]})`])),
     ...notes.map((n) => el("p", { class: "small muted", style: { marginTop: "6px" } }, n)));
-  for (const box of [worldBox, faultBox]) box.hidden = !box.childNodes.length; // an empty box would still take a grid gap
+  for (const box of [nameBox, worldBox, faultBox]) box.hidden = !box.childNodes.length; // an empty box would still take a grid gap
 }
 
 update();

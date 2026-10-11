@@ -112,13 +112,19 @@ export function formOf(mood, figure) {
 export const moodOf = (syl) => syl.major.form + syl.minor.form + syl.conclusion.form;
 export const figureOf = (syl) => (syl.major.subject === "M" ? (syl.minor.predicate === "M" ? 1 : 3) : (syl.minor.predicate === "M" ? 2 : 4));
 
-/** The medieval names of the 24 forms that are valid when every term has a member. */
+/**
+ * The traditional mnemonic names of the 24 forms that are valid when every term has a member, as given in the
+ * Stanford Encyclopedia's "Medieval theories of the syllogism" and the Encyclopaedia Britannica.
+ */
 export const NAMES = {
   "AAA-1": "Barbara", "EAE-1": "Celarent", "AII-1": "Darii", "EIO-1": "Ferio", "AAI-1": "Barbari", "EAO-1": "Celaront",
   "EAE-2": "Cesare", "AEE-2": "Camestres", "EIO-2": "Festino", "AOO-2": "Baroco", "EAO-2": "Cesaro", "AEO-2": "Camestros",
   "AII-3": "Datisi", "IAI-3": "Disamis", "EIO-3": "Ferison", "OAO-3": "Bocardo", "AAI-3": "Darapti", "EAO-3": "Felapton",
   "AEE-4": "Camenes", "IAI-4": "Dimaris", "EIO-4": "Fresison", "AAI-4": "Bramantip", "EAO-4": "Fesapo", "AEO-4": "Camenop",
 };
+/** The same forms under the names other books use. The fourth figure is where the traditions differ most. */
+export const ALSO = { "AEO-2": "Camestrop", "AAI-4": "Bamalip", "AEE-4": "Calemes", "IAI-4": "Dimatis", "AEO-4": "Calemos" };
+export const fullName = (key) => (NAMES[key] ? (ALSO[key] ? `${NAMES[key]} (also ${ALSO[key]})` : NAMES[key]) : null);
 
 /* ================================================== the rules of distribution */
 
@@ -134,7 +140,7 @@ export const RULES = {
   "undistributed-middle": "Undistributed middle",
   "illicit-major": "Illicit major",
   "illicit-minor": "Illicit minor",
-  "exclusive-premises": "Two negative premises",
+  "exclusive-premises": "Exclusive premises (two negative premises)",
   "affirmative-from-negative": "Affirmative conclusion from a negative premise",
   "negative-from-affirmatives": "Negative conclusion from affirmative premises",
   "existential": "Existential fallacy",
@@ -184,7 +190,7 @@ export function census() {
 
 /* =================================================================== parsing */
 
-const LEAD = /^(?:(?:therefore|thus|hence|so|then|and|but|consequently|it follows that)\b|∴)[\s,:]*/i;
+const LEAD = /^(?:(?:therefore|thus|hence|so|then|and|but|consequently|it follows that)(?=[\s,:])|∴)[\s,:]*/i;
 const QUANTIFIERS = [
   [/^not\s+(?:all|every|each)\s+(?:of\s+)?/i, "notall"],
   [/^(?:all|every|each|any)\s+(?:of\s+)?/i, "all"],
@@ -193,6 +199,9 @@ const QUANTIFIERS = [
   [/^only\s+/i, "only"],
 ];
 const UNSUPPORTED = /^(most|many|few|several|almost|nearly|a\s+few|exactly|more|fewer|half)\b/i;
+// Openings that would otherwise be mistaken for the name of an individual or a class: "Nobody is perfect", "Two cats are pets".
+const PRONOUN = /^((?:every|some|any|no)(?:one|body|thing))\b/i;
+const NOT_A_FORM = /^(not|if|unless|either|neither|both|there|at\s+least|at\s+most|(?:one|two|three|four|five|six|seven|eight|nine|ten|\d+)(?!\s+(?:is|are)\b))\b/i;
 const HOW = 'Use one of: "All X are Y", "No X are Y", "Some X are Y", "Some X are not Y".';
 
 const tidy = (s) => {
@@ -202,11 +211,11 @@ const tidy = (s) => {
 };
 /** A term as shown: no surrounding quotes, no leading article (unless the article is the whole term, as in "All A are B"). */
 const termText = (s) => {
-  const t = s.replace(/^["'“”]+|["'“”.,;]+$/g, "").trim();
+  const t = s.replace(/["“”]/g, "").replace(/^'+|['.,;]+$/g, "").trim();
   return t.replace(/^(?:a|an|the)\s+(?=\S)/i, "");
 };
 
-const IRREGULAR = { men: "man", women: "woman", people: "person", children: "child", mice: "mouse", geese: "goose", feet: "foot", teeth: "tooth", oxen: "ox", wolves: "wolf", leaves: "leaf", knives: "knife", lives: "life" };
+const IRREGULAR = { men: "man", women: "woman", people: "person", children: "child", mice: "mouse", geese: "goose", feet: "foot", teeth: "tooth", oxen: "ox" };
 // ponytail: a crude singulariser on the last word only, enough for "men / a man" and "Greeks / Greek".
 // It does not know synonyms or adjectives turned into nouns; a real lemmatiser is the upgrade.
 function singulars(word) {
@@ -214,6 +223,7 @@ function singulars(word) {
   if (IRREGULAR[word]) out.add(IRREGULAR[word]);
   if (word.length > 3) {
     if (word.endsWith("ies")) out.add(`${word.slice(0, -3)}y`);
+    if (word.endsWith("ves")) { out.add(`${word.slice(0, -3)}f`); out.add(`${word.slice(0, -3)}fe`); } // wolves, wives
     if (/(?:s|x|z|ch|sh|o)es$/.test(word)) out.add(word.slice(0, -2));
     if (word.endsWith("s") && !/(?:ss|us|is)$/.test(word)) out.add(word.slice(0, -1));
   }
@@ -239,6 +249,11 @@ export function parseStatement(raw) {
   if (unsupported) return { error: `starts with "${unsupported[1].toLowerCase()}", which is not one of the four categorical forms. ${HOW}` };
   let quantifier = "none", rest = text;
   for (const [re, q] of QUANTIFIERS) if (re.test(text)) { quantifier = q; rest = text.replace(re, ""); break; }
+  if (quantifier === "none") {
+    const pronoun = text.match(PRONOUN), other = text.match(NOT_A_FORM);
+    if (pronoun) return { error: `starts with "${pronoun[1].toLowerCase()}", which hides the class it is about. Name the class instead, as in "All people are Y" or "No things are Y".` };
+    if (other) return { error: `starts with "${other[1].toLowerCase().replace(/\s+/g, " ")}", which is not one of the four categorical forms. ${HOW}` };
+  }
 
   const candidates = [];
   let error = null;
@@ -301,12 +316,15 @@ function assemble(statements) {
   const majorFirst = p1.sub === c.pre || p1.pre === c.pre;
   const syl = { major: st(majorFirst ? p1 : p2), minor: st(majorFirst ? p2 : p1), conclusion: st(c) };
   const mood = moodOf(syl), figure = figureOf(syl);
+  // A term names one individual only if it is never quantified: "Gold is a metal; some gold is jewellery" is about a kind.
+  const subjectOf = (t) => rows.filter((r) => letter.get(r.sub) === t);
+  const singular = TERMS.filter((t) => subjectOf(t).some((r) => r.singular) && subjectOf(t).every((r) => r.singular));
   return {
     ok: true, syl, mood, figure, key: `${mood}-${figure}`, name: NAMES[`${mood}-${figure}`] || null,
     terms: Object.fromEntries(classes.map((k) => [letter.get(k), k.text])),
-    singular: TERMS.filter((t) => rows.some((r) => r.singular && letter.get(r.sub) === t)),
+    singular,
     majorFirst,
-    statements: rows.map((r) => ({ text: r.text, form: r.form, subject: letter.get(r.sub), predicate: letter.get(r.pre), singular: r.singular, swapped: Boolean(r.swapped) })),
+    statements: rows.map((r) => ({ text: r.text, form: r.form, subject: letter.get(r.sub), predicate: letter.get(r.pre), singular: r.singular && singular.includes(letter.get(r.sub)), swapped: Boolean(r.swapped) })),
   };
 }
 
@@ -322,6 +340,14 @@ export function parseSyllogism(premise1, premise2, conclusion) {
     first ??= result;
   }
   return first;
+}
+
+/**
+ * A statement that was read as being about one named individual, reworded as a statement about a kind:
+ * "Gold is a metal" becomes "All Gold is a metal", "Gold is not a metal" becomes "No Gold is a metal".
+ */
+export function asKind({ text, form }) {
+  return `${form === "E" ? "No" : "All"} ${text.replace(/^the\s+/i, "")}`.replace(/\b(is|are) not\b/i, "$1");
 }
 
 /** The standard wording of a statement, for showing how it was read and for building examples. */
