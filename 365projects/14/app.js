@@ -1,22 +1,28 @@
 // Day 14: Simpson's Paradox Finder. Interface.
 import { $, el, fmt, clamp, mount, slider, select, checkbox, segmented, textArea, button, stat, note, table, chart, debounce, niceTicks } from "../kit/kit.js";
-import { EXAMPLES, LIMITS, parseTable, profile, guessWeight, weightable, context, plan, runJob, rank, groupsOf } from "./logic.js";
+import { EXAMPLES, LIMITS, decodeBytes, parseTable, profileColumn, guessWeight, weightable, unusableCounts, context, plan, runJob, rank, groupsOf } from "./logic.js";
 
 mount();
 
 const PAGE = 20;
-const state = { source: "", about: "", example: null, table: null, cols: null, ctx: null, weight: null, minCell: 5, thirds: true, show: "reversals", results: [], jobs: 0, skipped: 0, selected: null, shown: PAGE, run: 0 };
+const state = { source: "", about: "", notice: "", example: null, table: null, cols: null, ctx: null, weight: null, minCell: 5, thirds: true, show: "reversals", results: [], jobs: 0, skipped: 0, selected: null, shown: PAGE, run: 0, load: 0 };
 
 /* ---------- formatting ---------- */
-const num = (v) => fmt.sig(v, 3);
+// Numbers too large or too small to print in full are written like 3.05e12, so they stay readable and never stretch the page.
+const extreme = (...vals) => { const m = Math.max(0, ...vals.filter(Number.isFinite).map(Math.abs)); return m !== 0 && (m >= 1e9 || m < 1e-4); };
+const sci = (v, sign = false) => (Number.isFinite(v) ? `${sign && v > 0 ? "+" : ""}${v.toExponential(2).replace("e+", "e")}` : "–");
+const num = (v) => (extreme(v) ? sci(v) : fmt.sig(v, 3));
 const signed = (v) => (v > 0 ? "+" : "") + num(v);
+const count = (n, word) => `${fmt.int(n)} ${word}${n === 1 ? "" : "s"}`;
 const clip = (s, n = 26) => (String(s).length > n ? `${String(s).slice(0, n - 1)}…` : String(s));
 const zName = (c) => (c.binned ? `${c.z} (cut into thirds)` : c.z);
 // Fixed decimals that suit the size of the numbers, so a column of figures lines up.
 const places = (...vals) => clamp(2 - Math.floor(Math.log10(Math.max(...vals.map(Math.abs)) || 1)), 0, 6);
-const dp = (c) => places(c.overall.a, c.overall.b);
-const value = (c, v) => (c.binary ? fmt.pct(v, 1) : fmt.num(v, dp(c)));
-const gap = (c, v) => (c.kind === "slope" ? signed(v) : c.binary ? fmt.signed(v * 100, 1) : fmt.signed(v, dp(c) + 1));
+// Enough decimals for the two overall figures to differ on the page when the gap between them is small.
+const dp = (c) => clamp(Math.max(places(c.overall.a, c.overall.b), c.overall.effect ? 1 - Math.floor(Math.log10(Math.abs(c.overall.effect))) : 0), 0, 6);
+const wild = (c) => extreme(c.overall.a, c.overall.b);
+const value = (c, v) => (c.binary ? fmt.pct(v, 1) : wild(c) ? sci(v) : fmt.num(v, dp(c)));
+const gap = (c, v) => (c.kind === "slope" ? signed(v) : c.binary ? fmt.signed(v * 100, 1) : wild(c) ? sci(v, true) : fmt.signed(v, dp(c) + 1));
 const effect = (c, v) => gap(c, v) + (c.kind === "slope" ? " per unit" : c.binary ? " points" : "");
 const brief = (c, v) => gap(c, v) + (c.binary ? " pts" : "");
 const strength = (c) => (c.strength > 100 ? "over 100" : fmt.num(c.strength, 1));
@@ -49,7 +55,7 @@ const showSeg = segmented({
 });
 
 const controls = el("div", { class: "controls" },
-  el("div", { class: "field" }, el("div", { class: "lab" }, el("span", { text: "Example data" })), el("div", { class: "row" }, exampleButtons)),
+  el("div", { class: "field" }, el("div", { class: "lab" }, el("span", { text: "Example data" })), el("div", { class: "row", role: "group", "aria-label": "Example data" }, exampleButtons)),
   drop, paste.el,
   el("div", { class: "row" }, button("Search this text", () => load(paste.value, "Pasted text"), { primary: true, small: true })),
   el("p", { class: "small muted", text: "Your data is read by this page inside your browser. Nothing is uploaded, sent anywhere or stored." }),
@@ -67,12 +73,14 @@ const colsBox = el("div");
 const colsDetails = el("details", { class: "chart-table" }, el("summary", { text: "How each column was read" }), colsBox);
 const out = el("div", { class: "out" }, el("div", { class: "stats" }, sRows.el, sCols.el, sChecked.el, sFound.el), status, messages, showSeg.el, listBox, colsDetails);
 
+const detailTitle = el("h3");
+const headlineEl = el("p", { class: "verdict", role: "status" });
 const verdictBox = el("div", { class: "stack" });
 const tiles = [stat("All rows together"), stat("Inside the groups"), stat(""), stat("Groups pointing the other way")];
 const leftBox = el("div"), rightBox = el("div");
 const pair = el("div", { class: "pair" }, leftBox, rightBox);
 const groupTable = el("div", { class: "stack" });
-const detail = el("div", { class: "detail", hidden: true }, verdictBox, el("div", { class: "stats" }, tiles.map((t) => t.el)), pair, groupTable);
+const detail = el("div", { class: "detail", hidden: true }, el("div", { class: "stack" }, detailTitle, headlineEl, verdictBox), el("div", { class: "stats" }, tiles.map((t) => t.el)), pair, groupTable);
 
 $("#app").append(el("div", { class: "tool-grid" }, controls, out), detail);
 const left = chart(leftBox, { series: [], height: 300 });
@@ -81,6 +89,7 @@ const right = chart(rightBox, { series: [], height: 300 });
 /* ---------- loading ---------- */
 function fail(message) {
   state.run++;
+  state.load++;
   state.table = null;
   status.textContent = "";
   messages.replaceChildren(note("bad", message));
@@ -97,30 +106,50 @@ function loadExample(ex) {
   load(ex.csv, ex.label, ex.about, ex.id);
 }
 
-function load(text, source, about = "", example = null) {
-  Object.assign(state, { source, about, example, selected: null, shown: PAGE });
+function load(text, source, about = "", example = null, notice = "") {
+  Object.assign(state, { source, about, notice, example, selected: null, shown: PAGE });
   exampleButtons.forEach((b, i) => b.setAttribute("aria-pressed", String(EXAMPLES[i].id === example)));
   const t = parseTable(text);
   if (t.error) return fail(t.error);
-  state.table = t;
-  state.cols = profile(t);
-  state.weight = guessWeight(state.cols, t.n);
-  weightSel.input.replaceChildren(
-    el("option", { value: "", text: "None: one row per observation" }),
-    ...weightable(state.cols).map((c) => el("option", { value: c.index, text: c.name })));
-  weightSel.value = state.weight ?? "";
-  analyse();
+  // Columns are read in slices of about 30 milliseconds, so a wide file with many rows does not freeze the page.
+  const token = ++state.load;
+  const cols = [];
+  const step = () => {
+    if (token !== state.load) return;
+    const t0 = performance.now();
+    while (cols.length < t.names.length && performance.now() - t0 < 30) cols.push(profileColumn(t, cols.length));
+    if (cols.length < t.names.length) {
+      state.table = null;
+      status.textContent = `Reading ${source}: column ${fmt.int(cols.length)} of ${fmt.int(t.names.length)}…`;
+      setTimeout(step, 0);
+      return;
+    }
+    state.table = t;
+    state.cols = cols;
+    state.weight = guessWeight(cols, t.n);
+    weightSel.input.replaceChildren(
+      el("option", { value: "", text: "None: one row per observation" }),
+      ...weightable(cols).map((c) => el("option", { value: c.index, text: c.name })));
+    weightSel.value = state.weight ?? "";
+    analyse();
+  };
+  step();
 }
 
 async function readFile(file) {
   if (!file) return;
   if (/\.(xlsx?|ods|numbers)$/i.test(file.name)) return fail(`"${file.name}" is a spreadsheet workbook. Open it and save or export the sheet as CSV, then drop that file here.`);
   if (file.size > LIMITS.bytes) return fail(`"${file.name}" is ${fmt.num(file.size / 1e6, 1)} MB. This page reads files up to ${LIMITS.bytes / 1e6} MB; remove the columns you do not need or take a sample of the rows.`);
+  if (file.size === 0) return fail(`"${file.name}" is empty.`);
   status.textContent = `Reading ${file.name}…`;
-  let text;
-  try { text = await file.text(); } catch { return fail(`"${file.name}" could not be read.`); }
-  paste.value = text.length <= 20000 ? text : "";
-  setTimeout(() => load(text, file.name), 0);
+  let decoded;
+  try { decoded = decodeBytes(new Uint8Array(await file.arrayBuffer())); } catch { return fail(`"${file.name}" could not be read.`); }
+  const { text, encoding } = decoded;
+  if (!text.trim()) return fail(`"${file.name}" holds no text.`);
+  // Only readable text goes into the paste box: never the contents of a binary file.
+  paste.value = text.length <= 20000 && !text.includes("\u0000") ? text : "";
+  const notice = encoding === "windows-1252" ? "This file is not saved as UTF-8, so it was read as Windows-1252, the usual encoding of older spreadsheet exports. If accented letters or symbols look wrong, save the file as \"CSV UTF-8\" and load it again." : "";
+  setTimeout(() => load(text, file.name, "", null, notice), 0);
 }
 fileInput.addEventListener("change", () => { readFile(fileInput.files[0]); fileInput.value = ""; });
 const app = $("#app");
@@ -155,6 +184,7 @@ function describe(c) {
 }
 
 function render() {
+  if (!state.table) return;   // a file is still being read
   const { table: t, cols, ctx, results } = state;
   const reversals = results.filter((c) => c.reversal);
   const list = state.show === "all" ? results : reversals;
@@ -170,11 +200,13 @@ function render() {
   sCols.set(`${used.length} of ${cols.length}`, [state.weight != null ? "1 holds the counts" : "", ignored ? `${ignored} ignored` : ""].filter(Boolean).join(", ") || "every column");
   sChecked.set(fmt.int(results.length), `from ${fmt.int(state.jobs)} ${state.jobs === 1 ? "combination" : "combinations"} of columns`);
   sFound.set(fmt.int(reversals.length), reversals.length ? `${full} in every group, ${reversals.length - full} on average; ${firm} at strength 2 or more` : "none in this table");
-  status.textContent = `Searched ${state.source}: ${results.length} comparisons, ${reversals.length} ${reversals.length === 1 ? "reversal" : "reversals"}.`;
+  status.textContent = `Searched ${state.source}: ${count(results.length, "comparison")}, ${count(reversals.length, "reversal")}.`;
 
   const notes = [note("", el("strong", { text: `${state.source}. ` }), state.about || `${fmt.int(t.n)} rows and ${cols.length} columns read.`,
     ctx.w ? ` The column "${cols[state.weight].name}" is read as a count, so ${fmt.int(t.n)} rows stand for ${fmt.int(ctx.total)} observations.` : "")];
+  if (state.notice) notes.push(note("warn", state.notice));
   for (const w of t.warnings) notes.push(note("warn", w));
+  if (state.weight == null) for (const c of unusableCounts(cols)) notes.push(note("warn", `"${c.name}" is named like a count of rows, but it cannot be used as one: a count column must hold numbers, none blank or negative and at least one above zero. Every row is counted once.`));
   for (const c of cols) if (c.unparsed) notes.push(note("warn", `"${c.name}" is read as a number column, but ${c.unparsed} of its values are not numbers. Those were treated as missing.`));
   if (state.skipped) notes.push(note("warn", `This table has more column combinations than the page will search. The first ${fmt.int(state.jobs)} were checked and ${fmt.int(state.skipped)} were not. Remove columns you do not care about to cover the rest.`));
   messages.replaceChildren(...notes);
@@ -182,7 +214,7 @@ function render() {
   if (!results.length) {
     listBox.replaceChildren(note("warn", `Nothing here can be compared. A comparison needs an outcome (a number column, or a column with two values), a second column to compare it across, and a third with 2 to 12 values to split by, leaving at least two groups with ${state.minCell} or more observations on each side. Check how each column was read, or lower the smallest group.`));
   } else if (!list.length) {
-    listBox.replaceChildren(note("good", `No reversal in this table. ${fmt.int(results.length)} comparisons were checked, and in every one the groups point the same way as the whole table once their sizes are evened out. Choose "All comparisons" to look at any of them.`));
+    listBox.replaceChildren(note("good", `No reversal in this table. ${results.length === 1 ? "One comparison was checked, and in it" : `${fmt.int(results.length)} comparisons were checked, and in every one`} the groups point the same way as the whole table once their sizes are evened out. Choose "All comparisons" to look at ${results.length === 1 ? "it" : "any of them"}.`));
   } else {
     const rows = list.slice(0, state.shown).map((c, i) => ({ c, i: i + 1 }));
     const finds = table({
@@ -190,9 +222,9 @@ function render() {
       columns: [
         { key: "b", label: "", format: (_, r) => {
           const on = r.c.key === state.selected;
-          const b = button(on ? "Shown" : "Show", () => { state.selected = r.c.key; render(); detail.scrollIntoView({ block: "nearest" }); }, { small: true });
+          const b = button(on ? "Shown" : "Show", () => { state.selected = r.c.key; render(); detail.scrollIntoView({ block: "nearest" }); listBox.querySelector('.finds button[aria-pressed="true"]')?.focus({ preventScroll: true }); }, { small: true });
           b.setAttribute("aria-pressed", String(on));
-          b.setAttribute("aria-label", `Show comparison ${r.i} below`);
+          b.setAttribute("aria-label", `${on ? "Shown" : "Show"}: comparison ${r.i}`);
           return b;
         } },
         { key: "c", label: "What is compared", format: describe },
@@ -208,7 +240,7 @@ function render() {
     listBox.replaceChildren(...[
       finds,
       el("p", { class: "small muted", text: "Effects are gaps in percentage points for rates, gaps in the column's own units for means, and change per unit for slopes. Strength is how many standard errors the weaker of the two effects is from zero: below 2, one side of the reversal could be chance." }),
-      list.length > state.shown ? button(`Show ${Math.min(PAGE, list.length - state.shown)} more of ${fmt.int(list.length)}`, () => { state.shown += PAGE; render(); }, { small: true }) : null,
+      list.length > state.shown ? button(`Show ${Math.min(PAGE, list.length - state.shown)} more of ${fmt.int(list.length)}`, () => { const first = state.shown; state.shown += PAGE; render(); listBox.querySelectorAll(".finds button")[first]?.focus(); }, { small: true }) : null,
     ].filter(Boolean));
   }
 
@@ -218,7 +250,7 @@ function render() {
     rows: cols.map((c) => ({
       name: c.name,
       read: c.index === state.weight ? "the count of observations in each row"
-        : c.kind === "numeric" ? `a number${c.codes ? ", also usable as groups" : state.thirds ? ", split into thirds when used as groups" : ""}`
+        : c.kind === "numeric" ? `a number${c.codes ? ", also usable as groups" : state.thirds ? ", split into thirds when used as groups" : ""}${c.sequence ? ". It counts up by one on every row, so it may be a row number" : ""}`
         : c.kind === "binary" ? `two values: ${c.levels.join(" and ")} (rates count "${c.levels[c.positive]}")`
         : c.kind === "category" ? `a category: ${c.levels.join(", ")}`
         : `ignored: ${c.reason}`,
@@ -236,25 +268,28 @@ function renderDetail(c) {
   const kept = c.groups.filter((g) => g.kept);
   const z = zName(c);
   const every = c.opposed === c.kept;
+  const all = c.kept === 2 ? "both groups" : `every one of the ${c.kept} groups`;
   let headline;
   if (c.kind === "slope") {
     const dir = c.overall.effect > 0 ? "rises" : "falls";
     headline = c.reversal
-      ? `Across all rows, ${c.y} ${dir} with ${c.x}: ${effect(c, c.overall.effect)}. Inside the groups the trend runs the other way: ${effect(c, c.within.effect)} once ${z} is held fixed, and ${every ? `every one of the ${c.kept} groups slopes` : `${c.opposed} of the ${c.kept} groups slope`} against the overall line.`
-      : `No reversal. Across all rows, ${c.y} ${dir} with ${c.x} (${effect(c, c.overall.effect)}), and it still ${dir} once ${z} is held fixed (${effect(c, c.within.effect)}).`;
+      ? `Across all rows, ${c.y} ${dir} with ${c.x}: ${effect(c, c.overall.effect)}. Inside the groups the trend runs the other way: ${effect(c, c.within.effect)} once ${z} is held fixed, and ${every ? `${all} slope${c.kept === 2 ? "" : "s"}` : `${c.opposed} of the ${c.kept} groups slope`} against the overall line.`
+      : c.overall.effect === 0 ? `No reversal. Across all rows, ${c.y} neither rises nor falls with ${c.x}: the fitted line is flat.`
+      : `No reversal. Across all rows, ${c.y} ${dir} with ${c.x} (${effect(c, c.overall.effect)}), and ${c.within.effect === 0 ? "the trend is flat" : `it still ${dir}`} once ${z} is held fixed (${effect(c, c.within.effect)}).`;
   } else {
     const what = c.binary ? `the share with ${c.y} = ${c.positive}` : `mean ${c.y}`;
     headline = c.reversal
-      ? `Across all rows, ${what} is higher for ${c.a}: ${value(c, c.overall.a)} against ${value(c, c.overall.b)} for ${c.b}. Inside the groups it turns round. Give both sides the same mix of ${z} and it is higher for ${c.b}, by ${effect(c, -c.within.effect).replace("+", "")}; it is higher for ${c.b} in ${every ? `every one of the ${c.kept} groups` : `${c.opposed} of the ${c.kept} groups`}.`
+      ? `Across all rows, ${what} is higher for ${c.a}: ${value(c, c.overall.a)} against ${value(c, c.overall.b)} for ${c.b}. Inside the groups it turns round. Give both sides the same mix of ${z} and it is higher for ${c.b}, by ${effect(c, -c.within.effect).replace("+", "")}; it is higher for ${c.b} in ${every ? all : `${c.opposed} of the ${c.kept} groups`}.`
       : `No reversal. Across all rows, ${what} is higher for ${c.a} (${value(c, c.overall.a)} against ${value(c, c.overall.b)} for ${c.b}), and ${c.within.effect > 0 ? "it is still higher" : "the two are level"} when both sides are given the same mix of ${z} (${value(c, c.within.a)} against ${value(c, c.within.b)}).`;
   }
   const cautions = [];
   if (c.reversal && c.strength < 2) cautions.push(`Strength ${strength(c)}: the overall effect is ${fmt.num(Math.abs(c.overall.z), 1)} standard errors from zero and the effect inside groups is ${fmt.num(Math.abs(c.within.z), 1)}. Under 2, a gap this size could come from chance alone, so at least one side of this reversal is not firmly established.`);
+  for (const i of [c.yi, c.xi]) if (state.cols[i].sequence) cautions.push(`"${state.cols[i].name}" counts up by one on every row. If it is a row number or an identifier and not a measurement, this comparison means nothing.`);
   if (c.minCell < 30) cautions.push(`The smallest group compared holds ${fmt.int(c.minCell)} observations, so its own figure is rough.`);
   if (c.dropped) cautions.push(`${fmt.int(c.dropped)} observations sit in groups too small to compare. They are left out of both charts.`);
+  detailTitle.replaceChildren(describe(c));
+  if (headlineEl.textContent !== headline) headlineEl.textContent = headline;
   verdictBox.replaceChildren(...[
-    el("h3", {}, describe(c)),
-    el("p", { class: "verdict", text: headline }),
     cautions.length ? note("warn", cautions.join(" ")) : null,
     c.reversal ? note("", el("strong", { text: "Which chart to believe? " }), `The numbers cannot say. If ${c.z} comes before ${c.x} and affects both columns, the split chart compares like with like. If ${c.z} is partly a result of ${c.x}, the split chart leaves that route out: it shows what is left of the link once ${c.z} is held fixed, and the whole table shows the total.`) : null,
   ].filter(Boolean));
@@ -275,7 +310,7 @@ function drawDiff(c, kept, z) {
   const all = [c.overall.a, c.overall.b, ...kept.flatMap((g) => [g.a, g.b])];
   const lo = Math.min(0, ...all), hi = Math.max(0, ...all);
   const step = niceTicks(lo, hi, 5).step;
-  const y = { label: measure(c), domain: [Math.floor(lo / step + 1e-9) * step, Math.ceil(hi / step - 1e-9) * step], format: c.binary ? (v) => fmt.pct(v, 0) : undefined };
+  const y = { label: measure(c), domain: [Math.floor(lo / step + 1e-9) * step, Math.ceil(hi / step - 1e-9) * step], format: c.binary ? (v) => fmt.pct(v, 0) : wild(c) ? (v) => (v === 0 ? "0" : sci(v)) : undefined };
   const series = (data) => [{ name: clip(c.a), type: "bars", data: data(0), color: 0 }, { name: clip(c.b), type: "bars", data: data(1), color: 1 }];
   left.update({
     title: "All rows together", subtitle: `${fmt.int(c.overall.na)} against ${fmt.int(c.overall.nb)} observations`,
@@ -324,8 +359,9 @@ function drawSlope(c, kept, z) {
   const stride = Math.ceil(rows.length / 1200);
   const pts = rows.filter((_, j) => j % stride === 0).map((i) => ({ x: X[i], y: Y[i], k: slot.get(g.codes[i]) }));
   const span = (vals) => { const lo = Math.min(...vals), hi = Math.max(...vals), pad = (hi - lo) * 0.04 || 1; return [lo - pad, hi + pad]; };
-  const x = { label: clip(c.x, 40), domain: span(pts.map((p) => p.x)) };
-  const y = { label: clip(c.y, 40), domain: span(pts.map((p) => p.y)) };
+  const axis = (label, domain) => ({ label: clip(label, 40), domain, format: extreme(...domain) ? (v) => (v === 0 ? "0" : sci(v)) : undefined });
+  const x = axis(c.x, span(pts.map((p) => p.x)));
+  const y = axis(c.y, span(pts.map((p) => p.y)));
   const xs = [Math.min(...kept.map((k) => k.lo)), Math.max(...kept.map((k) => k.hi))];
   const sampled = stride > 1 ? ` A sample of ${fmt.int(pts.length)} of ${fmt.int(rows.length)} rows is drawn.` : "";
   left.update({
@@ -346,8 +382,10 @@ function drawSlope(c, kept, z) {
   });
   const dx = places(...kept.map((k) => k.mx)), dy = places(...kept.map((k) => k.my));
   const ds = places(c.overall.effect, c.within.effect, ...kept.map((k) => k.effect));
-  const slope = (v) => (Number.isFinite(v) ? fmt.signed(v, ds) : "–");
-  const rowsOut = c.groups.map((k) => ({ level: k.kept ? k.level : `${k.level} (left out: too few)`, n: fmt.int(k.n), mx: fmt.num(k.mx, dx), my: fmt.num(k.my, dy), slope: slope(k.effect), r: k.kept ? fmt.signed(k.r, 2) : "–" }));
+  const wildSlope = extreme(c.overall.effect, c.within.effect, ...kept.map((k) => k.effect));
+  const slope = (v) => (!Number.isFinite(v) ? "–" : wildSlope ? sci(v, true) : fmt.signed(v, ds));
+  const mean = (v, d, all) => (extreme(...all) ? sci(v) : fmt.num(v, d));
+  const rowsOut = c.groups.map((k) => ({ level: k.kept ? k.level : `${k.level} (left out: too few)`, n: fmt.int(k.n), mx: mean(k.mx, dx, kept.map((g) => g.mx)), my: mean(k.my, dy, kept.map((g) => g.my)), slope: slope(k.effect), r: k.kept ? fmt.signed(k.r, 2) : "–" }));
   rowsOut.push(
     { level: "All rows together", n: fmt.int(c.n), mx: "", my: "", slope: slope(c.overall.effect), r: fmt.signed(c.overall.r, 2) },
     { level: "Inside groups, pooled", n: "", mx: "", my: "", slope: slope(c.within.effect), r: fmt.signed(c.within.r, 2) },

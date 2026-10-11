@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { csv, rng } from "../kit/kit.js";
-import { EXAMPLES, LIMITS, analyse, guessWeight, parseTable, plan, profile, syntheticCsv, context, thirds, toNumber } from "./logic.js";
+import { EXAMPLES, LIMITS, analyse, decodeBytes, guessWeight, parseTable, plan, profile, profileColumn, syntheticCsv, context, thirds, toNumber, unusableCounts } from "./logic.js";
 
 const close = (a, b, tol = 1e-9) => assert.ok(Math.abs(a - b) <= tol, `${a} is not within ${tol} of ${b}`);
 const example = (id) => EXAMPLES.find((e) => e.id === id).csv;
@@ -38,6 +38,10 @@ test("the numbers quoted under One finding", () => {
   assert.equal((c.overall.effect * 100).toFixed(1), "14.2");
   assert.equal((c.within.effect * 100).toFixed(1), "-4.3");
   assert.equal((c.mix * 100).toFixed(1), "18.4");
+  // The worked subtraction under "Rates and means" is given to two places so that it adds up on the page.
+  assert.equal((c.overall.effect * 100).toFixed(2), "14.16");
+  assert.equal((c.within.effect * 100).toFixed(2), "-4.26");
+  assert.equal((c.mix * 100).toFixed(2), "18.43");
   assert.equal(`${c.opposed} of ${c.kept}`, "4 of 6");
   // Figures quoted under "How it works".
   assert.equal(c.strength.toFixed(1), "2.3");
@@ -52,6 +56,11 @@ test("the numbers quoted under One finding", () => {
 test("kidney stones 1986: treatment B is ahead overall and behind in both stone sizes", () => {
   const r = analyse(example("kidney"));
   const c = find(r, "outcome", "treatment", "stone_size");
+  // Charig et al. (1986), abstract: 350 patients in each group, success in 273 (78%) after open surgery and 289 (83%) after percutaneous nephrolithotomy.
+  assert.equal(r.ctx.total, 700);
+  assert.deepEqual([c.overall.na, c.overall.nb], [350, 350]);
+  assert.deepEqual([c.a, (c.overall.a * 100).toFixed(0)], ["B (percutaneous)", "83"]);
+  assert.deepEqual([c.b, (c.overall.b * 100).toFixed(0)], ["A (open surgery)", "78"]);
   assert.equal(c.a, "B (percutaneous)");
   close(c.overall.a, 289 / 350);
   close(c.overall.b, 273 / 350);
@@ -247,4 +256,109 @@ test("fifty thousand rows are searched, and rows past the limit are dropped with
   const t = parseTable(lines.join("\n"));
   assert.equal(t.n, LIMITS.rows);
   assert.match(t.warnings[0], /first 100,000/);
+});
+
+test("file bytes are decoded whatever the encoding: UTF-8, UTF-16 with or without a mark, and Windows-1252", () => {
+  const text = "traitement;taille;guéri\nchirurgie;élevé;oui\npercutanée;petit;non\n";
+  const utf16 = (bigEndian) => { const b = Buffer.from(text, "utf16le"); if (bigEndian) b.swap16(); return b; };
+  const cases = {
+    "utf-8": Buffer.from(text, "utf8"),
+    "utf-8 with a mark": Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from(text, "utf8")]),
+    "utf-16le with a mark": Buffer.concat([Buffer.from([0xff, 0xfe]), utf16(false)]),
+    "utf-16be with a mark": Buffer.concat([Buffer.from([0xfe, 0xff]), utf16(true)]),
+    "utf-16le": utf16(false),
+    "utf-16be": utf16(true),
+    "windows-1252": Buffer.from(text, "latin1"),
+  };
+  for (const [name, bytes] of Object.entries(cases)) {
+    const d = decodeBytes(new Uint8Array(bytes));
+    assert.equal(d.text.replace(/^\uFEFF/, ""), text, name);
+    assert.equal(d.encoding, name.replace(" with a mark", ""), name);
+    assert.deepEqual(parseTable(d.text).names, ["traitement", "taille", "guéri"], name);
+  }
+  // An ArrayBuffer works as well as a typed array, and bytes that are no kind of text still come back as a string.
+  assert.equal(decodeBytes(new Uint8Array(cases["utf-8"]).buffer).text, text);
+  assert.equal(decodeBytes(new Uint8Array(0)).text, "");
+  assert.match(parseTable(decodeBytes(new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0, 0, 0, 13, 0xff, 0xd8])).text).error, /binary/);
+});
+
+test("reading: a title above the table, an unclosed quotation mark and blank lines are explained, not silently misread", () => {
+  assert.match(parseTable("Kidney stone outcomes\nExported in October\n\na,b,c\n1,2,3\n4,5,6").error, /starts with a title or a note/);
+  assert.doesNotMatch(parseTable("one\ntwo\nthree").error, /title/);
+  const lines = ["t,g,y"];
+  for (let i = 0; i < 40; i++) lines.push(`${i % 2 ? "a" : "b"},g${i % 3},${i % 5 ? 1 : 0}`);
+  lines[11] = 'a,"g1,1';
+  const t = parseTable(lines.join("\n"));
+  assert.equal(t.n, 11);
+  assert.match(t.warnings[0], /data row 11 runs over 30 lines.*quotation mark/);
+  // A quoted cell with one line break in it is ordinary CSV and gets no warning.
+  assert.deepEqual(parseTable('a,b,c\n"two\nlines",2,3\n4,5,6').warnings, []);
+  // Lines holding only spaces are skipped, not counted as short rows.
+  const spaced = parseTable("a,b,c\n1,2,3\n   \n4,5,6\n\t\n");
+  assert.equal(spaced.n, 2);
+  assert.deepEqual(spaced.warnings, []);
+});
+
+test("slopes do not depend on the units a column is measured in", () => {
+  const rows = csv.parse(example("exercise"));
+  const scaled = (k) => csv.stringify(rows.map((r, i) => (i ? [r[0], r[1], Number(r[2]) * k, r[3]] : r)));
+  const base = find(analyse(example("exercise")), "cholesterol", "exercise_hours", "age_group");
+  for (const k of [1e-9, 1e-6, 1e6, 1e12]) {
+    const c = find(analyse(scaled(k)), "cholesterol", "exercise_hours", "age_group");
+    assert.ok(c, `a comparison is still made at scale ${k}`);
+    assert.equal(c.kept, 5);
+    assert.equal(c.reversal, "full");
+    close(c.overall.effect * k, base.overall.effect, 1e-6);
+    close(c.within.effect * k, base.within.effect, 1e-6);
+    close(c.strength, base.strength, 1e-6);
+  }
+});
+
+test("absurdly large or small numbers are set aside instead of overflowing into NaN", () => {
+  const rows = [["g", "x", "y", "z"]];
+  for (let i = 0; i < 60; i++) rows.push([`g${i % 3}`, `${i + 1}e300`, `${60 - i}e-300`, i % 7]);
+  const r = analyse(csv.stringify(rows));
+  const by = Object.fromEntries(r.cols.map((c) => [c.name, c]));
+  assert.equal(by.x.kind, "ignored");
+  assert.match(by.x.reason, /too large or too small/);
+  assert.equal(by.y.kind, "ignored");
+  assert.equal(by.z.kind, "numeric");
+  for (const c of r.comparisons) for (const v of [c.overall.effect, c.within.effect, c.strength]) assert.ok(Number.isFinite(v));
+  // Ordinary large and small values are fine: national income in pounds, a concentration in moles per litre.
+  const ok = profile(parseTable("a,b,c\n2.1e12,3e-9,x\n1.9e12,5e-9,y\n2.4e12,4e-9,x"));
+  assert.deepEqual(ok.slice(0, 2).map((c) => c.kind), ["numeric", "numeric"]);
+  assert.equal(LIMITS.magnitude, 1e100);
+});
+
+test("a column that counts up by one is flagged as a possible row number, and is never guessed to be the count", () => {
+  const rows = [["id", "treatment", "stone", "cured"]];
+  let id = 0;
+  for (const [t, s, ok, n] of [["A", "small", 81, 87], ["A", "large", 192, 263], ["B", "small", 234, 270], ["B", "large", 55, 80]]) for (let i = 0; i < n; i++) rows.push([++id, t, s, i < ok ? "yes" : "no"]);
+  const r = analyse(csv.stringify(rows));
+  assert.equal(r.cols[0].sequence, true);
+  assert.equal(r.cols[0].kind, "numeric");
+  assert.equal(r.weight, null);
+  assert.equal(find(r, "cured", "treatment", "stone").reversal, "full");
+  // Each column can be profiled on its own, which is how the page reads a wide file in slices.
+  const table = parseTable(csv.stringify(rows));
+  assert.deepEqual(profileColumn(table, 3).levels, ["no", "yes"]);
+  assert.deepEqual(profile(table).map((c) => c.kind), [0, 1, 2, 3].map((i) => profileColumn(table, i).kind));
+  // A counted-up table with a row number beside the counts: the counts are still found.
+  const counted = [["row", "t", "g", "y", "people"]];
+  [["a", "g1", 1, 8], ["a", "g1", 0, 2], ["b", "g1", 1, 30], ["b", "g1", 0, 10], ["a", "g2", 1, 10], ["a", "g2", 0, 30], ["b", "g2", 1, 2], ["b", "g2", 0, 8], ["a", "g3", 1, 5], ["a", "g3", 0, 5], ["b", "g3", 1, 6], ["b", "g3", 0, 6]]
+    .forEach((x, i) => counted.push([i + 1, ...x]));
+  const k = analyse(csv.stringify(counted));
+  assert.equal(k.cols[k.weight].name, "people");
+  assert.equal(k.ctx.total, 122);
+  // Too few rows to tell a row number from a coincidence.
+  assert.equal(profile(parseTable("a,b,c\n1,x,u\n2,y,v\n3,x,u"))[0].sequence, false);
+});
+
+test("a column named like a count that cannot be one is reported", () => {
+  const bad = profile(parseTable("t,g,y,count\na,g1,1,5\na,g1,0,-2\nb,g1,1,3\nb,g1,0,4"));
+  assert.deepEqual(unusableCounts(bad).map((c) => c.name), ["count"]);
+  assert.equal(guessWeight(bad, 4), null);
+  const good = profile(parseTable("t,g,y,count\na,g1,1,5\na,g1,0,2\nb,g1,1,3\nb,g1,0,4"));
+  assert.deepEqual(unusableCounts(good), []);
+  assert.equal(guessWeight(good, 4), 3);
 });

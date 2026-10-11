@@ -4,7 +4,8 @@
 
 import { csv, rng } from "../kit/kit.js";
 
-export const LIMITS = { rows: 100000, levels: 12, jobs: 3000, bytes: 25e6 };
+// magnitude: numbers beyond 1e100 (or non-zero numbers nearer to zero than 1e-100) are refused, because their squares overflow.
+export const LIMITS = { rows: 100000, levels: 12, jobs: 3000, bytes: 25e6, magnitude: 1e100 };
 
 const MISSING = new Set(["", "na", "n/a", "nan", "null", "none", "?", "-", "."]);
 const POSITIVE = new Set(["1", "yes", "y", "true", "t", "success", "admitted", "accepted", "survived", "alive", "pass", "passed", "cured", "recovered", "won", "positive", "hired"]);
@@ -73,15 +74,35 @@ export function toNumber(s) {
   return Number.isFinite(v) ? v : NaN;
 }
 
+/**
+ * Bytes of a text file to a string: { text, encoding }. UTF-8 unless the bytes say otherwise: a UTF-16 byte-order mark,
+ * a zero byte beside almost every character (UTF-16 without a mark), or bytes that are not valid UTF-8, which are read as
+ * Windows-1252, the usual encoding of CSV files saved by older spreadsheet programs.
+ */
+export function decodeBytes(bytes) {
+  const b = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+  const as = (encoding, from = 0) => ({ text: new TextDecoder(encoding).decode(b.subarray(from)), encoding });
+  if (b[0] === 0xff && b[1] === 0xfe) return as("utf-16le", 2);
+  if (b[0] === 0xfe && b[1] === 0xff) return as("utf-16be", 2);
+  const n = Math.min(b.length, 4000) & ~1;
+  let even = 0, odd = 0;
+  for (let i = 0; i < n; i += 2) { if (b[i] === 0) even++; if (b[i + 1] === 0) odd++; }
+  if (n >= 8 && odd > n * 0.3 && even < n * 0.05) return as("utf-16le");
+  if (n >= 8 && even > n * 0.3 && odd < n * 0.05) return as("utf-16be");
+  try { return { text: new TextDecoder("utf-8", { fatal: true }).decode(b), encoding: "utf-8" }; } catch { return as("windows-1252"); }
+}
+
 /** Delimited text to columns of trimmed strings: { names, raw, n, warnings } or { error }. */
 export function parseTable(text) {
   if (typeof text !== "string" || !text.trim()) return { error: "There is no data yet. Paste CSV text, drop a file or pick an example." };
   if (text.includes("\u0000")) return { error: "This looks like a spreadsheet or another binary file, not text. Save it as CSV (comma-separated values) and try again." };
-  const grid = csv.parse(text);
+  const grid = csv.parse(text).filter((r) => r.length > 1 || r[0].trim() !== "");
   const head = grid[0] || [];
   if (grid.length < 2) return { error: "Only one line of text was found. The first line must hold the column names, with the data on the lines below it." };
   if (head.length < 3) {
-    return { error: `Only ${plural(head.length, "column")} found. The search needs at least three: an outcome, something to compare, and something to split by. Columns can be separated by commas, tabs or semicolons.` };
+    // A title or a note above the table is the commonest reason for a first line with too few cells.
+    const wider = grid.slice(1, 20).findIndex((r) => r.length >= 3);
+    return { error: `Only ${plural(head.length, "column")} found on the first line. The search needs at least three: an outcome, something to compare, and something to split by. Columns can be separated by commas, tabs or semicolons.${wider >= 0 ? " Lines further down have more cells, so the file probably starts with a title or a note: delete everything above the line of column names and try again." : ""}` };
   }
   const seen = new Map();
   const names = head.map((h, i) => {
@@ -93,16 +114,23 @@ export function parseTable(text) {
   const total = grid.length - 1;
   const n = Math.min(total, LIMITS.rows);
   const raw = names.map(() => new Array(n));
-  let ragged = 0;
+  let ragged = 0, runaway = null;
   for (let i = 0; i < n; i++) {
     const r = grid[i + 1];
     if (r.length !== names.length) ragged++;
     for (let j = 0; j < names.length; j++) raw[j][i] = (r[j] ?? "").trim();
+    // A cell that swallows several lines of the file nearly always means a quotation mark was opened and never closed.
+    if (!runaway) for (const cell of r) {
+      if (cell.length < 40 || !/[\r\n]/.test(cell)) continue;
+      const lines = cell.split(/\r\n|\r|\n/).length;
+      if (lines > 3) { runaway = { row: i + 1, lines }; break; }
+    }
   }
   if (ragged > n / 2) {
     return { error: `${ragged} of ${plural(n, "line")} do not have ${names.length} cells like the header line. Check that every line uses the same separator and that quotation marks are closed.` };
   }
   const warnings = [];
+  if (runaway) warnings.push(`One cell in data row ${runaway.row.toLocaleString("en-GB")} runs over ${runaway.lines.toLocaleString("en-GB")} lines of the file. A quotation mark was probably opened there and never closed, so the lines after it were not read as rows.`);
   if (ragged) warnings.push(`${plural(ragged, "line")} had more or fewer than ${names.length} cells. Missing cells were read as blank and extra cells were ignored.`);
   if (total > n) warnings.push(`The file has ${total.toLocaleString("en-GB")} rows. Only the first ${n.toLocaleString("en-GB")} were read.`);
   return { names, raw, n, warnings };
@@ -116,59 +144,77 @@ export function parseTable(text) {
  *   kind "ignored"  empty, constant, or text with too many different values (reason says which)
  * Any column with at most twelve different values also gets `levels` and `codes`, so it can define groups.
  */
-export function profile(table) {
-  return table.names.map((name, index) => {
-    const raw = table.raw[index];
-    const n = table.n;
-    let missing = 0, numbers = 0;
-    const num = new Float64Array(n);
+export const profile = (table) => table.names.map((_, index) => profileColumn(table, index));
+
+/** One column of profile(). The page calls this column by column so that a wide file never freezes it. */
+export function profileColumn(table, index) {
+  const name = table.names[index];
+  const raw = table.raw[index];
+  const n = table.n;
+  let missing = 0, numbers = 0;
+  const num = new Float64Array(n);
+  for (let i = 0; i < n; i++) {
+    if (MISSING.has(raw[i].toLowerCase())) { missing++; num[i] = NaN; continue; }
+    num[i] = toNumber(raw[i]);
+    if (num[i] === num[i]) numbers++;
+  }
+  const present = n - missing;
+  const numeric = present > 0 && numbers / present >= 0.95;
+  const unparsed = numeric ? present - numbers : 0;
+  const col = { name, index, missing: missing + unparsed, unparsed, numeric, kind: "ignored", reason: "", distinct: 0, many: false, num: numeric ? num : null, levels: null, codes: null };
+  if (!present) { col.reason = "empty"; return col; }
+
+  // Different values, up to the most a grouping column may have.
+  const seen = new Map();
+  const key = (i) => (numeric ? (num[i] === num[i] ? String(num[i]) : null) : (MISSING.has(raw[i].toLowerCase()) ? null : raw[i]));
+  for (let i = 0; i < n && !col.many; i++) {
+    const k = key(i);
+    if (k != null && !seen.has(k)) { seen.set(k, 0); if (seen.size > LIMITS.levels) col.many = true; }
+  }
+  col.distinct = seen.size;
+  if (!col.many) {
+    col.levels = [...seen.keys()].sort(numeric ? (a, b) => Number(a) - Number(b) : (a, b) => a.localeCompare(b, "en", { numeric: true }));
+    const code = new Map(col.levels.map((l, j) => [l, j]));
+    col.codes = new Int32Array(n);
+    for (let i = 0; i < n; i++) { const k = key(i); col.codes[i] = k == null ? -1 : code.get(k); }
+  }
+  let extreme = false;
+  if (numeric) {
+    let s = 0, step = n >= 10 && !col.missing;
     for (let i = 0; i < n; i++) {
-      if (MISSING.has(raw[i].toLowerCase())) { missing++; num[i] = NaN; continue; }
-      num[i] = toNumber(raw[i]);
-      if (num[i] === num[i]) numbers++;
+      const v = num[i];
+      if (v !== v) continue;
+      s += v;
+      const size = Math.abs(v);
+      if (size > LIMITS.magnitude || (size !== 0 && size < 1 / LIMITS.magnitude)) extreme = true;
+      if (step && i && v - num[i - 1] !== 1) step = false;
     }
-    const present = n - missing;
-    const numeric = present > 0 && numbers / present >= 0.95;
-    const unparsed = numeric ? present - numbers : 0;
-    const col = { name, index, missing: missing + unparsed, unparsed, numeric, kind: "ignored", reason: "", distinct: 0, many: false, num: numeric ? num : null, levels: null, codes: null };
-    if (!present) { col.reason = "empty"; return col; }
+    col.centre = s / numbers;
+    // Counts up by one on every row: a row number or an identifier far more often than a measurement. Flagged, not dropped.
+    col.sequence = step;
+  }
 
-    // Different values, up to the most a grouping column may have.
-    const seen = new Map();
-    const key = (i) => (numeric ? (num[i] === num[i] ? String(num[i]) : null) : (MISSING.has(raw[i].toLowerCase()) ? null : raw[i]));
-    for (let i = 0; i < n && !col.many; i++) {
-      const k = key(i);
-      if (k != null && !seen.has(k)) { seen.set(k, 0); if (seen.size > LIMITS.levels) col.many = true; }
-    }
-    col.distinct = seen.size;
-    if (!col.many) {
-      col.levels = [...seen.keys()].sort(numeric ? (a, b) => Number(a) - Number(b) : (a, b) => a.localeCompare(b, "en", { numeric: true }));
-      const code = new Map(col.levels.map((l, j) => [l, j]));
-      col.codes = new Int32Array(n);
-      for (let i = 0; i < n; i++) { const k = key(i); col.codes[i] = k == null ? -1 : code.get(k); }
-    }
-    if (numeric) {
-      let s = 0;
-      for (let i = 0; i < n; i++) if (num[i] === num[i]) s += num[i];
-      col.centre = s / numbers;
-    }
-
-    if (col.distinct === 1) col.reason = "the same value in every row";
-    else if (col.distinct === 2) {
-      col.kind = "binary";
-      const named = col.levels.map((l) => POSITIVE.has(l.toLowerCase()));
-      col.positive = named[0] && !named[1] ? 0 : 1;
-      col.y01 = new Float64Array(n);
-      for (let i = 0; i < n; i++) col.y01[i] = col.codes[i] < 0 ? NaN : col.codes[i] === col.positive ? 1 : 0;
-    } else if (numeric) col.kind = "numeric";
-    else if (col.many) col.reason = `more than ${LIMITS.levels} different text values, so it reads as a name or an identifier`;
-    else col.kind = "category";
-    return col;
-  });
+  if (extreme) col.reason = "numbers too large or too small to work with (beyond 1 followed by 100 zeros, or that many decimal places)";
+  else if (col.distinct === 1) col.reason = "the same value in every row";
+  else if (col.distinct === 2) {
+    col.kind = "binary";
+    const named = col.levels.map((l) => POSITIVE.has(l.toLowerCase()));
+    col.positive = named[0] && !named[1] ? 0 : 1;
+    col.y01 = new Float64Array(n);
+    for (let i = 0; i < n; i++) col.y01[i] = col.codes[i] < 0 ? NaN : col.codes[i] === col.positive ? 1 : 0;
+  } else if (numeric) col.kind = "numeric";
+  else if (col.many) col.reason = `more than ${LIMITS.levels} different text values, so it reads as a name or an identifier`;
+  else col.kind = "category";
+  return col;
 }
 
-/** Columns that could be a count of identical rows: numbers, none missing, none negative. */
-export const weightable = (cols) => cols.filter((c) => c.numeric && c.missing === 0 && c.num.every((v) => v >= 0) && c.num.some((v) => v > 0));
+/** Columns that could be a count of identical rows: numbers, none missing, none negative, not absurdly large. */
+export const weightable = (cols) => cols.filter((c) => c.numeric && c.missing === 0 && c.num.every((v) => v >= 0 && v <= LIMITS.magnitude) && c.num.some((v) => v > 0));
+
+const COUNT_NAME = /^(n|count|counts|freq|frequency|weight|weights|number|total|cases)$/i;
+
+/** Columns named like a count that cannot be used as one (text, blanks or negative values), so the page can say why. */
+export const unusableCounts = (cols) => { const ok = weightable(cols); return cols.filter((c) => COUNT_NAME.test(c.name) && !ok.includes(c)); };
 
 /**
  * Guess whether the table is already counted up. Returns the index of the count column or null.
@@ -176,11 +222,12 @@ export const weightable = (cols) => cols.filter((c) => c.numeric && c.missing ==
  * measure in a table whose other columns never repeat a combination (so each row is one cell of a cross-tabulation).
  */
 export function guessWeight(cols, n) {
-  const whole = weightable(cols).filter((c) => c.num.every((v) => Number.isInteger(v)) && c.num.some((v) => v > 1));
-  const named = whole.find((c) => /^(n|count|counts|freq|frequency|weight|weights|number|total|cases)$/i.test(c.name));
+  const candidates = weightable(cols).filter((c) => c.num.every((v) => Number.isInteger(v)) && c.num.some((v) => v > 1));
+  const named = candidates.find((c) => COUNT_NAME.test(c.name));
   if (named) return named.index;
+  const whole = candidates.filter((c) => !c.sequence);   // a row number is not a count
   if (whole.length !== 1) return null;
-  const others = cols.filter((c) => c !== whole[0] && c.kind !== "ignored");
+  const others = cols.filter((c) => c !== whole[0] && c.kind !== "ignored" && !c.sequence);
   if (others.length < 3 || others.some((c) => !c.codes)) return null;
   const combos = new Set();
   for (let i = 0; i < n; i++) combos.add(others.map((c) => c.codes[i]).join(","));
@@ -370,7 +417,8 @@ function slopeJob(job, ctx) {
     if (!s.n) return;
     const mx = s.x / s.n, my = s.y / s.n;
     const xx = s.xx - s.n * mx * mx, xy = s.xy - s.n * mx * my, yy = s.yy - s.n * my * my;
-    const kept = s.n >= least && xx > 1e-12 * (1 + Math.abs(s.xx));
+    // Some spread in x is needed for a slope. The test is relative, so it does not depend on the units x is measured in.
+    const kept = s.n >= least && xx > 1e-12 * Math.abs(s.xx);
     const slope = kept ? xy / xx : NaN;
     groups.push({ level: g.levels[k], n: s.n, mx: mx + X.centre, my: my + Y.centre, effect: slope, intercept: my + Y.centre - slope * (mx + X.centre), r: kept && yy > 0 ? xy / Math.sqrt(xx * yy) : NaN, lo: s.lo + X.centre, hi: s.hi + X.centre, kept });
     if (!kept) { dropped += s.n; return; }
