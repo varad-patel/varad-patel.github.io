@@ -12,7 +12,14 @@ Sources (downloaded into --cache, never committed):
     international $ (NY.GDP.PCAP.PP.KD) and life expectancy at birth (SP.DYN.LE00.IN).
 
 A WHR year Y is the average of surveys from Y-2 to Y, so the World Bank series are averaged over
-the same three years (using whichever of those years exist).
+the same three years (using whichever of those years exist: life expectancy is published a year or
+two behind, so the latest window is the mean of its first two years).
+
+Cleaning rules:
+  * The file's 2011 rows are left out. They come from the first report (2012), which pooled every
+    survey from 2005 to mid-2011, so they are not three-year averages and have no matching window.
+  * The file lists Eswatini under two names ("Swaziland" up to 2020, "Eswatini" after). They are one
+    country here.
 """
 
 from __future__ import annotations
@@ -46,6 +53,7 @@ SHORT = {
 }
 REGION_FIX = {"North Cyprus": "Europe & Central Asia", "Somaliland Region": "Sub-Saharan Africa", "Taiwan Province of China": "East Asia & Pacific"}
 FACTORS = ["income", "social", "health", "freedom", "generosity", "corruption"]
+POOLED_YEARS = {2011}  # the 2012 report: one pool of 2005 to mid-2011 surveys, not a three-year average
 
 
 def fetch(url: str, path: Path) -> Path:
@@ -83,15 +91,18 @@ def main() -> None:
         vals = [series[key][(iso, y)] for y in (year - 2, year - 1, year) if (iso, y) in series[key]]
         return sum(vals) / len(vals) if vals else None
 
-    years = sorted({int(r[0]) for r in rows})
+    years = sorted({int(r[0]) for r in rows} - POOLED_YEARS)
     countries = {}
     unmatched = []
     for r in rows:
         year, name = int(r[0]), r[2]
+        if year in POOLED_YEARS:
+            continue
         iso = ISO3[name] if name in ISO3 else by_name.get(name, {}).get("id")
         if name not in ISO3 and iso is None:
             unmatched.append(name)
-        c = countries.setdefault(name, {
+        # Keyed by the name shown, so a country the file lists under two names is one entry.
+        c = countries.setdefault(SHORT.get(name, name), {
             "name": SHORT.get(name, name), "iso3": iso,
             "region": REGION_FIX.get(name) or (by_iso[iso]["region"]["value"].strip() if iso else None),
             "rows": {},
@@ -99,6 +110,8 @@ def main() -> None:
         gdp = window("gdp", iso, year) if iso else None
         life = window("life", iso, year) if iso else None
         factors = [r3(v) for v in r[6:12]]
+        if year in c["rows"] or c["iso3"] != iso:
+            raise SystemExit(f"two rows for {c['name']} in {year}, or two ISO codes")
         c["rows"][year] = {
             "ladder": r3(r[3]), "lo": r3(r[4]), "hi": r3(r[5]), "rank": int(r[1]) if r[1] else None,
             "factors": factors if all(v is not None for v in factors) else None,
