@@ -7,7 +7,7 @@ Live at https://varad-patel.github.io/365projects/29/ (part of [365 projects in 
 | | |
 |---|---|
 | Question | Given the probabilities and utilities you believe, which option should you choose, and which single assumption would have to change, and by how much, to flip that choice? |
-| One finding | In the job-offer example staying put beats the start-up by 55 to 45, and the choice flips if the chance of the start-up taking off is 0.5 and not 0.3 or if its failure is rated 44 and not 30, while the best ending would have to be worth 172 on a 0 to 100 scale to matter. |
+| One finding | In the job-offer example staying put beats the start-up by 55 to 45, and the choice flips if the chance of the start-up taking off is 0.5 and not 0.3 or if its failure is rated 44.3 and not 30, while the best ending would have to be worth about 172 on a 0 to 100 scale to matter. |
 | Main limit | Every probability and utility is the user's own guess, and the analysis moves one number at a time, so it cannot show what several slightly wrong assumptions do together. |
 | PPE concept | Rational choice |
 | Skills | Expected value, sensitivity analysis |

@@ -11,6 +11,9 @@
   <link rel="stylesheet" href="../../assets/site.css">
   <link rel="stylesheet" href="../kit/kit.css">
   <style>
+    /* A name can be 80 letters with no space in it: let it break and never widen the page. */
+    #app { overflow-wrap: break-word; }
+    #app .chart-legend span { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
     .stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; min-width: 0; }
     .verdict { font: 500 1.12rem/1.45 var(--serif); }
     .file-btn { cursor: pointer; }
@@ -26,8 +29,11 @@
     .tree .edge { fill: none; stroke: var(--slate); stroke-width: 1.3; stroke-linejoin: round; }
     .tree .edge.plan { stroke: var(--ink); stroke-width: 3; }
     .tree .slash { fill: none; stroke: var(--ink); stroke-width: 1.5; }
-    .tree .edge.off, .tree .slash.off { opacity: 0.4; }
-    .tree .node.off { opacity: 0.62; }
+    /* Branches turned down are lighter but still readable: slate text is 6:1 on white, and the lines and shapes stay above 3:1. */
+    .tree .edge.off, .tree .slash.off { opacity: 0.7; }
+    .tree .node.off text { fill: var(--slate); font-weight: 400; }
+    .tree .node.off .sq, .tree .node.off .ci { opacity: 0.5; }
+    .tree .node.off .tri { opacity: 0.7; }
     .tree .sq { fill: var(--ink); }
     .tree .ci { fill: #fff; stroke: var(--ink); stroke-width: 2.5; }
     .tree .tri { fill: var(--slate); }
@@ -57,12 +63,17 @@
     .n-nums .field { flex: 0 0 96px; }
     .n-kids { margin-left: 4px; padding: 4px 0 2px 12px; border-left: 2px solid var(--rule); display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
     .n-foot { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; }
+    .n-foot > div { min-width: 0; }
     .n-foot .note { font-size: 0.86rem; padding: 8px 10px; }
     .n-foot .note .btn { margin-top: 6px; display: block; }
     @media (max-width: 520px) { .n-kids { margin-left: 2px; padding-left: 8px; } }
 
-    .case { margin: 8px 0 0; padding-left: 1.3em; display: grid; gap: 4px; }
+    .case { margin: 8px 0 0; padding-left: 1.3em; display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; }
     .flips .tbl td.num { white-space: normal; }
+    /* Names may break anywhere; numbers never break. */
+    .flips .tbl td:first-child, .flips .tbl td:last-child { overflow-wrap: anywhere; }
+    .flips .tbl td:first-child { min-width: 9em; }
+    .flips .tbl td:last-child { min-width: 5em; }
     @media (max-width: 520px) { .flips .tbl th { white-space: normal; } .flips .tbl th, .flips .tbl td { padding: 6px 6px; } .n-head { grid-template-columns: minmax(0, 1fr) 108px auto; gap: 6px; } }
   </style>
 </head>
@@ -79,12 +90,12 @@
 
     <section class="p-sec finding">
       <h2>One finding</h2>
-      <p>In the job-offer example, staying put beats the start-up by 55 to 45 on a 0 to 100 scale. Two numbers carry the argument: the choice flips if the chance of the start-up taking off is 0.5 and not 0.3, or if its failure is rated 44 and not 30. How good success would be hardly matters. The best ending would have to be worth 172, on a scale that stops at 100.</p>
+      <p>In the job-offer example, staying put beats the start-up by 55 to 45 on a 0 to 100 scale. The choice is most sensitive to two numbers: it flips if the chance of the start-up taking off is 0.5 and not 0.3, or if its failure is rated 44.3 and not 30. How good success would be hardly matters. The best ending would have to be worth about 172, on a scale that stops at 100.</p>
     </section>
 
     <section class="p-sec">
       <h2>The idea</h2>
-      <p>Rational choice theory has a simple recipe for deciding under uncertainty. List what you could do. For each option, list what might happen and how likely it is. Say how much you would value each ending. Then pick the option whose endings are best on average, weighted by their probabilities. John von Neumann and Oskar Morgenstern showed in 1944 that anyone whose preferences over gambles satisfy a few consistency conditions behaves as if following this recipe, and Leonard Savage extended the result to probabilities that are personal degrees of belief. Howard Raiffa and others then turned it into a working method, decision analysis, with the decision tree as its diagram.</p>
+      <p>Rational choice theory has a simple recipe for deciding under uncertainty. List what you could do. For each option, list what might happen and how likely it is. Say how much you would value each ending. Then pick the option whose endings are best on average, weighted by their probabilities. John von Neumann and Oskar Morgenstern showed that anyone whose preferences over gambles satisfy a few consistency conditions behaves as if following this recipe (their book appeared in 1944 and the proof in its second edition of 1947), and Leonard Savage extended the result to probabilities that are personal degrees of belief. Howard Raiffa and others then turned it into a working method, decision analysis, with the decision tree as its diagram.</p>
       <p>A tree earns its keep when choices come in sequence. Take the job and you may later face a second choice that staying put would never offer. The rule for such trees is to reason backwards: settle what you would do at the last decision, replace that decision with its value, and repeat until you reach the first. Reasoning forwards from today tempts you to compare options as if your later self had no say.</p>
       <p>The recipe's weak point is its ingredients. Nobody knows that the start-up has a 30% chance, or that failure is worth 30 out of 100. So the useful output of a tree is rarely the number at its root. It is the list of assumptions the recommendation depends on, with a figure for how wrong each would have to be. If the choice survives any plausible value of a number, stop arguing about that number. If it flips when a guess moves from 0.3 to 0.35, the tree has not decided anything, and it has told you exactly what to go and find out.</p>
     </section>
@@ -92,17 +103,17 @@
     <section class="p-sec">
       <h2>How it works</h2>
       <h3>The tree</h3>
-      <p>There are three kinds of node. At a <strong>decision</strong> (a square) you choose one branch. At a <strong>chance event</strong> (a circle) the world chooses, and each branch has a probability; the probabilities out of one circle must sum to 1. An <strong>end point</strong> (a triangle) carries a utility: a number for how good that ending is, on any scale you like as long as you use the same one throughout. The first node is always a decision, and its branches are the options you are choosing between today. Any branch can lead to a further decision or chance event, up to six levels.</p>
+      <p>There are three kinds of node. At a <strong>decision</strong> (a square) you choose one branch. At a <strong>chance event</strong> (a circle) the world chooses, and each branch has a probability; the probabilities out of one circle must sum to 1, to within one part in 100,000. An <strong>end point</strong> (a triangle) carries a utility: a number for how good that ending is, on any scale you like (up to a billion either side of zero) as long as you use the same one throughout. The first node is always a decision, and its branches are the options you are choosing between today. Any branch can lead to a further decision or chance event, up to six levels.</p>
       <h3>Rolling back</h3>
       <p>The value <var>V</var> of every node is computed from the end points towards the root:</p>
       <p class="eq">end point: <var>V</var> = <var>u</var> &nbsp;&nbsp;&nbsp; chance: <var>V</var> = Σ<sub><var>i</var></sub> <var>p</var><sub><var>i</var></sub> <var>V</var><sub><var>i</var></sub> &nbsp;&nbsp;&nbsp; decision: <var>V</var> = max<sub><var>i</var></sub> <var>V</var><sub><var>i</var></sub></p>
-      <p>The branch that attains the maximum at each decision is the one to take (the earlier branch, if two are level). The recommended plan is the first choice together with the choice at every later decision that can still be reached, drawn as the thick line. Options turned down are marked with two strokes and faded, though their values are still shown, since a faded branch is what the sensitivity analysis is trying to bring back.</p>
+      <p>The branch that attains the maximum at each decision is the one to take (the earlier branch, if two are level). The recommended plan is the first choice together with the choice at every later decision that can still be reached, drawn as the thick line. Options turned down are marked with two strokes and drawn lighter, though their values are still shown, since a turned-down branch is what the sensitivity analysis is trying to bring back. The outline under "Edit the tree" gives the same values in words: under each decision the branch to take, and under each decision and chance event its expected utility.</p>
       <h3>One-way sensitivity</h3>
       <p>Take any single number <var>x</var> in the tree: a utility, or a probability. It sits under exactly one of today's options, call it <var>A</var>. As <var>x</var> moves and everything else stays put, only <var>A</var>'s value <var>f</var>(<var>x</var>) changes; the best of the other options is a constant <var>M</var>. The first choice changes hands where</p>
       <p class="eq"><var>f</var>(<var>x</var>) = <var>M</var></p>
       <p>When a probability moves, its sibling branches are rescaled in proportion so that the total stays 1: if <var>p</var><sub>1</sub> becomes <var>x</var>, each other <var>p</var><sub><var>j</var></sub> becomes <var>p</var><sub><var>j</var></sub> (1 − <var>x</var>) / (1 − <var>p</var><sub>1</sub>). A chance event with two branches therefore has one free probability, and the table lists it once.</p>
       <p>The function <var>f</var> is not a straight line when there are later decisions under <var>A</var>, because the best later choice can itself switch as <var>x</var> moves. But it has a known shape. Each later decision takes a maximum of straight lines and each chance event averages them, so <var>f</var> is piecewise linear, and it only ever moves in one direction as <var>x</var> rises. A higher utility can only raise the value of every node above it. A higher probability moves its own chance event's value along a straight line, up if that branch is better than the average of its siblings and down if it is worse, and the nodes above pass the movement on without reversing it. So <var>f</var> crosses <var>M</var> at most once.</p>
-      <p>That pins the search down. For a probability the page checks which end of the range from 0 to 1, if either, puts the other side ahead, and halves the interval between there and the current value until it is narrower than one part in 10<sup>13</sup>. For a utility, which has no upper or lower limit, it steps outwards in doubling strides until <var>f</var> crosses <var>M</var> and then halves the bracket in the same way. If <var>A</var> is ahead and lowering the utility stops making any difference (the plan under <var>A</var> has stopped using that ending), no lower value will ever matter, and the answer is "never". Each number therefore has at most one flip point, and the table gives it.</p>
+      <p>That pins the search down. For a probability the page checks which end of the range from 0 to 1, if either, puts the other side ahead, and halves the interval between there and the current value until it is narrower than one part in 10<sup>13</sup>. For a utility, which has no upper or lower limit, it steps outwards in doubling strides until <var>f</var> crosses <var>M</var> and then halves the bracket in the same way. Before stepping, it looks once far out in the direction that could change the choice, at 2<sup>59</sup> (about 6 × 10<sup>17</sup>) times the scale of the tree. Because <var>f</var> moves one way only, an unchanged choice out there means an unchanged choice all the way, and the answer is "never". That is what happens when <var>A</var> is ahead and the plan under <var>A</var> does not use the ending in question, or when the ending has no chance of being reached. Each number therefore has at most one flip point, and the table gives it. Two numbers whose flips are equally far away are listed in the order they have in the tree.</p>
       <p>In the job example the chance <var>x</var> of the start-up taking off gives <var>f</var>(<var>x</var>) = 80<var>x</var> + 30(1 − <var>x</var>), since selling the shares (80) beats holding them (77.5). Staying is worth 55, so the flip is at 30 + 50<var>x</var> = 55, <var>x</var> = 0.5.</p>
       <h3>Most fragile first</h3>
       <p>To put probabilities and utilities in one list, each flip is measured as a share of the number's scale. For a probability that is the change in probability. For a utility it is the change divided by the gap between the best and worst end points in the tree, which makes the measure unaffected by the units you chose for utility. The table is sorted by that share, smallest first, and the three smallest are spelled out above it. Numbers that cannot change the choice at any value are listed last as "never".</p>

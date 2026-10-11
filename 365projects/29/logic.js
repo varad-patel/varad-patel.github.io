@@ -7,8 +7,10 @@
 // node.name labels the branch leading into the node; node.p only matters when the parent is a chance node.
 // The root is always a decision, and its children are "the options".
 
-export const TOL = 1e-6;
-export const LIMITS = { nodes: 60, depth: 6, children: 6, name: 80 };
+// Probabilities are shown to six significant figures, so six of them typed back in as shown can be 3e-6 away from 1.
+export const TOL = 1e-5;
+// utility: the largest size a utility may have. Without a limit a number like 1e308 overflows the sums and the charts.
+export const LIMITS = { nodes: 60, depth: 6, children: 6, name: 80, utility: 1e9 };
 export const TYPES = ["decision", "chance", "end"];
 
 const isNum = (x) => typeof x === "number" && Number.isFinite(x);
@@ -141,11 +143,12 @@ export function validate(root) {
   const problems = [];
   walk(root, (node) => {
     if (node.type === "end") {
-      if (!isNum(node.value)) problems.push({ id: node.id, message: `${label(node)}: the utility must be a number.` });
+      if (!isNum(node.value) || Math.abs(node.value) > LIMITS.utility) problems.push({ id: node.id, message: `${label(node)}: the utility must be a number from -${LIMITS.utility.toLocaleString("en-GB")} to ${LIMITS.utility.toLocaleString("en-GB")}.` });
       return;
     }
     if (!node.children.length) {
-      problems.push({ id: node.id, message: `${label(node)} has no branches. Add one, or turn it into an end point.` });
+      // The first decision cannot become an end point, so it is not offered that way out.
+      problems.push({ id: node.id, message: node === root ? `${label(node)} has no options. Add at least one.` : `${label(node)} has no branches. Add one, or turn it into an end point.` });
       return;
     }
     if (node.type === "chance") {
@@ -299,18 +302,22 @@ export function thresholds(root, param) {
   }
 
   // A utility: f never falls as x rises, so A can only lose its lead by x falling, and can only gain it by x rising.
+  // Because f moves one way only, one look far out in that direction settles whether there is a flip at all: if the
+  // choice is unchanged there, it is unchanged everywhere on the way. (Comparing two nearby values of f to see whether
+  // it has gone flat is not safe: an end point reached with probability 1e-17 moves f by less than rounding error.)
   const dir = leads ? -1 : 1;
   const side = leads ? "below" : "above";
   const scale = Math.max(1, Math.abs(x0), Math.abs(M - base[a]), spread(root).range);
-  let prev = x0, hPrev = h(x0);
-  for (let k = 0; k < 60; k++) {
+  const far = x0 + dir * scale * 2 ** 59;
+  if (!(h(far) > 0)) return out;
+  // Step outwards in doubling strides to bracket the crossing, then halve the bracket.
+  let prev = x0;
+  for (let k = 0; k < 59 && !out[side]; k++) {
     const x = x0 + dir * scale * (2 ** k - 0.5);
-    const hx = h(x);
-    if (hx > 0) { out[side] = { at: bisect(h, prev, x), to }; break; }
-    // Falling x: f is convex and never falls as x rises, so once it is flat it stays flat and no lower value will cross.
-    if (leads && hx === hPrev) break;
-    prev = x; hPrev = hx;
+    if (h(x) > 0) out[side] = { at: bisect(h, prev, x), to };
+    prev = x;
   }
+  if (!out[side]) out[side] = { at: bisect(h, prev, far), to };
   return out;
 }
 
@@ -327,7 +334,10 @@ export function sensitivity(root) {
     flips.sort((x, y) => x.distance - y.distance);
     return { ...p, ...t, nearest: flips[0] || null, distance: flips.length ? flips[0].distance : Infinity };
   });
-  return rows.sort((x, y) => x.distance - y.distance);
+  // Distances that differ only by rounding error (two numbers that are equally far from their flips) count as equal,
+  // so that such rows stay in the order of the tree whatever units the utilities are in.
+  const key = (d) => (Number.isFinite(d) ? Number(d.toPrecision(9)) : d);
+  return rows.sort((x, y) => (key(x.distance) === key(y.distance) ? 0 : key(x.distance) - key(y.distance)));
 }
 
 /** Each option's expected utility as one number runs from lo to hi: { xs, series: [{ id, name, ys }] }. */

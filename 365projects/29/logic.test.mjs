@@ -316,7 +316,62 @@ test("sanitise: files round-trip, and bad files are refused with a reason", () =
   assert.deepEqual(parameters(odd).map((p) => p.kind), ["value", "value"]);
 });
 
-test("the finding: staying wins 55 to 45, flips at 0.5 or 44, and the top prize would need to be worth 172", () => {
+test("a lead of exactly one is not mistaken for a number that cannot matter", () => {
+  // Found by an independent brute-force check in review. With options worth 2 and 1 the search for the leader's flip
+  // took its first stride to x = 1, a dead heat, where the "has anything changed?" signal happened to equal its
+  // starting value, and the page reported "never". The leader's utility flips the choice below 1.
+  for (const [a, b] of [[2, 1], [1, 0], [6, 5], [-3, -4], [2.5, 1.5]]) {
+    const t = sanitise(D("?", E("First", a), E("Second", b)));
+    const rows = Object.fromEntries(sensitivity(t).map((s) => [s.name, s]));
+    close(rows.First.below.at, b, 1e-9);
+    assert.equal(rows.First.below.to, t.children[1].id);
+    assert.equal(rows.First.above, null);
+    close(rows.Second.above.at, a, 1e-9);
+    assert.equal(rows.Second.below, null);
+  }
+  // The same with the leader second in the list, and with a lead of one inside a later decision.
+  const t = sanitise(D("?", E("First", 1), D("Second", E("good", 2), E("spare", 0))));
+  close(sensitivity(t).find((s) => s.name === "good").below.at, 1, 1e-9);
+});
+
+test("an end point reached with a tiny probability still has its flip found, and one with none has none", () => {
+  // A leads 10 to 5. Its rare ending, reached with probability e, must fall to 10 - 5/e to pull A down to 5.
+  // At e = 1e-17 a step in that ending moves A by less than rounding error, which once read as "never".
+  for (const e of [1e-3, 1e-9, 1e-17]) {
+    const t = sanitise(D("?", C("A", E("always", 10, 1 - e), E("rare", 0, e)), E("B", 5)));
+    assert.deepEqual(validate(t), []);
+    const row = sensitivity(t).find((r) => r.name === "rare" && r.kind === "value");
+    assert.ok(Math.abs(row.below.at / (10 - 5 / e) - 1) < 1e-9, `${e}: ${row.below.at}`);
+    // B trails 5 to 10 here, with the same rare ending under the trailing option: it must rise to 3 + 7/e.
+    const u = sanitise(D("?", E("B", 10), C("A", E("always", 3, 1 - e), E("rare", 0, e))));
+    const up = sensitivity(u).find((r) => r.name === "rare" && r.kind === "value");
+    assert.ok(Math.abs(up.above.at / (3 + 7 / e) - 1) < 1e-9, `${e}: ${up.above.at}`);
+  }
+  const none = sanitise(D("?", C("A", E("always", 10, 1), E("rare", 0, 0)), E("B", 5)));
+  assert.equal(sensitivity(none).find((r) => r.name === "rare" && r.kind === "value").nearest, null);
+});
+
+test("utilities have a size limit, probabilities a tolerance, and the first decision its own message", () => {
+  const t = preset("job");
+  byName(t, "Passed over").value = LIMITS.utility;
+  assert.deepEqual(validate(t), []);
+  byName(t, "Passed over").value = -LIMITS.utility * 1.0001;
+  assert.match(validate(t)[0].message, /“Passed over”: the utility must be a number from -1,000,000,000 to 1,000,000,000\./);
+  byName(t, "Passed over").value = 1e308;
+  assert.equal(validate(t).length, 1);
+  byName(t, "Passed over").value = 40;
+  // Three probabilities typed as the page shows them, to six figures, are accepted; to three figures they are not.
+  const thirds = (p) => sanitise(D("?", C("A", E("x", 1, p), E("y", 2, p), E("z", 3, p)), E("B", 0)));
+  assert.deepEqual(validate(thirds(0.333333)), []);
+  assert.equal(validate(thirds(0.333)).length, 1);
+  // The first decision cannot be turned into an end point, so it is not told to be.
+  const empty = sanitise(D("What now?"));
+  assert.deepEqual(validate(empty).map((p) => p.message), ["“What now?” has no options. Add at least one."]);
+  const hollow = sanitise(D("?", D("inner"), E("B", 1)));
+  assert.match(validate(hollow)[0].message, /“inner” has no branches\. Add one, or turn it into an end point\./);
+});
+
+test("the finding: staying wins 55 to 45, flips at 0.5 or 44.3, and the top prize would need to be worth about 172", () => {
   const t = preset("job");
   const r = rollback(t);
   close(r.value, 55);
@@ -325,7 +380,10 @@ test("the finding: staying wins 55 to 45, flips at 0.5 or 44, and the top prize 
   const rows = sensitivity(t);
   assert.deepEqual(rows.slice(0, 2).map((s) => [s.kind, s.name, Number(s.nearest.at.toFixed(2))]),
     [["p", "The start-up takes off", 0.5], ["value", "The start-up folds", 44.29]]);
+  assert.equal(rows[1].nearest.at.toFixed(1), "44.3");
   assert.equal(Math.round(rows.find((s) => s.name === "It floats on the stock market" && s.kind === "value").nearest.at), 172);
+  // "Most sensitive to two numbers": they are the two smallest distances, and the third is further off.
+  assert.ok(rows[1].distance < rows[2].distance);
   assert.equal(spread(t).hi, 100);
 });
 

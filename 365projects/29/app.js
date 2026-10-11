@@ -1,5 +1,5 @@
 // Day 29: Decision Tree Debater. Interface.
-import { $, el, svgEl, fmt, mount, numberField, textField, select, button, stat, note, table, chart, store, reducedMotion } from "../kit/kit.js";
+import { $, el, svgEl, fmt, mount, numberField, textField, select, button, stat, note, table, chart, store, download, reducedMotion } from "../kit/kit.js";
 import { LIMITS, PRESETS, blankTree, sanitise, plain, walk, find, size, addChild, removeNode, setType, normalise, validate, rollback, planSteps, sensitivity, spread, curve } from "./logic.js";
 
 mount();
@@ -12,8 +12,13 @@ function firstTree() {
 }
 const state = { ...firstTree(), param: "" };
 
-const val = (x) => fmt.sig(x, 4);
-const prob = (x) => fmt.sig(x, 3);
+// Very large and very small numbers are written as 1.235 × 10¹⁹, so that no cell or sentence fills with digits.
+const SUP = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+const sci = (x, d) => { const [m, e] = x.toExponential(d).split("e"); return `${m} × 10${[...String(Number(e))].map((c) => (c === "-" ? "⁻" : SUP[c])).join("")}`; };
+const wide = (x) => Number.isFinite(x) && x !== 0 && (Math.abs(x) >= 1e10 || Math.abs(x) < 1e-6);
+const val = (x) => (wide(x) ? sci(x, 3) : fmt.sig(x, 4));
+const prob = (x) => (wide(x) ? sci(x, 2) : fmt.sig(x, 3));
+const nodesText = (n) => `${n} ${n === 1 ? "node" : "nodes"}`;
 const nameOf = (node) => node.name.trim() || (node.type === "end" ? "Unnamed end point" : "Unnamed branch");
 // replaceChildren that, like el(), accepts arrays and skips empty values.
 const fill = (node, ...kids) => node.replaceChildren(...kids.flat(Infinity).filter((k) => k != null && k !== false));
@@ -26,7 +31,8 @@ const presetButtons = [...PRESETS.map((p) => [p.key, p.label]), ["blank", "Blank
 });
 const blurb = el("p", { class: "small muted" });
 const fileNote = el("div");
-const exportLink = el("a", { class: "btn small", download: "decision-tree.json", href: "#", text: "Export as a file" });
+// A real button, not a link: Safari leaves links out of the Tab order unless the visitor has changed a setting.
+const exportButton = button("Export as a file", () => download("decision-tree.json", JSON.stringify(plain(state.tree), null, 2), "application/json"), { small: true });
 const fileInput = el("input", { type: "file", accept: ".json,application/json", class: "sr-only", id: "tree-file" });
 fileInput.addEventListener("change", async () => {
   const file = fileInput.files[0];
@@ -40,7 +46,7 @@ fileInput.addEventListener("change", async () => {
     state.param = "";
     structural();
     save();
-    fill(fileNote, note("good", `Loaded ${file.name}: ${size(state.tree).nodes} nodes.`));
+    fill(fileNote, note("good", `Loaded ${file.name}: ${nodesText(size(state.tree).nodes)}.`));
   } catch (e) {
     fill(fileNote, note("bad", `Could not load ${file.name}. ${e.message} Export a tree from this page to see the format.`));
   }
@@ -55,7 +61,15 @@ function load(key) {
   fill(fileNote);
   structural();
 }
+/** Mark the example on show, if the tree is still one, and say what it is. */
+function showPreset() {
+  for (const b of presetButtons) { const on = b.dataset.preset === state.preset; b.classList.toggle("primary", on); b.setAttribute("aria-pressed", on); }
+  blurb.textContent = PRESETS.find((p) => p.key === state.preset)?.blurb
+    || (state.preset === "own" ? "Your own tree, as you left it. Pick an example to start again from that." : "A blank tree: one decision, two options. Rename them, give each a utility, and turn an option into a chance event to add uncertainty.");
+}
 function save() {
+  // A saved edit makes the tree the visitor's own, so no example stays marked as the one on show.
+  if (state.preset !== "own") { state.preset = "own"; showPreset(); }
   if (!saved.set("tree", plain(state.tree))) fill(fileNote, note("warn", "This browser would not save the tree, so it will be lost when the page closes. Export it as a file to keep it."));
 }
 // Any edit: the tree is now the visitor's own, so keep it.
@@ -84,23 +98,24 @@ function nodeRow(node, parent, depth) {
     const kind = select({
       label: "Leads to", value: node.type,
       options: [{ value: "decision", label: "Decision" }, { value: "chance", label: "Chance" }, { value: "end", label: "End point" }],
-      onChange: (v) => { setType(t, node.id, v); structural(); save(); },
+      onChange: (v) => { setType(t, node.id, v); structural(`select[data-kind="${node.id}"]`); save(); },
     });
+    kind.input.dataset.kind = node.id;
     // An end point at the deepest level, or in a full tree, cannot grow branches.
     if (node.type === "end" && (depth + 1 > LIMITS.depth || count + 2 > LIMITS.nodes)) for (const o of kind.input.options) o.disabled = o.value !== "end";
-    const x = button("×", () => { removeNode(t, node.id); structural(); save(); }, { small: true, title: `Remove “${nameOf(node)}” and everything under it` });
+    const x = button("×", () => { removeNode(t, node.id); structural(`[data-focus="${parent.id}"]`); save(); }, { small: true, title: `Remove “${nameOf(node)}” and everything under it` });
     x.setAttribute("aria-label", `Remove ${nameOf(node)} and everything under it`);
     x.classList.add("x");
     head.push(kind.el, x);
   }
   const nums = [];
   if (parent && parent.type === "chance") nums.push(numField("Probability", node.p, { min: 0, max: 1 }, (v) => { node.p = v; }).el);
-  if (node.type === "end") nums.push(numField("Utility", node.value, { negative: true }, (v) => { node.value = v; }).el);
+  if (node.type === "end") nums.push(numField("Utility", node.value, { negative: true, min: -LIMITS.utility, max: LIMITS.utility }, (v) => { node.value = v; }).el);
 
   const row = el("div", { class: "n-row" }, el("div", { class: `n-head${parent ? "" : " root"}` }, head), nums.length ? el("div", { class: "n-nums" }, nums) : null);
   if (node.type === "end") return el("div", { class: "n" }, row);
   const full = node.children.length >= LIMITS.children || depth + 1 > LIMITS.depth || count >= LIMITS.nodes;
-  const add = button(node.type === "chance" ? "Add an outcome" : "Add an option", () => { const c = addChild(t, node.id); structural(c?.id); save(); },
+  const add = button(node.type === "chance" ? "Add an outcome" : "Add an option", () => { const c = addChild(t, node.id); structural(c && `[data-focus="${c.id}"]`, true); save(); },
     { small: true, title: full ? `This page allows ${LIMITS.children} branches from a node, ${LIMITS.depth} levels and ${LIMITS.nodes} nodes in all.` : undefined });
   add.disabled = full;
   return el("div", { class: "n" }, row,
@@ -110,12 +125,16 @@ function nodeRow(node, parent, depth) {
 
 function renderEditor() { fill(editor, nodeRow(state.tree, null, 0)); }
 
-// After anything that adds or removes a node: rebuild the editor, then put the cursor in the new row.
-function structural(focusId) {
+// After anything that adds or removes a node the editor is rebuilt, which would drop the keyboard focus. It is put
+// back by hand: on a new row's name (selected, ready to be typed over), on the control that was just used, or on the
+// parent of a row that has gone.
+function structural(focus, selectText = false) {
   renderEditor();
   refresh();
-  const target = focusId && editor.querySelector(`[data-focus="${focusId}"]`);
-  if (target) { target.focus(); target.select(); }
+  const target = focus && editor.querySelector(focus);
+  if (!target) return;
+  target.focus();
+  if (selectText) target.select();
 }
 
 /* --------------------------------------------------------------------------- outputs */
@@ -149,7 +168,7 @@ $("#app").append(
   el("div", { class: "stack" },
     el("div", { class: "row" }, el("span", { class: "small", style: { fontWeight: "600" }, text: "Start from an example" }), presetButtons),
     blurb,
-    el("div", { class: "row" }, exportLink, el("label", { class: "btn small file-btn", for: "tree-file" }, "Import a file", fileInput),
+    el("div", { class: "row" }, exportButton, el("label", { class: "btn small file-btn", for: "tree-file" }, "Import a file", fileInput),
       el("span", { class: "small muted", text: "Your edits are saved in this browser." })),
     fileNote),
   el("div", { class: "stack" }, verdict, problemBox),
@@ -229,7 +248,7 @@ function drawTree(result, bad) {
       if (node.type === "end" && worthNow != null) g.append(svgEl("text", { class: "u", x: x + 13, y: y + 4 }, val(worthNow)));
     } else {
       const right = worthNow != null ? val(worthNow) : "";
-      const lead = parent && parent.type === "chance" && Number.isFinite(node.p) ? `${prob(node.p)}  ` : "";
+      const lead = parent && parent.type === "chance" && Number.isFinite(node.p) ? `p = ${prob(node.p)}  ` : "";
       const room = W - x - 13 - textWidth(right) * 1.1 - 14;
       const t = svgEl("text", { x: x + 13, y: y + 4 }, lead ? svgEl("tspan", { class: "p" }, lead) : null, clip(nameOf(node), room - textWidth(lead)));
       g.append(t);
@@ -269,21 +288,25 @@ function refresh() {
   const result = ok ? rollback(t) : null;
   lastWidth = treeBox.clientWidth;
 
-  for (const b of presetButtons) { const on = b.dataset.preset === state.preset; b.classList.toggle("primary", on); b.setAttribute("aria-pressed", on); }
-  blurb.textContent = PRESETS.find((p) => p.key === state.preset)?.blurb
-    || (state.preset === "own" ? "Your own tree, as you left it. Pick an example to start again from that." : "A blank tree: one decision, two options. Rename them, give each a utility, and turn an option into a chance event to add uncertainty.");
-  exportLink.href = `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(plain(t), null, 2))}`;
+  showPreset();
 
   // The line under each node's branches: do a chance node's probabilities add up, does the node have branches at all?
+  // When the tree can be worked out it also gives the node's expected utility and, at a decision, the branch to take.
+  // The drawing shows the same numbers, but a drawing cannot be read by a screen reader and this line can.
   walk(t, (node) => {
     const box = editor.querySelector(`[data-status="${node.id}"]`);
     if (!box) return;
     const p = problems.find((x) => x.id === node.id);
     if (p && p.sum != null) {
       fill(box, note("warn", `These probabilities sum to ${fmt.sig(p.sum, 6)}, not 1. `,
-        button("Rescale them to sum to 1", () => { normalise(t, node.id); structural(); save(); }, { small: true })));
+        button("Rescale them to sum to 1", () => { normalise(t, node.id); structural(`[data-focus="${node.id}"]`); save(); }, { small: true })));
     } else if (p) fill(box, note("bad", p.message));
-    else fill(box, node.type === "chance" ? el("span", { class: "small muted", text: "Probabilities sum to 1." }) : null);
+    else {
+      const worthNow = result ? ` Expected utility ${val(result.values.get(node.id))}.` : "";
+      const chosen = result && node.type === "decision" ? node.children.find((c) => c.id === result.best.get(node.id)) : null;
+      const text = node.type === "chance" ? `Probabilities sum to 1.${worthNow}` : chosen ? `Best branch: “${nameOf(chosen)}”.${worthNow}` : "";
+      fill(box, text ? el("span", { class: "small muted", text }) : null);
+    }
   });
 
   treeTitle.textContent = nameOf(t);
@@ -295,7 +318,7 @@ function refresh() {
     verdict.textContent = "The tree cannot be worked out yet.";
     fill(problemBox, problems.slice(0, 6).map((p) => note("bad", p.message)),
       problems.length > 6 ? note("", `And ${problems.length - 6} more. They are marked in red in the drawing and listed in the editor.`) : null);
-    treeSvg.setAttribute("aria-label", `Decision tree with ${size(t).nodes} nodes. It cannot be worked out yet.`);
+    treeSvg.setAttribute("aria-label", `Decision tree with ${nodesText(size(t).nodes)}. It cannot be worked out yet.`);
     return;
   }
   fill(problemBox);
@@ -311,7 +334,7 @@ function refresh() {
     : tie ? `“${nameOf(best)}” and “${nameOf(second.o)}” are level on ${val(result.value)}.`
     : `Choose “${nameOf(best)}”: expected utility ${val(result.value)}, against ${val(second.v)} for “${nameOf(second.o)}”.`)
     + (later.length ? ` Then, ${later.join("; ")}.` : "");
-  treeSvg.setAttribute("aria-label", `Decision tree with ${size(t).nodes} nodes. ${verdict.textContent} The editor below lists every branch.`);
+  treeSvg.setAttribute("aria-label", `Decision tree with ${nodesText(size(t).nodes)}. ${verdict.textContent} The editor below lists every branch with its probability, its utility and what it is worth.`);
   sValue.set(val(result.value), `of “${nameOf(best)}”`);
   sLead.set(second ? val(result.value - second.v) : "–", second ? `over “${nameOf(second.o)}”` : "there is no other option");
 
