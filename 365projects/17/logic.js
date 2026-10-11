@@ -130,12 +130,21 @@ export function predict(fit, degree, x) {
 export const curve = (fit, degree, from = X_MIN, to = X_MAX, steps = 200) =>
   Array.from({ length: steps + 1 }, (_, i) => { const x = from + ((to - from) * i) / steps; return [x, predict(fit, degree, x)]; });
 
-/** The degree each measure likes best: the lowest finite value, and the lower degree on a tie. null if it is never defined. */
+/**
+ * The degree each measure likes best: the lowest finite value, and the lower degree on a tie. null if it is never defined.
+ *
+ * If some degree passes through every point exactly, there is no misfit left to weigh: its residual is zero, the
+ * log-likelihood has no upper limit, and the criteria are undefined for it and for every higher degree. Preferring a
+ * lower degree that fits worse would be absurd, so every measure is then taken to pick the lowest degree that fits exactly.
+ * For the residual sum of squares, a fall of less than a million-millionth of the total is rounding and counts as a tie.
+ */
 export function picks(fit) {
+  const exact = fit.models.find((m) => m.exact);
   const out = {};
   for (const key of ["rss", "aic", "aicc", "bic", "loo"]) {
-    let best = null;
-    for (const m of fit.models) if (Number.isFinite(m[key]) && (best === null || m[key] < fit.models[best][key])) best = m.degree;
+    let best = exact ? exact.degree : null;
+    const slack = key === "rss" ? 1e-12 * (fit.tss || 1) : 0;
+    if (!exact) for (const m of fit.models) if (Number.isFinite(m[key]) && (best === null || m[key] < fit.models[best][key] - slack)) best = m.degree;
     out[key] = best;
   }
   return out;

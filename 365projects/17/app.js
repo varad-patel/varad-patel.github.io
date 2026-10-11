@@ -49,10 +49,10 @@ const noiseSlider = slider({
 const nSlider = slider({ label: "Points in the sample", min: 5, max: 200, step: 1, value: state.n, format: fmt.int, onInput: (v) => { state.n = v; regenerate(); } });
 const seedField = numberField({ label: "Seed", min: 0, max: 999999, step: 1, value: state.seed, hint: "The same seed always draws the same sample." });
 const seedNote = el("div");
+const seedProblem = () => (Number.isInteger(seedField.value) ? "" : `The seed must be a whole number from 0 to 999,999. The sample shown still uses seed ${state.seed}.`);
 seedField.input.addEventListener("input", () => {
-  const v = seedField.value;
-  if (!Number.isInteger(v)) { seedNote.replaceChildren(note("bad", "The seed must be a whole number from 0 to 999,999.")); return; }
-  state.seed = v;
+  if (seedProblem()) { seedField.input.classList.add("invalid"); seedNote.replaceChildren(note("bad", seedProblem())); return; }
+  state.seed = seedField.value;
   regenerate();
 });
 
@@ -69,14 +69,52 @@ function addTyped() {
   refit();
 }
 
+// Every point with a button that removes it: the keyboard's way of doing what a click on a point does.
+const listBox = el("div", { class: "pts" });
+const listSummary = el("summary");
+const listDetails = el("details", { class: "chart-table" }, listSummary, listBox);
+listDetails.addEventListener("toggle", () => drawList());
+function removePoint(i, row = -1) {
+  state.points.splice(i, 1);
+  state.custom = true;
+  refit();
+  if (row >= 0) (listBox.querySelectorAll("button")[Math.min(row, state.points.length - 1)] ?? listSummary).focus();
+}
+function drawList() {
+  const count = state.points.length;
+  listSummary.textContent = count ? `List the ${count === 1 ? "point" : `${fmt.int(count)} points`}, to remove any one` : "No points to list";
+  if (!listDetails.open || !count) { listBox.replaceChildren(); return; }
+  const rows = state.points.map((p, i) => ({ ...p, i })).sort((a, b) => a.x - b.x);
+  listBox.replaceChildren(table({
+    caption: "Points, from left to right",
+    columns: [
+      { key: "x", label: "x", num: true, format: (v) => fmt.num(v, 2) },
+      { key: "y", label: "y", num: true, format: (v) => fmt.num(v, 2) },
+      { key: "i", label: "Remove", format: (i, p) => {
+        const b = button("Remove", () => removePoint(i, rows.indexOf(p)), { small: true });
+        b.setAttribute("aria-label", `Remove the point at x ${fmt.num(p.x, 2)}, y ${fmt.num(p.y, 2)}`);
+        return b;
+      } },
+    ],
+    rows,
+  }));
+}
+/** The point drawn within 9 px of a click at (px, py) in the chart's own pixels, or -1. toPx is the chart's scale. */
+function pointAt(px, py, toPx) {
+  let hit = -1, nearest = 9 * 9;
+  state.points.forEach((p, i) => { const [qx, qy] = toPx(p.x, p.y); const d = (qx - px) ** 2 + (qy - py) ** 2; if (d <= nearest) { nearest = d; hit = i; } });
+  return hit;
+}
+
 const controls = el("div", { class: "controls" },
-  el("h3", { text: "Add points" }),
-  el("p", { class: "small muted", text: "Click anywhere on the chart to place a point of your own, or type one in." }),
+  el("h3", { text: "Add or remove points" }),
+  el("p", { class: "small muted", text: "Click the chart to place a point of your own, or type one in. Click a point to remove it, or remove it from the list." }),
   el("div", { class: "xy" }, xField.el, yField.el, button("Add", addTyped, { small: true })),
   pointNote,
   el("div", { class: "row" },
     button("Undo last point", () => { state.points.pop(); state.custom = true; refit(); }, { small: true }),
     button("Clear all points", () => { state.points = []; state.custom = true; state.sampled = false; refit(); }, { small: true })),
+  listDetails,
   el("h3", { text: "Or draw a sample" }),
   truthSel.el, noiseSlider.el, nSlider.el, seedField.el, seedNote,
   el("div", { class: "row" }, button("New sample", () => { state.seed = randomSeed() % 1000000; seedField.value = state.seed; regenerate(); }, { primary: true, small: true })));
@@ -107,7 +145,7 @@ const expChart = chart(expChartBox, { series: [], height: 300 });
 function regenerate() {
   const made = generate({ truth: state.truth, noise: state.noise, n: state.n, seed: state.seed });
   if (made.error) { seedNote.replaceChildren(note("bad", made.error)); return; }
-  seedNote.replaceChildren();
+  seedNote.replaceChildren(...(seedProblem() ? [note("bad", seedProblem())] : []));
   state.points = made.points;
   state.custom = false;
   state.sampled = true;
@@ -121,6 +159,7 @@ function refit() {
   state.fitError = fit.error || "";
   if (!state.fit) stopPlay();
   draw();
+  drawList();
 }
 
 /* ---------- drawing ---------- */
@@ -130,12 +169,17 @@ function draw() {
   const { fit, points } = state;
   const t = truthOf(state.truth);
   const ys = points.map((p) => p.y);
-  const yDomain = [Math.floor(Math.min(0, ...ys) - 0.5), Math.ceil(Math.max(10, ...ys) + 0.5)];
+  const yDomain = state.yDomain = [Math.floor(Math.min(0, ...ys) - 0.5), Math.ceil(Math.max(10, ...ys) + 0.5)];
   truthBox.input.disabled = !state.sampled;
   const truthLine = state.showTruth && state.sampled ? [{ name: state.custom ? `${t.label} used by the generator` : `True curve: ${t.label.toLowerCase()}`, type: "line", data: Array.from({ length: 201 }, (_, i) => { const x = X_MIN + ((X_MAX - X_MIN) * i) / 200; return [x, t.f(x)]; }), color: "#16233b", dash: true, width: 1.5 }] : [];
   const dots = { name: "Points", type: "scatter", data: points.map((p) => [p.x, p.y]), color: 1, r: points.length > 120 ? 3 : 4 };
   const axes = { x: { label: "x", domain: [X_MIN, X_MAX] }, y: { label: "y", domain: yDomain } };
-  const onClick = ({ x, y, inside }) => { if (inside) { state.points.push({ x, y }); state.custom = true; refit(); } };
+  const onClick = ({ x, y, inside, px, py, toPx, key }) => {
+    // Mouse and touch only: from the keyboard, points are added with the x and y boxes and removed from the list.
+    if (!inside || key) return;
+    const hit = pointAt(px, py, toPx);
+    if (hit >= 0) removePoint(hit); else { state.points.push({ x, y }); state.custom = true; refit(); }
+  };
 
   degSlider.input.disabled = !fit;
   playBtn.disabled = !fit;
@@ -153,25 +197,32 @@ function draw() {
   degSlider.value = state.degree;
   const d = state.degree, m = fit.models[d], best = picks(fit);
 
-  tiles.aic.set(deg(best.aic), `AICc picks ${deg(best.aicc)}`);
+  const exact = fit.models.find((k) => k.exact); // the lowest degree that passes through every point
+  tiles.aic.set(deg(best.aic), best.aicc == null ? "AICc needs more points" : `AICc picks ${deg(best.aicc)}`);
   tiles.bic.set(deg(best.bic), "the heavier penalty");
   tiles.loo.set(deg(best.loo), "predicting each point from the rest");
-  tiles.rss.set(deg(best.rss), best.rss === fit.top ? "the most complex model, as always" : "an exact fit");
+  tiles.rss.set(deg(best.rss), exact ? "an exact fit" : fit.top === 0 ? "the only model there is room for" : best.rss === fit.top ? "the most complex model, as always" : "higher degrees fit no better here");
 
   // Verdict in words.
-  const chosen = CRITERIA.map((c) => best[c.key]);
+  const named = CRITERIA.filter((c) => best[c.key] != null);
+  const agreed = new Set(named.map((c) => best[c.key])).size === 1;
+  const list = (rules) => rules.map((c) => (c.key === "loo" ? "leave-one-out" : c.label)).join(", ").replace(/, ([^,]*)$/, " and $1");
   const parts = [];
-  if (chosen.some((v) => v == null)) parts.push("At least one model fits these points exactly, so the criteria have no noise to weigh and are not all defined.");
-  else if (new Set(chosen).size === 1) parts.push(`AIC, AICc, BIC and leave-one-out all choose degree ${chosen[0]}.`);
-  else parts.push(`The rules disagree: ${CRITERIA.map((c) => `${c.label} chooses degree ${best[c.key]}`).join(", ")}.`);
+  if (exact) parts.push(`A degree ${exact.degree} polynomial passes through all ${fit.n} points exactly${exact.degree === 0 ? ", because they share one y value" : ""}. With no misfit left to weigh against the extra coefficients, every rule is taken to choose degree ${exact.degree}. The criteria are not defined for a model that fits exactly, so the table shows a dash.`);
+  else if (fit.top === 0) parts.push("Only the mean can be fitted here, so the rules have nothing to choose between.");
+  else {
+    parts.push(agreed ? `${list(named)} all choose degree ${best[named[0].key]}.` : `The rules disagree: ${named.map((c) => `${list([c])} chooses degree ${best[c.key]}`).join(", ")}.`);
+    if (named.length < CRITERIA.length) parts.push(`${list(CRITERIA.filter((c) => best[c.key] == null))} cannot be worked out from so few points.`);
+  }
   if (!state.custom) parts.push(t.degree ? `The sample came from a ${t.label.toLowerCase()}, degree ${t.degree}.` : "The sample came from a sine wave, which no polynomial matches exactly.");
-  parts.push(`The residual sum of squares falls from ${fmt.num(fit.models[0].rss, 1)} at degree 0 to ${fmt.num(fit.models[fit.top].rss, 1)} at degree ${fit.top}, and would keep falling.`);
-  const limited = fit.top < 8 ? note("", `Only degrees 0 to ${fit.top} are fitted to these ${fit.n} points. A polynomial needs more separate x positions than its degree, and at least one point to spare, before its fit can be judged.`) : null;
-  verdict.replaceChildren(...[note(new Set(chosen).size === 1 && chosen[0] != null ? "good" : "", parts.join(" ")), limited].filter(Boolean));
+  const [first, last] = [fmt.num(fit.models[0].rss, 1), fmt.num(fit.models[fit.top].rss, 1)];
+  if (!exact && first !== last) parts.push(`The residual sum of squares falls from ${first} at degree 0 to ${last} at degree ${fit.top}${fit.top === 8 ? ", and would keep falling" : ""}.`);
+  const limited = fit.top < 8 ? note("", `${fit.top === 0 ? "Only degree 0, the mean, is" : `Only degrees 0 to ${fit.top} are`} fitted to these ${fit.n} points. A polynomial needs more separate x positions than its degree (positions that all but coincide do not count), and at least one point to spare, before its fit can be judged.`) : null;
+  verdict.replaceChildren(...[note(!exact && agreed && named.length === CRITERIA.length ? "good" : "", parts.join(" ")), limited].filter(Boolean));
 
   main.update({
     title: `A degree ${d} polynomial through ${fmt.int(fit.n)} points`,
-    subtitle: `${m.k - 1} ${m.k - 1 === 1 ? "coefficient" : "coefficients"}, RSS ${fmt.num(m.rss, 2)}. Click the chart to add a point.`,
+    subtitle: `${m.k - 1} ${m.k - 1 === 1 ? "coefficient" : "coefficients"}, RSS ${fmt.num(m.rss, 2)}. Click empty space to add a point, or a point to remove it.`,
     label: `Scatter plot of the points with the fitted degree ${d} polynomial`, ...axes, onClick, marks: [],
     series: [
       ...(state.showAll ? fit.models.filter((k) => k.degree !== d).map((k) => ({ name: `Degree ${k.degree}`, legend: false, hover: false, type: "line", data: curve(fit, k.degree), color: "#8a94a3", width: 1, opacity: 0.7 })) : []),
@@ -207,26 +258,33 @@ function draw() {
   });
   t2.classList.add("crit");
   t2.querySelectorAll("tbody tr")[d]?.classList.add("on");
-  tableBox.replaceChildren(t2);
+  const dashes = fit.models.some((k) => CRITERIA.some((c) => !Number.isFinite(k[c.key])));
+  tableBox.replaceChildren(...[t2, dashes ? el("p", { class: "small muted", text: "A dash marks a value that cannot be worked out. AICc needs at least k + 2 points, leave-one-out needs every point to be predictable from the others, and no criterion is defined for a model that fits exactly." }) : null].filter(Boolean));
 
   // Two small charts: error on the sample against error on held-out points, and the criteria.
   const x = { label: "Degree of the polynomial", domain: [0, Math.max(1, fit.top)], ticks: Math.max(1, fit.top), format: (v) => (Number.isInteger(v) ? String(v) : "") };
-  const line = (key, name, color) => ({ name, type: "line", color, data: fit.models.filter((k) => Number.isFinite(k[key])).map((k) => [k.degree, k[key]]) });
-  const dot = (key) => (best[key] == null ? [] : [{ type: "point", x: best[key], y: fit.models[best[key]][key], color: palette[COLOR[key]], r: 5 }]);
+  // What can be charted: a model that fits exactly has a rounding-error residual, which would stretch a log axis over thirty decades.
+  const usable = (key) => fit.models.filter((k) => !k.exact && Number.isFinite(k[key]));
+  const line = (key, name, color) => ({ name, type: "line", color, data: usable(key).map((k) => [k.degree, k[key]]) });
+  const blank = usable("aic").length < 2 ? { series: [], marks: [], empty: exact ? "A model fits exactly, so there is nothing to chart" : "Only one degree can be fitted" } : null;
+  // A rule's choice is marked with a dot, unless its value there is undefined (an exact fit) and there is nowhere to put one.
+  const dot = (key) => (best[key] == null || !Number.isFinite(fit.models[best[key]][key]) ? [] : [{ type: "point", x: best[key], y: fit.models[best[key]][key], color: palette[COLOR[key]], r: 5 }]);
   const here = { type: "vline", x: d };
-  const errs = fit.models.flatMap((k) => [k.mse, k.loo]).filter((v) => Number.isFinite(v) && v > 0);
+  const errs = [...usable("mse").map((k) => k.mse), ...usable("loo").map((k) => k.loo)].filter((v) => v > 0);
   errChart.update({
     title: "Error on the sample, and on points left out", subtitle: "Fitting error only falls. The error on a point the model has not seen turns back up.",
     label: "Line chart of mean squared error by degree, on the sample and leave-one-out", x,
-    y: { label: "Mean squared error (log scale)", type: "log", domain: errs.length ? [Math.min(...errs) / 1.25, Math.max(...errs) * 1.25] : undefined, format: (v) => fmt.sig(v, 2) },
+    y: { label: "Mean squared error (log scale)", type: "log", domain: errs.length ? [Math.min(...errs) / 1.25, Math.max(...errs) * 1.25] : undefined, format: (v) => (v >= 0.001 ? fmt.sig(v, 2) : v.toExponential(0)) },
     series: [line("mse", "On the sample (RSS / n)", "#8a94a3"), line("loo", "Leave-one-out", COLOR.loo)],
     marks: [here, ...dot("loo")],
+    ...blank,
   });
   critChart.update({
     title: "The information criteria", subtitle: "Fit plus a charge for each parameter. Lower is better; the dot is each one's choice.",
     label: "Line chart of AIC, AICc and BIC by degree", x, y: { label: "Criterion value" },
     series: ["aic", "aicc", "bic"].map((key) => line(key, LABEL[key], COLOR[key])),
     marks: [here, ...["aic", "aicc", "bic"].flatMap(dot)],
+    ...blank,
   });
 }
 
@@ -235,11 +293,16 @@ function experimentNow() {
   const token = ++state.run;
   const settings = { truth: state.truth, noise: state.noise, n: state.n, seed: state.seed };
   const trials = [];
+  let said = -Infinity; // the status line is read out by screen readers, so progress is reported twice a second and no more
   const step = () => {
     if (token !== state.run) return;
     const t0 = performance.now();
     while (trials.length < RUNS && performance.now() - t0 < 25) trials.push(...experiment(settings, trials.length, Math.min(RUNS, trials.length + 20)));
-    if (trials.length < RUNS) { expStatus.textContent = `Drawing samples: ${fmt.int(trials.length)} of ${fmt.int(RUNS)}…`; setTimeout(step, 0); return; }
+    if (trials.length < RUNS) {
+      if (t0 - said >= 500) { said = t0; expStatus.textContent = `Drawing samples: ${fmt.int(trials.length)} of ${fmt.int(RUNS)}…`; }
+      setTimeout(step, 0);
+      return;
+    }
     drawExperiment(summarise(trials, truthOf(settings.truth).degree), settings);
   };
   step();

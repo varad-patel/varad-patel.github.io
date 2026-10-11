@@ -119,10 +119,28 @@ test("a polynomial with no noise is recovered and flagged as an exact fit", () =
     assert.ok(Number.isNaN(fit.models[d].aic) && Number.isNaN(fit.models[d].loo));
     close(predict(fit, d, 7.7), f(7.7), 1e-7);
   }
-  // The criteria never return a model whose value is not a finite number.
-  const p = picks(fit);
-  assert.ok(p.aic <= 2 && p.bic <= 2);
-  assert.equal(picks(fitPolynomials([{ x: 1, y: 4 }, { x: 2, y: 4 }, { x: 3, y: 4 }])).aic, null);
+  // With no misfit left to weigh, every measure takes the lowest degree that fits exactly: the cubic, not something below it.
+  assert.deepEqual(picks(fit), { rss: 3, aic: 3, aicc: 3, bic: 3, loo: 3 });
+  // Six points exactly on a straight line: degree 1, not the mean, whose criteria happen to be the only finite ones.
+  const line = fitPolynomials([1, 2, 3, 4, 5, 6].map((x) => ({ x, y: 2 * x - 1 })));
+  assert.equal(line.models[0].exact, false);
+  assert.ok(Number.isFinite(line.models[0].aic) && Number.isNaN(line.models[1].aic));
+  assert.deepEqual(picks(line), { rss: 1, aic: 1, aicc: 1, bic: 1, loo: 1 });
+  // Points that all share one y are fitted exactly by the mean.
+  assert.deepEqual(picks(fitPolynomials([{ x: 1, y: 4 }, { x: 2, y: 4 }, { x: 3, y: 4 }])), { rss: 0, aic: 0, aicc: 0, bic: 0, loo: 0 });
+});
+
+test("picks: a higher degree that fits no better does not take the lowest RSS, and AICc can be undefined", () => {
+  // Symmetric about x = 5, so the odd powers add nothing: degrees 1 and 3 leave the residual where degrees 0 and 2 put it.
+  const sym = fitPolynomials([[0, 1], [5, 3], [10, 1], [2, 2], [8, 2]].map(([x, y]) => ({ x, y })));
+  assert.equal(sym.top, 3);
+  close(sym.models[1].rss, sym.models[0].rss, 1e-12);
+  close(sym.models[3].rss, sym.models[2].rss, 1e-12);
+  assert.equal(sym.models[2].exact, false);
+  assert.equal(picks(sym).rss, 2);
+  // Three points that are not in line: AICc needs n - k - 1 > 0, so it has no pick, and nothing is exact.
+  const three = fitPolynomials([{ x: 0, y: 1 }, { x: 1, y: 3 }, { x: 2, y: 2 }]);
+  assert.deepEqual(picks(three), { rss: 1, aic: 0, aicc: null, bic: 0, loo: 0 });
 });
 
 test("too few points, repeated x values and junk are handled", () => {
@@ -173,12 +191,50 @@ test("the numbers quoted under One finding", () => {
   assert.equal(s.criteria.aic.low + s.criteria.bic.low, 0);
   assert.equal(s.criteria.aic.risk.toFixed(3), "0.192");
   assert.equal(s.criteria.bic.risk.toFixed(3), "0.134");
+  // "At 200 points AIC still picks too high a degree in 288 samples of 1,000, against 28 for BIC."
+  const big = summarise(experiment({ truth: "quadratic", noise: 1, n: 200, seed: 17 }, 0, 1000), 2);
+  assert.equal(Math.round(big.criteria.aic.high * 1000), 288);
+  assert.equal(Math.round(big.criteria.bic.high * 1000), 28);
+  assert.equal(big.criteria.aic.low + big.criteria.bic.low, 0);
   // A sine wave is not a polynomial: with 100 points AIC's picks land nearer the truth than BIC's.
   const w = summarise(experiment({ truth: "sine", noise: 1, n: 100, seed: 17 }, 0, 1000), null);
   assert.ok(Number.isNaN(w.criteria.aic.right));
   assert.equal(w.criteria.aic.risk.toFixed(3), "0.087");
   assert.equal(w.criteria.bic.risk.toFixed(3), "0.101");
   assert.ok(w.criteria.bic.meanDegree < w.criteria.aic.meanDegree);
+});
+
+// P(chi-square with k degrees of freedom > x), in closed form: a finite sum for even k, the same plus erfc for odd k.
+function chiSquareUpper(k, x) {
+  const h = x / 2;
+  let sum = k % 2 ? 2 * (1 - stats.normalCdf(Math.sqrt(x))) : 0;
+  for (let i = k % 2 ? 1 : 0; i < k / 2; i++) sum += Math.exp(-h + (k % 2 ? i - 0.5 : i) * Math.log(h) - stats.logGamma((k % 2 ? i + 0.5 : i + 1)));
+  return sum;
+}
+
+test("theory: AIC's large-sample chance of overshooting is 15.7% with one spare degree and 27% with six", () => {
+  close(chiSquareUpper(2, 4), Math.exp(-2), 1e-12);
+  close(chiSquareUpper(4, 8), 5 * Math.exp(-4), 1e-12);
+  close(chiSquareUpper(1, 3.841), 0.05, 1e-4);          // the familiar 5% point
+  // In a large sample the gain in fit from j unnecessary coefficients is a sum S_j of j squared standard normals, and
+  // AIC prefers degree d0 + j to d0 when S_j > 2j. The chance that S_j - 2j never rises above 0 for j = 1..K follows from
+  // Spitzer's identity: K q_K = sum over i = 1..K of P(S_i <= 2i) q_(K - i), with q_0 = 1 (Shibata 1976).
+  const stay = [1];
+  for (let K = 1; K <= 7; K++) { let s = 0; for (let i = 1; i <= K; i++) s += (1 - chiSquareUpper(i, 2 * i)) * stay[K - i]; stay.push(s / K); }
+  const overshoot = stay.map((q) => 1 - q);
+  assert.equal(overshoot[1].toFixed(4), "0.1573");
+  assert.equal(overshoot[6].toFixed(3), "0.271");       // true degree 2, highest degree 8: "about 27%"
+  assert.equal(overshoot[7].toFixed(3), "0.276");       // true degree 1
+  // The same thing by brute force: simulate the walk.
+  const r = rng(27);
+  let over = 0;
+  for (let t = 0; t < 100000; t++) { let s = 0; for (let j = 1; j <= 6; j++) { s += r.normal() ** 2; if (s > 2 * j) { over++; break; } } }
+  close(over / 100000, overshoot[6], 0.005);            // standard error 0.0014
+  // And the tool's own experiment heads there as the sample grows: 393 samples in 1,000 at 30 points, 288 at 200, 281 at 1,000.
+  const at = (n) => Math.round(summarise(experiment({ truth: "quadratic", noise: 1, n, seed: 17 }, 0, 1000), 2).criteria.aic.high * 1000);
+  const shares = [at(30), at(200), at(1000)];
+  assert.deepEqual(shares, [393, 288, 281]);
+  close(shares[2] / 1000, overshoot[6], 0.04);          // standard error 0.014
 });
 
 test("BIC homes in on the true degree as the sample grows; AIC keeps overshooting", () => {
