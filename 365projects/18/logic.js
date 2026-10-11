@@ -13,8 +13,9 @@ const isNum = (x) => typeof x === "number" && Number.isFinite(x);
 export function validate({ p, M, K }) {
   const out = [];
   if (!isNum(p) || p < 0 || p > 1) out.push("The predictor's accuracy must be between 0% and 100%.");
-  if (!isNum(M) || M <= 0 || M > LIMITS.money) out.push("The opaque box's prize must be more than 0 (and at most a trillion).");
-  if (!isNum(K) || K < 0 || K > LIMITS.money) out.push("The clear box's amount must be 0 or more (and at most a trillion).");
+  // Amounts are shown to the cent, so anything smaller than a cent could not be told from nothing on the page.
+  if (!isNum(M) || M < 0.01 || M > LIMITS.money) out.push("The opaque box's prize must be at least 0.01 (and at most a trillion).");
+  if (!isNum(K) || K < 0 || (K > 0 && K < 0.01) || K > LIMITS.money) out.push("The clear box's amount must be 0, or at least 0.01 (and at most a trillion).");
   return out;
 }
 
@@ -58,8 +59,17 @@ export const payoffTable = (M, K) => ({
  * For each strategy returns how often the box was full or empty, the mean winnings, and `switched`: the mean they
  * would have won by making the other choice with the same box in front of them.
  * trace is the running mean of each strategy at about `points` log-spaced play counts, for a chart.
+ *
+ * simulator() does the same work in instalments, so that a page can run a million plays without freezing:
+ * call run(count) until it returns true, then result(). simulate() is one instalment of everything.
  */
-export function simulate({ p, M, K, plays = 10000, seed = 1, points = 60 }) {
+export function simulate(options) {
+  const sim = simulator(options);
+  sim.run();
+  return sim.result();
+}
+
+export function simulator({ p, M, K, plays = 10000, seed = 1, points = 60 }) {
   const n = Math.max(1, Math.min(LIMITS.plays, Math.floor(plays)));
   const r = rng(seed);
   const marks = new Set();
@@ -67,7 +77,15 @@ export function simulate({ p, M, K, plays = 10000, seed = 1, points = 60 }) {
   const side = () => ({ full: 0, empty: 0, total: 0, other: 0 });
   const one = side(), two = side();
   const trace = [];
-  for (let i = 1; i <= n; i++) {
+  let i = 0;
+  const run = (count = n) => {
+    for (const end = Math.min(n, i + count); i < end;) {
+      i++;
+      step();
+    }
+    return i >= n;
+  };
+  const step = () => {
     // A correct prediction of a one-boxer fills the box; a correct prediction of a two-boxer leaves it empty.
     const fullForOne = r() < p;
     const fullForTwo = !(r() < p);
@@ -78,9 +96,14 @@ export function simulate({ p, M, K, plays = 10000, seed = 1, points = 60 }) {
     one.other += payoff("two", fullForOne, M, K);
     two.other += payoff("one", fullForTwo, M, K);
     if (marks.has(i)) trace.push({ n: i, one: one.total / i, two: two.total / i });
-  }
+  };
   const finish = (s, right) => ({ full: s.full, empty: s.empty, plays: n, mean: s.total / n, switched: s.other / n, accuracy: right / n });
-  return { plays: n, seed, one: finish(one, one.full), two: finish(two, two.empty), trace };
+  return {
+    plays: n,
+    get done() { return i; },
+    run,
+    result: () => ({ plays: n, seed, one: finish(one, one.full), two: finish(two, two.empty), trace }),
+  };
 }
 
 /* ------------------------------------------------- a predictor that learns you */

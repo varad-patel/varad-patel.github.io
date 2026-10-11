@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { rng } from "../kit/kit.js";
-import { LIMITS, PRESETS, validate, payoff, oneBoxValue, twoBoxValue, threshold, evidential, causal, payoffTable, simulate, predict, playRound, tally } from "./logic.js";
+import { LIMITS, PRESETS, validate, payoff, oneBoxValue, twoBoxValue, threshold, evidential, causal, payoffTable, simulate, simulator, predict, playRound, tally } from "./logic.js";
 
 const close = (a, b, tol = 1e-9) => assert.ok(Math.abs(a - b) <= tol, `${a} is not within ${tol} of ${b}`);
 const M = 1000000, K = 1000;
@@ -118,6 +118,25 @@ test("simulation: seeds, extremes and limits", () => {
   assert.equal(LIMITS.plays, 1000000);
 });
 
+test("simulation in instalments gives exactly the plays of a single run", () => {
+  const settings = { p: 0.9, M, K, plays: 100000, seed: 18 };
+  const sim = simulator(settings);
+  assert.equal(sim.plays, 100000);
+  assert.equal(sim.done, 0);
+  let calls = 0;
+  while (!sim.run(7001)) { calls++; assert.equal(sim.done, calls * 7001); }
+  assert.equal(sim.done, 100000);
+  assert.equal(sim.run(5), true, "running a finished simulation changes nothing");
+  assert.deepEqual(sim.result(), simulate(settings));
+});
+
+test("the write-up's remark about utilities: with the square root of money, the level accuracy rises to 50.82%", () => {
+  // Level when p u(M) + (1 - p) u(0) = (1 - p) u(M + K) + p u(K), so p* = (u(M + K) - u(0)) / (u(M) - u(0) + u(M + K) - u(K)).
+  const level = (u) => (u(M + K) - u(0)) / (u(M) - u(0) + u(M + K) - u(K));
+  close(level((x) => x), threshold(M, K), 1e-12);        // plain dollars give back (M + K) / 2M
+  assert.equal((level(Math.sqrt) * 100).toFixed(2), "50.82");
+});
+
 test("the learning predictor: first guess, habits, patterns and ties", () => {
   assert.equal(predict([]), "one");
   assert.equal(predict(["two"]), "two");
@@ -181,8 +200,12 @@ test("validation refuses what the sums cannot use", () => {
   assert.deepEqual(validate({ p: 0, M: 1, K: 0 }), []);
   assert.equal(validate({ p: 1.2, M, K }).length, 1);
   assert.equal(validate({ p: NaN, M: NaN, K: NaN }).length, 3);
-  assert.match(validate({ p: 0.5, M: 0, K })[0], /more than 0/);
-  assert.match(validate({ p: 0.5, M, K: -1 })[0], /0 or more/);
+  assert.match(validate({ p: 0.5, M: 0, K })[0], /at least 0\.01/);
+  assert.match(validate({ p: 0.5, M, K: -1 })[0], /0, or at least 0\.01/);
+  // Amounts are shown to the cent: a prize too small to show is refused, and so is a clear box that is neither nothing nor a cent.
+  assert.equal(validate({ p: 0.5, M: 1e-320, K: 0 }).length, 1);
+  assert.equal(validate({ p: 0.5, M: 0.01, K: 0.01 }).length, 0);
+  assert.equal(validate({ p: 0.5, M: 1, K: 0.001 }).length, 1);
   assert.equal(validate({ p: 0.5, M: 2e12, K: 2e12 }).length, 2);
   assert.equal(validate({ p: 0.5, M: Infinity, K: 0 }).length, 1);
 });

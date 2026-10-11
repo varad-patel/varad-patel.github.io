@@ -1,13 +1,16 @@
 // Day 18: Newcomb's Problem Calculator. Interface.
 import { $, el, fmt, debounce, mount, slider, numberField, select, button, stat, note, table, chart } from "../kit/kit.js";
-import { PRESETS, validate, evidential, payoffTable, simulate, playRound, tally } from "./logic.js";
+import { PRESETS, validate, evidential, payoffTable, simulator, playRound, tally } from "./logic.js";
 
 mount();
 
-const state = { p: 0.9, M: PRESETS[0].M, K: PRESETS[0].K, preset: PRESETS[0].key, plays: 100000, seed: 18, rounds: [] };
+const state = { p: 0.9, M: PRESETS[0].M, K: PRESETS[0].K, preset: PRESETS[0].key, plays: 100000, seed: 18, rounds: [], notice: "" };
 
-const money = (x) => `$${Math.abs(x) >= 1e9 ? fmt.compact(x) : fmt.int(x)}`;
-const axisMoney = (x) => `$${Math.abs(x) >= 1e6 ? fmt.compact(x) : fmt.int(x)}`; // short enough for a tick label
+// Whole dollars where the amount is whole or large, cents otherwise: $1.80 against $2.20 must not both read "$2".
+const cents = (x) => { const c = Math.round(x * 100) / 100; return Number.isInteger(c) || Math.abs(c) >= 1000 ? fmt.int(c) : fmt.num(c, 2); };
+const money = (x) => `$${Math.abs(x) >= 1e9 ? fmt.compact(x) : cents(x)}`;
+const axisMoney = (x) => `$${Math.abs(x) >= 1e6 ? fmt.compact(x) : cents(x)}`; // short enough for a tick label
+const plain = (x) => (Number.isInteger(x) ? fmt.int(x) : fmt.sig(x, 8));         // an amount inside a written-out sum
 const pct = (x, d = 0) => fmt.pct(x, d);
 const pct2 = (x) => fmt.pct(x, Number.isInteger(Math.round(x * 1e4) / 100) ? 0 : 2); // 50.05%, but 75% and not 75.00%
 const words = { one: "one box", two: "both boxes" };
@@ -22,10 +25,11 @@ const accuracy = slider({
 });
 const prize = numberField({ label: "In the opaque box, if one box was predicted (M)", min: 0, value: state.M });
 const clear = numberField({ label: "Always in the clear box (K)", min: 0, value: state.K });
-prize.input.addEventListener("input", () => { state.M = prize.value; state.preset = ""; restart(); refresh(); });
-clear.input.addEventListener("input", () => { state.K = clear.value; state.preset = ""; restart(); refresh(); });
+const CHANGED = "The amounts changed, so the game has started again. ";
+prize.input.addEventListener("input", () => { state.M = prize.value; state.preset = ""; restart(CHANGED); refresh(); });
+clear.input.addEventListener("input", () => { state.K = clear.value; state.preset = ""; restart(CHANGED); refresh(); });
 const presetButtons = PRESETS.map((p) => {
-  const b = button(p.label, () => { state.M = p.M; state.K = p.K; state.preset = p.key; prize.value = p.M; clear.value = p.K; restart(); refresh(); }, { small: true });
+  const b = button(p.label, () => { state.M = p.M; state.K = p.K; state.preset = p.key; prize.value = p.M; clear.value = p.K; restart(CHANGED); refresh(); }, { small: true });
   b.dataset.preset = p.key;
   return b;
 });
@@ -49,8 +53,10 @@ const causalBox = el("div", { class: "panel stack" });
 const playsPick = select({
   label: "Plays for each strategy", value: state.plays,
   options: [1000, 10000, 100000, 1000000].map((n) => ({ value: n, label: fmt.int(n) })),
-  onChange: (v) => { state.plays = Number(v); runSimulation(); },
+  onChange: (v) => { state.plays = Number(v); simAsked = true; runSimulation(); },
 });
+let simAsked = false; // the visitor used one of the simulation's own controls, so the result is worth announcing
+const simStatus = el("p", { class: "sr-only", role: "status" });
 const seedText = el("span", { class: "small muted" });
 const simTable = el("div", { class: "sim-table" });
 const simNote = el("div");
@@ -82,11 +88,11 @@ const results = el("div", { class: "stack-wide" },
   el("div", { class: "block" },
     el("h3", { text: "Many plays against this predictor" }),
     el("p", { class: "small muted", text: "Two crowds face the predictor: one of people who always take one box, one of people who always take both. It is right about each person with the accuracy set above." }),
-    el("div", { class: "row sim-row" }, playsPick.el, button("Run again with a new seed", () => { state.seed += 1; runSimulation(); }), seedText),
+    el("div", { class: "row sim-row" }, playsPick.el, button("Run again with a new seed", () => { state.seed += 1; simAsked = true; runSimulation(); }), seedText, simStatus),
     simTable, simNote, simChartBox),
   el("div", { class: "block" },
     el("h3", { text: "Play it yourself against a predictor that learns you" }),
-    el("p", { class: "small muted", text: "This predictor has no special powers. Before each round it looks at your earlier choices, guesses your next one from the patterns in them, and fills or empties the opaque box. Then you choose." }),
+    el("p", { class: "small muted", text: "This predictor has no special powers. Before each round it looks at your earlier choices, guesses your next one from the patterns in them, and fills or empties the opaque box. Then you choose. It follows a fixed rule with no chance in it, set out under “How it works”, so it can be beaten: work out what it will guess, do the opposite every round, and it will never be right." }),
     el("div", { class: "row" }, takeOne, takeTwo, button("Start again", () => { restart(); refresh(); })),
     reveal,
     el("div", { class: "stats" }, gOne.el, gAcc.el, gMean.el, gWithOne.el, gWithTwo.el),
@@ -100,14 +106,26 @@ const simChart = chart(simChartBox, { series: [], height: 280 });
 const gameChart = chart(gameChartBox, { series: [], height: 240 });
 
 /* ------------------------------------------------------------------ simulation */
-let lastRun = "";
+let lastRun = "", simToken = 0;
 function runSimulation() {
   if (validate(state).length) return;
   const { p, M, K, plays, seed } = state;
   const key = [p, M, K, plays, seed].join();
   if (key === lastRun) return; // nothing it depends on has changed
   lastRun = key;
-  const s = simulate({ p, M, K, plays, seed });
+  // Run in slices of about 25 ms so that a million plays never freeze the page; a newer run cancels this one.
+  const token = ++simToken;
+  const sim = simulator({ p, M, K, plays, seed });
+  const slice = () => {
+    if (token !== simToken) return;
+    const t0 = performance.now();
+    while (!sim.run(20000) && performance.now() - t0 < 25);
+    if (sim.done < sim.plays) { seedText.textContent = `Simulating: ${fmt.int(sim.done)} of ${fmt.int(sim.plays)} plays…`; setTimeout(slice, 0); return; }
+    showSimulation(sim.result(), { p, M, K, seed });
+  };
+  slice();
+}
+function showSimulation(s, { p, M, K, seed }) {
   const ev = evidential(p, M, K);
   seedText.textContent = `Seed ${seed}. The same seed and settings always give the same plays.`;
   // One column for each crowd, so the table still fits on a phone.
@@ -123,6 +141,8 @@ function runSimulation() {
       { what: "Average had each switched, with the same box", one: money(s.one.switched), two: money(s.two.switched) },
     ],
   }));
+  simStatus.textContent = simAsked ? `${fmt.int(s.plays)} plays run with seed ${seed}: one-boxers averaged ${money(s.one.mean)}, two-boxers ${money(s.two.mean)}.` : "";
+  simAsked = false;
   const richer = s.one.mean > s.two.mean ? "the one-boxers went home richer" : s.two.mean > s.one.mean ? "the two-boxers went home richer" : "the two crowds finished level";
   fill(simNote, note("",
     el("strong", { text: "Two true readings of one table. " }),
@@ -144,11 +164,12 @@ function runSimulation() {
 const simulateSoon = debounce(runSimulation, 160);
 
 /* ------------------------------------------------------------ play it yourself */
-function restart() { state.rounds = []; reveal.textContent = ""; }
+function restart(notice = "") { state.notice = state.rounds.length ? notice : state.notice; state.rounds = []; reveal.textContent = ""; }
 function play(choice) {
   if (validate(state).length) return;
   const round = playRound(state.rounds, choice, state.M, state.K);
   state.rounds.push(round);
+  state.notice = "";
   reveal.textContent = `Round ${state.rounds.length}. It predicted ${words[round.predicted]}, so the opaque box was ${round.full ? "full" : "empty"}. You took ${words[choice]} and won ${money(round.won)}. `
     + (round.correct ? "It read you correctly." : "It got you wrong.");
   drawGame();
@@ -157,7 +178,7 @@ function drawGame() {
   const { M, K } = state;
   const t = tally(state.rounds);
   const line = evidential(0.5, M, K).threshold;
-  if (!t.rounds) reveal.textContent = "No rounds yet. The boxes are in front of you: the clear one shows " + money(K) + ", and the opaque one holds " + money(M) + " or nothing.";
+  if (!t.rounds) reveal.textContent = state.notice + "No rounds yet. The boxes are in front of you: the clear one shows " + money(K) + ", and the opaque one holds " + money(M) + " or nothing.";
   gOne.set(fmt.int(t.rounds), t.rounds ? `${t.one.rounds} with one box, ${t.two.rounds} with both` : "choose a box to begin");
   gAcc.set(t.rounds ? pct(t.accuracy) : "–", t.rounds ? `right ${t.hits} times out of ${t.rounds}` : "nothing to go on yet");
   gMean.set(t.rounds ? money(t.mean) : "–", t.rounds ? `${money(t.total)} in all` : "");
@@ -165,9 +186,11 @@ function drawGame() {
   gWithTwo.set(t.two.rounds ? money(t.two.mean) : "–", t.two.rounds ? `average over ${t.two.rounds} ${t.two.rounds === 1 ? "round" : "rounds"}` : "not tried yet");
   fill(gameNote, t.rounds < 5
     ? note("", "Play a few rounds. Try to win as much as you can, then try to be unpredictable, and watch what happens to its accuracy.")
-    : note(t.accuracy > line ? "good" : "warn",
+    : [note(t.accuracy > line ? "good" : "warn",
       `It has been right ${pct(t.accuracy)} of the time. On the evidential sum, one box needs more than ${pct2(line)}${line > 1 ? ", which no predictor can reach" : ""}: at this accuracy it favours ${t.accuracy > line ? "one box" : "both boxes"}. `,
-      "One caution. This is a repeated game, and what you do now changes its later guesses, so here even a causal reasoner has a reason to build a one-box record. The real problem is played once, and that reason is gone."));
+      "One caution. This is a repeated game, and what you do now changes its later guesses, so here even a causal reasoner has a reason to build a one-box record. The real problem is played once, and that reason is gone."),
+    t.rounds >= 8 && t.accuracy <= 0.3 ? note("", el("strong", { text: "You have beaten it. " }),
+      "A score this far below a coin toss is itself a pattern: you are doing the opposite of what your record suggests, and this simple rule never checks its own score. A predictor that did would reverse its guesses and be right most of the time. So the low score shows the limits of this particular predictor. It is not a way round Newcomb's problem, in which the predictor's accuracy is given.") : null]);
   gameChartBox.hidden = !t.rounds;
   gameChart.update({
     title: "The predictor's running accuracy",
@@ -231,9 +254,9 @@ function refresh() {
   fill(evidentialBox,
     el("h3", { text: "The evidential sum" }),
     el("p", { class: "small", text: "Treat your choice as evidence. People who take one box nearly always find it full, so if you take one box, yours probably is." }),
-    el("p", { class: "sum" }, "One box: ", el("span", { class: "mono", text: `${fmt.num(p, 2)} × ${fmt.int(M)} = ` }), el("strong", { text: money(ev.one) })),
-    el("p", { class: "sum" }, "Both: ", el("span", { class: "mono", text: `${fmt.num(1 - p, 2)} × ${fmt.int(M)} + ${fmt.int(K)} = ` }), el("strong", { text: money(ev.two) })),
-    el("p", { class: "small" }, "Level when ", el("span", { class: "mono", text: "p = (M + K) / 2M" }), never ? `, which is ${pct2(ev.threshold)} here: out of reach.` : ` = ${pct2(ev.threshold)}.`));
+    el("p", { class: "sum" }, "One box: ", el("span", { class: "mono", text: `${fmt.num(p, 2)} × ${plain(M)} = ` }), el("strong", { text: money(ev.one) })),
+    el("p", { class: "sum" }, "Both: ", el("span", { class: "mono", text: `${fmt.num(1 - p, 2)} × ${plain(M)} + ${plain(K)} = ` }), el("strong", { text: money(ev.two) })),
+    el("p", { class: "small" }, "Level when ", el("span", { class: "mono", text: "p = (M + K) / 2M" }), never ? `, which is ${pct2(ev.threshold) === "100%" ? "just over 100%" : pct2(ev.threshold)} here: out of reach.` : ` = ${pct2(ev.threshold)}.`));
   const pt = payoffTable(M, K);
   fill(causalBox,
     el("h3", { text: "The causal sum" }),
