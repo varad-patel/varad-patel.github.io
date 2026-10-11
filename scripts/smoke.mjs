@@ -94,6 +94,18 @@ function watch(page, problems, origin) {
   page.on("dialog", (d) => d.dismiss().catch(() => {}));
 }
 
+// Reaching the page is the network's job, not the page's. A load that times out is tried once more with a longer
+// limit, and the summary line says how many loads needed that, so a slow connection is not reported as a broken page.
+let retries = 0;
+async function open(page, url) {
+  try { await page.goto(url); } catch (e) {
+    if (!/Timeout|net::|NS_ERROR|connect/i.test(String(e.message))) throw e;
+    retries++;
+    await page.waitForTimeout(3000);
+    await page.goto(url, { timeout: 90000 });
+  }
+}
+
 async function settle(page) {
   await page.waitForLoadState("networkidle");
   await page.waitForTimeout(350);
@@ -286,7 +298,7 @@ async function checkProject(browser, origin, id, opts) {
   const desktop = await browser.newContext({ viewport: { width: 1200, height: 793 }, deviceScaleFactor: 1 });
   const page = await desktop.newPage();
   watch(page, problems, origin);
-  await page.goto(url);
+  await open(page, url);
   await settle(page);
 
   const facts = await page.evaluate((headings) => {
@@ -350,7 +362,7 @@ async function checkProject(browser, origin, id, opts) {
   });
   const small = await phone.newPage();
   watch(small, problems, origin);
-  await small.goto(url);
+  await open(small, url);
   await settle(small);
   // clientWidth, not innerWidth: a phone browser zooms out to fit a page that is too wide, which would hide the fault.
   const sideways = await small.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
@@ -416,5 +428,5 @@ for (const engine of engines) {
 }
 server?.close();
 const total = ids.length * engines.length;
-console.log(`${total - failed} of ${total} passed (${channel ? `installed ${channel}` : engines.join(", ")}${a11y ? ", with accessibility audit" : ""}${restarts ? `; browser restarted ${restarts} time(s)` : ""}). Screenshots are in .smoke/`);
+console.log(`${total - failed} of ${total} passed (${channel ? `installed ${channel}` : engines.join(", ")}${a11y ? ", with accessibility audit" : ""}${restarts ? `; browser restarted ${restarts} time(s)` : ""}${retries ? `; ${retries} page load(s) needed a second try` : ""}). Screenshots are in .smoke/`);
 process.exit(failed ? 1 : 0);
