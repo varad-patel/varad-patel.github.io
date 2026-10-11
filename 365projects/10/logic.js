@@ -72,15 +72,18 @@ export function trajectory(order, w = weights(1)) {
   return rows;
 }
 
-/** The views of identity compared on the page. */
+/**
+ * The views of identity compared on the page. Only two are positions that go by these names in the literature
+ * (own: false). The other five are simple rules written for this page, each standing in for a family of answers.
+ */
 export const VIEWS = [
-  { key: "essentialism", name: "Mereological essentialism", gloss: "A thing has its parts essentially. Change any one and it is a different thing." },
-  { key: "count", name: "Majority of original parts", gloss: "The same ship while more than half of its parts, counted one by one, are original." },
-  { key: "weighted", name: "Majority of original matter", gloss: "The same ship while more than half of its weight is original." },
-  { key: "keel", name: "An essential core", gloss: "Some parts are essential and the rest are not. The ship is wherever its keel is." },
-  { key: "continuity", name: "Gradual continuity", gloss: "The same ship as long as no single change replaces half of it or more." },
-  { key: "form", name: "Same form and function", gloss: "Identity follows the design and the work the ship does, not the timber." },
-  { key: "fourD", name: "Four-dimensionalism", gloss: "A ship is spread through time as it is through space. Every stage here is a part of it, so there is no step to find." },
+  { key: "essentialism", name: "Mereological essentialism", own: false, gloss: "A thing has its parts essentially. Change any one and, strictly, it is a different thing." },
+  { key: "count", name: "Majority of original parts", own: true, gloss: "The same ship while more than half of its parts, counted one by one, are original." },
+  { key: "weighted", name: "Majority of original matter", own: true, gloss: "The same ship while more than half of its weight is original." },
+  { key: "keel", name: "An essential core", own: true, gloss: "Some parts are essential and the rest are not. The ship is wherever its keel is." },
+  { key: "continuity", name: "Gradual continuity", own: true, gloss: "The same ship as long as no single change replaces half of it or more." },
+  { key: "form", name: "Same form and function", own: true, gloss: "Identity follows the design and the work the ship does, not the timber." },
+  { key: "fourD", name: "Four-dimensionalism", own: false, gloss: "A ship is spread through time as it is through space, and its stages are parts of it. Which stages make up one ship is a further question, so this view has no step of its own." },
 ];
 
 /** The step at which each threshold view says the ship stops being the same (null: never). */
@@ -120,12 +123,24 @@ export function matchMark(mark, b, tol = 2) {
   return { kind: views.length ? "match" : "own", views };
 }
 
-/** Whether a mark and an answer to Hobbes's question can be held together. */
+/**
+ * Whether a mark and an answer to Hobbes's question clash. A mark at a step says the repaired ship stopped being
+ * the ship of Theseus there, so it clashes with any answer on which the repaired ship is that ship ("both" included).
+ */
 export function hobbesTension(mark, answer) {
   if (mark == null || !answer) return false;
-  if (answer === "repaired") return mark !== "never";
+  if (answer === "repaired" || answer === "both") return mark !== "never";
   if (answer === "rebuilt" || answer === "neither") return mark === "never";
   return false;
+}
+
+/** The parts in `ids`, in words and by kind: ["all 15 oars", "the sail", "3 of 24 planks"]. The text equivalent of the drawing. */
+export function describeParts(ids) {
+  const has = new Set(ids);
+  return KINDS.map((k) => {
+    const n = PARTS.filter((p) => p.kind === k.key && has.has(p.id)).length;
+    return !n ? null : k.count === 1 ? `the ${k.label}` : n === k.count ? `all ${n} ${k.label}s` : `${n} of ${k.count} ${k.label}s`;
+  }).filter(Boolean);
 }
 
 /** The smallest gamma, to two decimals, at which replacing the keel alone changes half the ship. */

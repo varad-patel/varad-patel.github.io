@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { KINDS, PARTS, N, VIEWS, ORDERS, weights, makeOrder, isOrder, promote, trajectory, breaks, roughest, matchMark, hobbesTension, keelTippingGamma } from "./logic.js";
+import { KINDS, PARTS, N, VIEWS, ORDERS, weights, makeOrder, isOrder, promote, trajectory, breaks, roughest, matchMark, hobbesTension, keelTippingGamma, describeParts } from "./logic.js";
 
 const close = (a, b, tol = 1e-9) => assert.ok(Math.abs(a - b) <= tol, `${a} is not within ${tol} of ${b}`);
 const sum = (a) => a.reduce((s, x) => s + x, 0);
@@ -144,7 +144,10 @@ test("hobbesTension flags a mark and an answer that cannot both stand", () => {
   assert.equal(hobbesTension("never", "rebuilt"), true);
   assert.equal(hobbesTension("never", "neither"), true);
   assert.equal(hobbesTension(30, "rebuilt"), false);
-  assert.equal(hobbesTension(30, "both"), false);
+  // "Both" says the repaired ship is the ship of Theseus too, so it clashes with a mark exactly as "repaired" does.
+  assert.equal(hobbesTension(30, "both"), true);
+  assert.equal(hobbesTension("never", "both"), false);
+  assert.equal(hobbesTension(30, "neither"), false);
   assert.equal(hobbesTension(null, "repaired"), false);
   assert.equal(hobbesTension(30, undefined), false);
 });
@@ -152,4 +155,28 @@ test("hobbesTension flags a mark and an answer that cannot both stand", () => {
 test("every threshold view has a break entry", () => {
   const b = breaks(trajectory(makeOrder("wear")));
   for (const v of VIEWS) if (v.key !== "fourD") assert.ok(v.key in b, v.key);
+});
+
+test("only essentialism and four-dimensionalism are presented as positions from the literature", () => {
+  assert.deepEqual(VIEWS.filter((v) => !v.own).map((v) => v.key), ["essentialism", "fourD"]);
+  assert.equal(VIEWS.filter((v) => v.own).length, 5);
+});
+
+test("just under half is not half: at gamma 1.5 the keel is 49.5% of the ship and continuity does not break", () => {
+  // By hand: keel 20^1.5 = 89.443 of a total 180.571 (oars 5.303, sail and posts 33.541, yard and steering oar 5.657, planks 24, mast 22.627).
+  const t = trajectory(makeOrder("wear"), weights(1.5));
+  close(roughest(t).step, 89.4427191 / 180.5713, 1e-6);
+  assert.equal(breaks(t).continuity, null);
+  // With the frame first, half the weight has not quite gone after five replacements (39 of 78.5) and has after six (40 of 78.5).
+  const f = trajectory(makeOrder("frame"), weights(1));
+  close(f[5].weighted, 1 - 39 / 78.5);
+  close(f[6].weighted, 1 - 40 / 78.5);
+  assert.ok(f[5].weighted > 0.5 && f[6].weighted < 0.5);
+});
+
+test("describeParts puts the drawing into words", () => {
+  assert.deepEqual(describeParts([]), []);
+  assert.deepEqual(describeParts([0, 1, 15, 45]), ["2 of 15 oars", "the sail", "the keel"]);
+  assert.deepEqual(describeParts(makeOrder("wear").slice(0, 21)), ["all 15 oars", "the sail", "the steering oar", "the yard", "3 of 24 planks"]);
+  assert.equal(describeParts(makeOrder("random", 5)).length, KINDS.length);
 });

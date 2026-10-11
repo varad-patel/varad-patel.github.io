@@ -18,6 +18,8 @@
     .ship.live [data-id] { cursor: pointer; }
     .ship.live [data-id]:hover { opacity: 0.7; }
     .btn[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+    .pick { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+    .pick .field { flex: 1 1 200px; margin: 0; }
     .checks { display: grid; gap: 10px; margin-top: 12px; }
     .views { list-style: none; margin: 8px 0 0; padding: 0; border-top: 1.5px solid var(--ink); }
     .view { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 15em); gap: 4px 20px; padding: 10px 0 10px 10px; border-bottom: 1px solid var(--grid); border-left: 3px solid transparent; font-size: 0.93rem; }
@@ -44,16 +46,16 @@
 
     <section class="p-sec">
       <h2>The idea</h2>
-      <p>Plutarch reports that the Athenians kept the thirty-oared ship in which Theseus came back from Crete, and preserved it for centuries by taking out each timber as it decayed and fitting a sound one in its place. The ship, he says, became a standing example for philosophers arguing about growth and change: some held that it remained the same ship, others that it did not.</p>
-      <p>In 1655 Thomas Hobbes made the puzzle sharper. Suppose someone had kept every old plank as it came out, and afterwards put them all together again in the same order. Now there are two ships. One has an unbroken history as the ship of Theseus and none of his timber. The other has all of his timber and a gap in its history. If sameness of form and history is what makes a ship the same, the first is the original; if sameness of matter is, the second; and they cannot both be, since they are two ships.</p>
+      <p>Plutarch reports that the Athenians kept the thirty-oared ship in which Theseus came back from Crete down to the time of Demetrius of Phalerum, taking out the old timbers from time to time and fitting sound ones in their place. The ship, he says, became a standing example for philosophers arguing about growth: some held that it remained the same ship, others that it did not.</p>
+      <p>In 1655 Thomas Hobbes made the puzzle sharper. Suppose someone had kept every old plank as it came out, and afterwards put them all together again in the same order. Now there are two ships. One has an unbroken history as the ship of Theseus and none of his timber. The other has all of his timber and a gap in its history. If sameness of form and history is what makes a ship the same, the first is the original; if sameness of matter is, the second; and they cannot both be, since they are two ships. Hobbes used the case against those who rest identity on form alone: by their test the rebuilt ship would also be the ship of Theseus, and one ship would be two.</p>
       <p>The question is what it takes for anything to last through change, and it is not only about boats. A living body replaces its matter. A university, a football club or a company can lose every founding member and carry on. A shrine can be rebuilt on a fixed cycle and remain the same shrine to those who use it. A state after a revolution may or may not owe the old state's debts. Each of these is settled, in practice, by choosing which kind of sameness counts.</p>
-      <p>The main answers fall into three families. Identity follows the matter: at the limit, mereological essentialism, on which a thing cannot lose a single part and remain strictly the same. Identity follows form and a continuous history: the line that runs from Aristotle's distinction between a thing's matter and its form to modern accounts of continuity under a kind. Or the question is posed wrongly: on the four-dimensional view a ship is extended in time as it is in space, every stage is a part of it, and what looked like a question about survival becomes a question about which stages we group under one name. This page lets you find your own breaking point and then shows which family it belongs to.</p>
+      <p>The main answers fall into three families. Identity follows the matter: at the limit, mereological essentialism, on which a thing cannot lose a single part and remain strictly the same. Identity follows form and a continuous history: the line that runs from Aristotle's distinction between a thing's matter and its form to modern accounts of continuity under a kind. Or the question is posed wrongly: on the four-dimensional view a ship is extended in time as it is in space, every stage is a part of it, and what looked like a question about survival becomes a question about which stages we group under one name. This page lets you find your own breaking point and then shows which family it belongs to. Two of the seven views it compares are positions that go by their names in the literature, mereological essentialism and four-dimensionalism. The other five are simple rules written for this page, each standing in for a family of answers and none of them a named theory.</p>
     </section>
 
     <section class="p-sec">
       <h2>How it works</h2>
       <h3>The ship</h3>
-      <p>The galley has <var>N</var> = 46 parts: fifteen oars (the bank on the side you can see), a sail, a steering oar, a yard, twenty-four hull planks, a mast, a stem post, a stern post and a keel. Each step replaces exactly one part with a new part of the same shape in the same place. Three orders are built in: worn parts first with the keel last, the reverse, and a seeded random order. Clicking a part replaces that part next, which makes the order your own.</p>
+      <p>The galley has <var>N</var> = 46 parts: fifteen oars (the bank on the side you can see), a sail, a steering oar, a yard, twenty-four hull planks, a mast, a stem post, a stern post and a keel. Each step replaces exactly one part with a new part of the same shape in the same place. Three orders are built in: worn parts first with the keel last, the reverse, and a seeded random order. Clicking an original part on the drawing replaces that part at once, which makes the order your own; the menu under the buttons does the same from the keyboard.</p>
       <h3>Two measures of what is left</h3>
       <p>After <var>t</var> replacements the share of parts that are original is</p>
       <p class="eq"><var>c</var>(<var>t</var>) = (<var>N</var> − <var>t</var>) / <var>N</var></p>
@@ -63,19 +65,23 @@
       <p>The base importance <var>b</var> is 20 for the keel, 8 for the mast, 5 for each post and the sail, 2 for the yard and the steering oar, 1 for a plank and 0.5 for an oar. These are a judgement, not a measurement. The slider sets <var>γ</var> from 0 to 2. At 0 every part weighs the same and the two measures coincide; at 1 the base values are used as they are; at 2 the keel counts as 400 planks. A third quantity is the size of a single step, the share of the whole ship that one replacement changes:</p>
       <p class="eq"><var>s</var>(<var>t</var>) = <var>w</var><sub>part replaced at <var>t</var></sub> / (sum of <var>w</var><sub><var>i</var></sub> over all parts)</p>
       <h3>Where each view puts the break</h3>
+      <p>Two of the seven are positions from the literature:</p>
       <ul>
-        <li><strong>Mereological essentialism</strong>: step 1. Any change of parts is a change of thing.</li>
-        <li><strong>Majority of original parts</strong>: the first <var>t</var> with <var>c</var>(<var>t</var>) ≤ ½, which is step 23.</li>
-        <li><strong>Majority of original matter</strong>: the first <var>t</var> with <var>m</var>(<var>t</var>) ≤ ½. This depends on the order and on the weights.</li>
-        <li><strong>An essential core</strong>: the step that replaces the keel.</li>
-        <li><strong>Gradual continuity</strong>: the first <var>t</var> with <var>s</var>(<var>t</var>) ≥ ½, and otherwise never. Each stage must overlap with the stage before by more than half.</li>
-        <li><strong>Same form and function</strong>: never. Every replacement is like for like, so the design, the arrangement and the ability to sail are the same at every step.</li>
-        <li><strong>Four-dimensionalism</strong>: no step. The ship is the whole sequence of stages.</li>
+        <li><strong>Mereological essentialism</strong> (Chisholm): step 1. A thing has its parts essentially, so any change of parts is, strictly, a change of thing.</li>
+        <li><strong>Four-dimensionalism</strong> (Lewis, Sider): no step of its own. A ship persists by having a stage at each time, and which stages make up one ship is settled by some further rule, such as one of those below. The view changes what the question is about; it does not pick a step.</li>
+      </ul>
+      <p>The other five are rules made for this page. Each turns a family of answers into a test that can be run on the model; none is a theory that an author has put forward under that name or with that number.</p>
+      <ul>
+        <li><strong>Majority of original parts</strong>: the first <var>t</var> with <var>c</var>(<var>t</var>) ≤ ½, which is step 23. Sameness of matter, with a threshold of one half.</li>
+        <li><strong>Majority of original matter</strong>: the first <var>t</var> with <var>m</var>(<var>t</var>) ≤ ½. The same test by weight; it depends on the order and on the weights.</li>
+        <li><strong>An essential core</strong>: the step that replaces the keel. A halfway house between essentialism and the majority rules: one part is essential and the rest are not. The choice of the keel is this page's.</li>
+        <li><strong>Gradual continuity</strong>: the first <var>t</var> with <var>s</var>(<var>t</var>) ≥ ½, and otherwise never. Each stage must overlap with the stage before by more than half. This is a crude stand-in for accounts on which a thing survives change that is gradual and continuous; the one-half test is not taken from any of them.</li>
+        <li><strong>Same form and function</strong>: never. Every replacement is like for like, so the design, the arrangement and the ability to sail are the same at every step. This is the answer that identity follows form, in its simplest version.</li>
       </ul>
       <h3>Matching your mark</h3>
-      <p>A mark of "never" agrees with form and function, and with gradual continuity when no step reaches half the ship. Three views are tied to a single event, and a mark agrees with them only if it falls on that very step: the first replacement for essentialism, the keel for the essential core, a change of half the ship for the break that gradual continuity can find. The two majority views are matched when their break lies within two replacements of the mark; that allowance is a convenience, not a principle. A mark that agrees with none of these is reported as a threshold of your own, with the two shares that remained at that step.</p>
+      <p>A mark of "never" agrees with form and function, and with gradual continuity when no step reaches half the ship. Three views are tied to a single event, and a mark agrees with them only if it falls on that very step: the first replacement for essentialism, the keel for the essential core, a change of half the ship for the break that gradual continuity can find. The two majority views are matched when their break lies within two replacements of the mark; that allowance is a convenience, not a principle. A mark that agrees with none of these is reported as a threshold of your own, with the two shares that remained at that step. Shares are shown as whole percentages only when they are exact, so 50% always means exactly half and a share just under it appears as, for example, 49.5%.</p>
       <h3>Hobbes's variant</h3>
-      <p>With the variant switched on, each part taken off the first ship is fixed in the same position on a second. After <var>t</var> steps the second ship is 1 − <var>m</var>(<var>t</var>) complete by weight, and every part of it is original. The tool asks which ship is the ship of Theseus and checks the answer against your mark: you cannot hold both that the repaired ship stopped being the ship at some step and that the repaired ship is the ship.</p>
+      <p>With the variant switched on, each part taken off the first ship is fixed in the same position on a second. After <var>t</var> steps the second ship is 1 − <var>m</var>(<var>t</var>) complete by weight, and every part of it is original. The tool asks which ship is the ship of Theseus and checks the answer against your mark: you cannot hold both that the repaired ship stopped being the ship at some step and that the repaired ship is the ship (alone, or as one of two), nor both that it never stopped being the ship and that the ship is now the other one or no longer exists.</p>
     </section>
 
     <section class="p-sec">
@@ -84,7 +90,7 @@
         <li><strong>Which view is true.</strong> The tool sorts marks by the view they agree with. Counting planks does not settle a question in metaphysics, and it may be that the question has no answer beyond what a museum, an insurer or a navy chooses to count.</li>
         <li><strong>Where a threshold belongs.</strong> "More than half" is a convention. No argument picks out 50% over 40% or 60%, and that arbitrariness is a standard objection to every view that draws a line through gradual change.</li>
         <li><strong>What the weights should be.</strong> Whether a keel matters twenty times as much as a plank is your input. Weight could mean mass, cost, structural role or attachment, and each gives a different curve.</li>
-        <li><strong>What the full theories say.</strong> Each view is one rule here and a literature elsewhere. Chisholm's essentialist grants that the ship persists in a loose and popular sense. Wiggins's continuity is continuity under a kind, not a 50% overlap test. Four-dimensionalists disagree among themselves about whether a ship is the whole worm or a single stage.</li>
+        <li><strong>What the full theories say.</strong> Each view is one rule here and a literature elsewhere, and five of the seven rules are this page's own simplifications. Chisholm's essentialist grants that the ship persists in a loose and popular sense. Wiggins's continuity is continuity under a kind, not a 50% overlap test. Four-dimensionalists disagree among themselves about whether a ship is a whole four-dimensional "worm" or a single stage of one.</li>
         <li><strong>Cases outside the model.</strong> Every change here is like for like and one part at a time. There is no change of design or use, no long spell in pieces, no difference between a refit in an afternoon and one over a century, though all of these move people's judgements.</li>
         <li><strong>Anything about persons.</strong> What matters in a person's survival may be memory and character, not matter or shape, and Derek Parfit argued that identity is not what matters at all. A ship has no point of view to lose.</li>
       </ul>
@@ -105,12 +111,12 @@
     <section class="p-sec">
       <h2>Sources</h2>
       <ul class="refs">
-        <li>Plutarch. <em>Life of Theseus</em>, chapter 23, in the <em>Parallel Lives</em>.</li>
-        <li>Hobbes, T. (1655). <em>De Corpore</em>, part II, chapter 11.</li>
+        <li>Plutarch. <em>Life of Theseus</em>, chapter 23, section 1, in the <em>Parallel Lives</em>.</li>
+        <li>Hobbes, T. (1655). <em>De Corpore</em>, part II, chapter 11, section 7.</li>
         <li>Locke, J. <em>An Essay Concerning Human Understanding</em>, book II, chapter 27, "Of identity and diversity".</li>
         <li>Chisholm, R. M. (1976). <em>Person and Object</em>. Allen and Unwin.</li>
         <li>Wiggins, D. (2001). <em>Sameness and Substance Renewed</em>. Cambridge University Press.</li>
-        <li>Smart, B. (1972). How to reidentify the ship of Theseus. <em>Analysis</em>.</li>
+        <li>Smart, B. (1972). How to reidentify the ship of Theseus. <em>Analysis</em>, 32(5), 145-148.</li>
         <li>Nozick, R. (1981). <em>Philosophical Explanations</em>. Harvard University Press.</li>
         <li>Parfit, D. (1984). <em>Reasons and Persons</em>. Oxford University Press.</li>
         <li>Lewis, D. (1986). <em>On the Plurality of Worlds</em>. Blackwell.</li>
