@@ -36,6 +36,39 @@ test("theory: more doors, a host who opens all but one, and a host who opens at 
   }
 });
 
+test("theory agrees with counting every case, for every setting and both hosts", () => {
+  // Every car position, first pick and set of doors the host could open, weighted by its probability. No closed forms.
+  const subsets = (pool, m) => (m === 0 ? [[]] : pool.flatMap((d, i) => subsets(pool.slice(i + 1), m - 1).map((rest) => [d, ...rest])));
+  const count = (n, m, host) => {
+    let valid = 0, stay = 0, swap = 0;
+    for (let car = 0; car < n; car++) for (let pick = 0; pick < n; pick++) {
+      const pool = Array.from({ length: n }, (_, d) => d).filter((d) => d !== pick && (host === "random" || d !== car));
+      const sets = subsets(pool, m);
+      for (const open of sets) {
+        if (open.includes(car)) continue;
+        const pr = 1 / (n * n * sets.length);
+        valid += pr;
+        if (pick === car) stay += pr; else swap += pr / (n - 1 - m); // the car is one of the n-1-m other closed doors
+      }
+    }
+    return { valid, stay: stay / valid, swap: swap / valid };
+  };
+  for (let n = 3; n <= 8; n++) for (let m = 1; m <= n - 2; m++) for (const host of ["knows", "random"]) {
+    const want = count(n, m, host), got = theory({ doors: n, opened: m, host });
+    for (const k of ["valid", "stay", "swap"]) close(got[k], want[k], 1e-12);
+  }
+  // The random host shows the car in m of every N games; seven doors, three opened: 3/7.
+  close(1 - theory({ doors: 7, opened: 3, host: "random" }).valid, 3 / 7, 1e-12);
+  close(theory({ doors: 7, opened: 3, host: "random" }).swap, 1 / 4, 1e-12);
+});
+
+test("the margins quoted in the write-up, for p = 2/3", () => {
+  assert.equal((100 * margin(2 / 3, 100)).toFixed(0), "9");
+  assert.equal((100 * margin(2 / 3, 10000)).toFixed(1), "0.9");
+  assert.equal((100 * margin(2 / 3, 100000)).toFixed(1), "0.3");
+  assert.equal((100 * margin(2 / 3, 10)).toFixed(0), "29"); // "about 30" for ten games by hand
+});
+
 test("a host who knows never opens your door or the car's, and opens the right number", () => {
   const r = rng(11);
   for (let i = 0; i < 2000; i++) {

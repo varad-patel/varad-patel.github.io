@@ -40,11 +40,12 @@ function settingsChanged() {
 }
 
 /* ---------- the game by hand ---------- */
-const doorRow = el("div", { class: "doors", role: "group", "aria-label": "Doors" });
+const doorRow = el("div", { class: "doors", role: "group", "aria-label": "The doors in the game" });
 const prompt = el("p", { class: "prompt", role: "status", "aria-live": "polite" });
 const stayBtn = button("Stay", () => act(state.game.pick));
 const swapBtn = button("Switch", () => act(alternatives(state.game)[0]));
-const againBtn = button("Play again", () => deal(), { primary: true });
+const againBtn = button("Play again", () => { deal(); focusGame(); }, { primary: true });
+const pickHint = el("span", { class: "small muted", text: "Click a door, or move to it with Tab and press Enter. The host then opens a door." });
 const handStay = stat("You stayed");
 const handSwap = stat("You switched");
 
@@ -62,6 +63,17 @@ function act(door) {
     else { state.hand[now.strategy].games++; if (now.result === "win") state.hand[now.strategy].wins++; }
   }
   drawGame();
+  focusGame();
+}
+// Every move redraws the doors and hides the button just used, which would drop keyboard focus on the floor.
+// Put it on the next thing to do instead: a door, the stay button, or "Play again". With several doors left to
+// switch to, the choice is made on the doors, so focus stays on the one picked and the stay button follows them.
+function focusGame() {
+  const g = state.game;
+  const next = g.phase === "pick" ? doorRow.querySelector("button")
+    : g.phase === "done" ? againBtn
+      : alternatives(g).length === 1 ? stayBtn : doorRow.children[g.pick];
+  next.focus();
 }
 
 function drawGame() {
@@ -83,7 +95,7 @@ function drawGame() {
       "aria-label": `Door ${d + 1}${opened ? `, open: ${label.toLowerCase()}` : ", closed"}${tags.length ? `, ${tags.join(", ")}` : ""}`,
       onclick: () => act(d),
     },
-      el("span", { class: "num", text: String(d + 1) }),
+      el("span", { class: "door-num", text: String(d + 1) }),
       el("span", { class: "behind", text: label }),
       el("span", { class: "tag", text: tags.join(" · ") }));
   }));
@@ -92,15 +104,16 @@ function drawGame() {
   else if (g.phase === "decide") {
     const opened = g.open.map((d) => d + 1).join(", ");
     prompt.textContent = `You picked door ${g.pick + 1}. The host opened door${g.open.length > 1 ? "s" : ""} ${opened}: ${g.open.length > 1 ? "goats" : "a goat"}. `
-      + (alts.length === 1 ? `Stay with door ${g.pick + 1}, or switch to door ${alts[0] + 1}?` : `Stay with door ${g.pick + 1}, or click another closed door to switch to it.`);
+      + (alts.length === 1 ? `Stay with door ${g.pick + 1}, or switch to door ${alts[0] + 1}?` : `Stay with door ${g.pick + 1}, or choose another closed door to switch to it.`);
   } else if (g.result === "void") prompt.textContent = `The host opened door${g.open.length > 1 ? "s" : ""} ${g.open.map((d) => d + 1).join(", ")} at random and revealed the car. This game does not count.`;
   else prompt.textContent = `You ${g.strategy === "stay" ? "stayed" : "switched"} and ${g.result === "win" ? "won the car" : "got a goat"}. The car was behind door ${g.car + 1}.`;
 
   stayBtn.hidden = swapBtn.hidden = g.phase !== "decide";
   swapBtn.disabled = alts.length !== 1;
-  swapBtn.textContent = alts.length === 1 ? `Switch to door ${alts[0] + 1}` : "Switch (click a door)";
+  swapBtn.textContent = alts.length === 1 ? `Switch to door ${alts[0] + 1}` : "Switch (choose a door)";
   stayBtn.textContent = g.pick != null ? `Stay with door ${g.pick + 1}` : "Stay";
   againBtn.hidden = !done;
+  pickHint.hidden = g.phase !== "pick";
 
   const line = (s) => (s.games ? `${fmt.pct(s.wins / s.games, 0)} won` : "no games yet");
   handStay.set(`${s2(state.hand.stay)}`, line(state.hand.stay));
@@ -115,7 +128,9 @@ const sStay = stat("Staying won");
 const simNote = el("div");
 const chartBox = el("div");
 const seedLine = el("span", { class: "small muted" });
-const progress = el("span", { class: "small muted", role: "status" });
+const progress = el("span", { class: "small muted" });
+// Spoken once when a run starts and once when it ends. The visible counter changes twenty times a second.
+const simStatus = el("p", { class: "sr-only", role: "status" });
 
 const plot = chart(chartBox, { series: [], height: 300 });
 
@@ -126,11 +141,12 @@ function resetSimulation(seed) {
   state.seed = seed;
   state.sim = rng(seed);
   state.tally = emptyTally();
+  simStatus.textContent = "";
   drawSimulation();
 }
 function queue(n) {
   state.queued += n;
-  if (!state.timer) pump();
+  if (!state.timer) { simStatus.textContent = `Running ${fmt.int(state.queued)} games.`; pump(); }
 }
 function pump() {
   state.timer = 0;
@@ -140,6 +156,12 @@ function pump() {
   state.queued -= n;
   drawSimulation();
   if (state.queued > 0) state.timer = setTimeout(pump, 30);
+  else {
+    const t = state.tally;
+    simStatus.textContent = t.games
+      ? `Done. ${fmt.int(t.games)} games counted${t.voided ? `, ${fmt.int(t.voided)} thrown out` : ""}. Switching won ${fmt.pct(t.swapWins / t.games, 1)} and staying won ${fmt.pct(t.stayWins / t.games, 1)}.`
+      : `Done. All ${fmt.int(t.voided)} games were thrown out.`;
+  }
 }
 
 function drawSimulation() {
@@ -150,26 +172,32 @@ function drawSimulation() {
   seedLine.textContent = `Random seed ${state.seed}. The same seed always gives the same games.`;
   sGames.set(fmt.int(total), t.voided ? `${fmt.int(t.games)} counted, ${fmt.int(t.voided)} thrown out` : total ? "all counted" : "press a button to start");
   const rate = (wins) => (t.games ? wins / t.games : NaN);
-  const line = (wins, expected) => (t.games ? `${fmt.int(wins)} wins, ± ${fmt.pct(margin(rate(wins), t.games), 1)}. Theory: ${fmt.pct(expected, 1)}` : `Theory: ${fmt.pct(expected, 1)}`);
+  // The margin is the one in the write-up: how far 95% of runs of this length land from the exact probability.
+  const line = (wins, expected) => (t.games ? `${fmt.int(wins)} wins. Theory: ${fmt.pct(expected, 1)} ± ${fmt.num(100 * margin(expected, t.games), 1)} points` : `Theory: ${fmt.pct(expected, 1)}`);
   sSwap.set(t.games ? fmt.pct(rate(t.swapWins), 2) : "–", line(t.swapWins, th.swap));
   sStay.set(t.games ? fmt.pct(rate(t.stayWins), 2) : "–", line(t.stayWins, th.stay));
 
   const same = Math.abs(th.swap - th.stay) < 1e-12;
+  // Two end labels need about six percentage points between them on this scale, or they print on top of each other.
+  const apart = t.games > 0 && Math.abs(rate(t.swapWins) - rate(t.stayWins)) >= 0.07;
   simNote.replaceChildren(state.config.host === "random"
     ? note("", `With a host who opens at random, the ${fmt.pct(1 - th.valid, 0)} of games where the car is revealed are discarded. In the rest, switching and staying win equally often (${fmt.pct(th.swap, 1)} each): the host's knowledge was what made switching better.`)
     : note("", `Staying wins only if your first pick was right: 1 in ${state.config.doors}. Otherwise the car is behind ${state.config.doors - 1 - state.config.opened === 1 ? "the one other door" : `one of the ${state.config.doors - 1 - state.config.opened} other doors`} the host left closed, so switching wins ${fmt.pct(th.swap, 1)} of the time.`));
 
+  // Before any games the chart prints its "run some games" line at mid-height: leave out a dashed line that would cross it.
+  const marks = (same ? [{ type: "hline", y: th.swap, text: `theory ${fmt.pct(th.swap, 1)}` }]
+    : [{ type: "hline", y: th.swap, text: `switch: ${fmt.pct(th.swap, 1)}` }, { type: "hline", y: th.stay, text: `stay: ${fmt.pct(th.stay, 1)}` }])
+    .filter((m) => t.games > 0 || Math.abs(m.y - 0.5) >= 0.08);
   plot.update({
     title: "Running win rate as games accumulate",
-    subtitle: "The early wobble is luck. The dashed lines are the exact probabilities.",
+    subtitle: ["The early wobble is luck.", "The early wobble is luck. The dashed line is an exact probability.", "The early wobble is luck. The dashed lines are the exact probabilities."][marks.length],
     x: { label: "Games played (log scale)", type: "log", domain: [1, Math.max(100, t.games)], format: (v) => fmt.compact(v) },
     y: { label: "Share of games won", domain: [0, 1], format: (v) => fmt.pct(v, 0) },
     series: [
-      { name: "Switch", data: t.trail.map((p) => [p.n, p.swap]), color: 0, endLabel: t.games ? `Switch ${fmt.pct(rate(t.swapWins), 1)}` : false },
-      { name: "Stay", data: t.trail.map((p) => [p.n, p.stay]), color: 1, endLabel: t.games ? `Stay ${fmt.pct(rate(t.stayWins), 1)}` : false },
+      { name: "Switch", data: t.trail.map((p) => [p.n, p.swap]), color: 0, endLabel: apart ? `Switch ${fmt.pct(rate(t.swapWins), 1)}` : false },
+      { name: "Stay", data: t.trail.map((p) => [p.n, p.stay]), color: 1, endLabel: apart ? `Stay ${fmt.pct(rate(t.stayWins), 1)}` : false },
     ],
-    marks: same ? [{ type: "hline", y: th.swap, text: `theory ${fmt.pct(th.swap, 1)}` }]
-      : [{ type: "hline", y: th.swap, text: `switch: ${fmt.pct(th.swap, 1)}` }, { type: "hline", y: th.stay, text: `stay: ${fmt.pct(th.stay, 1)}` }],
+    marks,
     empty: "Run some games to see the rates converge",
     table: t.trail.length > 0,
   });
@@ -183,7 +211,7 @@ $("#app").append(
     el("div", { class: "out" },
       el("h2", { text: "1. Play it yourself" }),
       prompt, doorRow,
-      el("div", { class: "row" }, stayBtn, swapBtn, againBtn),
+      el("div", { class: "row actions" }, pickHint, stayBtn, swapBtn, againBtn),
       el("div", { class: "stats" }, handStay.el, handSwap.el))),
   el("div", { class: "out sim" },
     el("h2", { text: "2. Let the computer play it 100,000 times" }),
@@ -192,10 +220,10 @@ $("#app").append(
       button("Run 100,000 games", () => queue(100000), { primary: true }),
       button("Run 1,000", () => queue(1000)),
       button("Run 10", () => queue(10)),
-      button("Start again", () => resetSimulation(DEFAULT_SEED)),
+      button(`Start again from seed ${DEFAULT_SEED}`, () => resetSimulation(DEFAULT_SEED)),
       button("Use a new seed", () => resetSimulation(randomSeed() % 100000)),
       progress),
-    el("div", { class: "stats" }, sGames.el, sSwap.el, sStay.el),
+    el("div", { class: "stats" }, sGames.el, sSwap.el, sStay.el), simStatus,
     simNote, chartBox, seedLine));
 
 openSlider.input.disabled = true;
