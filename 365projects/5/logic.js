@@ -20,7 +20,9 @@ export function chase(inputs) {
   if (error) return { error };
   const { headStart: d, achilles: vA, tortoise: vT } = inputs;
   const catches = vA > vT;
-  const catchTime = catches ? d / (vA - vT) : Infinity;
+  // Speeds come in tenths, and subtracting two of them in binary leaves a stray digit (12 - 11.9 is 0.0999999999999996).
+  // Rounding the difference to 12 significant figures removes it, so that 500 m at 0.1 m/s is 5,000 s and not 5,000.00000000002.
+  const catchTime = catches ? d / Number((vA - vT).toPrecision(12)) : Infinity;
   return { d, vA, vT, r: vT / vA, catches, catchTime, catchPoint: catches ? vA * catchTime : Infinity };
 }
 
@@ -93,4 +95,15 @@ export function resolvableStages(c) {
   if (!c.catches) return Infinity;
   if (c.r === 0) return 1;
   return Math.floor(Math.log(2 ** -53) / Math.log(c.r) + 1e-9);
+}
+
+/**
+ * The last stage the Step button goes to: never more than `cap`, never past the last stage whose partial
+ * sum can be told apart from the limit, and, when the tortoise is faster and the stages grow, never so far
+ * that the tortoise's position (about d r^(k+1)) is too large for a 64-bit float to hold.
+ */
+export function lastStep(c, cap = 300) {
+  if (c.catches) return Math.min(cap, resolvableStages(c));
+  if (c.r <= 1) return cap;
+  return Math.max(1, Math.min(cap, Math.floor(Math.log(1e300 / c.d) / Math.log(c.r)) - 1));
 }

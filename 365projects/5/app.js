@@ -1,6 +1,6 @@
 // Day 5: Zeno's Series Calculator. Interface.
 import { $, el, fmt, mount, slider, segmented, button, stat, note, table, chart, canvas, ticker, reducedMotion, palette, niceTicks } from "../kit/kit.js";
-import { chase, stage, stages, positions, stagesCompleted, stagesUntilGap, resolvableStages } from "./logic.js";
+import { chase, stage, stages, positions, stagesCompleted, stagesUntilGap, lastStep } from "./logic.js";
 
 mount();
 
@@ -8,6 +8,7 @@ const INK = "#16233b", SLATE = "#566478", GREY = "#8a94a3", GRID = "#dbe4de";
 const BLUE = palette[0], ORANGE = palette[1];
 const PLAY_SECONDS = 8;   // wall-clock seconds the animation takes to reach the catch-up point
 const STEP_CAP = 300;     // the Step button stops counting here even when the arithmetic could go on
+const TABLE_MIN = 600;    // px: below this width of its own box the stage table is laid out in four columns
 const FONT = getComputedStyle(document.body).fontFamily;
 
 const PRESETS = [
@@ -38,14 +39,21 @@ function withUnit(x, unit, digits = 4) {
   for (const [size, name] of UNITS[unit]) if (a >= size) return `${fmt.sig(x / size, digits)} ${name}`;
   return `${sci(x)} ${unit}`;
 }
-/** A partial sum with enough decimals to show it is still short of the limit, for as long as a 64-bit float can. */
-function partial(value, short, limit, unit) {
-  if (!Number.isFinite(limit)) return `${plain(value, 6)} ${unit}`;
-  if (short === 0) return `${fmt.sig(value, 7)} ${unit}`;
+/** The decimal places it takes to show that a partial sum is still short of its limit, or null once they pass the 15 digits a 64-bit float can show. */
+function decimalsFor(short, limit) {
   const whole = Math.max(1, Math.floor(Math.log10(limit)) + 1);
   const need = Math.max(2, Math.ceil(-Math.log10(short)) + 1);
-  return need <= 15 - whole ? `${fmt.num(value, need)} ${unit}` : `${fmt.sig(limit, 7)} ${unit} less ${withUnit(short, unit, 3)}`;
+  return need <= 15 - whole ? need : null;
 }
+/** A partial sum for the table: written out while its digits can show the shortfall, then as the limit minus the shortfall. */
+function partial(value, short, limit, unit) {
+  if (!Number.isFinite(limit)) return `${plain(value, 6)} ${unit}`;
+  if (short === 0) return withUnit(value, unit);
+  const places = decimalsFor(short, limit);
+  return places == null ? `limit − ${withUnit(short, unit, 3)}` : `${fmt.num(value, places)} ${unit}`;
+}
+/** A limit to as many digits as any partial sum above it, so that a row never appears to have passed it. */
+const exact = (x, unit) => `${fmt.sig(x, 15)} ${unit}`;
 
 /* ---------- state ---------- */
 const state = { d: 100, vA: 10, vT: 5, n: 12, zoom: 0, view: "distance", t: 0, stepK: null };
@@ -55,7 +63,7 @@ let lastShown = -1;
 const horizon = () => (c.catches ? c.catchTime : (4 * c.d) / c.vA);   // what PLAY_SECONDS of animation covers
 const tEnd = () => (c.catches ? 1.15 * c.catchTime : horizon());
 const listed = () => (c.r === 0 ? 1 : state.n);
-const stepCap = () => Math.min(resolvableStages(c), STEP_CAP);
+const stepCap = () => lastStep(c, STEP_CAP);
 
 /** The moment on screen. After a Step the numbers come from the stage formulas, which stay exact when the lead is tiny. */
 function now() {
@@ -85,11 +93,18 @@ const viewSeg = segmented({
   options: [{ value: "distance", label: "Distance" }, { value: "time", label: "Time" }, { value: "gap", label: "Tortoise's lead" }],
   onChange: (v) => { state.view = v; drawChart(); },
 });
+// A range input announces its bare number. Give assistive technology the same text as the readout beside the label.
+const voiced = [dS, aS, tS, nS, zS];
+function sayValues() { for (const s of voiced) s.input.setAttribute("aria-valuetext", s.el.querySelector("output").textContent.replace("×", "times")); }
+for (const s of voiced) s.input.addEventListener("input", sayValues);
+sayValues();
+
 const presetRow = el("div", { class: "field" },
   el("div", { class: "lab" }, el("span", { text: "Examples" })),
   el("div", { class: "row" }, PRESETS.map((p) => button(p.label, () => {
     Object.assign(state, { d: p.d, vA: p.vA, vT: p.vT });
     dS.value = p.d; aS.value = p.vA; tS.value = p.vT;
+    sayValues();
     changed();
   }, { small: true }))));
 
@@ -113,8 +128,11 @@ const playBtn = button("Play", toggle, { primary: true });
 const stepBtn = button("Step to the next stage", step);
 const resetBtn = button("Reset", () => { loop.stop(); state.t = 0; state.stepK = null; render(); say("start"); });
 const seriesBox = el("div", { class: "panel zeno-series" });
+const TRACK = "Achilles chasing the tortoise along a straight track.";
 const chartBox = el("div");
-const tableBox = el("div");
+const tableBox = el("div", { class: "zeno-table" });
+let narrowTable = false;
+const tableIsNarrow = () => tableBox.clientWidth > 0 && tableBox.clientWidth < TABLE_MIN;
 
 const out = el("div", { class: "out" },
   el("div", { class: "stats" }, sRatio.el, sPoint.el, sTime.el, sMm.el),
@@ -230,10 +248,17 @@ scene.el.setAttribute("role", "img");
 /* ---------- words ---------- */
 function describe(p) {
   // While the clock runs one decimal is plenty; after a Step the positions are partial sums and need their digits.
+  // Once those digits run out, the sentence says how far short of the catch-up point each runner is instead.
   const stepped = state.stepK != null && c.catches && p.gap > 0;
-  const at = (x, short) => (stepped ? partial(x, short, c.catchPoint, "m") : `${Math.abs(x) >= 1e7 ? sci(x) : fmt.num(x, 1)} m`);
   const s = stepped ? stage(c, state.stepK) : null;
-  const where = `Time ${stepped ? partial(p.t, s.shortTime, c.catchTime, "s") : `${Math.abs(p.t) >= 1e7 ? sci(p.t) : fmt.num(p.t, 2)} s`}. Achilles at ${at(p.achilles, s?.short)}, tortoise at ${at(p.tortoise, s ? s.short * c.r : 0)}.`;
+  const fine = (x, short, limit, unit, what) => {
+    const places = decimalsFor(short, limit);
+    return places == null ? `${withUnit(short, unit, 3)} short of the catch-up ${what}` : `${what === "time" ? "" : "at "}${fmt.num(x, places)} ${unit}`;
+  };
+  const coarse = (x, unit, places) => `${Math.abs(x) >= 1e7 ? sci(x) : fmt.num(x, places)} ${unit}`;
+  const where = stepped
+    ? `Time ${fine(p.t, s.shortTime, c.catchTime, "s", "time")}. Achilles ${fine(p.achilles, s.short, c.catchPoint, "m", "point")}, tortoise ${fine(p.tortoise, s.short * c.r, c.catchPoint, "m", "point")}.`
+    : `Time ${coarse(p.t, "s", 2)}. Achilles at ${coarse(p.achilles, "m", 1)}, tortoise at ${coarse(p.tortoise, "m", 1)}.`;
   if (p.gap > 0) return `${where} Tortoise ahead by ${withUnit(p.gap, "m")}. Stages completed: ${fmt.int(p.done)}.`;
   if (p.gap === 0) return `${where} They are level.`;
   return `${where} Achilles ahead by ${withUnit(-p.gap, "m")}. All of Zeno's stages are behind him.`;
@@ -244,20 +269,20 @@ function say(event) {
   let text = "";
   if (event === "step") {
     if (p.gap === 0) text = "One stage is all there is: the tortoise never moved, so Achilles has reached it.";
-    else if (!c.catches) text = `Stage ${p.done} is done and the tortoise is ${c.r === 1 ? "exactly as far ahead as at the start" : "further ahead than before"}. The stages go on for ever and so does the chase.`;
+    else if (!c.catches) text = `Stage ${p.done} is done and the tortoise is ${c.r === 1 ? "exactly as far ahead as at the start" : "further ahead than before"}. The stages go on for ever and so does the chase.${p.done >= stepCap() ? " The Step button stops counting here; the stages do not." : ""}`;
     else if (p.done >= stepCap()) text = p.done >= STEP_CAP
       ? `Stage ${p.done} is done. The Step button stops counting here; the stages do not.`
       : `Stage ${p.done} is done and the tortoise leads by ${withUnit(p.gap, "m", 3)}. One stage further on, this page's arithmetic can no longer tell Achilles' position from the catch-up point, so the Step button stops here. The mathematics has infinitely many stages left.`;
-    else text = `Stage ${p.done} is done: Achilles is where the tortoise was, and the tortoise has moved on by ${withUnit(p.gap, "m", 3)}. However often you step there is a next stage, and every one of them ends before ${withUnit(c.catchTime, "s")}.`;
+    else text = `Stage ${p.done} is done: Achilles is where the tortoise was, and the tortoise has moved on by ${withUnit(p.gap, "m", 3)}. However often you step there is a next stage, and every one of them ends before the catch-up time, ${fmt.sig(c.catchTime, 6)} s.`;
   } else if (event === "end") {
     text = c.catches
-      ? `Achilles drew level at ${withUnit(c.catchTime, "s")}, ${fmt.sig(c.catchPoint, 6)} m from his start, and ran on. Every one of the infinitely many stages was over before that moment.`
+      ? `Achilles drew level at ${fmt.sig(c.catchTime, 6)} s, ${fmt.sig(c.catchPoint, 6)} m from his start, and ran on. Every one of the infinitely many stages was over before that moment.`
       : `The tortoise is still ahead and its lead is ${c.r === 1 ? "unchanged" : "growing"}. Here the stages do not fit inside any finite time.`;
   } else if (event === "start") {
-    text = reducedMotion() ? "Press Play to run the chase, or Step to take it one of Zeno's stages at a time." : "";
+    text = "Press Play to run the chase, or Step to take it one of Zeno's stages at a time.";
   }
   caption.textContent = text;
-  scene.el.setAttribute("aria-label", `Achilles chasing the tortoise along a straight track. ${describe(p)}`);
+  scene.el.setAttribute("aria-label", `${TRACK} ${describe(p)}`);
 }
 
 /* ---------- chart and table ---------- */
@@ -330,13 +355,12 @@ function rebuild() {
       ? [note("", "The tortoise is standing still, so r = 0. There is one stage and nothing left over: no infinite series, no paradox.")]
       : []));
 
-  zS.input.disabled = !c.catches;
-  zS.el.style.opacity = c.catches ? "" : "0.5";
+  zS.el.hidden = !c.catches;   // there is nothing to zoom in on when the runners never meet
 
   const legs = stages(c, 5);
   const terms = (key) => legs.map((s) => plain(s[key], 4)).join(" + ");
   seriesBox.replaceChildren(
-    el("h3", { text: "The two series" }),
+    el("h2", { text: "The two series" }),
     ...(r === 0
       ? [el("p", {}, `Distance: ${fmt.int(d)} m. Time: ${withUnit(d / vA, "s")}. One term each.`)]
       : [
@@ -350,20 +374,35 @@ function rebuild() {
     legTime: withUnit(s.legTime, "s"), time: partial(s.time, s.shortTime, c.catchTime, "s"), gap: withUnit(s.gap, "m"),
   }));
   if (r > 0) rows.push(c.catches
-    ? { k: "Limit", leg: "0 m", distance: `${fmt.sig(c.catchPoint, 7)} m`, legTime: "0 s", time: `${fmt.sig(c.catchTime, 7)} s`, gap: "0 m" }
+    ? { k: "Limit", leg: "0 m", distance: exact(c.catchPoint, "m"), legTime: "0 s", time: exact(c.catchTime, "s"), gap: "0 m" }
     : { k: "Limit", leg: r === 1 ? `${fmt.int(d)} m` : "none", distance: "none", legTime: r === 1 ? withUnit(d / vA, "s") : "none", time: "none", gap: r === 1 ? `${fmt.int(d)} m` : "none" });
-  const t = table({
-    caption: "Zeno's stages, one row each",
-    columns: [
-      { key: "k", label: "Stage" },
-      { key: "leg", label: "This stage", num: true },
-      { key: "distance", label: "Distance so far", num: true },
-      { key: "legTime", label: "It takes", num: true },
-      { key: "time", label: "Time so far", num: true },
-      { key: "gap", label: "Tortoise's lead after it", num: true },
-    ],
-    rows,
-  });
+  // Six columns do not fit a phone. On a narrow screen each distance shares a cell with its time, one above the other.
+  const pair = (a, b) => el("span", {}, a, el("br"), b);
+  narrowTable = tableIsNarrow();
+  tableBox.classList.toggle("narrow", narrowTable);
+  const t = narrowTable
+    ? table({
+      caption: "Zeno's stages, one row each",
+      columns: [
+        { key: "k", label: "Stage" },
+        { key: "leg", label: "This stage: length, time", num: true },
+        { key: "sofar", label: "So far: distance, time", num: true },
+        { key: "gap", label: "Tortoise's lead after it", num: true },
+      ],
+      rows: rows.map((x) => ({ k: x.k, leg: pair(x.leg, x.legTime), sofar: pair(x.distance, x.time), gap: x.gap })),
+    })
+    : table({
+      caption: "Zeno's stages, one row each",
+      columns: [
+        { key: "k", label: "Stage" },
+        { key: "leg", label: "This stage", num: true },
+        { key: "distance", label: "Distance so far", num: true },
+        { key: "legTime", label: "It takes", num: true },
+        { key: "time", label: "Time so far", num: true },
+        { key: "gap", label: "Tortoise's lead after it", num: true },
+      ],
+      rows,
+    });
   if (r > 0) t.querySelector("tbody tr:last-child").classList.add("limit");
   tableBox.replaceChildren(t);
   lastShown = -1;
@@ -392,6 +431,7 @@ function toggle() {
   if (state.stepK != null) { state.t = stage(c, state.stepK).time; state.stepK = null; }
   if (state.t >= tEnd()) state.t = 0;
   caption.textContent = "";
+  scene.el.setAttribute("aria-label", `${TRACK} The chase is running: the line below the picture gives the time and both positions.`);
   loop.start();
   render();
 }
@@ -419,4 +459,14 @@ function changed() {
 rebuild();
 render();
 say("start");
-if (!reducedMotion()) { loop.start(); render(); }
+if (typeof ResizeObserver !== "undefined") new ResizeObserver(() => { if (tableIsNarrow() !== narrowTable) { rebuild(); render(); } }).observe(tableBox);
+// The chase starts by itself the first time the track is on screen (on a phone it sits below the controls),
+// unless the visitor has asked for reduced motion or has already started it.
+if (!reducedMotion()) {
+  const begin = () => { if (!loop.running && state.t === 0 && state.stepK == null) toggle(); };
+  if (typeof IntersectionObserver === "undefined") begin();
+  else {
+    const seen = new IntersectionObserver((entries) => { if (entries.some((e) => e.isIntersecting)) { seen.disconnect(); begin(); } }, { threshold: 0.5 });
+    seen.observe(scene.el);
+  }
+}

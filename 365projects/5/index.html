@@ -16,6 +16,9 @@
     .zeno-series { display: grid; gap: 6px; font-size: 0.95rem; line-height: 1.55; overflow-wrap: anywhere; }
     .tbl tr.reached td { background: color-mix(in srgb, var(--c1) 10%, transparent); }
     .tbl tr.limit td { font-weight: 700; border-top: 1.5px solid var(--ink); }
+    /* When its box is narrow the stage table has four columns (see app.js); let its headings wrap and tighten the cells so it fits. */
+    .zeno-table.narrow .tbl th { white-space: normal; vertical-align: bottom; }
+    .zeno-table.narrow .tbl th, .zeno-table.narrow .tbl td { padding-inline: 6px; }
   </style>
 </head>
 <body class="proj" data-day="5">
@@ -31,15 +34,15 @@
 
     <section class="p-sec finding">
       <h2>One finding</h2>
-      <p>Give the tortoise a 100 m head start and let Achilles run at 10 m/s against its 5 m/s. Zeno's stages are 100, 50, 25 … metres and their sums close in on 200 m, 20 seconds after the start. After 10 stages the tortoise still leads by 9.8 cm, after 17 by less than a millimetre, and no stage ever brings the lead to zero. Yet every one of the infinitely many stages is over before the twentieth second.</p>
+      <p>Give the tortoise a 100 m head start and let Achilles run at 10 m/s against its 5 m/s. Zeno's stages are 100, 50, 25 … metres and their sums close in on 200 m, 20 seconds after the start. After 10 stages the tortoise still leads by 9.8 cm, after 17 by less than a millimetre, and no stage ever brings the lead to zero. Yet every one of the infinitely many stages is over before 20 seconds are up.</p>
     </section>
 
     <section class="p-sec">
       <h2>The idea</h2>
-      <p>Zeno of Elea wrote in the fifth century BC in defence of his teacher Parmenides, who held that change and motion are appearances and not reality. Zeno's book is lost. What survives is the summary Aristotle gave about a century later in the <em>Physics</em>, in order to refute it. The best-known argument is the Achilles: the fastest runner can never overtake the slowest, because the pursuer must first reach the point the pursued started from, and by then the pursued has moved on. That gives Achilles a new point to reach, and then another, without end.</p>
+      <p>Zeno of Elea wrote in the fifth century BC in defence of Parmenides, who held that change and motion are appearances and not reality. Zeno's book is lost. His arguments about motion survive in the summary Aristotle gave about a century later in the <em>Physics</em>, in order to refute them. The best-known is the Achilles: the fastest runner can never overtake the slowest, because the pursuer must first reach the point the pursued started from, and by then the pursued has moved on. That gives Achilles a new point to reach, and then another, without end.</p>
       <p>The usual reply is that the stages form a geometric series. Each is a fixed fraction <var>r</var> of the one before, so the distances add up to a finite total, and so do the times. That reply needed something Zeno did not have: a precise meaning for the sum of infinitely many terms. Cauchy supplied it in 1821 by defining the sum as the limit of the partial sums, the number they approach as closely as you like.</p>
       <p>What the mathematics shows is that Zeno's description and the everyday one do not conflict. His list of stages is a complete account of the race at every moment <em>before</em> Achilles draws level, and of no moment after. "He has not caught up at the end of any stage" is true. "He has not caught up at any time" does not follow, because the stages together cover only a finite stretch of time. Press Step and you are in Zeno's telling: there is always a next stage. Press Play and you are in the other: the clock passes all of them in a few seconds.</p>
-      <p>The same series does everyday work in economics. An extra pound of spending that is re-spent at a rate <var>c</var> in each round adds up to 1 ÷ (1 − <var>c</var>) pounds over infinitely many rounds, which is the Keynesian multiplier. A payment of one pound a year for ever, discounted at rate <var>i</var>, is worth 1 ÷ <var>i</var> pounds today. Both are Achilles and the tortoise with different labels, and both rest on the same step: treating an endless sum as its limit.</p>
+      <p>The same series does everyday work in economics. Suppose an extra pound is spent, and that in every round a share <var>c</var> of what was received in the round before is spent again. The rounds are 1, <var>c</var>, <var>c</var><sup>2</sup> … and add up to 1 ÷ (1 − <var>c</var>) pounds, which is the simple Keynesian multiplier. A payment of one pound a year for ever, the first of them a year from now, discounted at a yearly rate <var>i</var>, is worth 1 ÷ <var>i</var> pounds today. Both are Achilles and the tortoise with different labels, and both rest on the same step: treating an endless sum as its limit.</p>
     </section>
 
     <section class="p-sec">
@@ -59,9 +62,9 @@
       <h3>When Achilles is not faster</h3>
       <p>If the speeds are equal, <var>r</var> = 1: every stage is <var>d</var> long, the partial sums are <var>d</var>, 2<var>d</var>, 3<var>d</var> … and the lead never changes. If the tortoise is faster, <var>r</var> is more than 1 and each stage is longer than the last. In both cases the series diverges, the stages fill the whole of time, and there is no catch-up point. The page says so and draws the sums climbing with no limit line.</p>
       <h3>The animation</h3>
-      <p>At time <var>t</var> the canvas draws Achilles at <var>v</var><sub>A</sub><var>t</var> and the tortoise at <var>d</var> + <var>v</var><sub>T</sub><var>t</var>. The clock is scaled so that the catch-up takes eight seconds of your time whatever the speeds, and it runs on to 1.15 <var>T</var> so that you see Achilles pull ahead. The number of stages complete at time <var>t</var> is the largest <var>k</var> with <var>T</var><sub><var>k</var></sub> ≤ <var>t</var>, which works out as the whole part of ln(1 − <var>t</var> ÷ <var>T</var>) ÷ ln <var>r</var>. Step sets the clock to the next <var>T</var><sub><var>k</var></sub>. The zoom slider redraws the track from <var>S</var>(1 − 1 ÷ <var>z</var>) to <var>S</var>(1 + 0.15 ÷ <var>z</var>) for a magnification <var>z</var>, so the catch-up point stays in the same place on screen.</p>
+      <p>At time <var>t</var> the canvas draws Achilles at <var>v</var><sub>A</sub><var>t</var> and the tortoise at <var>d</var> + <var>v</var><sub>T</sub><var>t</var>. The clock is scaled so that the catch-up takes eight seconds of your time whatever the speeds, and it runs on to 1.15 <var>T</var> so that you see Achilles pull ahead. When there is no catch-up point the same eight seconds cover the time Achilles needs to run four head starts. The chase starts by itself the first time the track is on screen; if your device asks for reduced motion it waits for Play. The number of stages complete at time <var>t</var> is the largest <var>k</var> with <var>T</var><sub><var>k</var></sub> ≤ <var>t</var>, which works out as the whole part of ln(1 − <var>t</var> ÷ <var>T</var>) ÷ ln <var>r</var>. Step sets the clock to the next <var>T</var><sub><var>k</var></sub>. The zoom slider redraws the track from <var>S</var>(1 − 1 ÷ <var>z</var>) to <var>S</var>(1 + 0.15 ÷ <var>z</var>) for a magnification <var>z</var>, so the catch-up point stays in the same place on screen.</p>
       <h3>Precision</h3>
-      <p>The page computes with 64-bit floating-point numbers, which carry about 16 significant digits. Once <var>r</var><sup><var>k</var></sup> is below 2<sup>−53</sup> the computed partial sum is equal to the limit, although the true one is not. With <var>r</var> = 0.5 that happens after stage 53. The table works out each shortfall directly from <var>S</var><var>r</var><sup><var>k</var></sup> and not by subtraction, so that column stays accurate, and the Step button stops at the last stage the arithmetic can tell apart from the limit.</p>
+      <p>The page computes with 64-bit floating-point numbers, which carry about 16 significant digits. Once <var>r</var><sup><var>k</var></sup> is below 2<sup>−53</sup> the computed partial sum is equal to the limit, although the true one is not. With <var>r</var> = 0.5 that happens after stage 53. The page works out the tortoise's lead and each shortfall directly from <var>r</var><sup><var>k</var></sup> and not by subtraction, so those stay accurate. A partial sum is written out for as long as fifteen digits can show that it is short of the limit; after that the table gives it as the limit minus the shortfall. The Step button stops at the last stage the arithmetic can tell apart from the limit, and in any case after 300 stages, or sooner if a faster tortoise would carry the distances beyond the largest number a float can hold. One correction is made on the way in: the difference between the two speeds is rounded to twelve significant figures, because subtracting decimals in binary leaves a stray digit (12 − 11.9 comes out as 0.0999999999999996).</p>
     </section>
 
     <section class="p-sec">
@@ -70,7 +73,7 @@
         <li><strong>Whether an infinite sequence of acts can be completed.</strong> The series shows that the stages fit into 20 seconds. It does not show what it means to have finished a task that has no last step. Max Black argued in 1951 that adding up the lengths misses this difficulty, and James Thomson's lamp, switched on and off at each stage, has no defined state at the end although the times converge in exactly the same way.</li>
         <li><strong>Whether space and time are really like the number line.</strong> The model divides distance without end. Whether physical space can be divided without end is a question for physics, and it is not settled. The zoom slider stops at a billionth of the track because the model has stopped describing a tortoise long before that.</li>
         <li><strong>That the sum "is" the limit in any sense beyond definition.</strong> Calling 200 the sum of 100 + 50 + 25 + … is a convention about what "sum" means for infinitely many terms. It is a good convention because it agrees with the kinematics, but the agreement is what gives it authority here, not the other way round.</li>
-        <li><strong>What Zeno meant.</strong> There is no text by Zeno to check. The argument reaches us through Aristotle, who was arguing against it, and readers still disagree about whether it was aimed at motion, at infinite divisibility or at plurality.</li>
+        <li><strong>What Zeno meant.</strong> No text of this argument by Zeno survives. It is known through Aristotle, who was arguing against it, and through later commentators, and scholars still disagree about what it was meant to show and whose views it was aimed at.</li>
         <li><strong>Anything about real runners.</strong> Both speeds are constant and both runners are points. Nobody accelerates, tires or has a width. A real tortoise is caught when a foot lands beside it, which happens after a handful of stages.</li>
         <li><strong>Digits beyond the sixteenth.</strong> Past the precision limit described above the page cannot distinguish the partial sum from its limit. The mathematics can, for ever.</li>
       </ul>
@@ -90,13 +93,13 @@
     <section class="p-sec">
       <h2>Sources</h2>
       <ul class="refs">
-        <li>Aristotle. <em>Physics</em>, Book VI. The Achilles is reported in chapter 9.</li>
-        <li>Cauchy, A.-L. (1821). <em>Cours d'analyse de l'École Royale Polytechnique</em>.</li>
-        <li>Black, M. (1951). Achilles and the tortoise. <em>Analysis</em>.</li>
-        <li>Thomson, J. F. (1954). Tasks and super-tasks. <em>Analysis</em>.</li>
-        <li>Benacerraf, P. (1962). Tasks, super-tasks, and the modern Eleatics. <em>The Journal of Philosophy</em>.</li>
-        <li>Salmon, W. C. (ed.) (1970). <em>Zeno's Paradoxes</em>. Bobbs-Merrill.</li>
-        <li>Huggett, N. Zeno's paradoxes. <em>The Stanford Encyclopedia of Philosophy</em>.</li>
+        <li>Aristotle. <em>Physics</em>, Book VI. The Achilles is reported in chapter 9 (239b14-18).</li>
+        <li>Cauchy, A.-L. (1821). <em>Cours d'analyse de l'École Royale Polytechnique</em>. The sum of a convergent series is defined in chapter VI.</li>
+        <li>Black, M. (1951). Achilles and the tortoise. <em>Analysis</em>, 11(5), 91-101.</li>
+        <li>Thomson, J. F. (1954). Tasks and super-tasks. <em>Analysis</em>, 15(1), 1-13.</li>
+        <li>Benacerraf, P. (1962). Tasks, super-tasks, and the modern Eleatics. <em>The Journal of Philosophy</em>, 59(24), 765-784.</li>
+        <li>Salmon, W. C. (ed.) (1970). <em>Zeno's Paradoxes</em>. Bobbs-Merrill. Reprinted by Hackett, 2001.</li>
+        <li>Huggett, N. Zeno's paradoxes. <em>The Stanford Encyclopedia of Philosophy</em> (first published 2002, revised 2024).</li>
       </ul>
     </section>
   </main>

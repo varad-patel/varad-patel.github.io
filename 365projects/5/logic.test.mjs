@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { problem, chase, geometricSum, stage, stages, positions, stagesCompleted, stagesUntilGap, resolvableStages } from "./logic.js";
+import { problem, chase, geometricSum, stage, stages, positions, stagesCompleted, stagesUntilGap, resolvableStages, lastStep } from "./logic.js";
 
 const close = (a, b, tol = 1e-9) => assert.ok(Math.abs(a - b) <= tol, `${a} is not within ${tol} of ${b}`);
 const run = (headStart, achilles, tortoise) => chase({ headStart, achilles, tortoise });
@@ -61,6 +61,21 @@ test("partial sums rise towards the catch-up point and never reach it", () => {
   }
   close(stage(c, 40).distance, 200, 1e-9);
   close(stage(c, 40).time, 20, 1e-9);
+});
+
+test("speeds in tenths give clean catch-up times", () => {
+  // 12 - 11.9 is 0.0999999999999996 in binary; the catch-up time used to come out as 5,000.00000000002 s.
+  const slow = run(500, 12, 11.9);
+  assert.equal(slow.catchTime, 5000);
+  assert.equal(slow.catchPoint, 60000);
+  assert.equal(run(100, 1.1, 0.7).catchTime, 250);
+  assert.equal(run(100, 1.1, 0.7).catchPoint, 275);
+  assert.equal(run(100, 10, 9).catchTime, 100);
+  // Every pair of slider speeds: the time agrees with exact arithmetic in tenths to 15 significant figures.
+  for (let a = 10; a <= 120; a++) for (let t = 0; t < a; t++) {
+    const c = run(100, a / 10, t / 10);
+    assert.equal(c.catchTime.toPrecision(15), (1000 / (a - t)).toPrecision(15), `vA=${a / 10} vT=${t / 10}`);
+  }
 });
 
 test("the limit of the series agrees with plain kinematics", () => {
@@ -156,6 +171,37 @@ test("double precision runs out after a finite number of stages", () => {
   assert.ok(stage(c, k).distance < c.catchPoint);
   assert.equal(stage(c, k + 1).distance, c.catchPoint);   // the float has arrived; the series has not
   assert.ok(stage(c, k + 1).short > 0);
+});
+
+test("the Step button never reaches a number a float cannot hold or tell apart", () => {
+  // A chase with a catch-up point stops at the last stage that can be told apart from the limit.
+  assert.equal(lastStep(run(100, 10, 5)), 53);
+  assert.equal(lastStep(run(100, 10, 1)), 15);
+  assert.equal(lastStep(run(100, 10, 0)), 1);
+  assert.equal(lastStep(run(100, 10, 9)), 300);       // 348 stages could be told apart; the cap comes first
+  assert.equal(lastStep(run(100, 10, 5), 20), 20);
+  assert.equal(lastStep(run(100, 10, 10)), 300);      // equal speeds: nothing grows, so only the cap applies
+  assert.equal(lastStep(run(100, 5, 6)), 300);        // 1.2^300 is about 6 x 10^23
+  // The fastest tortoise the sliders allow against the slowest Achilles: 12^300 overflows. This used to print "– × 10 m".
+  const wild = run(500, 1, 12);
+  assert.equal(stage(wild, 300).gap, Infinity);
+  const k = lastStep(wild);
+  assert.ok(k < 300 && k > 250, `stopped at ${k}`);
+  for (const key of ["leg", "distance", "time", "tortoise", "gap"]) assert.ok(Number.isFinite(stage(wild, k)[key]), key);
+  // Every pair of speeds the sliders can produce stays finite at its last step.
+  for (let vA = 1; vA <= 12; vA += 0.5) for (let vT = 0; vT <= 12; vT += 0.5) for (const d of [1, 500]) {
+    const c = run(d, vA, vT);
+    const s = stage(c, lastStep(c));
+    for (const key of ["distance", "time", "tortoise", "gap"]) assert.ok(Number.isFinite(s[key]), `${key} at d=${d} vA=${vA} vT=${vT}`);
+    if (c.catches && c.r > 0) assert.ok(s.gap > 0 && s.short > 0);
+  }
+});
+
+test("the sums behind two results the write-up borrows from economics", () => {
+  // Spending multiplier: 1 + c + c^2 + ... tends to 1 / (1 - c).
+  for (const c of [0.5, 0.8, 0.9]) close(geometricSum(c, 2000), 1 / (1 - c), 1e-9);
+  // Perpetuity of 1 a year, first payment a year from now, discounted at i: v + v^2 + ... with v = 1 / (1 + i) tends to 1 / i.
+  for (const i of [0.02, 0.05, 0.1]) { const v = 1 / (1 + i); close(v * geometricSum(v, 5000), 1 / i, 1e-9); }
 });
 
 test("invalid input is refused with a reason", () => {
