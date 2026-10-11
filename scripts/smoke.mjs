@@ -8,6 +8,7 @@
 //   node scripts/smoke.mjs 4 --eval "document.querySelector('#app input[type=checkbox]').click()"
 //                                                run a snippet in the page after load and save .smoke/004-eval.png
 //   node scripts/smoke.mjs 4 --no-a11y           skip the accessibility audit
+//   node scripts/smoke.mjs --channel chrome      run in the Chrome installed on this machine ("msedge" for Edge)
 //
 // For each page and each browser engine it loads the page at desktop and phone width, fails on any
 // console error, uncaught exception or failed request, checks that the tool and the write-up are
@@ -23,7 +24,7 @@ import { readFile, mkdir, readdir, stat } from "node:fs/promises";
 import { existsSync, readdirSync } from "node:fs";
 import { extname, join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { chromium, firefox, webkit } from "playwright-core";
+import { chromium, firefox, webkit, devices } from "playwright-core";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = join(ROOT, ".smoke");
@@ -75,6 +76,7 @@ const picture = (page, path) => page.screenshot({ path, fullPage: true }).catch(
 
 async function launch(engine) {
   if (engine !== "chromium") return ENGINES[engine].launch();
+  if (channel) return chromium.launch({ channel }); // "chrome" or "msedge": the browser installed on this machine
   try { return await chromium.launch(); } catch { /* fall through to other Chromium builds */ }
   const exe = findChrome();
   if (exe) return chromium.launch({ executablePath: exe });
@@ -122,6 +124,102 @@ async function exercise(page) {
     }
     await pause(300);
   });
+}
+
+// Use the page the way a hand does: real taps (or mouse clicks) at real positions on the screen. exercise() above
+// fires events from script, which proves the logic but not the reach: a control that is covered by something else,
+// pushed off the screen or deaf to a finger passes that and fails this.
+async function hands(page, touch, problems, where) {
+  const verb = touch ? "tapped" : "clicked";
+  const press = (locator) => (touch ? locator.tap({ timeout: 4000 }) : locator.click({ timeout: 4000 }));
+  const pressAt = (x, y) => (touch ? page.touchscreen.tap(x, y) : page.mouse.click(x, y));
+  // Only the reasons that mean "a person could not do this" count. A press that times out because the tool redrew is not one.
+  const blocked = (e) => String(e.message).replace(/\x1b\[\d+m/g, "").split("\n").map((l) => l.trim()).find((l) => /intercepts pointer events|outside of the viewport/.test(l))?.slice(0, 150);
+  const nameOf = async (locator) => ((await locator.getAttribute("aria-label").catch(() => null)) || (await locator.innerText().catch(() => "")) || "").trim().replace(/\s+/g, " ").slice(0, 32);
+
+  // Buttons. The list is read again before each press, because a press can redraw the tool.
+  const buttons = () => page.locator("#app button:visible:enabled");
+  for (let i = 0; i < Math.min(await buttons().count(), 40); i++) {
+    const b = buttons().nth(i);
+    if (!(await b.count())) break;
+    const name = await nameOf(b);
+    try { await press(b); } catch (e) { const why = blocked(e); if (why) problems.push(`${where}: the button "${name}" cannot be ${verb}: ${why}`); }
+    await page.waitForTimeout(40);
+  }
+
+  // Sliders: a press near the far end of the track must move the value (the other end is tried before giving up,
+  // because a page may hold one slider back with another).
+  const sliders = () => page.locator('#app input[type="range"]:visible:enabled');
+  for (let i = 0; i < Math.min(await sliders().count(), 12); i++) {
+    const sl = sliders().nth(i);
+    await sl.scrollIntoViewIfNeeded().catch(() => {});
+    const before = await sl.inputValue().catch(() => null);
+    const range = await sl.evaluate((n) => ({ min: Number(n.min || 0), max: Number(n.max || 100), label: n.labels?.[0]?.textContent || n.getAttribute("aria-label") || "" })).catch(() => null);
+    if (before == null || !range || !(range.max > range.min)) continue;
+    const right = (Number(before) - range.min) / (range.max - range.min) < 0.5;
+    let moved = false;
+    for (const side of [right, !right]) {
+      const box = await sliders().nth(i).boundingBox().catch(() => null);
+      if (!box) break;
+      await pressAt(box.x + box.width * (side ? 0.92 : 0.08), box.y + box.height / 2);
+      await page.waitForTimeout(80);
+      if ((await sliders().nth(i).inputValue().catch(() => before)) !== before) { moved = true; break; }
+    }
+    if (!moved) problems.push(`${where}: the slider "${range.label.trim().slice(0, 32)}" did not move when ${verb} at either end`);
+  }
+
+  // Tick boxes and choices: the press must change them.
+  const boxes = () => page.locator('#app input[type="checkbox"]:visible:enabled');
+  for (let i = 0; i < Math.min(await boxes().count(), 12); i++) {
+    const c = boxes().nth(i);
+    const was = await c.isChecked().catch(() => null);
+    if (was == null) continue;
+    const label = await c.evaluate((n) => n.labels?.[0]?.textContent || n.getAttribute("aria-label") || "").catch(() => "");
+    try { await press(c); } catch (e) { const why = blocked(e); if (why) problems.push(`${where}: the tick box "${label.trim().slice(0, 32)}" cannot be ${verb}: ${why}`); continue; }
+    await page.waitForTimeout(60);
+    const now = await boxes().nth(i).isChecked().catch(() => !was);
+    if (now === was) problems.push(`${where}: the tick box "${label.trim().slice(0, 32)}" did not change when ${verb}`);
+  }
+  const radios = () => page.locator('#app input[type="radio"]:visible:enabled');
+  for (let i = 0; i < Math.min(await radios().count(), 16); i++) {
+    const r = radios().nth(i);
+    const label = await r.evaluate((n) => n.labels?.[0]?.textContent || n.getAttribute("aria-label") || n.value).catch(() => "");
+    try { await press(r); } catch (e) { const why = blocked(e); if (why) problems.push(`${where}: the choice "${String(label).trim().slice(0, 32)}" cannot be ${verb}: ${why}`); continue; }
+    await page.waitForTimeout(60);
+  }
+
+  // Boxes to type in: a press must put the cursor in them.
+  const fields = () => page.locator('#app input[type="text"]:visible:enabled, #app input[type="number"]:visible:enabled, #app input[type="search"]:visible:enabled, #app textarea:visible:enabled');
+  for (let i = 0; i < Math.min(await fields().count(), 8); i++) {
+    const f = fields().nth(i);
+    const label = await f.evaluate((n) => n.labels?.[0]?.textContent || n.getAttribute("aria-label") || n.placeholder || "").catch(() => "");
+    try { await press(f); } catch (e) { const why = blocked(e); if (why) problems.push(`${where}: the box "${label.trim().slice(0, 32)}" cannot be ${verb}: ${why}`); continue; }
+    if (!(await f.evaluate((n) => document.activeElement === n).catch(() => true))) problems.push(`${where}: the box "${label.trim().slice(0, 32)}" does not take the cursor when ${verb}`);
+  }
+
+  // Charts: a finger cannot hover, so a tap has to bring up the values.
+  if (touch) {
+    const charts = page.locator("#app .chart-plot svg:visible");
+    for (let i = 0; i < Math.min(await charts.count(), 4); i++) {
+      const svg = charts.nth(i);
+      await svg.scrollIntoViewIfNeeded().catch(() => {});
+      const spots = await svg.evaluate((n) => {
+        const box = n.getBoundingClientRect();
+        const dot = [...n.querySelectorAll("circle")].map((c) => c.getBoundingClientRect()).find((b) => b.width > 0);
+        const drawn = n.querySelector('circle, path[fill="none"], path[d]') != null;
+        return { drawn, title: n.getAttribute("aria-label") || "", list: [[box.left + box.width / 2, box.top + box.height / 2], ...(dot ? [[dot.left + dot.width / 2, dot.top + dot.height / 2]] : [])] };
+      }).catch(() => null);
+      if (!spots || !spots.drawn) continue;
+      let shown = false;
+      for (const [x, y] of spots.list) {
+        await page.touchscreen.tap(x, y);
+        await page.waitForTimeout(120);
+        if (await svg.evaluate((n) => { const tip = n.closest(".chart-plot").querySelector(".chart-tip"); return Boolean(tip && !tip.hidden); }).catch(() => true)) { shown = true; break; }
+      }
+      if (!shown) problems.push(`${where}: tapping the chart "${spots.title.slice(0, 40)}" shows no values`);
+    }
+  }
+  await page.waitForTimeout(300);
 }
 
 // Accessibility audit with axe-core: every WCAG 2.1 A or AA violation is a failure.
@@ -243,21 +341,31 @@ async function checkProject(browser, origin, id, opts) {
   if (a11y) await audit(page, problems, "after use");
   await desktop.close();
 
-  // Phone width.
-  const phone = await browser.newContext({ viewport: { width: 390, height: 800 }, deviceScaleFactor: 2 });
+  // Phone width. Chromium stands in for an Android phone and WebKit for an iPhone: touch screen, mobile layout rules
+  // and the phone's own user agent. Firefox has no mobile mode in Playwright, so it stays a narrow window with a mouse.
+  const touch = opts.engine !== "firefox";
+  const phone = await browser.newContext({
+    viewport: { width: 390, height: 800 }, deviceScaleFactor: 2,
+    ...(touch ? { hasTouch: true, isMobile: true, userAgent: devices[opts.engine === "webkit" ? "iPhone 14" : "Pixel 7"].userAgent } : {}),
+  });
   const small = await phone.newPage();
   watch(small, problems, origin);
   await small.goto(url);
   await settle(small);
-  const sideways = await small.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  // clientWidth, not innerWidth: a phone browser zooms out to fit a page that is too wide, which would hide the fault.
+  const sideways = await small.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   if (sideways > 1) problems.push(`page scrolls sideways at 390px by ${sideways}px`);
   await picture(small, join(OUT, `${tag}-phone.png`));
   await small.locator("#app").screenshot({ path: join(OUT, `${tag}-app-phone.png`) }).catch(() => {});
   if (a11y) await audit(small, problems, "phone");
   await exercise(small);
   await settle(small);
-  const sidewaysAfter = await small.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  await hands(small, touch, problems, touch ? "phone, by touch" : "narrow window, by mouse");
+  await settle(small);
+  const sidewaysAfter = await small.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   if (sidewaysAfter > 1) problems.push(`page scrolls sideways at 390px by ${sidewaysAfter}px after using the controls`);
+  const junkPhone = await small.evaluate(() => (document.querySelector("#app")?.innerText.match(/\b(NaN|undefined|Infinity)\b/g) || []).slice(0, 3));
+  if (junkPhone.length) problems.push(`after real taps and clicks at phone width the tool shows ${junkPhone.join(", ")}`);
   await phone.close();
 
   return [...new Set(problems)];
@@ -266,12 +374,13 @@ async function checkProject(browser, origin, id, opts) {
 /* ---------- command line ---------- */
 const args = process.argv.slice(2);
 const valueOf = (flag) => { const i = args.indexOf(flag); return i >= 0 ? args[i + 1] : null; };
-const valueSlots = new Set(["--eval", "--base", "--browser"].map((f) => args.indexOf(f)).filter((i) => i >= 0).map((i) => i + 1));
+const valueSlots = new Set(["--eval", "--base", "--browser", "--channel"].map((f) => args.indexOf(f)).filter((i) => i >= 0).map((i) => i + 1));
 const shoot = args.includes("--shoot");
 const a11y = !args.includes("--no-a11y") && existsSync(AXE);
 const evalSnippet = valueOf("--eval");
 const baseUrl = valueOf("--base")?.replace(/\/$/, "") || null;
 const wanted = valueOf("--browser") || "chromium";
+const channel = valueOf("--channel"); // with --browser chromium: run in the installed Chrome ("chrome") or Edge ("msedge")
 const engines = wanted === "all" ? ["chromium", "firefox", "webkit"] : wanted.split(",");
 for (const e of engines) if (!ENGINES[e]) { console.error(`unknown browser "${e}": use chromium, firefox, webkit or all`); process.exit(2); }
 
@@ -307,5 +416,5 @@ for (const engine of engines) {
 }
 server?.close();
 const total = ids.length * engines.length;
-console.log(`${total - failed} of ${total} passed (${engines.join(", ")}${a11y ? ", with accessibility audit" : ""}${restarts ? `; browser restarted ${restarts} time(s)` : ""}). Screenshots are in .smoke/`);
+console.log(`${total - failed} of ${total} passed (${channel ? `installed ${channel}` : engines.join(", ")}${a11y ? ", with accessibility audit" : ""}${restarts ? `; browser restarted ${restarts} time(s)` : ""}). Screenshots are in .smoke/`);
 process.exit(failed ? 1 : 0);

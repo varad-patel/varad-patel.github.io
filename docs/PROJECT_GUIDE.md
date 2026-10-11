@@ -152,6 +152,75 @@ point; text is never in a series colour.
 If the kit lacks something you need, build it inside your project's `app.js` and say so in your
 report. Do not edit the kit.
 
+## Projects that use data
+
+* The page makes no network request. Data is a snapshot bundled as an ES module: `365projects/<N>/data.js`
+  for one project, `365projects/data/<name>.js` when several share it.
+* The snapshot is written by a script, `scripts/data/<name>.py` (or `.mjs`), that downloads from the original
+  open source, applies cleaning rules that are written down in its docstring, and takes `--cache DIR` so a
+  second run rebuilds the same file without downloading again. Never paste numbers in by hand.
+* Open licences only (public domain, CC0, CC BY, Open Government Licence and the like). Name the source, the
+  licence and the date retrieved on the page and in the module. If the only data for an idea is not open,
+  use open data that answers a nearby question and say so, or simulate and label it as simulated.
+* Keep a module under about 400 KB: fewer columns, rounded values, arrays instead of objects.
+* A test checks at least three values against the source, with the source's own figure written in the test,
+  and pins every number quoted on the page.
+* Say what each figure is: the unit, the year or window it covers, and anything averaged or filled in.
+
+## What the reviews of the first 30 pages found
+
+Every one of the first 30 pages had defects that its builder missed. These are the kinds; check each before
+you call a page built.
+
+**Results and wording**
+
+* A verdict word ("same", "never", "more than luck", "cannot flip") needs the exact calculation behind it, not
+  a rule of thumb. Test the edges on purpose: ties, exact fits, equal inputs, zero, one item.
+* Read every sentence the tool can produce in its small cases: "1 comparisons", "from 100 to 100", "the other
+  1 are true", a range printed as "50.0% to 50.0%", "$2 against $2" for 1.80 and 2.20.
+* A default is not the visitor's answer. Label placeholders as placeholders, and say in the tool itself (not
+  only in the write-up) when numbers are invented, simulated or illustrative.
+* Compare against the best trivial rule, not a convenient one (a detector that scores 68% is not beating
+  "always say yes" at 69%).
+* The finding says which presses reproduce it, and a test reproduces it.
+
+**Input**
+
+* Every text box, number box and file has a limit, and the limit has a message: length, size (refuse a large
+  file before reading it), range (1e308 is a number), whole numbers where only they make sense.
+* Long unbroken text (a pasted URL, an 80-letter name) must wrap: `overflow-wrap: anywhere`.
+* Files arrive in other encodings, with other separators, empty, or of the wrong kind.
+* Text written to a CSV that starts with `=`, `+`, `-` or `@` is a spreadsheet formula. Guard it.
+
+**Keyboard and screen readers**
+
+* After any press that redraws the tool, focus must land somewhere sensible. It must never fall to `<body>`.
+* A live region that changes on every animation frame is noise. Announce the result once, when it is ready.
+* Headings inside the tool start at `<h2>`. No empty table headers. Buttons that do the same thing to
+  different items say which item ("Delete claim 3").
+* Bold or colour alone marks nothing: add words.
+* Text drawn in an SVG needs 4.5 to 1 contrast like any other (the smoke test measures it).
+
+**Phones**
+
+* A table wider than 390 px becomes a list or is turned on its side. Results sit near the control that
+  changes them; a long tool gets jump links.
+* Equations are broken into lines that fit. A canvas is capped to part of the screen height, or a finger
+  cannot scroll past it.
+* The smoke test taps every control with a real touch at phone width. A control it cannot reach is a failure.
+
+**Speed and storage**
+
+* Any loop that can run for more than about 50 ms is cut into slices, shows progress and can be interrupted.
+  Recomputing 100,000 draws on every slider step is debounced.
+* A page that saves to the browser says so, keeps open tabs in step (the `storage` event), exports and
+  imports without loss, refuses files from a later version, and warns that browsers may clear saved data.
+
+**Facts**
+
+* Every reference is checked against Crossref, the publisher or the Stanford Encyclopedia: authors, year,
+  volume, issue, pages. Every "X showed in 1944" is checked too. Nothing is cited from memory.
+
 ## Tests
 
 `logic.test.mjs` uses `node:test` and `node:assert/strict`. Test the model, not the DOM:
@@ -174,8 +243,12 @@ node scripts/smoke.mjs <N> --browser all
 The smoke test loads the page at desktop and phone width in Chromium, Firefox and WebKit (Safari's
 engine), fails on any console error, uncaught exception, failed request, missing section, sideways
 scroll or `NaN`/`undefined` in the tool, and operates every slider, select, checkbox and button once.
+At phone width it then uses the page by hand: Chromium as an Android phone and WebKit as an iPhone tap
+every button, slider, tick box, text box and chart with a real touch, and Firefox clicks them with a
+mouse. A control that is covered, off the screen or deaf to the tap is a failure.
 In Chromium it also runs the axe-core accessibility audit (WCAG 2.1 A and AA) on load, after use and at
-phone width; any violation is a failure. It saves screenshots to `.smoke/`:
+phone width, and measures the contrast of text drawn in SVG; any violation is a failure. It saves
+screenshots to `.smoke/`:
 `00N-app.png` (the tool at load), `00N-app-after.png` (after every control was used),
 `00N-app-phone.png`, `00N-desktop.png` and `00N-phone.png` (whole page). **Open them and look.** Check
 for overlapping labels, clipped text, a chart with the wrong scale, an ugly default, anything you
