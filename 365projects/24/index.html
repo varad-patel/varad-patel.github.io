@@ -15,6 +15,9 @@
     .fl-banner { gap: 10px; }
     .fl-banner:empty { display: none; }
     .fl-banner-row { display: flex; margin-top: 8px; }
+    .fl-jump { display: none; }
+    @media (max-width: 860px) { .fl-jump { display: block; } }
+    .fl-lists:focus { outline: none; }
     .fl-data { gap: 10px; }
     .fl-lists { gap: 22px; }
     .fl-section { gap: 6px; }
@@ -32,11 +35,20 @@
     .fl-pill.overdue { border-color: var(--warn); background: color-mix(in srgb, var(--warn) 16%, #fff); }
     .fl-pill.example { margin: 0 0 0 6px; border-style: dashed; font-weight: 600; vertical-align: 1px; }
     .fl-scorecard { gap: 14px; padding-top: 18px; border-top: 1px solid var(--rule); }
-    .tool h3.fl-h { font: 600 1.3rem/1.2 var(--serif); }
+    .tool h2.fl-h { font: 600 1.3rem/1.2 var(--serif); }
     .fl-score .grid2 > div { gap: 14px; align-content: start; }
     .fl-score .tbl th, .fl-score .tbl td { padding: 6px 8px; }
     .fl-try { gap: 12px; }
     .fl-try .stats { align-content: start; }
+    /* On a phone the dates and the four buttons use the full width under the statement, so each prediction takes less height. */
+    @media (max-width: 560px) {
+      .fl-item { grid-template-columns: auto minmax(0, 1fr); gap: 2px 10px; padding: 8px 0; }
+      .fl-item:not(.editing) > div:last-child { display: contents; }
+      .fl-p { min-width: 3.2rem; font-size: 1.2rem; line-height: 1.4; text-align: left; }
+      .fl-item .fl-meta, .fl-item .fl-actions { grid-column: 1 / -1; }
+      .fl-item .fl-actions { gap: 6px; margin-top: 4px; }
+      .fl-actions .btn.small { padding-left: 9px; padding-right: 9px; }
+    }
   </style>
 </head>
 <body class="proj" data-day="24">
@@ -52,14 +64,14 @@
 
     <section class="p-sec finding">
       <h2>One finding</h2>
-      <p>A forecaster who says 90% and is right 70% of the time earns a Brier score of exactly 0.25, the same as someone who answers 50% to everything. The example log shows how hard it is to do much better: across its 24 resolved predictions the forecaster averaged 80% confidence and was right 71% of the time, which scores 0.216, only 14% better than answering 50% every time. With so few forecasts, even that 9-point gap is within what luck alone would produce.</p>
+      <p>A forecaster who says 90% every time and is right 70% of the time scores exactly 0.25, the same as someone who answers 50% to everything. That is a property of the Brier score and holds whatever the questions are. The example log is made up, so it is evidence of nothing, but it shows the arithmetic: over 24 resolved predictions its invented forecaster averaged 80% confidence, was right 71% of the time and scored 0.216, 14% better than always answering 50%. Had those confidences been exactly right, so few hits would still turn up about one time in five (19%), so the tool does not call the 9-point gap overconfidence.</p>
     </section>
 
     <section class="p-sec">
       <h2>The idea</h2>
       <p>Everyone forecasts and almost nobody keeps score. "Probably", "very likely" and "I'd be surprised" cost nothing to say and cannot be shown wrong afterwards. A number can. One forecast of 70% proves little whichever way it goes, but a hundred of them make a testable claim: about seventy of those things should happen. If fifty-five do, the forecaster's 70% does not mean what it says.</p>
       <p>Glenn Brier, a meteorologist, proposed in 1950 a way to turn that into a single figure: score each forecast by the squared distance between the probability and what happened. The rule has a property that matters more than its simplicity. It is <strong>proper</strong>: the way to get the best score you can expect is to report exactly what you believe. Rounding your 70% up to 90% to sound decisive, or down to 55% to stay safe, costs you on average.</p>
-      <p>The record of people who have been scored this way is sobering. Psychologists reviewing calibration studies by the early 1980s found that people are usually overconfident, most of all on hard questions. Philip Tetlock then spent about twenty years collecting predictions from several hundred political and economic experts and found that many did little better than simple rules of thumb, and that the most confident and most quoted tended to do worse. His later forecasting tournaments had a more hopeful result: some people are reliably good at this, and what they have in common is less a matter of knowledge than of habit. They think in probabilities, update in small steps and keep score.</p>
+      <p>The record of people who have been scored this way is sobering. Psychologists reviewing calibration studies by the early 1980s found that people are usually overconfident, most of all on hard questions. Philip Tetlock then spent about twenty years, from 1984 to 2003, collecting predictions about world events from 284 experts. He found that they were often only slightly more accurate than chance and usually less accurate than simple rules that predicted more of the same, and that those with the biggest media profiles did especially badly. The Good Judgment Project, which he and Barbara Mellers have led since 2011, had a more hopeful result: some people forecast reliably well, across topics and from year to year. They distinguish many degrees of uncertainty, keep score, and are willing to admit an error and change course.</p>
       <p>That is what this page is for. Most arguments in politics and economics contain a forecast in disguise: this tax will raise that much, this candidate will win, this policy will cut that number. Writing the forecast down with a probability, and coming back to it, is the cheapest test of judgment there is. The log is built early in the year so that by the Forecasting League on Day 314 there is a year of resolved predictions to learn from.</p>
     </section>
 
@@ -77,27 +89,29 @@
       <h3>The calibration chart</h3>
       <p>Resolved forecasts are sorted into probability bins: five of them (0 to 20%, 20 to 40%, and so on, each including its lower end) until there are 60 resolved forecasts, then ten. For each bin the chart plots the average probability you gave against the share of those statements that came true. A dot is drawn larger the more forecasts it holds, and the table under the chart gives the counts. Dots below the diagonal are things that happened less often than you said.</p>
       <h3>Confidence and results</h3>
-      <p>A forecast of 20% is a forecast of 80% that the statement is false. So every forecast is folded onto the side it leaned to: its confidence is <var>c</var> = max(<var>p</var>, 1 − <var>p</var>), and it counts as a hit if that side came good. Forecasts of exactly 50% lean neither way and are left out. The tile reports the average confidence and the hit rate. To judge whether the gap means anything, the tool asks what would happen if your confidences were exactly right: the number of hits would then have</p>
-      <p class="eq">mean = Σ <var>c</var><sub><var>i</var></sub> &nbsp;&nbsp; variance = Σ <var>c</var><sub><var>i</var></sub>(1 − <var>c</var><sub><var>i</var></sub>) &nbsp;&nbsp; <var>z</var> = (hits − mean) / √variance</p>
-      <p>The tool says "overconfident" only if <var>z</var> is −2 or lower, "underconfident" if it is 2 or higher, and gives no verdict at all with fewer than ten forecasts.</p>
+      <p>A forecast of 20% is a forecast of 80% that the statement is false. So every forecast is folded onto the side it leaned to: its confidence is <var>c</var> = max(<var>p</var>, 1 − <var>p</var>), and it counts as a hit if that side came good. Forecasts of exactly 50% lean neither way and are left out. The tile reports the average confidence and the hit rate. To judge whether the gap between them means anything, the tool asks what would happen if your confidences were exactly right and the forecasts had nothing to do with one another. Forecast <var>i</var> would then be a hit with probability <var>c</var><sub><var>i</var></sub>, and the chance <var>P</var><sub><var>i</var></sub>(<var>k</var>) of exactly <var>k</var> hits among the first <var>i</var> forecasts is built up one forecast at a time:</p>
+      <p class="eq"><var>P</var><sub>0</sub>(0) = 1 &nbsp;&nbsp; <var>P</var><sub><var>i</var></sub>(<var>k</var>) = <var>P</var><sub><var>i</var>−1</sub>(<var>k</var>) (1 − <var>c</var><sub><var>i</var></sub>) + <var>P</var><sub><var>i</var>−1</sub>(<var>k</var> − 1) <var>c</var><sub><var>i</var></sub></p>
+      <p>This distribution is exact, not a bell-curve approximation. The tool says "overconfident" only if the chance of as few hits as you had, or fewer, is 1 in 40 or less, "underconfident" if the chance of as many, or more, is 1 in 40 or less, and gives no verdict at all with fewer than ten forecasts. Ten forecasts at 90% with seven hits is a 20-point gap, yet luck alone produces seven or fewer 7% of the time, so it earns no verdict.</p>
       <h3>Where the score comes from</h3>
       <p>Allan Murphy showed in 1973 that the mean Brier score splits into three parts. Group the forecasts by the probability stated. Let group <var>k</var> hold <var>n</var><sub><var>k</var></sub> forecasts at probability <var>p</var><sub><var>k</var></sub>, of which a share <var>ō</var><sub><var>k</var></sub> came true, and let <var>ō</var> be the share of all statements that came true. Then</p>
       <p class="eq">score = (1/<var>N</var>) Σ <var>n</var><sub><var>k</var></sub>(<var>p</var><sub><var>k</var></sub> − <var>ō</var><sub><var>k</var></sub>)² − (1/<var>N</var>) Σ <var>n</var><sub><var>k</var></sub>(<var>ō</var><sub><var>k</var></sub> − <var>ō</var>)² + <var>ō</var>(1 − <var>ō</var>)</p>
-      <p>The first term is calibration error: are your 70%s really 70%? The second, which is subtracted, is resolution: do you say high numbers for things that happen and low numbers for things that do not? The third is the uncertainty in the questions themselves and has nothing to do with you. Because each group shares one probability the identity is exact, and a test checks it on random logs.</p>
+      <p>The first term is calibration error: are your 70%s really 70%? The second, which is subtracted, is resolution: do you say high numbers for things that happen and low numbers for things that do not? The third is the uncertainty in the questions themselves and has nothing to do with you. Because each group shares one probability the identity is exact, and a test checks it on random logs. The table rounds each part, so the figures shown can miss the total by one in the last place.</p>
       <h3>Editing, and what counts</h3>
-      <p>An open prediction can be edited. If you change its probability the log stamps the date, and the score uses the latest number. A resolved prediction cannot be edited until you undo the resolution. Deleting asks first. The tag filter narrows both the lists and the scorecard, so you can see your calibration on one topic.</p>
+      <p>An open prediction can be edited. If you change its probability the log stamps the date, and the score uses the latest number. A resolved prediction cannot be edited until you undo the resolution. Deleting asks first and cannot be undone. The tag filter narrows both the lists and the scorecard, so you can see your calibration on one topic.</p>
       <h3>Where the log lives</h3>
-      <p>Your log is stored in this browser's local storage, on this device, under the key <code>365:day24:log</code>. It is not sent to any server, and this page makes no network requests. That also means it is gone if you clear the browser's site data, and it does not follow you to another device. "Export JSON" writes the whole log to a file. "Export CSV" writes one row per prediction with the columns <code>id</code>, <code>statement</code>, <code>probability_percent</code>, <code>created</code>, <code>due</code>, <code>tags</code>, <code>outcome</code>, <code>resolved</code> and <code>revised</code>, which opens in any spreadsheet. "Import a file" reads either format and adds what is new: a prediction with an id already in the log, or with the same statement, creation date and due date, is skipped, and rows that cannot be read are reported and left out.</p>
+      <p>Your log is stored in this browser's local storage, on this device, under the key <code>365:day24:log</code>. It is sent to no server, and this page makes no network requests. So it does not follow you to another device, and clearing the browser's site data deletes it. Safari goes further: Apple announced in 2020 that it deletes stored data for a site not used during seven days of browsing, unless the page is on the Home Screen. Export often. The page shows the date of the last export (kept under <code>365:day24:exported</code>) and warns at once if the browser refuses to save.</p>
+      <p>"Export JSON" writes the whole log. "Export CSV" writes one row per prediction with the columns <code>id</code>, <code>statement</code>, <code>probability_percent</code>, <code>created</code>, <code>due</code>, <code>tags</code>, <code>outcome</code>, <code>resolved</code> and <code>revised</code>. In the CSV file, text that begins with =, +, - or @ is written with an apostrophe in front, so that a spreadsheet shows it as text and does not run it as a formula; the page takes the apostrophe off when it reads the file. Either file reads back to exactly the log that was exported. "Import a file" adds what is new and changes nothing already there: a prediction with an id already in the log, or with the same statement, creation date and due date as one in the log, is skipped, and rows that cannot be read are reported. A file over 10 MB, in another format, or from a later version of this page is refused whole.</p>
+      <p>A change made in one tab or window appears in any other that has the log open, so an older copy cannot overwrite a newer one. Stored data that cannot be read is copied to <code>365:day24:log-unread</code> before anything is saved over it.</p>
       <p>The example log is generated in memory, with its dates placed around today, and is never written to storage or to a file: the export buttons always write your own log, even while the example is on screen. Adding a prediction while it is showing starts your own log with that one prediction in it and nothing from the example.</p>
     </section>
 
     <section class="p-sec">
       <h2>What this cannot tell you</h2>
       <ul>
-        <li><strong>Much, from a few forecasts.</strong> A mean of twenty squared errors is a noisy number. One miss at 95% costs 0.9025, more than twenty-two hits at 80% put together. The luck test is rough as well: it treats your forecasts as independent, and predictions about the same election or the same exam are not.</li>
+        <li><strong>Much, from a few forecasts.</strong> A mean of twenty squared errors is a noisy number. One miss at 95% costs 0.9025, more than twenty-two hits at 80% put together. The luck test also treats your forecasts as independent, and predictions about the same election or the same exam are not.</li>
         <li><strong>How you compare with anyone else.</strong> The score depends on the questions. Predict that the sun will rise and you score a perfect 0. Two people's Brier scores can only be compared on the same questions, which is what the Forecasting League on Day 314 is for.</li>
         <li><strong>Whether you were honest with yourself.</strong> You write the statement, you decide whether it happened, and you can edit or delete. A vague statement such as "the economy does badly" can be resolved to taste. The log cannot stop that. Statements with a checkable test and a date can.</li>
-        <li><strong>What you thought at the start.</strong> The score uses your latest probability. Revise a forecast the day before the answer is known and the log will flatter your original judgment. Forecasting tournaments score every day's forecast for this reason; this log does not.</li>
+        <li><strong>What you thought at the start.</strong> The score uses your latest probability. Revise a forecast the day before the answer is known and the log will flatter your original judgment. The Good Judgment Project averaged each forecaster's score over every day a question was open for this reason; this log does not.</li>
         <li><strong>How good your judgment is, from calibration alone.</strong> Someone who gives the long-run base rate for everything is perfectly calibrated and tells you nothing. Calibration needs resolution beside it. The Brier score is also gentle on extreme errors about rare events: saying 1% for something that happens costs 0.98 and saying 10% costs 0.81, though the first belief is far worse.</li>
         <li><strong>Anything that is not yes or no.</strong> There is no place here for "inflation will be between 2 and 3%" or for a choice among several candidates, except by turning it into a statement that is true or false.</li>
       </ul>
@@ -121,10 +135,11 @@
         <li>Brier, G. W. (1950). Verification of forecasts expressed in terms of probability. <em>Monthly Weather Review</em>, 78(1), 1-3.</li>
         <li>Murphy, A. H. (1973). A new vector partition of the probability score. <em>Journal of Applied Meteorology</em>, 12(4), 595-600.</li>
         <li>Gneiting, T., and Raftery, A. E. (2007). Strictly proper scoring rules, prediction, and estimation. <em>Journal of the American Statistical Association</em>, 102(477), 359-378.</li>
-        <li>Lichtenstein, S., Fischhoff, B., and Phillips, L. D. (1982). Calibration of probabilities: the state of the art to 1980. In D. Kahneman, P. Slovic and A. Tversky (eds.), <em>Judgment under Uncertainty: Heuristics and Biases</em>. Cambridge University Press.</li>
+        <li>Lichtenstein, S., Fischhoff, B., and Phillips, L. D. (1982). Calibration of probabilities: the state of the art to 1980. In D. Kahneman, P. Slovic and A. Tversky (eds.), <em>Judgment under Uncertainty: Heuristics and Biases</em>, 306-334. Cambridge University Press.</li>
         <li>Tetlock, P. E. (2005). <em>Expert Political Judgment: How Good Is It? How Can We Know?</em> Princeton University Press.</li>
         <li>Mellers, B., and others (2014). Psychological strategies for winning a geopolitical forecasting tournament. <em>Psychological Science</em>, 25(5), 1106-1115.</li>
         <li>Tetlock, P. E., and Gardner, D. (2015). <em>Superforecasting: The Art and Science of Prediction</em>. Crown.</li>
+        <li>Wilander, J. (2020). Full third-party cookie blocking and more. <em>WebKit blog</em>, 24 March 2020.</li>
       </ul>
     </section>
   </main>

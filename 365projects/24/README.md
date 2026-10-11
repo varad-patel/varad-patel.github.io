@@ -7,7 +7,7 @@ Live at https://varad-patel.github.io/365projects/24/ (part of [365 projects in 
 | | |
 |---|---|
 | Question | When you say you are 80% sure, are you right 80% of the time? |
-| One finding | A forecaster who says 90% and is right 70% of the time earns a Brier score of exactly 0.25, the same as answering 50% to everything; the example log's forecaster, 80% confident and 71% right over 24 predictions, scores 0.216. |
+| One finding | A forecaster who says 90% every time and is right 70% of the time scores exactly 0.25, the same as answering 50% to everything; that is a property of the Brier score, and the made-up example log (80% confident, 71% right over 24 predictions, score 0.216) only illustrates it. |
 | Main limit | The score depends on which questions you choose and on your own honesty in resolving them, and a few dozen forecasts are too few to separate skill from luck. |
 | PPE concept | Forecasting |
 | Skills | Brier score, local storage |

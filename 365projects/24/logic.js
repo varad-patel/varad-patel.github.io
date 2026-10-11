@@ -12,6 +12,8 @@ export const VERSION = 1;
 export const LIMITS = { statement: 280, tags: 6, tag: 24, forecasts: 5000 };
 /** The Brier score of someone who answers 50% to everything: (0.5 - 0)^2 = (0.5 - 1)^2 = 0.25. */
 export const COIN = 0.25;
+/** The luck test calls a gap real only if chance alone would produce one that large less than 1 time in 40. */
+export const LUCK = 1 / 40;
 
 /* ---------------------------------------------------------------------- dates */
 
@@ -39,6 +41,23 @@ export const expectedBrier = (p, rate) => rate * (1 - p) ** 2 + (1 - rate) * p *
 const mean = (a) => a.reduce((s, v) => s + v, 0) / a.length;
 
 /**
+ * The luck test. If every stated confidence were exactly right and the forecasts were independent, forecast i
+ * would be a hit with probability c[i]. This builds the exact distribution of the number of hits, one forecast
+ * at a time, and returns the chance of `hits` or fewer (low) and of `hits` or more (high). No approximation.
+ */
+export function hitChances(confidences, hits) {
+  const dist = new Float64Array(confidences.length + 1);
+  dist[0] = 1;
+  confidences.forEach((c, i) => {
+    for (let k = i + 1; k >= 1; k--) dist[k] = dist[k] * (1 - c) + dist[k - 1] * c;
+    dist[0] *= 1 - c;
+  });
+  let low = 0, high = 0;
+  dist.forEach((q, k) => { if (k <= hits) low += q; if (k >= hits) high += q; });
+  return { low: Math.min(1, low), high: Math.min(1, high) };
+}
+
+/**
  * Everything on the scorecard, from the resolved forecasts only.
  *
  *   brier          mean of (p - outcome)^2; null when nothing is resolved
@@ -47,7 +66,8 @@ const mean = (a) => a.reduce((s, v) => s + v, 0) / a.length;
  *   parts          Murphy's decomposition over groups of forecasts that gave the same probability:
  *                  brier = reliability - resolution + uncertainty, exactly
  *   bins           calibration table: equal-width probability bins with the forecasts in each
- *   confidence     every forecast folded onto the side it leaned to, to compare average confidence with the hit rate
+ *   confidence     every forecast folded onto the side it leaned to, to compare average confidence with the hit rate,
+ *                  with the exact chance of so few (low) or so many (high) hits if the confidences were right
  *   timeline       one row per resolved forecast in order of resolution, with the running mean score
  */
 export function scorecard(forecasts, { bins: wanted } = {}) {
@@ -93,13 +113,11 @@ export function scorecard(forecasts, { bins: wanted } = {}) {
   if (leaning.length) {
     const said = mean(leaning.map((x) => x.c));
     const right = mean(leaning.map((x) => x.hit));
-    // If the stated confidences were exactly right, the number of hits would have this mean and variance.
     const expected = leaning.reduce((s, x) => s + x.c, 0);
-    const variance = leaning.reduce((s, x) => s + x.c * (1 - x.c), 0);
     const hits = leaning.reduce((s, x) => s + x.hit, 0);
-    const z = variance > 0 ? (hits - expected) / Math.sqrt(variance) : hits === expected ? 0 : hits < expected ? -Infinity : Infinity;
-    const verdict = leaning.length < 10 ? "too few" : z <= -2 ? "overconfident" : z >= 2 ? "underconfident" : "no clear sign";
-    card.confidence = { n: leaning.length, said, right, gap: said - right, hits, expected, z, verdict };
+    const { low, high } = hitChances(leaning.map((x) => x.c), hits);
+    const verdict = leaning.length < 10 ? "too few" : low <= LUCK ? "overconfident" : high <= LUCK ? "underconfident" : "no clear sign";
+    card.confidence = { n: leaning.length, said, right, gap: said - right, hits, expected, low, high, verdict };
   }
 
   let running = 0;
@@ -196,9 +214,17 @@ export const CSV_COLUMNS = ["id", "statement", "probability_percent", "created",
 
 export const toJSON = (log) => JSON.stringify({ format: FORMAT, version: VERSION, forecasts: log.forecasts }, null, 2);
 
+// A spreadsheet runs a cell that starts with =, +, - or @ as a formula. Free text that starts that way (or with the
+// apostrophe itself) is written with an apostrophe in front, which a spreadsheet shows as plain text, and the
+// apostrophe is taken off again when the file is read, so the round trip stays exact.
+const RISKY = /^[=+\-@'\t\r]/;
+const guard = (text) => (RISKY.test(text) ? `'${text}` : text);
+const unguard = (text) => (typeof text === "string" && text[0] === "'" && RISKY.test(text.slice(1)) ? text.slice(1) : text);
+const GUARDED = ["id", "statement", "tags"];
+
 /** One row per prediction. Probability is in percent, tags are separated by semicolons, outcome is "happened", "did not happen" or blank. */
 export const toCSV = (log) => csv.stringify([CSV_COLUMNS, ...log.forecasts.map((f) => [
-  f.id, f.statement, Math.round(f.p * 10000) / 100, f.created, f.due, f.tags.join("; "),
+  guard(f.id), guard(f.statement), Math.round(f.p * 10000) / 100, f.created, f.due, guard(f.tags.join("; ")),
   f.outcome === 1 ? "happened" : f.outcome === 0 ? "did not happen" : "", f.resolved ?? "", f.revised ?? "",
 ])]);
 
@@ -241,12 +267,15 @@ export function parseImport(text, { today }) {
     try { data = JSON.parse(body); } catch { return fail("That file looks like JSON but cannot be read. It may have been cut short."); }
     records = Array.isArray(data) ? data : data?.forecasts;
     if (!Array.isArray(records)) return fail("That JSON file has no list of forecasts in it.");
+    // A file that names another format, or a later version of this one, is refused whole: half-reading it could get fields wrong.
+    if (typeof data.format === "string" && data.format !== FORMAT) return fail(`That JSON file is not a forecast log from this page. Its format is "${data.format.slice(0, 40)}", not "${FORMAT}".`);
+    if (typeof data.version === "number" && data.version > VERSION) return fail(`That file was written by a newer version of this page (format version ${data.version}; this page reads version ${VERSION}). Reload the page to get the latest version, then import it again.`);
     label = "Record";
   } else {
     const table = csv.toObjects(body);
     const columns = table.columns.map((c) => c.toLowerCase());
     if (!columns.includes("statement") || !columns.includes("due")) return fail('That CSV file needs a header row with at least "statement", "probability_percent" and "due".');
-    records = table.rows.map((row) => Object.fromEntries(Object.entries(row).map(([key, value]) => [key.toLowerCase(), value])));
+    records = table.rows.map((row) => Object.fromEntries(Object.entries(row).map(([key, value]) => [key.toLowerCase(), GUARDED.includes(key.toLowerCase()) ? unguard(value) : value])));
     label = "Row";
   }
   const forecasts = [], problems = [];
@@ -259,19 +288,25 @@ export function parseImport(text, { today }) {
   return { forecasts, problems };
 }
 
-/** Add imported forecasts that the log does not already hold. A match is the same id, or the same statement, creation date and due date. */
+/**
+ * Add imported forecasts that the log does not already hold. A match is an id already seen, or the same statement,
+ * creation date and due date as a forecast that was in the log before the import (so a file typed out again
+ * without ids adds nothing twice). Two forecasts inside one file that differ only in id are both kept, so that
+ * an exported log always reads back whole. `duplicates` and `overLimit` count what was left out, and why.
+ */
 export function mergeInto(log, incoming) {
   const key = (f) => `${f.statement}|${f.created}|${f.due}`;
   const ids = new Set(log.forecasts.map((f) => f.id));
   const keys = new Set(log.forecasts.map(key));
   const added = [];
+  let duplicates = 0, overLimit = 0;
   for (const f of incoming) {
-    if (ids.has(f.id) || keys.has(key(f)) || log.forecasts.length + added.length >= LIMITS.forecasts) continue;
+    if (ids.has(f.id) || keys.has(key(f))) { duplicates++; continue; }
+    if (log.forecasts.length + added.length >= LIMITS.forecasts) { overLimit++; continue; }
     ids.add(f.id);
-    keys.add(key(f));
     added.push(f);
   }
-  return { log: { ...log, forecasts: [...log.forecasts, ...added] }, added: added.length, skipped: incoming.length - added.length };
+  return { log: { ...log, forecasts: [...log.forecasts, ...added] }, added: added.length, duplicates, overLimit };
 }
 
 /** Read whatever is in storage, keeping every forecast that is still sound. Returns null if there is no log. */

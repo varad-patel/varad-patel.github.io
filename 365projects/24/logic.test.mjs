@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { rng } from "../kit/kit.js";
+import { rng, csv } from "../kit/kit.js";
 import {
-  COIN, LIMITS, isDate, dayNumber, addDays, daysBetween, localToday, brier, expectedBrier, scorecard,
+  COIN, LUCK, LIMITS, FORMAT, VERSION, isDate, dayNumber, addDays, daysBetween, localToday, brier, expectedBrier, hitChances, scorecard,
   emptyLog, parseTags, addForecast, editForecast, resolveForecast, reopenForecast, deleteForecast, statusOf, arrange, allTags,
   toJSON, toCSV, parseImport, mergeInto, restore, exampleLog, CSV_COLUMNS,
 } from "./logic.js";
@@ -66,9 +66,9 @@ test("a calibrated forecaster's expected score is p(1 - p), and simulation agree
   const r = rng(7);
   for (const p of [0.1, 0.3, 0.8]) {
     close(expectedBrier(p, p), p * (1 - p));
-    const card = scorecard(Array.from({ length: 20000 }, (_, i) => made(p, r.bool(p) ? 1 : 0, "2026-09-01", { n: i })));
+    const card = scorecard(Array.from({ length: 5000 }, (_, i) => made(p, r.bool(p) ? 1 : 0, "2026-09-01", { n: i })));
     close(card.brier, p * (1 - p), 0.01);
-    assert.ok(Math.abs(card.confidence.z) < 3, `z = ${card.confidence.z}`);
+    assert.ok(card.confidence.low > 0.001 && card.confidence.high > 0.001, `chances ${card.confidence.low}, ${card.confidence.high}`);
   }
 });
 
@@ -113,17 +113,51 @@ test("confidence folds every forecast onto the side it leaned to", () => {
   close(card.confidence.right, 2 / 3);
   close(card.confidence.gap, 0.8 - 2 / 3);
   assert.equal(card.confidence.verdict, "too few");
-  // z by hand: hits 2, expected 2.4, variance 0.16 + 0.09 + 0.21 = 0.46.
-  close(card.confidence.z, (2 - 2.4) / Math.sqrt(0.46));
+  close(card.confidence.expected, 2.4);
+  // The chance of 2 hits or fewer if 80%, 90% and 70% were right: 1 - 0.8 × 0.9 × 0.7 = 0.496.
+  close(card.confidence.low, 0.496);
   // Thirty forecasts at 90% with eighteen hits: far too confident for luck to explain.
   const over = scorecard(Array.from({ length: 30 }, (_, i) => made(0.9, i < 18 ? 1 : 0, "2026-09-01", { n: i })));
   assert.equal(over.confidence.verdict, "overconfident");
-  close(over.confidence.z, (18 - 27) / Math.sqrt(2.7));
+  assert.ok(over.confidence.low < 1e-4);
   const under = scorecard(Array.from({ length: 30 }, (_, i) => made(0.6, i < 28 ? 1 : 0, "2026-09-01", { n: i })));
   assert.equal(under.confidence.verdict, "underconfident");
-  // Certainty that fails is caught without dividing by zero.
-  assert.equal(scorecard([made(1, 0)]).confidence.z, -Infinity);
-  assert.equal(scorecard([made(1, 1)]).confidence.z, 0);
+  assert.ok(under.confidence.high < 1e-4);
+  // Certainty that fails cannot be luck at all.
+  assert.deepEqual([scorecard([made(1, 0)]).confidence.low, scorecard([made(1, 1)]).confidence.low], [0, 1]);
+  assert.equal(scorecard(Array.from({ length: 10 }, (_, i) => made(1, i ? 1 : 0, "2026-09-01", { n: i }))).confidence.verdict, "overconfident");
+});
+
+test("the luck test is the exact distribution of hits, checked against the binomial by hand", () => {
+  const choose = (n, k) => { let c = 1; for (let i = 1; i <= k; i++) c = (c * (n - i + 1)) / i; return c; };
+  const binomial = (n, p, k) => choose(n, k) * p ** k * (1 - p) ** (n - k);
+  // Ten forecasts at 90%, seven hits (the forecaster of the finding). P(7 or fewer) = 1 - P(8) - P(9) - P(10) = 0.0702.
+  const seven = hitChances(new Array(10).fill(0.9), 7);
+  close(seven.low, 1 - binomial(10, 0.9, 8) - binomial(10, 0.9, 9) - binomial(10, 0.9, 10));
+  assert.equal(seven.low.toFixed(4), "0.0702");
+  close(seven.high, binomial(10, 0.9, 7) + binomial(10, 0.9, 8) + binomial(10, 0.9, 9) + binomial(10, 0.9, 10));
+  // A normal approximation puts that 2.1 standard deviations out and would say "overconfident".
+  // It happens by luck 7% of the time, so the tool does not.
+  assert.ok(seven.low > LUCK);
+  assert.equal(scorecard(Array.from({ length: 10 }, (_, i) => made(0.9, i < 7 ? 1 : 0, "2026-09-01", { n: i }))).confidence.verdict, "no clear sign");
+  // Ten at 95% with eight hits: P(8 or fewer) = 1 - 0.95^10 - 10 × 0.05 × 0.95^9 = 0.0861.
+  close(hitChances(new Array(10).fill(0.95), 8).low, 1 - 0.95 ** 10 - 10 * 0.05 * 0.95 ** 9);
+  // Unequal confidences, two forecasts: 0 hits with 0.2 × 0.4, 1 hit with 0.8 × 0.4 + 0.2 × 0.6, 2 hits with 0.8 × 0.6.
+  const two = [0, 1, 2].map((k) => hitChances([0.8, 0.6], k));
+  close(two[0].low, 0.08); close(two[1].low, 0.52); close(two[2].low, 1);
+  close(two[0].high, 1); close(two[1].high, 0.92); close(two[2].high, 0.48);
+  assert.deepEqual(hitChances([], 0), { low: 1, high: 1 });
+  // The two chances overlap on the observed count, and a calibrated forecaster is flagged no more often than the threshold allows.
+  const r = rng(40);
+  let flagged = 0;
+  for (let trial = 0; trial < 2000; trial++) {
+    const cs = Array.from({ length: 25 }, () => r.pick([0.6, 0.7, 0.8, 0.9, 0.95]));
+    const hits = cs.filter((c) => r.bool(c)).length;
+    const { low, high } = hitChances(cs, hits);
+    assert.ok(low + high >= 1 - 1e-12);
+    if (low <= LUCK || high <= LUCK) flagged++;
+  }
+  assert.ok(flagged / 2000 <= 2 * LUCK, `flagged ${flagged} of 2000`);
 });
 
 test("the timeline runs in order of resolution and its last running mean is the score", () => {
@@ -203,6 +237,23 @@ test("JSON and CSV exports read back to the same log", () => {
   assert.equal(toCSV(emptyLog()), CSV_COLUMNS.join(","));
 });
 
+test("text a spreadsheet would run as a formula is exported as plain text and reads back unchanged", () => {
+  const log = exampleLog(TODAY);
+  const risky = ['=HYPERLINK("http://example.com","click")', "+1 for rain", "-5 degrees by Friday", "@home by six", "'=quoted", "'plain apostrophe"];
+  risky.forEach((statement, i) => { log.forecasts[i] = { ...log.forecasts[i], statement, tags: i === 0 ? ["=cmd", "b"] : log.forecasts[i].tags }; });
+  const text = toCSV(log);
+  // No free-text cell in the file starts with a character that makes a spreadsheet treat it as a formula.
+  const rows = csv.parse(text).slice(1);
+  assert.equal(rows.length, log.forecasts.length);
+  for (const row of rows) for (const cell of [row[0], row[1], row[5]]) assert.ok(!/^[=+\-@\t\r]/.test(cell), cell);
+  assert.equal(rows[0][1], `'${risky[0]}`);
+  assert.equal(rows[4][1], "''=quoted");
+  assert.equal(rows[5][1], "''plain apostrophe");
+  const res = parseImport(text, { today: TODAY });
+  assert.deepEqual(res.problems, []);
+  assert.deepEqual(res.forecasts, log.forecasts);
+});
+
 test("a hand-made CSV is read, and bad rows are reported and left out", () => {
   const text = [
     "Statement,Probability,Due,Outcome,Tags",
@@ -239,14 +290,46 @@ test("files that are not a log are refused with a reason", () => {
 test("merging an import never duplicates and never touches what is there", () => {
   const log = exampleLog(TODAY);
   const again = mergeInto(log, parseImport(toJSON(log), { today: TODAY }).forecasts);
-  assert.deepEqual([again.added, again.skipped, again.log.forecasts.length], [0, 32, 32]);
+  assert.deepEqual([again.added, again.duplicates, again.overLimit, again.log.forecasts.length], [0, 32, 0, 32]);
   // The same prediction under a new id (a CSV re-typed without ids) is still recognised.
   const retyped = log.forecasts.slice(0, 3).map((f) => ({ ...f, id: `new-${f.id}` }));
   const fresh = { ...log.forecasts[0], id: "brand-new", statement: "Something else" };
   const merged = mergeInto(log, [...retyped, fresh]);
-  assert.deepEqual([merged.added, merged.skipped], [1, 3]);
+  assert.deepEqual([merged.added, merged.duplicates, merged.overLimit], [1, 3, 0]);
   assert.equal(merged.log.forecasts.at(-1).id, "brand-new");
   assert.equal(mergeInto(emptyLog(), log.forecasts).added, 32);
+});
+
+test("an export reads back whole even when two predictions differ only in their probability", () => {
+  let log = emptyLog();
+  for (const [id, percent] of [["a", 60], ["b", 90]]) log = addForecast(log, { statement: "It rains tomorrow", percent, due: "2026-10-11", tags: "" }, { today: TODAY, id }).log;
+  for (const text of [toJSON(log), toCSV(log)]) {
+    const back = mergeInto(emptyLog(), parseImport(text, { today: TODAY }).forecasts);
+    assert.deepEqual([back.added, back.duplicates], [2, 0]);
+    assert.deepEqual(back.log, log);
+    // Importing the same file a second time adds nothing.
+    assert.deepEqual(mergeInto(back.log, parseImport(text, { today: TODAY }).forecasts).log, log);
+  }
+  // The same id twice in one file is one prediction.
+  const twice = mergeInto(emptyLog(), [log.forecasts[0], log.forecasts[0]]);
+  assert.deepEqual([twice.added, twice.duplicates], [1, 1]);
+});
+
+test("a full log says that it is full and does not call the overflow duplicates", () => {
+  const f = (i) => ({ id: `n${i}`, statement: `Statement ${i}`, p: 0.5, created: "2026-09-01", due: "2026-12-01", tags: [], outcome: null, resolved: null, revised: null });
+  const nearly = { version: 1, forecasts: Array.from({ length: LIMITS.forecasts - 2 }, (_, i) => f(i)) };
+  const merged = mergeInto(nearly, [f(0), f(90001), f(90002), f(90003), f(90004)]);
+  assert.deepEqual([merged.added, merged.duplicates, merged.overLimit, merged.log.forecasts.length], [2, 1, 2, LIMITS.forecasts]);
+  assert.match(addForecast(merged.log, { statement: "One more", percent: 50, due: "2026-12-01" }, { today: TODAY }).error, /holds 5000 predictions/);
+});
+
+test("a file in another format, or from a later version of this one, is refused whole", () => {
+  const record = { id: "a", statement: "x", p: 0.5, created: TODAY, due: "2026-11-01", tags: [], outcome: null, resolved: null, revised: null };
+  assert.equal(parseImport(JSON.stringify({ format: FORMAT, version: VERSION, forecasts: [record] }), { today: TODAY }).forecasts.length, 1);
+  assert.match(parseImport(JSON.stringify({ format: FORMAT, version: VERSION + 1, forecasts: [record] }), { today: TODAY }).error, /newer version of this page \(format version 2; this page reads version 1\)/);
+  assert.match(parseImport(JSON.stringify({ format: "another-app", version: 1, forecasts: [record] }), { today: TODAY }).error, /not a forecast log from this page/);
+  // A hand-made file that names no format is still read.
+  assert.equal(parseImport(JSON.stringify({ forecasts: [record] }), { today: TODAY }).forecasts.length, 1);
 });
 
 test("restoring from storage keeps sound forecasts and drops broken ones", () => {
@@ -276,7 +359,9 @@ test("the example log always has resolved, overdue and open predictions, and its
     assert.equal((card.confidence.said * 100).toFixed(0), "80");
     assert.equal((card.confidence.right * 100).toFixed(0), "71");
     assert.equal(card.confidence.hits, 17);
-    assert.equal(card.confidence.z.toFixed(1), "-1.1");
+    close(card.brier, 2071 / 9600); // worked out by hand from the 24 outcomes
+    // If the confidences were right, 17 hits or fewer would come up 18.8% of the time: about one time in five.
+    assert.equal(card.confidence.low.toFixed(3), "0.188");
     assert.equal(card.confidence.verdict, "no clear sign");
     assert.deepEqual(card.bins.map((b) => b.n), [1, 4, 0, 6, 13]);
     assert.deepEqual(card.bins.map((b) => b.happened), [0, 1, 0, 4, 9]);
