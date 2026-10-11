@@ -20,7 +20,9 @@ let last = null; // the latest finished experiment
 let anim = null; // a single experiment being played out: { timers, finish }
 let me;         // part 3: { r, tally, text }
 
-const head = (title, text) => el("div", { class: "sb-head" }, el("h3", { text: title }), el("p", { class: "small muted", text }));
+// Each part starts with a heading that the jump links at the top of the tool point to.
+const PARTS = [["sb-run", "1. Run the experiment"], ["sb-bets", "2. Attach a bet to each count"], ["sb-beauty", "3. Be Beauty"]];
+const head = (i, text) => el("div", { class: "sb-head" }, el("h2", { id: PARTS[i][0], text: PARTS[i][1] }), el("p", { class: "small muted", text }));
 
 /* ================================================= 1. the experiment */
 
@@ -46,7 +48,9 @@ seedField.input.addEventListener("input", () => {
 
 const coin = el("div", { class: "sb-coin", "aria-hidden": "true", text: "?" });
 const days = el("div", { class: "sb-days" });
-const caption = el("p", { class: "sb-cap small", role: "status" });
+const caption = el("p", { class: "sb-cap small" });
+// Announced to screen readers once per run. The caption changes at every step of the animation, which is too often.
+const said = el("p", { class: "sr-only", role: "status" });
 const tape = el("div", { class: "sb-tape", role: "img" });
 const tapeCap = el("p", { class: "small muted" });
 const sN = stat("Experiments run");
@@ -57,7 +61,7 @@ const convBox = el("div");
 
 const part1 = el("div", { class: "tool-grid sb-part" },
   el("div", { class: "controls" },
-    head("1. Run the experiment", "On Sunday Beauty is put to sleep and a coin is tossed. Each time she is woken she is asked how likely it is that the coin landed heads, then her memory of the waking is erased."),
+    head(0, "On Sunday Beauty is put to sleep and a coin is tossed. Each time she is woken she is asked how likely it is that the coin landed heads, then her memory of the waking is erased."),
     pSlider.el, kSlider.el,
     el("div", { class: "field" }, el("div", { class: "lab" }, el("span", { text: "Examples" })),
       el("div", { class: "row" }, preset("Standard problem", 0.5, 2), preset("Ten wakings", 0.5, 10), preset("One waking", 0.5, 1), preset("Coin favours heads", 0.8, 2))),
@@ -69,7 +73,7 @@ const part1 = el("div", { class: "tool-grid sb-part" },
     seedField.el, seedMsg,
     el("div", { class: "row" }, button("New seed", () => { state.seed = randomSeed(); seedField.value = state.seed; seedMsg.replaceChildren(); restart(); }, { small: true }))),
   el("div", { class: "out" },
-    el("div", { class: "panel sb-stage" }, coin, days, caption),
+    el("div", { class: "panel sb-stage" }, coin, days, caption), said,
     el("div", {}, el("p", { class: "chart-title", text: "Two ways to count the same experiments" }), tape,
       el("div", { class: "chart-legend sb-key" },
         el("span", {}, el("i", { class: "sb-box" }), "one experiment"),
@@ -162,6 +166,9 @@ function renderRun() {
   sN.set(fmt.int(n), n ? `${fmt.int(t.awakenings)} awakenings, ${fmt.num(t.awakenings / n, 3)} each` : "run one to begin");
   sE.set(pct1(s.byExperiment), n ? `${fmt.int(t.heads)} of ${fmt.int(n)}; exact ${pct1(x.byExperiment)}` : `exact ${pct1(x.byExperiment)}`);
   sA.set(pct1(s.byAwakening), n ? `${fmt.int(t.headsAwakenings)} of ${fmt.int(t.awakenings)}; exact ${pct1(x.byAwakening)}` : `exact ${pct1(x.byAwakening)}`);
+  said.textContent = n
+    ? `${fmt.int(n)} ${n === 1 ? "experiment" : "experiments"} run, the latest ${last.heads ? "heads" : "tails"}. Heads in ${pct1(s.byExperiment)} of experiments and ${pct1(s.byAwakening)} of awakenings.`
+    : "No experiments yet.";
 
   // The tape: one outlined box per experiment, one square per awakening.
   const rec = run.recent;
@@ -199,7 +206,7 @@ function renderRun() {
 /* ======================================================== 2. the bets */
 
 const priceSlider = slider({
-  label: "Price of the ticket", min: 0.01, max: 0.99, step: "any", value: state.price, format: price3,
+  label: "Price of the ticket", min: 0.01, max: 0.99, step: 0.001, value: state.price, format: price3,
   hint: "The ticket pays 1 if the coin landed heads and nothing if it landed tails.",
   onInput: (v) => { state.price = v; renderBets(); },
 });
@@ -210,7 +217,7 @@ const betChartBox = el("div");
 
 const part2 = el("div", { class: "tool-grid sb-part" },
   el("div", { class: "controls" },
-    head("2. Attach a bet to each count", "Beauty is offered a ticket on heads. Sell it to her once per experiment, or at every awakening: the experiments above are the same, only the number of tickets changes."),
+    head(1, "Beauty is offered a ticket on heads. Sell it to her once per experiment, or at every awakening: the experiments above are the same, only the number of tickets changes."),
     priceSlider.el,
     el("div", { class: "row" },
       button("Halfer's price", () => setPrice(exact(setup()).byExperiment), { small: true }),
@@ -220,7 +227,7 @@ const part2 = el("div", { class: "tool-grid sb-part" },
 
 const betChart = chart(betChartBox, {
   title: "Expected profit per experiment at each ticket price",
-  subtitle: "Exact. Each line crosses zero at the price where that bet breaks even.",
+  subtitle: "Exact. The dot on each line marks the price where that bet breaks even.",
   label: "Line chart of Beauty's expected profit per experiment against the ticket price, for each way of selling the ticket",
   height: 280,
   x: { label: "Ticket price", domain: [0, 1], format: (v) => fmt.num(v, 2) },
@@ -255,16 +262,15 @@ function renderBets() {
 
   const A = exact(setup()).awakenings;
   const xs = Array.from({ length: 101 }, (_, i) => i / 100);
-  const label = (v, above) => ({ type: "text", x: v, y: 0, text: price3(v), anchor: v > 0.85 ? "end" : "start", dx: v > 0.85 ? -8 : 8, dy: above ? -9 : 18 });
   betChart.update({
     series: [
-      { name: "One ticket per experiment", data: xs.map((c) => [c, state.p - c]), color: 0 },
-      { name: "One ticket at every awakening", data: xs.map((c) => [c, state.p - c * A]), color: 1 },
+      { name: `One ticket per experiment: breaks even at ${price3(hi)}`, data: xs.map((c) => [c, state.p - c]), color: 0 },
+      { name: `One ticket at every awakening: breaks even at ${price3(lo)}`, data: xs.map((c) => [c, state.p - c * A]), color: 1 },
     ],
     marks: [
       { type: "vline", x: state.price, text: `price ${price3(state.price)}` },
-      { type: "point", x: hi, y: 0 }, label(hi, true),
-      ...(same(lo, hi) ? [] : [{ type: "point", x: lo, y: 0 }, label(lo, false)]),
+      { type: "point", x: hi, y: 0 },
+      ...(same(lo, hi) ? [] : [{ type: "point", x: lo, y: 0 }]),
     ],
   });
 }
@@ -283,7 +289,7 @@ const scoreChartBox = el("div");
 
 const part3 = el("div", { class: "tool-grid sb-part" },
   el("div", { class: "controls" },
-    head("3. Be Beauty", "You have just been woken. You do not know what day it is, or whether you have been woken before. Give your answer, then see how it scores when each experiment is scored once and when every awakening is scored."),
+    head(2, "You have just been woken. You do not know what day it is, or whether you have been woken before. Give your answer, then see how it scores when each experiment is scored once and when every awakening is scored."),
     credSlider.el,
     el("div", { class: "row" },
       button("Lock in and reveal", () => lockIn(1), { primary: true }),
@@ -310,7 +316,7 @@ function lockIn(times) {
   if (times > 1) me.text = `${fmt.int(times)} more experiments played. Move the slider to see how any other answer would have scored on the same coin tosses.`;
   else if (e.heads) me.text = `The coin landed heads, so that was your only awakening. Your penalty is ${sum}, and it counts once whichever way the scoring is done.`;
   else if (e.awakenings === 1) me.text = `The coin landed tails, and with this set-up tails also means one awakening. Your penalty is ${sum}, counted once either way.`;
-  else me.text = `The coin landed tails. You were woken ${e.awakenings} times and, remembering nothing, gave the same answer each time. Each answer costs ${sum}. Scored once for the experiment that is ${fmt.num(pen, 3)}; scored at every awakening it is ${e.awakenings} × ${fmt.num(pen, 3)} = ${fmt.num(e.awakenings * pen, 3)}.`;
+  else me.text = `The coin landed tails. You were woken ${e.awakenings} times and, remembering nothing, gave the same answer each time. Each answer costs ${sum}. Scored once for the experiment, that is one penalty of ${fmt.num(pen, 3)}; scored at every awakening, it is ${e.awakenings} penalties of ${fmt.num(pen, 3)}.`;
   renderBeauty();
 }
 
@@ -322,7 +328,7 @@ function renderBeauty() {
   const answers = [state.credence, x.halfer.waking, x.thirder.waking];
   const row = (q, values) => {
     const best = Math.min(...values);
-    const [you, half, third] = values.map((v) => (v == null ? "–" : el(v - best < 1e-12 ? "strong" : "span", { text: fmt.num(v, 3) })));
+    const [you, half, third] = values.map((v) => (v == null ? "–" : (v - best < 1e-12 ? el("strong", {}, fmt.num(v, 3), el("span", { class: "sr-only", text: " (lowest)" })) : fmt.num(v, 3))));
     return { q, you, half, third };
   };
   const sim = answers.map((a) => brierTally(t, a)), long = answers.map((a) => brierExact(setup(), a));
@@ -338,25 +344,27 @@ function renderBeauty() {
   }));
   scoreMsg.replaceChildren(note("", same(x.halfer.waking, x.thirder.waking)
     ? `With one awakening either way there is nothing to disagree about: the best answer is ${pct1(x.halfer.waking)} under both scorings.`
-    : `Because you cannot tell one waking from another, your answer is the same every time, so each row is one fixed answer scored on every experiment played so far. In the long run the lowest penalty goes to ${pct1(x.halfer.waking)} when each experiment is scored once, and to ${pct1(x.thirder.waking)} when every awakening is scored.`));
+    : `Because you cannot tell one waking from another, your answer is the same every time, so each column is one fixed answer scored on every experiment played so far, and moving the slider rescores your column on the same coin tosses. Each figure is an average: over experiments in the first two rows, over awakenings in the last two. In the long run the lowest penalty goes to ${pct1(x.halfer.waking)} when each experiment is scored once, and to ${pct1(x.thirder.waking)} when every awakening is scored.`));
 
   const cs = Array.from({ length: 101 }, (_, i) => i / 100);
   const curve = cs.map((c) => [c, brierExact(setup(), c)]);
-  const low = (v, key) => ({ type: "text", x: v, y: brierExact(setup(), v)[key], text: pct1(v), anchor: v < 0.1 ? "start" : v > 0.9 ? "end" : "middle", dy: 19 });
   scoreChart.update({
     series: [
-      { name: "Scored once per experiment", data: curve.map(([c, s]) => [c, s.perExperiment]), color: 0 },
-      { name: "Scored at every awakening", data: curve.map(([c, s]) => [c, s.perAwakening]), color: 1 },
+      { name: `Scored once per experiment: lowest at ${pct1(x.halfer.waking)}`, data: curve.map(([c, s]) => [c, s.perExperiment]), color: 0 },
+      { name: `Scored at every awakening: lowest at ${pct1(x.thirder.waking)}`, data: curve.map(([c, s]) => [c, s.perAwakening]), color: 1 },
     ],
     marks: [
       { type: "vline", x: state.credence, text: `your answer ${fmt.pct(state.credence, 0)}` },
-      { type: "point", x: x.halfer.waking, y: brierExact(setup(), x.halfer.waking).perExperiment }, low(x.halfer.waking, "perExperiment"),
-      ...(same(x.halfer.waking, x.thirder.waking) ? [] : [{ type: "point", x: x.thirder.waking, y: brierExact(setup(), x.thirder.waking).perAwakening }, low(x.thirder.waking, "perAwakening")]),
+      { type: "point", x: x.halfer.waking, y: brierExact(setup(), x.halfer.waking).perExperiment },
+      ...(same(x.halfer.waking, x.thirder.waking) ? [] : [{ type: "point", x: x.thirder.waking, y: brierExact(setup(), x.thirder.waking).perAwakening }]),
     ],
   });
 }
 
 /* ============================================================== start */
 
-$("#app").append(part1, part2, part3);
+// The tool is three screens long on a phone, so it opens with links to its parts.
+$("#app").append(
+  el("nav", { class: "sb-jump small", "aria-label": "Parts of the tool" }, el("span", { class: "muted", text: "Jump to" }), PARTS.map(([id, title]) => el("a", { href: `#${id}`, text: title }))),
+  part1, part2, part3);
 restart();
