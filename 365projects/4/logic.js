@@ -1,5 +1,6 @@
 // Day 4: Bayes Intuition Lab. The model, with no DOM code.
 // One yes/no test for one yes/no condition, worked out as probabilities and as whole people.
+import { fmt } from "../kit/kit.js";
 
 const isProb = (x) => typeof x === "number" && Number.isFinite(x) && x >= 0 && x <= 1;
 
@@ -9,13 +10,13 @@ const isProb = (x) => typeof x === "number" && Number.isFinite(x) && x >= 0 && x
  */
 export const PRESETS = [
   { key: "textbook", label: "Textbook mammogram problem", prior: 0.01, sens: 0.8, fpr: 0.096, source: true,
-    note: "The numbers of the problem David Eddy put to doctors in 1982, as rounded by Gigerenzer and Hoffrage (1995). They are the textbook's numbers, not current clinical figures." },
+    note: "The mammogram problem as Gigerenzer and Hoffrage (1995) gave it, adapted from one David Eddy described in 1982. These are a textbook's numbers, not current clinical figures." },
   { key: "harvard", label: "Harvard Medical School question", prior: 0.001, sens: 1, fpr: 0.05, source: true,
     note: "Casscells, Schoenberger and Graboys (1978): a condition found in 1 person in 1,000 and a test with a 5% false-positive rate. The question gives no sensitivity, so it is taken as 100%." },
   { key: "rare", label: "Rare condition, excellent test (illustrative)", prior: 0.001, sens: 0.99, fpr: 0.01,
     note: "Illustrative numbers: a test that is right 99% of the time either way, used on a condition that 1 person in 1,000 has." },
   { key: "workplace", label: "Random workplace drug test (illustrative)", prior: 0.05, sens: 0.95, fpr: 0.05,
-    note: "Illustrative numbers: a test that is 95% accurate either way, used on a workforce where 1 in 20 would test positive truthfully." },
+    note: "Illustrative numbers: a test that is 95% accurate either way, used on a workforce in which 1 person in 20 has taken the drug." },
   { key: "symptoms", label: "Patient with symptoms (illustrative)", prior: 0.3, sens: 0.9, fpr: 0.1,
     note: "Illustrative numbers: the same kind of test, used on someone a doctor already thinks has a 30% chance of the condition." },
   { key: "outbreak", label: "Rapid test in an outbreak (illustrative)", prior: 0.1, sens: 0.7, fpr: 0.01,
@@ -140,4 +141,28 @@ export function probGrid(lo = 0.0001, hi = 0.99) {
   set.add(0);
   set.add(1);
   return [...set].filter((p) => p >= lo && p <= hi).sort((a, b) => a - b);
+}
+
+/**
+ * The positions of the three sliders. Base rates and false-positive rates run from 0.01% to 99%.
+ * Sensitivities run from 1% to 99.9%, then 100%: finer steps than that near 100% would fill most of the slider.
+ */
+export const GRIDS = { prior: probGrid(0.0001, 0.99), sens: [...probGrid(0.01, 0.999), 1], fpr: probGrid(0.0001, 0.99) };
+
+/** An input written out in full, so that no two slider positions read the same: 0.096 is "9.6%", 0.9989 is "99.89%". */
+export const pctIn = (p) => `${fmt.sig(p * 100, 8)}%`;
+
+/**
+ * A result as a percentage. Between 1% and 99% it has one decimal place. Nearer 0% or 100% it keeps two
+ * significant figures of the distance from that end, so 0.00223 is "0.22%" and 0.9999 is "99.99%".
+ * A result that is not exactly 0 or 1 is never written as "0%" or "100%".
+ */
+export function pct(p) {
+  if (p == null || !Number.isFinite(p)) return "–";
+  if (p === 0 || p === 1) return p ? "100%" : "0%";
+  const q = Math.min(p, 1 - p) * 100;
+  if (q >= 1) return `${fmt.num(p * 100, 1)}%`;
+  if (q < 1e-8) return p < 0.5 ? "under 0.00000001%" : "over 99.99999999%";
+  const decimals = Math.min(8, 1 - Math.floor(Math.log10(q) + 1e-9));
+  return `${(p * 100).toLocaleString("en-GB", { maximumFractionDigits: decimals })}%`;
 }

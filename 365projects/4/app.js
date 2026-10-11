@@ -1,6 +1,6 @@
 // Day 4: Bayes Intuition Lab. Interface.
 import { $, el, fmt, mount, slider, select, segmented, button, stat, note, table, chart, canvas, palette, rng } from "../kit/kit.js";
-import { PRESETS, bayes, crowd, sequence, curve, priorFor, judgeGuess, randomScenario, probGrid } from "./logic.js";
+import { PRESETS, GRIDS as GRID, bayes, crowd, sequence, curve, priorFor, judgeGuess, randomScenario, pctIn, pct } from "./logic.js";
 
 mount();
 
@@ -8,29 +8,19 @@ const HAS = palette[1];   // people who have the condition
 const NOT = "#8a94a3";    // people who do not
 const INK = "#16233b";
 
-/** Inputs are tidy numbers, shown as they are. */
-const pctIn = (p) => `${fmt.sig(p * 100, 4)}%`;
-/** Results keep enough decimals to stay distinct from 0% and 100%. */
-function pct(p) {
-  if (p == null || !Number.isFinite(p)) return "–";
-  if (p === 0 || p === 1) return p ? "100%" : "0%";
-  const q = Math.min(p, 1 - p) * 100;
-  return `${fmt.num(p * 100, q >= 1 ? 1 : Math.min(8, Math.ceil(-Math.log10(q)) + 1))}%`;
-}
 const people = (k) => (k === 1 ? "1 person" : `${fmt.int(k)} people`);
 const nearest = (grid, p) => grid.reduce((best, v, i) => (Math.abs(v - p) < Math.abs(grid[best] - p) ? i : best), 0);
 
-const GRID = { prior: probGrid(0.0001, 0.99), sens: probGrid(0.01, 1), fpr: probGrid(0.0001, 0.99) };
 const state = { ...PRESETS[0], preset: PRESETS[0].key, n: 1000, revealed: false, verdict: null, log: [], seed: 4 };
 
 /* ---------- controls ---------- */
 const presetNote = el("div", { class: "hint" });
 const presetSelect = select({
   label: "Scenario", value: state.preset,
-  options: [...PRESETS.map((p) => ({ value: p.key, label: p.label })), { value: "custom", label: "Your own numbers" }],
+  options: [...PRESETS.map((p) => ({ value: p.key, label: p.label })), { value: "random", label: "A random scenario to guess" }, { value: "custom", label: "Your own numbers" }],
   onChange: (key) => {
     const p = PRESETS.find((x) => x.key === key);
-    if (p) setScenario(p, key); else { state.preset = "custom"; update(); }
+    if (p) setScenario(p, key); else if (key === "random") newRound(false); else { state.preset = "custom"; update(); }
   },
 });
 presetSelect.el.append(presetNote);
@@ -44,9 +34,12 @@ for (const [key, label, hint] of [
   sliders[key] = slider({
     label, hint, min: 0, max: GRID[key].length - 1, step: 1, value: nearest(GRID[key], state[key]),
     format: (i) => pctIn(GRID[key][i]),
-    onInput: (i) => { state[key] = GRID[key][i]; state.preset = "custom"; presetSelect.value = "custom"; state.verdict = null; update(); },
+    onInput: (i) => { state[key] = GRID[key][i]; state.preset = "custom"; presetSelect.value = "custom"; state.verdict = null; sayValue(key); update(); },
   });
+  sayValue(key);
 }
+/** The slider's own value is a position in the list of steps, so assistive technology is told the percentage instead. */
+function sayValue(key) { sliders[key].input.setAttribute("aria-valuetext", pctIn(GRID[key][sliders[key].value])); }
 const crowdSeg = segmented({
   label: "People in the picture", value: state.n,
   options: [{ value: 100, label: "100" }, { value: 1000, label: "1,000" }, { value: 10000, label: "10,000" }],
@@ -58,8 +51,9 @@ const controls = el("div", { class: "controls" }, presetSelect.el, sliders.prior
 /* ---------- outputs ---------- */
 const question = el("p", { class: "q" });
 const guessSlider = slider({ label: "Your guess, before you look", min: 0, max: 100, step: 1, value: 50, format: (v) => `${v}%` });
+const verdictBox = el("div", { class: "verdict", role: "status" });
 const guessArea = el("div", { class: "guess" });
-const questionPanel = el("div", { class: "panel ask" }, el("h3", { text: "The question" }), question, guessArea);
+const questionPanel = el("div", { class: "panel ask" }, el("h2", { text: "The question" }), question, el("div", { class: "answer" }, verdictBox, guessArea));
 
 const sPos = stat("After a positive result");
 const sNeg = stat("After a negative result");
@@ -76,14 +70,15 @@ const chartBox = el("div");
 const chartNote = el("p", { class: "small muted" });
 const repeatBox = el("div");
 const logBox = el("div");
-// Reading order (and phone order): the question and its answer, then the controls, then the detail.
-// On a wide screen the page's own grid puts the controls in a column on the left.
+// Reading order, tab order and phone order: the question, its answer, the controls, then the detail.
+// On a wide screen the question runs across the top and the controls sit in a column on the left below it.
+// Nothing in `top` takes keyboard focus, so Tab goes question, controls, detail at every width.
 const top = el("div", { class: "out lab-top" },
-  questionPanel, el("div", { class: "stats" }, sPos.el, sNeg.el, sShare.el, sLr.el), message,
+  el("div", { class: "stats" }, sPos.el, sNeg.el, sShare.el, sLr.el), message,
   el("div", {}, picTitle, summary, picLegend, picBox, picNote), barBox);
 const rest = el("div", { class: "out lab-rest" }, el("div", {}, chartBox, chartNote), repeatBox, logBox);
 
-$("#app").append(el("div", { class: "lab-grid" }, top, controls, rest));
+$("#app").append(el("div", { class: "lab-grid" }, questionPanel, top, controls, rest));
 
 /* ---------- the picture: one dot per person ---------- */
 // Colour says who has the condition. After the reveal, position says how they tested.
@@ -92,7 +87,7 @@ function layout(w) {
   const n = state.n;
   const cols = n === 100 ? (narrow ? 10 : 20) : n === 1000 ? (narrow ? 40 : 50) : narrow ? 100 : 200;
   const pad = 12;
-  const cell = Math.min(n === 100 ? 22 : 14, (w - 2 * pad) / cols);
+  const cell = Math.max(1, Math.min(n === 100 ? 22 : 14, (w - 2 * pad) / cols));
   const c = crowd(state.prior, state.sens, state.fpr, n);
   const blocks = state.revealed
     ? [{ title: `Tested positive: ${people(c.positive)}`, more: `, ${fmt.int(c.tp)} with the condition`, has: c.tp, not: c.fp },
@@ -139,7 +134,7 @@ document.fonts?.ready.then(() => picture.redraw());   // the block titles are dr
 
 /* ---------- actions ---------- */
 function setScenario(s, key = "custom") {
-  for (const k of ["prior", "sens", "fpr"]) { state[k] = s[k]; sliders[k].value = nearest(GRID[k], s[k]); }
+  for (const k of ["prior", "sens", "fpr"]) { state[k] = s[k]; sliders[k].value = nearest(GRID[k], s[k]); sayValue(k); }
   state.preset = key;
   presetSelect.value = key;
   state.verdict = null;
@@ -150,13 +145,15 @@ function reveal(withGuess) {
   if (state.verdict) state.log.push({ prior: state.prior, sens: state.sens, fpr: state.fpr, ...state.verdict });
   state.revealed = true;
   update();
+  guessArea.querySelector("button")?.focus();   // the button that was pressed has gone; keep the keyboard's place
 }
-function newRound() {
+function newRound(moveFocus = true) {
   let s;
   do { state.seed++; s = randomScenario(rng(state.seed)); } while (s.prior === state.prior && s.sens === state.sens && s.fpr === state.fpr);
   state.revealed = false;
   guessSlider.value = 50;
-  setScenario(s);
+  setScenario(s, "random");
+  if (moveFocus) guessSlider.input.focus();
 }
 
 function verdictNote(v) {
@@ -183,34 +180,39 @@ function update() {
   message.replaceChildren();
 
   const preset = PRESETS.find((p) => p.key === state.preset);
-  presetNote.textContent = preset ? preset.note : "Your own numbers. Nothing here describes a real test.";
+  presetNote.textContent = preset ? preset.note : state.preset === "random"
+    ? "Round numbers drawn at random for you to guess at. Nothing here describes a real test."
+    : "Your own numbers. Nothing here describes a real test.";
 
   question.textContent = `${pctIn(prior)} of the people being tested have a condition. The test comes back positive for ${pctIn(sens)} of those who have it, and for ${pctIn(fpr)} of those who do not. Someone tests positive. What is the chance that they have the condition?`;
+  verdictBox.replaceChildren(...(revealed && state.verdict ? [verdictNote(state.verdict)] : []));
   guessArea.replaceChildren(...(revealed
-    ? [...(state.verdict ? [verdictNote(state.verdict)] : []),
-       el("div", { class: "row" }, button("Guess a new scenario", newRound, { small: !state.verdict, primary: Boolean(state.verdict) }))]
+    ? [el("div", { class: "row" }, button("Guess a new scenario", () => newRound(), { small: !state.verdict, primary: Boolean(state.verdict) })),
+       el("p", { class: "small muted", text: "The answer is worked out below. Change the scenario or move a slider and everything updates as you go." })]
     : [guessSlider.el,
-       el("div", { class: "row" }, button("Show the answer", () => reveal(true), { primary: true }), button("Skip the guess", () => reveal(false)))]));
+       el("div", { class: "row" }, button("Show the answer", () => reveal(true), { primary: true }), button("Skip the guess", () => reveal(false))),
+       el("p", { class: "small muted", text: "Set the slider to your best guess, then show the answer. The four numbers below fill in, the crowd sorts itself by test result, and a chart and a repeat-test table appear." })]));
 
   // Headline numbers.
   if (revealed) {
     sPos.set(pct(b.afterPositive), "chance they have the condition");
     sNeg.set(pct(b.afterNegative), "chance the test missed it");
-    sShare.set(pct(b.pPos), `${fmt.sig(b.pPos * n, 3)} in every ${fmt.int(n)}`);
+    sShare.set(pct(b.pPos), `${fmt.sig(b.pPos * n, 4)} in every ${fmt.int(n)}`);
     sLr.set(Number.isFinite(b.lrPositive) ? `× ${fmt.sig(b.lrPositive, 3)}` : "–", b.lrNegative === 0 ? "for a positive; a negative rules the condition out" : `for a positive; × ${fmt.sig(b.lrNegative, 3)} for a negative`);
   } else {
-    for (const s of [sPos, sNeg, sShare, sLr]) s.set("?", "");
-    sPos.set("?", "guess first, then look");
+    for (const s of [sPos, sNeg, sShare, sLr]) s.set("?", "shown once you answer");
   }
 
   // The picture.
   picTitle.textContent = revealed ? `The same ${people(n)}, sorted by test result` : `${people(n)}, one dot each`;
   const frequency = c.afterPositive;
   summary.textContent = !revealed
-    ? `${fmt.int(c.sick)} of them have the condition and ${fmt.int(c.well)} do not. Now picture testing all of them.`
+    ? `${c.sick ? fmt.int(c.sick) : "None"} of them ${c.sick === 1 ? "has" : "have"} the condition and ${fmt.int(c.well)} ${c.well === 1 ? "does" : "do"} not. Now picture testing all of them.`
     : c.positive === 0
       ? `Of ${people(n)}, nobody tests positive at this scale.`
-      : `${fmt.int(c.positive)} of the ${fmt.int(n)} test positive, and ${fmt.int(c.tp)} of those ${fmt.int(c.positive)} have the condition: ${pct(frequency)}.`;
+      : c.positive === 1
+        ? `1 of the ${fmt.int(n)} tests positive, and that person ${c.tp ? "has" : "does not have"} the condition: ${pct(frequency)}.`
+        : `${fmt.int(c.positive)} of the ${fmt.int(n)} test positive, and ${c.tp === c.positive ? "all" : c.tp ? fmt.int(c.tp) : "none"} of those ${fmt.int(c.positive)} ${c.tp === 1 ? "has" : "have"} the condition: ${pct(frequency)}.`;
   picLegend.replaceChildren(
     el("span", {}, el("i", { class: "dot", style: { background: HAS } }), `Has the condition (${fmt.int(c.sick)})`),
     el("span", {}, el("i", { class: "dot", style: { background: NOT } }), `Does not (${fmt.int(c.well)})`));
@@ -275,18 +277,16 @@ function update() {
   if (state.log.length) {
     const meanGap = state.log.reduce((s, g) => s + Math.abs(g.gap), 0) / state.log.length;
     logBox.replaceChildren(
-      table({
+      el("div", { class: "log" }, table({
         caption: `Your guesses so far: off by ${fmt.sig(meanGap * 100, 3)} percentage points on average`,
         columns: [
-          { key: "prior", label: "Base rate", num: true, format: pctIn },
-          { key: "sens", label: "Sensitivity", num: true, format: pctIn },
-          { key: "fpr", label: "False positives", num: true, format: pctIn },
+          { key: "prior", label: "Base rate, sensitivity, false positives", format: (v, g) => `${pctIn(g.prior)}, ${pctIn(g.sens)}, ${pctIn(g.fpr)}` },
           { key: "guess", label: "Your guess", num: true, format: (v) => `${fmt.int(v * 100)}%` },
           { key: "truth", label: "Answer", num: true, format: pct },
-          { key: "gap", label: "Gap", num: true, format: (v) => `${fmt.signed(v * 100, 1)} points` },
+          { key: "gap", label: "Gap (points)", num: true, format: (v) => fmt.signed(v * 100, 1) },
         ],
         rows: state.log,
-      }),
+      })),
       el("div", { class: "row", style: { marginTop: "10px" } }, button("Clear my guesses", () => { state.log = []; update(); }, { small: true })));
   } else logBox.replaceChildren();
 }

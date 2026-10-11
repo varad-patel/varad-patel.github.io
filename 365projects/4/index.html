@@ -11,15 +11,27 @@
   <link rel="stylesheet" href="../../assets/site.css">
   <link rel="stylesheet" href="../kit/kit.css">
   <style>
-    /* Question and answer first in reading order; on a wide screen the controls sit in a left column. */
-    .lab-grid { display: grid; grid-template-columns: minmax(230px, 310px) minmax(0, 1fr); grid-template-areas: "controls top" "controls rest"; gap: 24px 32px; align-items: start; }
+    /* Source order is the question, its answer, the controls, the detail, and the layout follows it at every width:
+       on a wide screen the question runs across the top with the controls in a left column below it; on a narrow one
+       everything stacks. Nothing in .lab-top takes keyboard focus, so the tab order matches what is on screen. */
+    .lab-grid { display: grid; grid-template-columns: minmax(230px, 310px) minmax(0, 1fr); grid-template-areas: "ask ask" "controls top" "controls rest"; gap: 24px 32px; align-items: start; }
+    .lab-grid > .ask { grid-area: ask; }
     .lab-grid > .controls { grid-area: controls; }
     .lab-top { grid-area: top; }
     .lab-rest { grid-area: rest; }
-    @media (max-width: 860px) { .lab-grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "top" "controls" "rest"; } }
-    .ask { display: grid; gap: 12px; }
+    .ask { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 12px 32px; align-items: start; }
+    .ask h2 { grid-column: 1 / -1; }
+    @media (max-width: 860px) {
+      .lab-grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "ask" "top" "controls" "rest"; }
+      .ask { grid-template-columns: minmax(0, 1fr); }
+    }
     .ask .q { font: 400 1.08rem/1.55 var(--serif); max-width: 62ch; }
-    .guess { display: grid; gap: 12px; max-width: 62ch; }
+    .answer { min-width: 0; max-width: 62ch; }
+    .verdict .note { margin-bottom: 12px; }
+    .guess { display: grid; gap: 12px; }
+    /* The guess log has a long first heading; let headings wrap so the table fits a phone without scrolling. */
+    .log .tbl th { white-space: normal; vertical-align: bottom; }
+    @media (max-width: 560px) { .log .tbl th, .log .tbl td { padding-inline: 6px; } }
     .summary { margin: 0 0 8px; font-size: 0.95rem; }
     .split-bar { display: flex; gap: 2px; height: 22px; margin: 2px 0 8px; }
     .split-bar span { display: block; min-width: 2px; border-radius: 2px; }
@@ -43,10 +55,10 @@
 
     <section class="p-sec">
       <h2>The idea</h2>
-      <p>In 1978 three researchers put a question to 60 doctors, students and staff at Harvard Medical School. A condition affects 1 person in 1,000. A test for it has a false-positive rate of 5%. Someone tests positive: what is the chance they have the condition? The most common answer was 95%. The right answer is about 2%, and 11 of the 60 gave it. A few years later David Eddy posed a similar problem about mammograms, the one this page opens with, and reported that most of the physicians he asked answered about 75% where the arithmetic says under 8%.</p>
+      <p>In 1978 three researchers put a question to 60 doctors and medical students at Harvard's teaching hospitals. A condition affects 1 person in 1,000. A test for it has a false-positive rate of 5%. Someone tests positive: what is the chance they have the condition? The most common answer, given by 27 of the 60, was 95%. The right answer is about 2%, and 11 of the 60 gave it. A few years later David Eddy described a similar problem about a mammogram, a later version of which opens this page, and reported that about 95 of every 100 physicians he had asked put the chance at around 75%, where the arithmetic says under 8%.</p>
       <p>The mistake has a name, <strong>base-rate neglect</strong>, and a shape. The test's sensitivity tells you how likely a positive result is <em>if the person has the condition</em>. The question asks the reverse: how likely the condition is <em>if the result is positive</em>. Those two numbers can be as far apart as 80% and 8%, because the second depends on something the first ignores, which is how common the condition was to begin with. When almost everybody tested is healthy, a small error rate among the healthy produces more positive results than a high hit rate among the few who are ill. Daniel Kahneman and Amos Tversky showed in the 1970s that people leave the base rate out of all kinds of judgements, not only medical ones. In a courtroom the same swap is called the prosecutor's fallacy.</p>
       <p>The rule for getting it right was published in 1763 from the papers of Thomas Bayes, and it carries a claim about knowledge that goes well beyond medicine: evidence never speaks on its own. A result tells you how far to move, and where you end up depends on where you started. Two people who see the same positive test and begin from different base rates should end with different beliefs, and both can be reasoning correctly.</p>
-      <p>Gerd Gigerenzer and Ulrich Hoffrage found in 1995 that the difficulty lies in the format as much as in the people. Give the same facts as counts of people, "10 of every 1,000 have it; 8 of those 10 test positive; so do 95 of the other 990", and the share of correct answers rose from about one in six to nearly half, with no teaching at all. Counted this way the answer is something you can see: 8 dots out of 103. That is what the picture on this page draws.</p>
+      <p>Gerd Gigerenzer and Ulrich Hoffrage found in 1995 that the difficulty lies in the format as much as in the people. When they gave students the same facts as counts of people (10 of every 1,000 have it; 8 of those 10 test positive; so do 95 of the other 990), the share of answers worked out in the way Bayes' rule requires rose from 16% to 46% across fifteen problems, with no teaching at all. Counted this way the answer is something you can see: 8 dots out of 103. That is what the picture on this page draws.</p>
     </section>
 
     <section class="p-sec">
@@ -73,9 +85,11 @@
       <h3>Repeating the test</h3>
       <p>For a second result the tool applies the theorem again with the first answer as the new base rate, which is the same as multiplying the odds by the likelihood ratio once per result. The order of the results does not matter. This is only right if the test's errors on one run are independent of its errors on the next, given whether the person has the condition.</p>
       <h3>The guess</h3>
-      <p>A guess counts as close when it is within five percentage points of the answer. Failing that, the tool checks whether it is within five points of the sensitivity or of the specificity, the two numbers people most often give instead, and says so. "Guess a new scenario" draws a base rate from nine values between 0.1% and 30%, a sensitivity from five between 70% and 99% and a false-positive rate from six between 1% and 20%, using a seeded generator so the sequence is the same on every visit.</p>
+      <p>A guess counts as close when it is within five percentage points of the answer. Failing that, the tool checks whether it is within five points of the sensitivity or of the specificity, the two numbers people most often give instead, and says so. "Guess a new scenario", or "A random scenario to guess" in the scenario list, draws a base rate from nine values between 0.1% and 30%, a sensitivity from five between 70% and 99% and a false-positive rate from six between 1% and 20%, using a seeded generator so the sequence is the same on every visit.</p>
       <h3>The sliders</h3>
-      <p>Each slider steps through every value whose distance from the nearer of 0% and 100% has at most two significant figures: 0.11%, 9.6%, 50%, 99.89%. That gives fine steps where tests and base rates actually live and coarser ones in the middle.</p>
+      <p>Each slider steps through every value whose distance from the nearer of 0% and 100% has at most two significant figures: 0.11%, 9.6%, 50%, 99.89%. That gives fine steps where tests and base rates actually live and coarser ones in the middle. The base rate and the false-positive rate run from 0.01% to 99%; the sensitivity runs from 1% to 99.9% and then to 100%.</p>
+      <h3>How results are written</h3>
+      <p>A result between 1% and 99% is given to one decimal place. Closer to 0% or to 100% it keeps two significant figures of its distance from that end, as in 0.22% or 99.9974%, so a small chance is never rounded away to nothing. Only a result that is exactly zero or exactly certain is written as 0% or 100%.</p>
     </section>
 
     <section class="p-sec">
@@ -83,7 +97,7 @@
       <ul>
         <li><strong>Anything about your own health.</strong> Apart from the two published problems, the scenarios use round numbers chosen to show a pattern. The sensitivity and false-positive rate of a real test depend on the laboratory, the cut-off used and who is being tested. This is a way to understand a test result, not to interpret one.</li>
         <li><strong>What the right base rate is.</strong> It is the input that matters most and the one nobody hands you. The prevalence in a whole population is the wrong starting point for someone with symptoms, a family history or an unusual age, and choosing the group a person belongs to is a judgement the theorem takes as given.</li>
-        <li><strong>How a real test behaves across patients.</strong> Sensitivity is treated here as one number. In practice tests catch advanced cases more easily than early ones, so the figure measured on hospital patients overstates what the test does in screening.</li>
+        <li><strong>How a real test behaves across patients.</strong> Sensitivity is treated here as one number. In practice a test often catches advanced cases more easily than early ones, so a figure measured on hospital patients can overstate what the test does in screening.</li>
         <li><strong>What a second test adds.</strong> The repeat table assumes independent errors. If the first false alarm had a cause that is still there, such as a cross-reacting substance or dense tissue, the second test is likely to repeat it and the table is too optimistic.</li>
         <li><strong>Whether screening is worth doing.</strong> A 7.8% chance after a positive result is not an argument against the test. That depends on what the follow-up costs the 95 people with false alarms, what early detection gains the 8, and what happens to the 2 who were missed. The tool gives probabilities and stops there.</li>
         <li><strong>How well you reason.</strong> The guess is a prompt, not an experiment. The crowd of dots is on screen before you answer, and that is already the format that helps.</li>
@@ -107,8 +121,8 @@
       <ul class="refs">
         <li>Bayes, T. (1763). An essay towards solving a problem in the doctrine of chances. <em>Philosophical Transactions of the Royal Society of London</em>, 53, 370-418.</li>
         <li>Casscells, W., Schoenberger, A., and Graboys, T. B. (1978). Interpretation by physicians of clinical laboratory results. <em>New England Journal of Medicine</em>, 299(18), 999-1001. Source of the "Harvard Medical School question" scenario.</li>
-        <li>Eddy, D. M. (1982). Probabilistic reasoning in clinical medicine: problems and opportunities. In D. Kahneman, P. Slovic and A. Tversky (eds.), <em>Judgment under Uncertainty: Heuristics and Biases</em>. Cambridge University Press. Source of the mammogram problem.</li>
-        <li>Gigerenzer, G., and Hoffrage, U. (1995). How to improve Bayesian reasoning without instruction: frequency formats. <em>Psychological Review</em>, 102(4), 684-704. Source of the rounded numbers used in the opening scenario.</li>
+        <li>Eddy, D. M. (1982). Probabilistic reasoning in clinical medicine: problems and opportunities. In D. Kahneman, P. Slovic and A. Tversky (eds.), <em>Judgment under Uncertainty: Heuristics and Biases</em>, 249-267. Cambridge University Press. Source of the mammogram problem.</li>
+        <li>Gigerenzer, G., and Hoffrage, U. (1995). How to improve Bayesian reasoning without instruction: frequency formats. <em>Psychological Review</em>, 102(4), 684-704. Source of the numbers used in the opening scenario, which the authors adapted from Eddy's problem.</li>
         <li>Kahneman, D., and Tversky, A. (1973). On the psychology of prediction. <em>Psychological Review</em>, 80(4), 237-251.</li>
         <li>Bar-Hillel, M. (1980). The base-rate fallacy in probability judgments. <em>Acta Psychologica</em>, 44(3), 211-233.</li>
         <li>Gigerenzer, G., Gaissmaier, W., Kurz-Milcke, E., Schwartz, L. M., and Woloshin, S. (2007). Helping doctors and patients make sense of health statistics. <em>Psychological Science in the Public Interest</em>, 8(2), 53-96.</li>

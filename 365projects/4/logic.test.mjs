@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { rng } from "../kit/kit.js";
-import { PRESETS, bayes, crowd, sequence, curve, priorFor, judgeGuess, randomScenario, probGrid } from "./logic.js";
+import { PRESETS, GRIDS, bayes, crowd, sequence, curve, priorFor, judgeGuess, randomScenario, probGrid, pctIn, pct } from "./logic.js";
 
 const close = (a, b, tol = 1e-9) => assert.ok(Math.abs(a - b) <= tol, `${a} is not within ${tol} of ${b}`);
 
@@ -150,12 +150,11 @@ test("random scenarios are reproducible and valid", () => {
   const a = randomScenario(rng(5));
   assert.deepEqual(a, randomScenario(rng(5)));
   const r = rng(11);
-  const grid = probGrid(0.0001, 1);
   for (let i = 0; i < 200; i++) {
     const s = randomScenario(r);
     assert.ok(!bayes(s.prior, s.sens, s.fpr).error);
     assert.ok(s.sens > s.fpr);
-    for (const v of [s.prior, s.sens, s.fpr]) assert.ok(grid.includes(v), `${v} is not a slider position`);
+    for (const k of ["prior", "sens", "fpr"]) assert.ok(GRIDS[k].includes(s[k]), `${k} ${s[k]} is not a slider position`);
   }
 });
 
@@ -173,9 +172,49 @@ test("slider positions are tidy, ordered, and include every preset value", () =>
   assert.equal(s.at(-1), 1);
   assert.ok(s.includes(0.9999));
   for (const p of PRESETS) {
-    assert.ok(probGrid(0.0001, 0.99).includes(p.prior), `${p.key} prior`);
-    assert.ok(s.includes(p.sens), `${p.key} sensitivity`);
-    assert.ok(probGrid(0.0001, 0.99).includes(p.fpr), `${p.key} false-positive rate`);
+    for (const k of ["prior", "sens", "fpr"]) assert.ok(GRIDS[k].includes(p[k]), `${p.key} ${k}`);
+  }
+});
+
+test("the sliders' ranges, and a label for every position that says exactly what it is", () => {
+  assert.deepEqual([GRIDS.prior[0], GRIDS.prior.at(-1)], [0.0001, 0.99]);
+  assert.deepEqual([GRIDS.fpr[0], GRIDS.fpr.at(-1)], [0.0001, 0.99]);
+  // Sensitivity stops at 99.9% and then jumps to 100%. Steps as fine as 99.99999% used to fill most of the slider.
+  assert.deepEqual([GRIDS.sens[0], GRIDS.sens.at(-2), GRIDS.sens.at(-1)], [0.01, 0.999, 1]);
+  assert.ok(GRIDS.sens.length < 400);
+  for (const grid of Object.values(GRIDS)) {
+    const labels = grid.map(pctIn);
+    assert.equal(new Set(labels).size, grid.length, "two slider positions share a label");
+    // Reading the label back gives the position: the old four-figure label turned 99.901% into "99.9%".
+    grid.forEach((p, i) => close(Number(labels[i].slice(0, -1)) / 100, p, 1e-12));
+  }
+  assert.equal(pctIn(0.096), "9.6%");
+  assert.equal(pctIn(0.9989), "99.89%");
+  assert.equal(pctIn(0.99901), "99.901%");
+  assert.equal(pctIn(0.00011), "0.011%");
+  assert.equal(pctIn(1), "100%");
+});
+
+test("results are written without false precision and never rounded onto 0% or 100%", () => {
+  assert.equal(pct(0.008 / 0.10304), "7.8%");
+  assert.equal(pct(0.5), "50.0%");
+  assert.equal(pct(0.02), "2.0%");
+  assert.equal(pct(0.002 / 0.89696), "0.22%");
+  assert.equal(pct(0.000494), "0.049%");
+  assert.equal(pct(0.001), "0.1%");
+  assert.equal(pct(0.00001), "0.001%");
+  assert.equal(pct(1 - 0.0001), "99.99%");        // was "99.9900%"
+  assert.equal(pct(0.999974), "99.9974%");
+  assert.equal(pct(1e-10), "0.00000001%");
+  assert.equal(pct(1e-12), "under 0.00000001%");  // was "0.00000000%"
+  assert.equal(pct(1 - 1e-12), "over 99.99999999%");   // was "100.00000000%"
+  assert.equal(pct(0), "0%");
+  assert.equal(pct(1), "100%");
+  assert.equal(pct(null), "–");
+  assert.equal(pct(NaN), "–");
+  // Every result the repeat table can show for every preset is a clean percentage.
+  for (const p of PRESETS) for (const seq of ["+", "++", "+++", "+-", "-", "--"]) {
+    assert.match(pct(sequence(p.prior, p.sens, p.fpr, seq)), /^(under |over )?\d+(\.\d*[1-9])?%$|^\d+\.0%$/);
   }
 });
 
