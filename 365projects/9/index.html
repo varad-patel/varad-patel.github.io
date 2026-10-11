@@ -10,6 +10,17 @@
   <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../../assets/site.css">
   <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    /* Country and measure names are shown in full and wrap on a narrow screen: the kit's bars cut them with an ellipsis. */
+    #app .hbar .name { white-space: normal; overflow: visible; overflow-wrap: anywhere; line-height: 1.25; }
+    /* The full table scrolls inside its own box, with the column headings and the country names kept in view. */
+    #app .all { max-height: 420px; overflow: auto; margin-top: 8px; border: 1px solid var(--grid); background: #fff; }
+    #app .all caption { padding: 8px 10px 6px; font-weight: 600; font-size: 0.86rem; }
+    #app .all th, #app .all td { padding: 6px 8px; }
+    #app .all thead th { position: sticky; top: 0; z-index: 2; background: #fff; box-shadow: inset 0 -1.5px 0 var(--ink); white-space: normal; vertical-align: bottom; }
+    #app .all th:nth-child(2), #app .all td:nth-child(2) { position: sticky; left: 0; z-index: 1; background: #fff; }
+    #app .all thead th:nth-child(2) { z-index: 3; }
+  </style>
 </head>
 <body class="proj" data-day="9">
   <main class="wrap">
@@ -29,7 +40,7 @@
 
     <section class="p-sec">
       <h2>The idea</h2>
-      <p>For most of the twentieth century the standard answer to "which country is doing best?" was the one with the highest income per head. Amartya Sen's objection was that income is a means. What matters is what people are actually able to do and be: live a long life, take part in their community, choose how to live. He called these <strong>capabilities</strong>, and the argument led directly to the United Nations' Human Development Index in 1990, which put health and education beside income.</p>
+      <p>For decades the standard answer to "which country is doing best?" was the one with the highest income per head. Amartya Sen's objection was that income is a means. What matters is what people are actually able to do and be: live a long life, take part in their community, choose how to live. He called these <strong>capabilities</strong>, and his work underlies the United Nations' Human Development Index, launched in 1990, which put health and education beside income.</p>
       <p>The trouble starts as soon as there is more than one good thing. To turn several measures into one ranking you have to say how much of one is worth how much of another, and there is no fact of the matter about that. This is <strong>value pluralism</strong>: the view that the things worth wanting are several, and do not reduce to a common currency. Sen himself declined to fix a list of capabilities or their weights, arguing that it was a matter for public reasoning. Martha Nussbaum thought a list was needed and wrote one.</p>
       <p>So an index is not a measurement in the way a thermometer reading is. It is a measurement combined with an ethical position, and the position is in the weights. The honest thing an index-maker can do is show the weights and let you move them. That is what this page does.</p>
     </section>
@@ -37,7 +48,7 @@
     <section class="p-sec">
       <h2>How it works</h2>
       <h3>The measures</h3>
-      <p>Six measures for each of 142 countries, averaged over 2023 to 2025. Health is life expectancy at birth and income is GDP per person at purchasing power parity, both from the World Bank. Income enters as a logarithm, so that doubling it counts the same anywhere. Freedom, community, generosity and clean institutions are the factor values published by the World Happiness Report from Gallup World Poll questions.</p>
+      <p>Six measures for each of 142 countries. Income is GDP per person at purchasing power parity, averaged over 2023 to 2025, and health is life expectancy at birth, averaged over 2023 and 2024, the latest years published; both are from the World Bank. Income enters as a logarithm, so that doubling it counts the same anywhere. Freedom, community, generosity and clean institutions come from Gallup World Poll questions asked from 2023 to 2025. The page uses the amount the World Happiness Report attributes to each factor in a country's score: the national average on the question, less the lowest national average, times a fixed coefficient. Putting a measure on a 0 to 100 scale removes the coefficient, so the scores are the ones the raw averages would give.</p>
       <h3>A common scale</h3>
       <p>Years of life and dollars cannot be added, so each measure is first put on a scale from 0 to 100. With the <em>distance</em> method the lowest country on a measure scores 0, the highest 100, and the rest fall in proportion:</p>
       <p class="eq"><var>s</var><sub><var>ik</var></sub> = 100 · (<var>x</var><sub><var>ik</var></sub> − min<sub><var>k</var></sub>) / (max<sub><var>k</var></sub> − min<sub><var>k</var></sub>)</p>
@@ -49,7 +60,7 @@
       <h3>The comparisons</h3>
       <p>The page compares your ranking with two others: the ranking by income alone, and the ranking by the Cantril ladder, which is how people in each country rate their own lives from 0 to 10. Agreement is measured by Spearman's rank correlation, which is the ordinary correlation applied to the two lists of ranks.</p>
       <h3>How much the weights matter</h3>
-      <p>For the country you select, the page draws 1,000 random weightings of health, freedom, income and community (every way of splitting 100% between the four is equally likely), ranks all countries under each, and reports the range of positions the country takes. A narrow range means its standing does not depend on your values. A wide one means it does.</p>
+      <p>For the country you select, the page draws 1,000 random weightings of health, freedom, income and community (every way of splitting 100% between the four is equally likely), ranks all countries under each, and reports the range of positions the country takes. A random split almost never puts everything on one measure, which is where a rank is usually at its best or worst, so the four rankings by one measure alone are counted as well when the highest and lowest positions are reported. The band for "nine of every ten" comes from the random weightings only. The draws use a fixed seed, so the same numbers come back every time, and they follow the scale and the combining rule you have chosen but not your own weights. A narrow range means the country's standing does not depend on your values. A wide one means it does.</p>
     </section>
 
     <section class="p-sec">
@@ -80,7 +91,7 @@
       <ul class="refs">
         <li>Helliwell, J. F., Layard, R., Sachs, J. D., De Neve, J.-E., Aknin, L. B., and Wang, S. (eds.) (2026). <em>World Happiness Report 2026</em>. University of Oxford: Wellbeing Research Centre. Data for Figure 2.1.</li>
         <li>World Bank, World Development Indicators: GDP per capita, PPP, constant 2021 international $ (NY.GDP.PCAP.PP.KD) and life expectancy at birth (SP.DYN.LE00.IN). CC BY 4.0. Retrieved 10 October 2026.</li>
-        <li>Sen, A. (1999). <em>Development as Freedom</em>. Oxford University Press.</li>
+        <li>Sen, A. (1999). <em>Development as Freedom</em>. New York: Knopf.</li>
         <li>Nussbaum, M. C. (2011). <em>Creating Capabilities: The Human Development Approach</em>. Harvard University Press.</li>
         <li>United Nations Development Programme (1990). <em>Human Development Report 1990</em>, and (2010) <em>Human Development Report 2010</em>, which introduced the geometric mean.</li>
       </ul>

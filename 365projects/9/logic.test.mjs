@@ -75,6 +75,11 @@ test("rank ranges are reproducible, ordered and cover every possible first place
   const b = rankRange(scored, ["health", "freedom", "income", "community"], { samples: 400, seed: 2 });
   assert.deepEqual([...a], [...b]);
   for (const v of a.values()) assert.ok(v.best <= v.lo && v.lo <= v.median && v.median <= v.hi && v.hi <= v.worst && v.best >= 1 && v.worst <= 3);
+  // The single-measure rankings count towards best and worst. C is last on health and income and first on freedom
+  // and community (B is the reverse); two random draws cannot be relied on to show both extremes, but best and worst do.
+  const few = rankRange(scored, ["health", "freedom", "income", "community"], { samples: 2, seed: 2 });
+  assert.deepEqual([few.get("C").best, few.get("C").worst], [1, 3]);
+  assert.deepEqual([few.get("B").best, few.get("B").worst], [1, 3]);
   // With only income in play there is nothing to vary.
   const fixed = rankRange(scored, ["income"], { samples: 50 });
   assert.deepEqual(fixed.get("B"), { best: 1, worst: 1, lo: 1, median: 1, hi: 1 });
@@ -100,4 +105,22 @@ test("real data: every dimension is present and the page's finding holds", () =>
   assert.equal(rank(scored, { income: 1 })[0].name, "Singapore");
   close(spearman(equal.map((r) => r.index), equal.map((r) => r.ladder)), 0.892, 0.0015);
   close(spearman(rows.map((r) => r.gdp), rows.map((r) => r.ladder)), 0.803, 0.0015);
+
+  // The United States by hand: its four scores are 78.3, 67.6, 87.3 and 88.2, so its index is their mean.
+  close(us.scores.health, ((78.64 - 54.55) / (85.32 - 54.55)) * 100, 1e-9);
+  close(us.scores.income, ((Math.log(75660) - Math.log(1405)) / (Math.log(134813) - Math.log(1405))) * 100, 1e-9);
+  close(us.index, (us.scores.health + us.scores.freedom + us.scores.income + us.scores.community) / 4, 1e-9);
+  close(us.index, 80.4, 0.05);
+  // Spot checks against the sources: World Happiness Report 2026 (United States 6.816, rank 23) and the World
+  // Bank (life expectancy 78.385 in 2023 and 78.890 in 2024; GDP per person 74,351.67, 75,698.18 and 76,931.31
+  // for 2023 to 2025).
+  assert.equal(us.ladder, 6.816);
+  assert.equal(us.life, Number(((78.3853658536585 + 78.890243902439) / 2).toFixed(2)));
+  assert.equal(us.gdp, Math.round((74351.6718197429 + 75698.1773354629 + 76931.3106990408) / 3));
+
+  // The rank range quoted for the United States on the page: 6th (income alone) to 114th (freedom alone).
+  const range = rankRange(scored, ["health", "freedom", "income", "community"], { samples: 1000, seed: 9 }).get("United States");
+  assert.deepEqual([range.best, range.worst], [6, 114]);
+  assert.equal(rank(scored, { freedom: 1 }).find((r) => r.name === "United States").rank, 114);
+  assert.ok(Math.abs(range.lo - 14) <= 2 && Math.abs(range.hi - 78) <= 2, `middle 90% is ${range.lo} to ${range.hi}; an independent run of 20,000 draws gave 14 to 78`);
 });

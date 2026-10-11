@@ -103,7 +103,9 @@ export function rankBy(rows, value) {
 /**
  * How much does a country's rank depend on the weights? Draw `samples` random weightings of the chosen
  * dimensions (uniform over all the ways of splitting 100%), rank everyone each time, and report each
- * country's best, worst and middle 90% of ranks.
+ * country's best, worst and middle 90% of ranks. Random draws almost never land on the extreme case of all the
+ * weight on one dimension, which is where a rank is usually best or worst, so those cases are ranked as well
+ * and count towards best and worst (not towards the middle 90%, which describes the random draws only).
  */
 export function rankRange(scored, keys, { samples = 2000, seed = 9, aggregate = "arithmetic" } = {}) {
   const r = rng(seed);
@@ -113,9 +115,11 @@ export function rankRange(scored, keys, { samples = 2000, seed = 9, aggregate = 
     const w = Object.fromEntries(KEYS.map((k) => [k, keys.includes(k) ? r.exponential(1) : 0]));
     for (const c of rank(scored, w, aggregate)) seen.get(c.name).push(c.rank);
   }
+  const alone = new Map(scored.map((c) => [c.name, []]));
+  for (const key of keys) for (const c of rank(scored, { [key]: 1 }, aggregate)) alone.get(c.name).push(c.rank);
   const out = new Map();
   for (const [name, list] of seen) {
-    out.set(name, { best: stats.min(list), worst: stats.max(list), lo: Math.round(stats.quantile(list, 0.05)), median: Math.round(stats.median(list)), hi: Math.round(stats.quantile(list, 0.95)) });
+    out.set(name, { best: Math.min(stats.min(list), ...alone.get(name)), worst: Math.max(stats.max(list), ...alone.get(name)), lo: Math.round(stats.quantile(list, 0.05)), median: Math.round(stats.median(list)), hi: Math.round(stats.quantile(list, 0.95)) });
   }
   return out;
 }
