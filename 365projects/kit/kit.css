@@ -57,7 +57,7 @@
 .field input.mono, .field textarea.mono { font-family: var(--mono); font-size: 0.95rem; }
 .field input:invalid, .field .invalid { border-color: var(--bad); }
 .tool input[type].invalid, .tool textarea.invalid, .tool select.invalid { border-color: var(--bad); }
-.check { display: flex; gap: 9px; align-items: flex-start; font-size: 0.92rem; cursor: pointer; }
+.check { display: flex; gap: 9px; align-items: flex-start; font-size: 0.92rem; cursor: pointer; min-height: 24px; }
 .check input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--ink); flex: none; }
 
 .seg { display: inline-flex; flex-wrap: wrap; border: 1.5px solid var(--ink); border-radius: 3px; overflow: hidden; width: fit-content; max-width: 100%; }
@@ -96,7 +96,7 @@
 .chart-title { margin: 0 0 6px; font-weight: 700; font-size: 0.95rem; }
 .chart-sub { margin: -4px 0 8px; font-size: 0.84rem; color: var(--slate); }
 .chart-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-bottom: 6px; font-size: 0.84rem; }
-.chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.chart-legend span { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; overflow-wrap: anywhere; }
 .chart-legend i { display: inline-block; width: 14px; height: 10px; border-radius: 2px; flex: none; }
 .chart-legend i.line { height: 0; border-top: 2.5px solid; border-radius: 0; background: none !important; }
 .chart-legend i.dot { width: 9px; height: 9px; border-radius: 50%; }
@@ -119,7 +119,7 @@
 .chart-tip i { display: inline-block; width: 10px; border-top: 2.5px solid; }
 .chart-tip strong { font-weight: 700; }
 details.chart-table { margin-top: 6px; font-size: 0.84rem; }
-details.chart-table summary { cursor: pointer; color: var(--slate); width: fit-content; }
+details.chart-table summary { cursor: pointer; color: var(--slate); width: fit-content; padding: 2px 0; }
 details.chart-table .tbl-wrap { max-height: 280px; overflow: auto; margin-top: 8px; border: 1px solid var(--grid); background: #fff; }
 
 .hbars { display: grid; gap: 7px; }

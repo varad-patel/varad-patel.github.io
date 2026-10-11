@@ -61,10 +61,17 @@ export const fmt = {
   /** significant digits, no trailing zeros: 0.001235, 12.35, 12,346 */
   sig: (x, n = 3) => (bad(x) ? DASH : nf({ maximumSignificantDigits: n }).format(x)),
   auto: (x) => (bad(x) ? DASH : nf({ maximumSignificantDigits: 4 }).format(x)),
-  compact: (x) => (bad(x) ? DASH : nf({ notation: "compact", maximumSignificantDigits: 3 }).format(x)),
+  /** three significant digits with a unit: 1.5k, 12.3m, 2bn. Written out here because browsers disagree (1.5k or 1.5K). */
+  compact: (x) => {
+    if (bad(x)) return DASH;
+    const r = Number(x.toPrecision(3)), a = Math.abs(r);
+    const [div, unit] = a >= 1e12 ? [1e12, "tn"] : a >= 1e9 ? [1e9, "bn"] : a >= 1e6 ? [1e6, "m"] : a >= 1e3 ? [1e3, "k"] : [1, ""];
+    return nf({ maximumSignificantDigits: 3 }).format(r / div) + unit;
+  },
   signed: (x, d = 2) => (bad(x) ? DASH : nf({ minimumFractionDigits: d, maximumFractionDigits: d, signDisplay: "exceptZero" }).format(x)),
-  date: (iso) => new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(iso + "T00:00:00Z")),
+  date: (iso) => DATE.format(new Date(iso + "T00:00:00Z")),
 };
+const DATE = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }); // built once: making one is slow
 
 /* ================================================================ randomness */
 
@@ -304,12 +311,30 @@ function wrapField(label, id, control, hint, readout) {
 export function slider({ label, min = 0, max = 100, step = 1, value = min, format = fmt.auto, hint, onInput }) {
   const id = nextId();
   const input = el("input", { type: "range", id, min, max, step, value });
-  const out = el("output", { for: id, text: format(Number(input.value)) });
-  input.addEventListener("input", () => { out.textContent = format(Number(input.value)); onInput?.(Number(input.value)); });
+  const out = el("output", { for: id });
+  // The readout is also what a screen reader says for the value ("12 to 14 years", not "3").
+  const show = () => {
+    const text = String(format(Number(input.value)));
+    out.textContent = text;
+    if (text) input.setAttribute("aria-valuetext", text); else input.removeAttribute("aria-valuetext");
+  };
+  show();
+  input.addEventListener("input", () => { show(); onInput?.(Number(input.value)); });
+  // With step "any" browsers disagree about what an arrow key does (Firefox jumps most of the way along), so the
+  // keys are handled here: an arrow is 1% of the range, Page Up and Page Down 10%, Home and End the two ends.
+  if (step === "any") input.addEventListener("keydown", (e) => {
+    const lo = Number(input.min), hi = Number(input.max);
+    const move = { ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1, PageUp: 10, PageDown: -10 }[e.key];
+    const to = e.key === "Home" ? lo : e.key === "End" ? hi : move ? clamp(Number(input.value) + (move * (hi - lo)) / 100, lo, hi) : null;
+    if (to == null || e.altKey || e.ctrlKey || e.metaKey) return;
+    e.preventDefault();
+    input.value = to;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
   return {
     el: wrapField(label, id, input, hint, out), input,
     get value() { return Number(input.value); },
-    set value(v) { input.value = v; out.textContent = format(Number(input.value)); },
+    set value(v) { input.value = v; show(); },
   };
 }
 
@@ -435,7 +460,7 @@ export function canvas(target, { height = 320, draw }) {
   let w = 0;
   const redraw = () => {
     const dpr = window.devicePixelRatio || 1;
-    w = Math.max(200, node.clientWidth || 600);
+    w = Math.max(1, node.clientWidth || 600);
     const h = typeof height === "function" ? height(w) : height;
     node.style.height = `${h}px`;
     if (node.width !== Math.round(w * dpr) || node.height !== Math.round(h * dpr)) { node.width = Math.round(w * dpr); node.height = Math.round(h * dpr); }
@@ -548,13 +573,15 @@ function barPath(x, yValue, yBase, w) {
  *     series: [{ name, type: "line" | "step" | "area" | "scatter" | "bars" | "hist" | "range", data, color, width, r, opacity, dash, endLabel }],
  *     marks: [{ type: "vline" | "hline" | "span" | "text" | "point", x, y, x0, x1, text, anchor }],
  *     legend, table: false, hover: "point",
- *     onClick({ x, y, point, series }) {},
+ *     onClick({ x, y, point, series, inside, px, py, toPx, key }) {},   // px, py and toPx(x, y) are in the drawing's own pixels;
+ *                                                                     // key is true when it came from Enter or Space
  *   });
  *   c.update({ series: [...] });
  *
  * data is [[x, y], ...] or [{ x, y, label }]; "hist" takes [[x0, x1, y]], "range" takes [[x, low, high]],
  * "bars" needs x.type "band" and takes [[category, y]]. color is a palette index or a CSS colour.
- * Hovering shows a crosshair and every series' value at that x (or the nearest point for scatter); arrow keys do the same.
+ * Hovering shows a crosshair and every series' value at that x (or the nearest point for scatter); arrow keys do the same,
+ * and with onClick set, Enter or Space clicks whatever the arrow keys are on.
  */
 export function chart(target, spec) {
   let cur = spec;
@@ -625,12 +652,13 @@ export function chart(target, spec) {
     const yLabels = yTicks.map(yFmt);
 
     const endLabels = series.filter((s) => s.endLabel && s._p.length);
-    const mLeft = Math.max(26, Math.max(0, ...yLabels.map((t) => String(t).length)) * 6.6 + 12);
+    // Very long tick labels may be cut off, but they never take more than 45% of the width from the plot.
+    const mLeft = Math.min(Math.max(26, W * 0.45), Math.max(26, Math.max(0, ...yLabels.map((t) => String(t).length)) * 6.6 + 12));
     const mRight = endLabels.length ? Math.min(150, Math.max(...endLabels.map((s) => String(s.endLabel === true ? s.name : s.endLabel).length)) * 6.6 + 18) : 14;
     const mTop = Y.label ? 24 : 10;
     const mBottom = 26 + (X.label ? 18 : 0);
-    const pw = W - mLeft - mRight;
-    const ph = H - mTop - mBottom;
+    const pw = Math.max(10, W - mLeft - mRight);
+    const ph = Math.max(10, H - mTop - mBottom);
 
     let [x0, x1] = [0, 1];
     let xTicks = [];
@@ -642,7 +670,12 @@ export function chart(target, spec) {
         // Keep edge dots off the frame.
         if (X.type === "log") { const k = (x1 / x0) ** 0.03; x0 /= k; x1 *= k; } else { const pad = (x1 - x0) * 0.03; x0 -= pad; x1 += pad; }
       }
-      if (X.type === "log") { xTicks = logTicks(x0, x1); xFmt ||= fmt.auto; }
+      if (X.type === "log") {
+        xTicks = logTicks(x0, x1); xFmt ||= fmt.auto;
+        // Many decades on a narrow chart: keep every nth label so they cannot collide.
+        const room = Math.max(2, Math.floor(pw / (Math.max(...xTicks.map((v) => String(xFmt(v)).length)) * 6.6 + 14)));
+        if (xTicks.length > room) { const every = Math.ceil(xTicks.length / room); xTicks = xTicks.filter((_, i) => (xTicks.length - 1 - i) % every === 0); }
+      }
       else {
         const count = X.ticks || Math.max(2, Math.floor(pw / 84));
         let t = niceTicks(x0, x1, count);
@@ -791,7 +824,7 @@ export function chart(target, spec) {
     const pointMode = cur.hover === "point" || (series.length > 0 && series.every((s) => s.type === "scatter"));
     let keys = [];
     if (pointMode) {
-      series.forEach((s) => s._p.forEach((p) => { if (ok(p)) keys.push({ px: sx(p.x), py: sy(p.y), p, s }); }));
+      series.forEach((s) => { if (s.hover !== false) s._p.forEach((p) => { if (ok(p)) keys.push({ px: sx(p.x), py: sy(p.y), p, s }); }); });
       keys.sort((a, b) => a.px - b.px);
     } else {
       const seen = new Map();
@@ -881,6 +914,18 @@ export function chart(target, spec) {
     }
     const t = table({ columns, rows, caption: keys.length > LIMIT ? `First ${LIMIT} of ${keys.length} rows` : null });
     tableBox.replaceChildren(...t.childNodes);
+    if (!pointMode) {
+      // Dots drawn over a line chart have no place in the x-by-series table, so they get one of their own.
+      const points = series.filter((s) => s.type === "scatter" && s.hover !== false).flatMap((s) => s._p.filter((p) => Number.isFinite(p.y)).map((p) => ({ s: s.name || "", l: p.label ?? "", x: xFmt(p.x), y: yFmt(p.y) })));
+      if (points.length) {
+        const extra = table({
+          caption: points.length > LIMIT ? `Points: first ${LIMIT} of ${points.length}` : "Points",
+          columns: [{ key: "s", label: "Series" }, { key: "l", label: "Label" }, { key: "x", label: X.label || "x", num: true }, { key: "y", label: Y.label || "y", num: true }],
+          rows: points.slice(0, LIMIT),
+        });
+        tableBox.append(...extra.childNodes);
+      }
+    }
   }
 
   const local = (e) => {
@@ -896,7 +941,7 @@ export function chart(target, spec) {
     const [px, py] = local(e);
     const i = layout.pointMode ? nearest(px, py) : -1;
     const hit = i >= 0 ? layout.keys[i] : null;
-    cur.onClick({ x: layout.band ? null : layout.ix(px), y: layout.iy(py), point: hit ? hit.p : null, series: hit ? hit.s : null, inside: px >= layout.mLeft && px <= layout.mLeft + layout.pw && py >= layout.mTop && py <= layout.mTop + layout.ph });
+    cur.onClick({ x: layout.band ? null : layout.ix(px), y: layout.iy(py), point: hit ? hit.p : null, series: hit ? hit.s : null, inside: px >= layout.mLeft && px <= layout.mLeft + layout.pw && py >= layout.mTop && py <= layout.mTop + layout.ph, px, py, toPx: (x, y) => [layout.sx(x), layout.sy(y)] });
   });
   svg.addEventListener("keydown", (e) => {
     if (!layout || !layout.keys.length) return;
@@ -906,6 +951,11 @@ export function chart(target, spec) {
     else if (e.key === "Home") showHover(0);
     else if (e.key === "End") showHover(n - 1);
     else if (e.key === "Escape") showHover(-1);
+    else if ((e.key === "Enter" || e.key === " ") && cur.onClick && hover >= 0) {
+      // The keyboard's click: whatever the arrow keys are on.
+      const k = layout.keys[hover], p = k.p || k.rows[0]?.p;
+      cur.onClick({ x: layout.band ? null : k.p ? k.p.x : k.x, y: p ? p.y : null, point: k.p || null, series: k.s || null, inside: true, key: true, px: k.px, py: k.py ?? (p ? layout.sy(p.y) : null), toPx: (x, y) => [layout.sx(x), layout.sy(y)] });
+    }
     else return;
     e.preventDefault();
   });
@@ -918,6 +968,50 @@ export function chart(target, spec) {
     update(next) { cur = { ...cur, ...next }; render(); },
     get spec() { return cur; },
   };
+}
+
+/* ============================================================ accessibility */
+
+/**
+ * Anything that scrolls must be reachable from the keyboard (WCAG 2.1.1). Tables and equations scroll
+ * sideways on narrow screens, so whenever an element inside <main> overflows a scrolling box it is given
+ * tabindex="0", a region role and a name; when it stops overflowing they are taken away again.
+ * Runs after load, on resize, and when the tool changes its contents.
+ */
+function watchScrollables(root) {
+  const NATIVE = "a[href], button, input, select, textarea, summary, [contenteditable]";
+  const sweep = () => {
+    for (const node of root.querySelectorAll("*")) {
+      const ours = node.dataset.kitScroll === "1";
+      const overflows = node.scrollWidth > node.clientWidth + 1 || node.scrollHeight > node.clientHeight + 1;
+      if (!overflows) {
+        if (ours) { node.removeAttribute("tabindex"); node.removeAttribute("role"); node.removeAttribute("aria-label"); delete node.dataset.kitScroll; }
+        continue;
+      }
+      if (ours || node.matches(NATIVE) || node.hasAttribute("tabindex") || node instanceof SVGElement) continue;
+      const style = getComputedStyle(node);
+      if (!/(auto|scroll)/.test(style.overflowX + style.overflowY)) continue;
+      // A box whose own focusable content can already be tabbed to still needs a tab stop only if it has none.
+      if (node.querySelector(NATIVE + ", [tabindex]:not([tabindex='-1'])")) continue;
+      node.tabIndex = 0;
+      node.dataset.kitScroll = "1";
+      if (!node.hasAttribute("role")) node.setAttribute("role", "region");
+      if (!node.hasAttribute("aria-label") && !node.hasAttribute("aria-labelledby")) {
+        const caption = node.querySelector("caption")?.textContent.trim();
+        const base = caption || (node.classList.contains("eq") ? "Equation" : node.querySelector("table") ? "Table" : "Content");
+        // Two regions with one name cannot be told apart in a screen reader's list of landmarks: number the later ones.
+        const taken = new Set([...root.querySelectorAll("[data-kit-scroll]")].map((x) => x.getAttribute("aria-label")));
+        let label = `${base} (scrollable)`;
+        for (let n = 2; taken.has(label); n++) label = `${base} ${n} (scrollable)`;
+        node.setAttribute("aria-label", label);
+      }
+    }
+  };
+  const later = debounce(sweep, 200);
+  requestAnimationFrame(sweep);
+  window.addEventListener("resize", later);
+  if (typeof MutationObserver !== "undefined") new MutationObserver(later).observe(root, { childList: true, subtree: true });
+  document.addEventListener("toggle", later, true);
 }
 
 /* ===================================================================== shell */
@@ -948,6 +1042,7 @@ export function mount() {
   }
 
   const main = $("main");
+  if (main) watchScrollables(main);
   const builtList = D.projects.filter((x) => x.built && x.id !== day);
   const prev = builtList.filter((x) => x.id < day).pop();
   const next = builtList.find((x) => x.id > day);
