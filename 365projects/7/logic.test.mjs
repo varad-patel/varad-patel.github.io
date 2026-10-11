@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { rng } from "../kit/kit.js";
 import {
-  LIMITS, PRESETS, makeModel, blankModel, clone, addGroup, removeGroup, addOption, removeOption, addOutcome, removeOutcome,
+  BIG, LIMITS, PRESETS, makeModel, blankModel, clone, addGroup, removeGroup, addOption, removeOption, addOutcome, removeOutcome,
   probabilitySum, normalised, validate, expectedChange, evaluate, withEqualWeights, linesFor, flips, distance, sensitivity, mostFragile,
 } from "./logic.js";
 
@@ -198,6 +198,51 @@ test("editing keeps every outcome in step with the list of groups, and respects 
   assert.equal(addOutcome(m, "no such option"), null);
 });
 
+test("a rival level with the leader now flips at exactly the current weight, whatever rounding does to the crossing", () => {
+  // A = 0.1 x 3 x 1 = 0.30000000000000004 and B = 0.3 x 1 x 1 = 0.3: a tie. In the first group's weight the lines are
+  // A = 3w and B = 0.3, which cross at 0.3 / 3 = 0.09999999999999999 in floating point, not at 0.1.
+  const m = makeModel({ groups: [["G1", 3, 0.1], ["G2", 1, 0.3]], options: [["A", [["x", 1, [1, 0]]]], ["B", [["x", 1, [0, 1]]]]] });
+  const ev = evaluate(m);
+  assert.equal(ev.tie, true);
+  assert.notEqual(0.3 / 3, 0.1);
+  const [g1, g2] = sensitivity(m, ev);
+  assert.equal(g1.leader, m.options[0].id);
+  assert.equal(g1.below.at, 0.1);
+  assert.equal(g1.below.name, "B");
+  assert.equal(g1.distance, 0);
+  assert.equal(g2.above.at, 0.3);
+});
+
+test("a three-way tie is reported as three options, and a clear winner as one", () => {
+  const m = makeModel({ groups: [["G", 5, 1]], options: [["A", [["x", 1, [2]]]], ["B", [["x", 1, [2]]]], ["C", [["x", 0.5, [4]], ["y", 0.5, [0]]]], ["D", [["x", 1, [1]]]]] });
+  const ev = evaluate(m);
+  assert.deepEqual(ev.tied.map((r) => r.name), ["A", "B", "C"]);
+  assert.equal(ev.tie, true);
+  assert.deepEqual(evaluate(preset("vaccine")).tied.map((r) => r.name), ["Split the doses"]);
+  assert.deepEqual(evaluate(makeModel()).tied, []);
+});
+
+test("numbers beyond a trillion are refused, so no score can overflow", () => {
+  const m = hand();
+  m.groups[0].people = BIG;
+  m.groups[1].weight = BIG;
+  m.options[0].outcomes[0].dw[m.groups[1].id] = -BIG;
+  const ok = evaluate(m);
+  assert.deepEqual([ok.general, ok.byOption], [[], {}]);
+  assert.ok(ok.rows.every((r) => Number.isFinite(r.eu)));
+  close(ok.rows[0].eu, 2 * BIG - 30 * BIG * BIG, 1e12);
+  m.groups[0].people = BIG * 10;
+  assert.match(evaluate(m).general[0], /^A: the number of people must be a number from 0 to a trillion/);
+  m.groups[0].people = 10;
+  m.groups[1].weight = 1e300;
+  assert.match(evaluate(m).general[0], /^B: the moral weight must be a number from 0 to a trillion/);
+  m.groups[1].weight = 2;
+  m.options[1].outcomes[0].dw[m.groups[0].id] = 1e300;
+  const bad = evaluate(m);
+  assert.match(bad.byOption[m.options[1].id].messages[0], /between minus a trillion and a trillion/);
+  assert.deepEqual(bad.ranked.map((r) => r.name), ["Safe"]);
+});
+
 test("distance treats a halving and a doubling alike", () => {
   close(distance(1, 2), 0.5);
   close(distance(1, 0.5), 0.5);
@@ -238,12 +283,17 @@ test("the other examples behave as their descriptions say", () => {
   const fut = preset("future");
   assert.equal(evaluate(fut).best.name, "Cut emissions fast");
   close(sensitivity(fut).find((s) => s.name === "People alive in 2100").below.at, 6.4 / 23.4, 1e-9);
-  // Transmitter room: the sum says wait, unless the technician counts for more than 6,667 viewers.
+  // Transmitter room: Jones loses 10 points, a billion viewers lose 0.0001 each (100,000 in all). The sum says
+  // wait, unless Jones's wellbeing counts 10,000 times as much as a viewer's.
   const tr = preset("transmitter");
   const ev = evaluate(tr);
   assert.equal(ev.best.name, "Wait until the match ends");
-  close(ev.best.eu, -15); close(ev.runnerUp.eu, -100000, 1e-6);
-  close(sensitivity(tr, ev)[0].above.at, 100000 / 15, 1e-6);
+  close(ev.best.eu, -10); close(ev.runnerUp.eu, -100000, 1e-6);
+  const [jones, viewers] = sensitivity(tr, ev);
+  close(jones.above.at, 10000, 1e-6);
+  assert.equal(jones.below, null);
+  close(viewers.below.at, 0.0001, 1e-12);
+  assert.equal(viewers.above, null);
   // Every example is valid as shipped and already has equal weights.
   for (const p of PRESETS) {
     const m = p.model();

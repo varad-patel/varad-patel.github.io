@@ -13,8 +13,13 @@
   <style>
     .stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; min-width: 0; }
     .verdict { font: 500 1.12rem/1.45 var(--serif); }
+    /* A name typed without spaces must wrap, not push the page sideways. */
+    .verdict, #app .stat .n, #app .note, #app .chart-title, #app .chart-sub, #app .chart-legend span, #app .out .field .lab label, .flips td { overflow-wrap: anywhere; }
+    #app .chart-legend span, #app .out .field .lab label { min-width: 0; }
+    #app .field { grid-template-columns: minmax(0, 1fr); }
+    .flips td:first-child { min-width: 6.5em; }
 
-    /* The editor: compact labelled boxes in rows. */
+    /* The editor: compact labelled boxes in rows. A long label is cut with an ellipsis, never wider than its box. */
     .ed .field { gap: 3px; }
     .ed .field .lab { font-size: 0.78rem; color: var(--slate); }
     .ed .field .lab label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -85,7 +90,7 @@
     <section class="p-sec">
       <h2>How it works</h2>
       <h3>The model</h3>
-      <p>There are groups of people <var>g</var>, each with a headcount <var>n</var><sub><var>g</var></sub> and a moral weight <var>w</var><sub><var>g</var></sub>. There are options <var>o</var>. Each option has a short list of outcomes <var>k</var>, exactly one of which will happen, with probabilities <var>p</var><sub><var>ok</var></sub> that sum to 1. For every outcome you enter the change in wellbeing for one typical member of each group, <var>Δ</var><sub><var>okg</var></sub>, on whatever scale you have chosen: days of healthy life, points of life satisfaction, anything that means the same for everybody.</p>
+      <p>There are groups of people <var>g</var>, each with a headcount <var>n</var><sub><var>g</var></sub> and a moral weight <var>w</var><sub><var>g</var></sub>. There are options <var>o</var>. Each option has a short list of outcomes <var>k</var>, exactly one of which will happen, with probabilities <var>p</var><sub><var>ok</var></sub> that sum to 1. For every outcome you enter the change in wellbeing for one typical member of each group, <var>Δ</var><sub><var>okg</var></sub>, on whatever scale you have chosen: days of healthy life, points of life satisfaction, anything that means the same for everybody. Headcounts and weights can be anything from zero to a trillion, and a change anything from minus a trillion to a trillion.</p>
       <h3>Expected utility</h3>
       <p>The page builds an option's score in three steps, and the "Who gains and who loses" chart can show any of them.</p>
       <p class="eq">per person: <var>e</var><sub><var>og</var></sub> = Σ<sub><var>k</var></sub> <var>p</var><sub><var>ok</var></sub> <var>Δ</var><sub><var>okg</var></sub> &nbsp;&nbsp;&nbsp; whole group: <var>c</var><sub><var>og</var></sub> = <var>n</var><sub><var>g</var></sub> <var>e</var><sub><var>og</var></sub> &nbsp;&nbsp;&nbsp; weighted: <var>w</var><sub><var>g</var></sub> <var>c</var><sub><var>og</var></sub></p>
@@ -96,7 +101,7 @@
       <p class="eq"><var>U</var><sub><var>o</var></sub>(<var>w</var>) = <var>a</var><sub><var>o</var></sub> + <var>c</var><sub><var>oh</var></sub> <var>w</var>, &nbsp;&nbsp; where <var>a</var><sub><var>o</var></sub> = Σ<sub><var>g</var> ≠ <var>h</var></sub> <var>w</var><sub><var>g</var></sub> <var>c</var><sub><var>og</var></sub></p>
       <p>The slope <var>c</var><sub><var>oh</var></sub> is what the option does for that group in total; the intercept is what it does for everyone else. Two straight lines cross at most once, so the leader <var>A</var> and any rival <var>B</var> with a different slope are level at exactly</p>
       <p class="eq"><var>w</var>* = (<var>a</var><sub><var>A</var></sub> − <var>a</var><sub><var>B</var></sub>) / (<var>c</var><sub><var>Bh</var></sub> − <var>c</var><sub><var>Ah</var></sub>)</p>
-      <p>A rival that does more for the group than the leader (a steeper line) can only overtake as the weight rises, and one that does less only as it falls. So the page computes <var>w</var>* for every rival, takes the smallest crossing above the current weight among the steeper lines and the largest crossing below it among the shallower ones, and reports those two numbers. Weights below zero are not considered. There is no search and no rounding: the table shows the exact crossing points, and the chart draws the lines so you can see them cross.</p>
+      <p>A rival that does more for the group than the leader (a steeper line) can only overtake as the weight rises, and one that does less only as it falls. So the page computes <var>w</var>* for every rival, takes the smallest crossing above the current weight among the steeper lines and the largest crossing below it among the shallower ones, and reports those two numbers. Weights below zero are not considered. There is no search: each crossing is solved exactly from the formula, the table prints it to three significant figures (more when it lies very close to the current weight), and the chart draws the lines so you can see them cross.</p>
       <p>In the vaccine example the lines for the over-80s' weight are 168,000<var>w</var> for oldest-first, 48,000 + 135,000<var>w</var> for the split and 80,000 + 80,000<var>w</var> for care workers first. The first pair cross at 48,000 / 33,000 = 1.45 and the second at 32,000 / 55,000 = 0.58.</p>
       <h3>Which weight is "most sensitive"</h3>
       <p>To compare flips across groups the page uses the proportional change needed: a move from 1 to 2 and a move from 1 to 0.5 count as equally far. The group needing the smallest proportional change is named above the table and chosen for the chart. Because weight and headcount only ever appear multiplied together, the same numbers answer a second question: raising a group's weight by 45% changes the scores exactly as much as finding that the group is 45% larger.</p>
@@ -105,7 +110,7 @@
     <section class="p-sec">
       <h2>What this cannot tell you</h2>
       <ul>
-        <li><strong>Whether wellbeing can be added across people at all.</strong> The sum assumes that a point of your wellbeing and a point of mine are amounts of the same stuff. Lionel Robbins argued in 1932 that no observation could ever establish that, and nothing since has made the problem go away. The "counted in" box is where this assumption enters, and the page cannot check it.</li>
+        <li><strong>Whether wellbeing can be added across people at all.</strong> The sum assumes that a point of your wellbeing and a point of mine are amounts of the same stuff. Lionel Robbins argued in 1932 that no observation could ever establish that. The "counted in" box is where this assumption enters, and the page cannot check it.</li>
         <li><strong>What the weights should be.</strong> The weights are the ethics. The page will tell you that a weight of 1.45 flips the answer; it has no view on whether 1.45 is defensible. A calculation that reports one ranking without showing its weights has made the moral decision out of sight.</li>
         <li><strong>Who belongs on the list.</strong> Anyone you do not enter as a group has a weight of zero. Leaving out future generations, people abroad or animals is a choice of exactly the same kind as giving them a small weight, only less visible.</li>
         <li><strong>Whether adding up is the right thing to do.</strong> The sum lets a large enough number of trivial gains outweigh one person's catastrophe, which is the point of the "one against a billion" example and of John Rawls's complaint that utilitarianism does not take seriously the distinction between persons. Rights, promises, fairness and desert have no place in the formula except as a weight.</li>
@@ -135,9 +140,9 @@
         <li>Robbins, L. (1932). <em>An Essay on the Nature and Significance of Economic Science</em>.</li>
         <li>Harsanyi, J. C. (1955). Cardinal welfare, individualistic ethics, and interpersonal comparisons of utility. <em>Journal of Political Economy</em>, 63(4), 309-321.</li>
         <li>Rawls, J. (1971). <em>A Theory of Justice</em>. Harvard University Press.</li>
-        <li>Scanlon, T. M. (1998). <em>What We Owe to Each Other</em>. Harvard University Press. The transmitter room case.</li>
+        <li>Scanlon, T. M. (1998). <em>What We Owe to Each Other</em>. Harvard University Press. The transmitter room case is on page 235.</li>
         <li>Murray, C. J. L. (1994). Quantifying the burden of disease: the technical basis for disability-adjusted life years. <em>Bulletin of the World Health Organization</em>, 72(3), 429-445. Sets out the original age weights.</li>
-        <li>HM Treasury. <em>The Green Book: Central Government Guidance on Appraisal and Evaluation</em>. Describes distributional weighting.</li>
+        <li>HM Treasury (2026). <em>The Green Book: UK Government Guidance on Appraisal</em>. Chapter 7 sets out distributional weighting.</li>
       </ul>
     </section>
   </main>

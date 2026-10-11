@@ -1,14 +1,26 @@
 // Day 7: Utilitarian Calculator. Interface.
 import { $, el, fmt, mount, numberField, textField, select, slider, segmented, button, stat, note, table, chart, palette } from "../kit/kit.js";
-import { LIMITS, PRESETS, blankModel, addGroup, removeGroup, addOption, removeOption, addOutcome, removeOutcome, normalised, evaluate, withEqualWeights, sensitivity, mostFragile } from "./logic.js";
+import { BIG, LIMITS, PRESETS, blankModel, addGroup, removeGroup, addOption, removeOption, addOutcome, removeOutcome, normalised, evaluate, withEqualWeights, sensitivity, mostFragile } from "./logic.js";
 
 mount();
 
 const state = { model: PRESETS[0].model(), preset: PRESETS[0].key, vary: "", view: "weighted", range: 2 };
+state.pristine = JSON.stringify(state.model); // the example as loaded, to tell when the visitor has changed it
 
-const score = (x) => (Math.abs(x) >= 1e6 ? fmt.compact(x) : Math.abs(x) >= 1000 ? fmt.int(x) : fmt.sig(x, 3));
+// Numbers too long to print in full are written as 5.5 × 10¹⁰, so no input can push a 300-digit number onto the page.
+const sci = (x) => { const [m, e] = x.toExponential(2).split("e"); return `${Number(m)} × 10${e.replace("+", "").replace("-", "⁻").replace(/\d/g, (d) => "⁰¹²³⁴⁵⁶⁷⁸⁹"[d])}`; };
+const extreme = (x, hi) => Number.isFinite(x) && x !== 0 && (Math.abs(x) >= hi || Math.abs(x) < 1e-6);
+const score = (x) => (extreme(x, 1e15) ? sci(x) : Math.abs(x) >= 1e6 ? fmt.compact(x) : Math.abs(x) >= 1000 ? fmt.int(x) : fmt.sig(x, 3));
 const signed = (x) => (x > 0 ? "+" : "") + score(x);
-const weight = (w) => fmt.sig(w, 3);
+// A weight to d significant figures, and never fewer than its whole-number part needs (6,667, not 6,670).
+const weight = (w, d = 3) => (extreme(w, 1e9) ? sci(w) : fmt.sig(w, w >= 1000 ? Math.max(d, Math.floor(Math.log10(w)) + 1) : d));
+const now = (w) => weight(w, 6);
+// A flip point, with enough figures to show which side of the current weight it lies on (1.455 against 1.45, not 1.45 against 1.45).
+function flipAt(at, w0) {
+  for (let d = 3; d < 12; d++) { const r = Number(at.toPrecision(d)); if (r !== w0 && r > w0 === at > w0) return weight(at, d); }
+  return weight(at, 12);
+}
+const short = (text, n = 26) => (text.length > n ? `${text.slice(0, n - 1)}…` : text);
 const groupName = (g) => g.name.trim() || "Unnamed group";
 const optionName = (o) => o.name.trim() || "Unnamed option";
 const unit = () => state.model.unit.trim() || "wellbeing";
@@ -27,6 +39,7 @@ function load(key) {
   const preset = PRESETS.find((p) => p.key === key);
   state.preset = key;
   state.model = preset ? preset.model() : blankModel();
+  state.pristine = JSON.stringify(state.model);
   state.vary = "";
   structural();
 }
@@ -41,61 +54,69 @@ function numField(label, value, opts, set) {
   f.input.addEventListener("input", () => { set(f.value); refresh(); });
   return f;
 }
+// Names are labels on charts and in tables, so they are kept to a length that fits there.
+const limit = (field, n) => { field.input.maxLength = n; return field; };
 function removeButton(what, fn) {
   const b = button("×", fn, { small: true, title: `Remove ${what}` });
   b.setAttribute("aria-label", `Remove ${what}`);
   b.classList.add("x");
   return b;
 }
-function addButton(label, fn, full, limit) {
+function addButton(label, fn, full, limit, key) {
   const b = button(label, fn, { small: true, title: full ? `This page allows up to ${limit}.` : undefined });
   b.disabled = full;
+  b.dataset.add = key;
   return b;
 }
+// Where keyboard focus goes after a row is removed: the name of the row that moved into the gap (or of the one
+// before it), and the list's "Add" button once the list is empty. Never another "remove" button.
+const after = (list, j, addKey) => (list.length ? `[data-focus="${list[Math.min(j, list.length - 1)].id}"]` : `[data-add="${addKey}"]`);
+const added = (item) => item && `[data-focus="${item.id}"]`;
 
 function renderEditor() {
   const m = state.model;
-  const unitField = textField({
+  const unitField = limit(textField({
     label: "Wellbeing is counted in", value: m.unit,
     hint: "Any one scale will do, as long as a point means the same for everybody.",
     onInput: (v) => { m.unit = v; refresh(); },
-  });
+  }), 30);
 
   const groups = m.groups.map((g, i) => {
-    const name = textField({
+    const name = limit(textField({
       label: "Group", value: g.name,
       onInput: (v) => { g.name = v; for (const lab of editor.querySelectorAll(`[data-g="${g.id}"] label`)) lab.textContent = groupName(g); refresh(); },
-    });
+    }), 40);
     name.input.dataset.focus = g.id;
-    const people = numField("People", g.people, { min: 0 }, (v) => { g.people = v; });
-    const w = numField("Moral weight", g.weight, { min: 0 }, (v) => { g.weight = v; });
+    const people = numField("People", g.people, { min: 0, max: BIG }, (v) => { g.people = v; });
+    const w = numField("Moral weight", g.weight, { min: 0, max: BIG }, (v) => { g.weight = v; });
     w.input.dataset.weight = g.id;
-    return el("div", { class: "g-row" }, name.el, people.el, w.el, removeButton(`group ${i + 1}`, () => { removeGroup(m, g.id); structural(); }));
+    // Each row is a named group for screen readers, so that "People" is announced as the people of "Group 2".
+    return el("div", { class: "g-row", role: "group", "aria-label": `Group ${i + 1}` }, name.el, people.el, w.el, removeButton(`group ${i + 1}`, () => { removeGroup(m, g.id); structural(after(m.groups, i, "group")); }));
   });
 
   const options = m.options.map((o, i) => {
-    const name = textField({ label: `Option ${i + 1}`, value: o.name, onInput: (v) => { o.name = v; refresh(); } });
+    const name = limit(textField({ label: `Option ${i + 1}`, value: o.name, onInput: (v) => { o.name = v; refresh(); } }), 40);
     name.input.dataset.focus = o.id;
     const outcomes = o.outcomes.map((k, j) => {
-      const kname = textField({ label: "Outcome", value: k.name, onInput: (v) => { k.name = v; } });
+      const kname = limit(textField({ label: "Outcome", value: k.name, onInput: (v) => { k.name = v; } }), 60);
       kname.input.dataset.focus = k.id;
       const p = numField("Probability", k.p, { min: 0, max: 1 }, (v) => { k.p = v; });
       const changes = m.groups.map((g) => {
-        const f = numField(groupName(g), k.dw[g.id], { negative: true }, (v) => { k.dw[g.id] = v; });
+        const f = numField(groupName(g), k.dw[g.id], { min: -BIG, max: BIG }, (v) => { k.dw[g.id] = v; });
         f.el.dataset.g = g.id;
         return f.el;
       });
-      return el("div", { class: "k-row" },
-        el("div", { class: "k-head" }, kname.el, p.el, removeButton(`outcome ${j + 1} of option ${i + 1}`, () => { removeOutcome(m, o.id, k.id); structural(); })),
+      return el("div", { class: "k-row", role: "group", "aria-label": `Outcome ${j + 1}` },
+        el("div", { class: "k-head" }, kname.el, p.el, removeButton(`outcome ${j + 1} of option ${i + 1}`, () => { removeOutcome(m, o.id, k.id); structural(after(o.outcomes, j, o.id)); })),
         changes.length ? el("div", { class: "k-changes" }, changes) : null);
     });
-    return el("div", { class: "panel opt", style: { borderLeftColor: palette[i] } },
-      el("div", { class: "o-head" }, name.el, removeButton(`option ${i + 1}`, () => { removeOption(m, o.id); structural(); })),
+    return el("div", { class: "panel opt", role: "group", "aria-label": `Option ${i + 1}`, style: { borderLeftColor: palette[i] } },
+      el("div", { class: "o-head" }, name.el, removeButton(`option ${i + 1}`, () => { removeOption(m, o.id); structural(after(m.options, i, "option")); })),
       o.outcomes.length && m.groups.length ? el("p", { class: "hint", "data-unit-line": "" }) : null,
       outcomes,
       el("div", { class: "o-foot" },
         el("div", { "data-status": o.id }),
-        addButton("Add an outcome", () => { const k = addOutcome(m, o.id); structural(k?.id); }, o.outcomes.length >= LIMITS.outcomes, `${LIMITS.outcomes} outcomes for each option`)));
+        addButton("Add an outcome", () => { structural(added(addOutcome(m, o.id)), true); }, o.outcomes.length >= LIMITS.outcomes, `${LIMITS.outcomes} outcomes for each option`, o.id)));
   });
 
   fill(editor,
@@ -103,20 +124,27 @@ function renderEditor() {
     unitField.el,
     el("div", { class: "g-list" }, groups),
     el("div", { class: "row" },
-      addButton("Add a group", () => { const g = addGroup(m); structural(g?.id); }, m.groups.length >= LIMITS.groups, `${LIMITS.groups} groups`),
+      addButton("Add a group", () => { structural(added(addGroup(m)), true); }, m.groups.length >= LIMITS.groups, `${LIMITS.groups} groups`, "group"),
       button("Set every weight to 1", () => { for (const g of m.groups) g.weight = 1; structural(); }, { small: true })),
     el("p", { class: "hint", text: "A moral weight of 2 means a point of this group's wellbeing counts twice as much as a point of a group weighted 1. A weight of 0 leaves the group out." }),
     el("h3", { text: "Options and their outcomes", style: { marginTop: "8px" } }),
     options,
-    el("div", { class: "row" }, addButton("Add an option", () => { const o = addOption(m); structural(o?.id); }, m.options.length >= LIMITS.options, `${LIMITS.options} options`)));
+    el("div", { class: "row" }, addButton("Add an option", () => { structural(added(addOption(m)), true); }, m.options.length >= LIMITS.options, `${LIMITS.options} options`, "option")));
 }
 
-// After anything that adds or removes a row: rebuild the editor, then put the cursor in the new row.
-function structural(focusId) {
+// After anything that adds or removes a row: rebuild the editor, then put keyboard focus on `selector` (the new
+// row's name, selected so that typing replaces it, or the neighbour of a removed row). With no selector, focus
+// goes back to the control that stands where the one just used stood. Without this, rebuilding the editor would
+// throw a keyboard user back to the top of the page.
+function structural(selector, select = false) {
+  const controls = () => [...editor.querySelectorAll("input, button:not(:disabled)")];
+  const was = controls().indexOf(document.activeElement);
   renderEditor();
   refresh();
-  const target = focusId && editor.querySelector(`[data-focus="${focusId}"]`);
-  if (target) { target.focus(); target.select(); }
+  const target = selector ? editor.querySelector(selector) : was >= 0 ? controls()[Math.min(was, controls().length - 1)] : null;
+  if (!target) return;
+  target.focus();
+  if (select) target.select?.();
 }
 
 /* ------------------------------------------------------------------ outputs */
@@ -137,7 +165,7 @@ const flipNote = el("div");
 const flipTable = el("div", { class: "flips" });
 const pick = select({ label: "Weight to vary", options: [], onChange: (v) => { state.vary = v; refresh(); } });
 const drag = slider({
-  label: "Weight", min: 0, max: 2, step: "any", value: 1, format: weight,
+  label: "Weight", min: 0, max: 2, step: "any", value: 1, format: now,
   onInput: (v) => {
     const g = state.model.groups.find((x) => x.id === state.vary);
     if (!g) return;
@@ -192,9 +220,13 @@ function refresh({ keepRange = false } = {}) {
   const sens = sensitivity(m, ev);
   const u = unit();
 
-  for (const b of presetButtons) { const on = b.dataset.preset === state.preset; b.classList.toggle("primary", on); b.setAttribute("aria-pressed", on); }
-  blurb.textContent = (PRESETS.find((p) => p.key === state.preset)?.blurb || "A blank model with two groups and two options. Rename them and fill in your own numbers.")
-    + (state.preset === "blank" ? "" : " Every number is invented for illustration: change any of them.");
+  // Once anything has been changed the model is the visitor's own, and no example is marked as the one on show.
+  const edited = JSON.stringify(state.model) !== state.pristine;
+  for (const b of presetButtons) { const on = !edited && b.dataset.preset === state.preset; b.classList.toggle("primary", on); b.setAttribute("aria-pressed", on); }
+  blurb.textContent = edited ? "Your own version: something has been changed since the example was loaded. Pick an example to start again from it."
+    : (PRESETS.find((p) => p.key === state.preset)?.blurb || "A blank model with two groups and two options. Rename them and fill in your own numbers.")
+    + (state.preset === "blank" ? "" : " Every number is invented for illustration: change any of them.")
+    + " Nothing you enter is saved: reloading the page brings back the vaccine example.";
   for (const line of editor.querySelectorAll("[data-unit-line]")) line.textContent = `For each outcome: how likely it is, then the change in one person's wellbeing in each group (${u}).`;
 
   // Each option's own line: do its probabilities add up?
@@ -222,6 +254,7 @@ function refresh({ keepRange = false } = {}) {
   // Headline numbers.
   const best = ev.best, second = ev.runnerUp;
   verdict.textContent = !second ? `${optionName(best)} is the only option that can be scored: ${score(best.eu)} weighted ${u}.`
+    : ev.tied.length > 2 ? `${ev.tied.length} options are tied on ${score(best.eu)} weighted ${u}: ${ev.tied.map(optionName).join(", ")}.`
     : ev.tie ? `${optionName(best)} and ${optionName(second)} are tied on ${score(best.eu)} weighted ${u}.`
     : `${optionName(best)} comes top with ${score(best.eu)} weighted ${u}, ${score(best.eu - second.eu)} ahead of ${optionName(second)}.`;
   sTop.set(score(best.eu), optionName(best));
@@ -242,14 +275,14 @@ function refresh({ keepRange = false } = {}) {
     label: "Bar chart of each option's expected effect on each group",
     x: { type: "band", categories: m.groups.map((g) => g.id), format: fitNames(m.groups) },
     y: { format: signed, zero: true },
-    series: ev.rows.map((r) => ({ name: optionName(r), type: "bars", color: r.index, data: r.groups.map((g) => [g.id, g[state.view]]) })),
+    series: ev.rows.map((r) => ({ name: short(optionName(r)), type: "bars", color: r.index, data: r.groups.map((g) => [g.id, g[state.view]]) })),
     legend: true,
   });
 
   // Sensitivity table and headline.
   const fragile = mostFragile(sens);
   const cell = (f, w0) => (f
-    ? el("span", {}, el("strong", { text: weight(f.at) }), f.at === w0 ? " (level now)" : "", `, then ${optionName(f)}`)
+    ? el("span", {}, el("strong", { text: f.at === w0 ? now(w0) : flipAt(f.at, w0) }), f.at === w0 ? " (level now)" : "", `, then ${optionName(f)}`)
     : el("span", { class: "muted", text: "never" }));
   if (!fragile) {
     fill(flipNote, note(ev.tie ? "" : "good", !second ? "With one option scored there is nothing for a weight to flip."
@@ -260,14 +293,16 @@ function refresh({ keepRange = false } = {}) {
     const up = fragile.above && (!fragile.below || fragile.above.at / fragile.weight <= fragile.weight / fragile.below.at);
     const f = up ? fragile.above : fragile.below;
     const ratio = f.at / fragile.weight;
+    const share = Math.abs(ratio - 1);
     const change = !(fragile.weight > 0) ? ""
-      : ratio > 3 ? ` (${fmt.sig(ratio, 3)} times as much)`
-      : ratio < 1 / 3 ? ` (one part in ${fmt.sig(1 / ratio, 3)} of what it is)`
-      : ` (${fmt.pct(Math.abs(ratio - 1), 0)} ${up ? "more" : "less"})`;
+      : ratio > 3 ? ` (multiplying it by ${weight(ratio)})`
+      : ratio < 1 / 3 ? ` (dividing it by ${weight(1 / ratio)})`
+      : ` (${share < 0.005 ? "under 1%" : fmt.pct(share, 0)} ${up ? "more" : "less"})`;
+    const level = f.at === fragile.weight;
     fill(flipNote, note("", "The choice is most sensitive to the weight on ", el("strong", { text: groupName(fragile) }),
-      f.at === fragile.weight ? `: at ${weight(f.at)} it is level with ${optionName(f)}, and any ${up ? "higher" : "lower"} weight puts ${optionName(f)} in front.`
-        : `: ${up ? "raise" : "lower"} it from ${weight(fragile.weight)} to ${weight(f.at)}${change} and ${optionName(f)} takes over.`));
-    sFlip.set(weight(f.at), `weight on ${groupName(fragile)}, now ${weight(fragile.weight)}`);
+      level ? `: at ${now(f.at)} it is level with ${optionName(f)}, and any ${up ? "higher" : "lower"} weight puts ${optionName(f)} in front.`
+        : `: ${up ? "raise" : "lower"} it from ${now(fragile.weight)} to ${flipAt(f.at, fragile.weight)}${change} and ${optionName(f)} takes over.`));
+    sFlip.set(level ? now(f.at) : flipAt(f.at, fragile.weight), `weight on ${groupName(fragile)}, now ${now(fragile.weight)}`);
   }
   fill(flipTable, table({
     columns: [
@@ -276,7 +311,7 @@ function refresh({ keepRange = false } = {}) {
       { key: "above", label: "Flips if raised to" },
     ],
     rows: sens.map((s) => ({
-      name: el("span", {}, groupName(s), el("span", { class: "muted small", text: ` (now ${weight(s.weight)})` })),
+      name: el("span", {}, groupName(s), el("span", { class: "muted small", text: ` (now ${now(s.weight)})` })),
       below: cell(s.below, s.weight), above: cell(s.above, s.weight),
     })),
   }));
@@ -291,29 +326,31 @@ function refresh({ keepRange = false } = {}) {
   drag.input.max = hi;
   drag.value = row.weight;
   drag.el.querySelector("label").textContent = `Weight on ${groupName(row)}`;
+  // Text inside the chart cannot wrap, so the axis label carries only as much of the name as the chart is wide.
+  const room = Math.max(10, Math.floor(((lineBox.clientWidth || 600) - 60) / 8) - 16);
   // The y-axis is set by hand so that there is clear space above the lines for the labels of the vertical marks.
   const ends = row.lines.flatMap((l) => [l.intercept, l.intercept + l.slope * hi]);
   const yLo = Math.min(...ends), yHi = Math.max(...ends);
   const yPad = (yHi - yLo || Math.abs(yHi) || 1) * 0.05;
   const top = yHi + yPad * 6;
   const label = (x, text, side, rowNo) => ({ type: "text", x, y: top, text, anchor: side, dx: side === "end" ? -5 : 5, dy: 13 + 16 * rowNo });
-  const marks = [{ type: "vline", x: row.weight }, label(row.weight, `now ${weight(row.weight)}`, row.weight > 0.7 * hi ? "end" : "start", 0)];
+  const marks = [{ type: "vline", x: row.weight }, label(row.weight, `now ${now(row.weight)}`, row.weight > 0.7 * hi ? "end" : "start", 0)];
   const lead = row.lines.find((l) => l.id === row.leader);
   const shown = (f) => f && f.at <= hi && f.at !== row.weight;
   const lowSide = shown(row.below) && row.below.at > 0.25 * hi ? "end" : "start";
   const highSide = shown(row.above) && row.above.at < 0.7 * hi ? "start" : "end";
   [[row.below, lowSide, 1], [row.above, highSide, lowSide === "end" && highSide === "start" ? 1 : 2]].forEach(([f, side, rowNo]) => {
     if (!shown(f)) return;
-    marks.push({ type: "vline", x: f.at }, label(f.at, `flips at ${weight(f.at)}`, side, rowNo));
+    marks.push({ type: "vline", x: f.at }, label(f.at, `flips at ${flipAt(f.at, row.weight)}`, side, rowNo));
     marks.push({ type: "point", x: f.at, y: lead.intercept + lead.slope * f.at, r: 4.5 });
   });
   lines.update({
     title: `Each option's score as the weight on ${groupName(row)} changes`,
-    subtitle: "Every other number is held where it is. The highest line at any weight is the choice at that weight.",
+    subtitle: `Scores are in weighted ${u}. Every other number is held where it is. The highest line at any weight is the choice at that weight.`,
     label: `Line chart of each option's expected utility against the moral weight on ${groupName(row)}`,
-    x: { label: `Moral weight on ${groupName(row)}`, domain: [0, hi], format: weight },
-    y: { label: `Expected utility (weighted ${u})`, format: score, domain: [yLo - yPad, top] },
-    series: row.lines.map((l) => ({ name: optionName(l), type: "line", color: l.index, data: Array.from({ length: 41 }, (_, i) => [(hi * i) / 40, l.intercept + (l.slope * hi * i) / 40]) })),
+    x: { label: `Moral weight on ${short(groupName(row), room)}`, domain: [0, hi], format: weight },
+    y: { label: "Expected utility", format: score, domain: [yLo - yPad, top] },
+    series: row.lines.map((l) => ({ name: short(optionName(l)), type: "line", color: l.index, data: Array.from({ length: 41 }, (_, i) => [(hi * i) / 40, l.intercept + (l.slope * hi * i) / 40]) })),
     marks,
     legend: true,
   });

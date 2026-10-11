@@ -8,6 +8,8 @@ import { fmt } from "../kit/kit.js";
 
 export const TOL = 1e-6;
 export const LIMITS = { groups: 6, options: 6, outcomes: 6 };
+/** The largest headcount, weight or wellbeing change accepted. Keeps every score finite: 6 x BIG^3 is far below 1e308. */
+export const BIG = 1e12;
 
 const isNum = (x) => typeof x === "number" && Number.isFinite(x);
 const same = (a, b) => Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(a), Math.abs(b));
@@ -97,8 +99,8 @@ export function validate(model) {
   if (!model.groups.length) general.push("Add at least one group of people, or nobody's wellbeing is being counted.");
   for (const g of model.groups) {
     const name = g.name.trim() || "A group with no name";
-    if (!isNum(g.people) || g.people < 0) general.push(`${name}: the number of people must be a number, zero or more.`);
-    if (!isNum(g.weight) || g.weight < 0) general.push(`${name}: the moral weight must be a number, zero or more.`);
+    if (!isNum(g.people) || g.people < 0 || g.people > BIG) general.push(`${name}: the number of people must be a number from 0 to a trillion.`);
+    if (!isNum(g.weight) || g.weight < 0 || g.weight > BIG) general.push(`${name}: the moral weight must be a number from 0 to a trillion.`);
   }
   if (!model.options.length) general.push("Add at least one option to choose between.");
   for (const o of model.options) {
@@ -109,7 +111,7 @@ export function validate(model) {
     else {
       if (o.outcomes.some((k) => !isNum(k.p) || k.p < 0 || k.p > 1)) messages.push("every probability must be a number from 0 to 1");
       else if (Math.abs(sum - 1) > TOL) { messages.push(`its probabilities sum to ${fmt.sig(sum, 6)}, not 1`); canNormalise = true; }
-      if (o.outcomes.some((k) => model.groups.some((g) => !isNum(k.dw[g.id])))) messages.push("every wellbeing change must be a number");
+      if (o.outcomes.some((k) => model.groups.some((g) => !isNum(k.dw[g.id]) || Math.abs(k.dw[g.id]) > BIG))) messages.push("every wellbeing change must be a number between minus a trillion and a trillion");
     }
     if (messages.length) byOption[o.id] = { messages, sum, canNormalise };
   }
@@ -123,6 +125,7 @@ export const expectedChange = (option, groupId) => option.outcomes.reduce((s, k)
 
 /**
  * Score every valid option. rows are in the order entered; ranked is best first (earlier option first on a tie).
+ * tied is every option level with the best one (just the best when there is no tie).
  * Each row: { id, index, name, eu, groups: [{ id, perPerson, total, weighted }] } where
  *   perPerson = sum of p x change, total = perPerson x people, weighted = total x weight, eu = sum of weighted.
  */
@@ -146,6 +149,7 @@ export function evaluate(model) {
     best: ranked[0] || null,
     runnerUp: ranked[1] || null,
     tie: ranked.length > 1 && same(ranked[0].eu, ranked[1].eu),
+    tied: ranked.filter((r) => same(r.eu, ranked[0].eu)),
   };
 }
 
@@ -182,7 +186,9 @@ export function flips(lines, w0) {
   let above = null, below = null;
   for (const l of lines) {
     if (l === lead || same(l.slope, lead.slope)) continue;
-    const cross = (lead.intercept - l.intercept) / (l.slope - lead.slope);
+    const raw = (lead.intercept - l.intercept) / (l.slope - lead.slope);
+    // A rival that is level with the leader now crosses at w0 exactly; do not let rounding error move it off.
+    const cross = same(at(l, w0), at(lead, w0)) ? w0 : raw;
     if (l.slope > lead.slope) {
       const w = Math.max(cross, w0);
       if (!above || w < above.at || (w === above.at && l.slope > above.slope)) above = { at: w, to: l.id, name: l.name, slope: l.slope };
@@ -266,13 +272,13 @@ export const PRESETS = [
   {
     key: "transmitter",
     label: "One against a billion",
-    blurb: "T. M. Scanlon's transmitter room. A technician is trapped under fallen equipment, in pain, during a World Cup broadcast. Freeing him means cutting the picture for fifteen minutes for a billion viewers. Wellbeing is counted in points on a 0 to 10 scale.",
+    blurb: "T. M. Scanlon's transmitter room case. Equipment has fallen on Jones in the transmitter room of a television station, and he is receiving extremely painful electric shocks. Freeing him means switching the transmitter off for fifteen minutes during a World Cup match that has an hour to run; waiting will not make his injury worse. Scanlon says only that many people are watching: the billion viewers are an assumption made here. Wellbeing is counted in points on a 0 to 10 scale.",
     model: () => makeModel({
       unit: "wellbeing points",
-      groups: [["The technician", 1, 1], ["Viewers", 1e9, 1]],
+      groups: [["Jones", 1, 1], ["Viewers", 1e9, 1]],
       options: [
         ["Rescue him now", [["The broadcast is cut for fifteen minutes", 1, [0, -0.0001]]]],
-        ["Wait until the match ends", [["An hour of painful shocks", 0.9, [-10, 0]], ["The shocks do lasting harm", 0.1, [-60, 0]]]],
+        ["Wait until the match ends", [["An hour of extremely painful shocks", 1, [-10, 0]]]],
       ],
     }),
   },
