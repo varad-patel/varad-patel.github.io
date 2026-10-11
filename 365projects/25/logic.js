@@ -47,11 +47,11 @@ export const PATTERNS = [
     O....
     O...O
     OOOO.`) },
-  { key: "rpentomino", label: "R-pentomino", note: "Five cells that take 1,103 generations to settle on an unbounded plane. On this wrapped grid its debris collides with itself sooner.", rows: rows(`
+  { key: "rpentomino", label: "R-pentomino", note: "Five cells that take 1,103 generations to settle on an unbounded plane, leaving 116. On this wrapped grid its debris and gliders come round and collide, so it ends differently: at generation 1,123 with 142 cells on 96 by 64.", rows: rows(`
     .OO
     OO.
     .O.`) },
-  { key: "gun", label: "Gosper glider gun", note: "Thirty-six cells that fire a glider every 30 generations. On a wrapped grid the gliders come round and hit the gun.", rows: rows(`
+  { key: "gun", label: "Gosper glider gun", note: "Thirty-six cells that fire a glider every 30 generations. On a wrapped grid the gliders come round and hit the gun: on 96 by 64, by generation 780.", rows: rows(`
     ........................O...........
     ......................O.O...........
     ............OO......OO............OO

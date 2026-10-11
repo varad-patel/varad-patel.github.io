@@ -7,8 +7,8 @@ Live at https://varad-patel.github.io/365projects/25/ (part of [365 projects in 
 | | |
 |---|---|
 | Question | Can a live entropy and complexity meter show order appearing in the Game of Life, and is that the same thing as emergence? |
-| One finding | A 96 by 64 random soup starts with 0.000 bits per cell of spatial structure, reaches 0.070 by generation 48, and settles at generation 1,770 with structure still at 0.030 but complexity at exactly zero, while pure noise never reads above 0.002 on either meter. |
-| Main limit | The meters are statistics of 2 by 2 blocks of cells: they show that the rule creates pattern, not that anything has emerged in the sense philosophers argue about. |
+| One finding | A 96 by 64 random soup starts with 0.000 bits per cell of spatial structure, reaches 0.070 by generation 48, and settles at generation 1,770 with structure still at 0.030 but complexity, a measure made for this page, at exactly zero, while pure noise on the same grid stays below 0.002 on both meters. |
+| Main limit | The meters are statistics of 2 by 2 blocks of cells, and the complexity meter is this page's own construction: they show that the rule creates pattern, not that anything has emerged in the sense philosophers argue about. |
 | PPE concept | Emergence, reductionism |
 | Skills | Cellular automata, entropy |
 | Data | None. Everything is computed in the browser. |

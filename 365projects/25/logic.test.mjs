@@ -139,35 +139,107 @@ test("structure is never negative, and shuffling the cells removes it", () => {
   assert.ok(same(shuffled(after, 1), mixed), "the same seed gives the same shuffle");
 });
 
-test("pure noise reads close to zero on both meters at any density", () => {
-  for (const density of [0.05, 0.2, 0.5, 0.8]) {
-    const r = rng(7);
-    let older = stepNoise(new Uint8Array(96 * 64), density, r);
-    let prev = stepNoise(new Uint8Array(96 * 64), density, r);
-    for (let i = 0; i < 100; i++) {
-      const cur = stepNoise(new Uint8Array(96 * 64), density, r);
-      const m = measure(cur, 96, 64, prev, older);
-      assert.ok(Math.abs(m.density - density) < 0.03);
-      assert.ok(m.structure < 0.002, `structure ${m.structure} at density ${density}`);
-      assert.ok(m.complexity < 0.002, `complexity ${m.complexity} at density ${density}`);
-      close(m.activity, 2 * density * (1 - density), 0.03);
-      older = prev; prev = cur;
-    }
+/** Run noise for `generations` and report the meters: their means, the highest reading of either, and how often either reaches 0.002. */
+function noiseReadings(w, h, density, generations, seed = 7) {
+  const r = rng(seed);
+  let older = stepNoise(new Uint8Array(w * h), density, r), prev = stepNoise(new Uint8Array(w * h), density, r);
+  const out = { structure: 0, complexity: 0, highest: 0, atLeast002: 0 };
+  const tol = 3 / Math.sqrt(w * h); // six standard deviations of the share of heads in w x h fair coins
+  for (let i = 0; i < generations; i++) {
+    const cur = stepNoise(new Uint8Array(w * h), density, r);
+    const m = measure(cur, w, h, prev, older);
+    assert.ok(Math.abs(m.density - density) < tol);
+    close(m.activity, 2 * density * (1 - density), tol);
+    out.structure += m.structure / generations;
+    out.complexity += m.complexity / generations;
+    out.highest = Math.max(out.highest, m.structure, m.complexity);
+    if (m.structure >= 0.002 || m.complexity >= 0.002) out.atLeast002 += 1 / generations;
+    older = prev; prev = cur;
   }
+  return out;
+}
+
+test("pure noise on 96 x 64 stays below 0.002 on both meters: 8,000 generations at four densities", () => {
+  for (const density of [0.05, 0.2, 0.5, 0.8]) {
+    const n = noiseReadings(96, 64, density, 2000);
+    assert.ok(n.highest < 0.002, `highest reading ${n.highest} at density ${density}`);
+    // The floor is a bias of the estimate, about 2 / (number of cells): 0.0003 here.
+    close(n.structure, 2 / 6144, 0.0001);
+    close(n.complexity, 2 / 6144, 0.0001);
+  }
+});
+
+test("the noise floor is higher on a smaller grid: about 0.0013 on 48 x 32, where one generation in four reads 0.002 or more", () => {
+  const n = noiseReadings(48, 32, 0.5, 2000);
+  close(n.structure, 0.0013, 0.0002);
+  close(n.complexity, 0.0013, 0.0002);
+  assert.ok(n.atLeast002 > 0.18 && n.atLeast002 < 0.32, `share ${n.atLeast002}`);
+  assert.ok(n.highest > 0.003 && n.highest < 0.01);
 });
 
 test("frozen and blinking order has structure but no complexity; a glider has both", () => {
   const w = 96, h = 64;
+  // One horizontal blinker in every 4 x 4 square. By hand: 3 cells in 16 are alive, and of the 16 blocks in a square
+  // 8 are empty, two patterns with a full row occur twice each, and four patterns with one cell occur once each:
+  // H4 = (1/2) 1 + 2 (1/8) 3 + 4 (1/16) 4 = 2.25 bits.
   const blinkers = new Uint8Array(w * h);
-  for (let y = 2; y < h - 2; y += 4) for (let x = 2; x < w - 4; x += 4) blinkers[y * w + x] = blinkers[y * w + x + 1] = blinkers[y * w + x + 2] = 1;
+  for (let y = 1; y < h; y += 4) for (let x = 0; x < w; x += 4) blinkers[y * w + x] = blinkers[y * w + x + 1] = blinkers[y * w + x + 2] = 1;
   const b1 = advance(blinkers, w, h, 1), b2 = advance(blinkers, w, h, 2);
+  assert.ok(same(b2, blinkers) && !same(b1, blinkers));
   const m = measure(b2, w, h, b1, blinkers);
-  assert.equal(Number(m.structure.toFixed(3)), 0.125);
-  assert.ok(m.activity > 0.2, "every blinker flips four cells");
+  close(m.h1, binaryEntropy(3 / 16));
+  close(m.h2, 2.25 / 4);
+  close(m.structure, binaryEntropy(3 / 16) - 0.5625); // 0.6962 - 0.5625 = 0.1337
+  assert.equal(m.structure.toFixed(3), "0.134");
+  close(m.activity, 0.25, 1e-12); // every blinker flips four cells of its sixteen
   assert.equal(m.complexity, 0);
-  // One glider on 6,144 cells: organised, but there is very little of it.
-  const glider = run(patternGrid("glider", w, h), w, h, 100).series[100];
-  assert.deepEqual([Number(glider.structure.toFixed(3)), Number(glider.complexity.toFixed(3))], [0.002, 0.001]);
+  // One glider on 6,144 cells: organised, but there is very little of it. Its complexity depends on its phase.
+  const glider = run(patternGrid("glider", w, h), w, h, 100);
+  assert.equal(glider.settledAt, null, "a glider never repeats within two generations");
+  assert.deepEqual([glider.series[100].structure.toFixed(3), glider.series[100].complexity.toFixed(3)], ["0.002", "0.001"]);
+  const phases = glider.series.slice(2).map((s) => s.complexity);
+  assert.deepEqual([Math.min(...phases).toFixed(3), Math.max(...phases).toFixed(3)], ["0.001", "0.003"]);
+  // The same glider on a grid with a quarter of the cells reads about three times higher, not four: entropy is not linear in density.
+  const smallGlider = run(patternGrid("glider", 48, 32), 48, 32, 100).series[100];
+  close(smallGlider.structure / glider.series[100].structure, 3.1, 0.2);
+});
+
+test("structure cannot exceed 0.75: a checkerboard and plain stripes both reach it", () => {
+  const w = 96, h = 64;
+  const board = new Uint8Array(w * h).map((_, i) => ((i % w) + Math.floor(i / w)) % 2);
+  const stripes = new Uint8Array(w * h).map((_, i) => Math.floor(i / w) % 2);
+  close(measure(board, w, h).structure, 0.75);
+  close(measure(stripes, w, h).structure, 0.75);
+  // h2 is never less than a quarter of h1, whatever the grid.
+  const r = rng(11);
+  for (let trial = 0; trial < 40; trial++) {
+    const m = measure(advance(randomGrid(24, 20, r(), r.int(1, 1e6)), 24, 20, r.int(0, 8)), 24, 20);
+    assert.ok(m.structure <= 0.75 * m.h1 + 1e-12);
+  }
+});
+
+test("complexity cannot tell repetition from novelty: a pulsar (period 3) reads above zero for ever", () => {
+  const w = 96, h = 64;
+  const pulsar = { rows: ["..OOO...OOO..", ".............", "O....O.O....O", "O....O.O....O", "O....O.O....O", "..OOO...OOO..", ".............", "..OOO...OOO..", "O....O.O....O", "O....O.O....O", "O....O.O....O", ".............", "..OOO...OOO.."] };
+  const start = place(new Uint8Array(w * h), w, h, pulsar, 40, 25);
+  assert.equal(population(start), 48);
+  assert.ok(same(advance(start, w, h, 3), start) && !same(advance(start, w, h, 1), start) && !same(advance(start, w, h, 2), start));
+  const { series, settledAt } = run(start, w, h, 300);
+  assert.equal(settledAt, null);
+  const c = series.slice(2).map((s) => s.complexity), s = series.map((x) => x.structure);
+  assert.deepEqual([Math.min(...c).toFixed(3), Math.max(...c).toFixed(3)], ["0.002", "0.014"]);
+  assert.deepEqual([Math.min(...s).toFixed(3), Math.max(...s).toFixed(3)], ["0.014", "0.028"]);
+});
+
+test("the wrapped grid changes what the gun and the R-pentomino do", () => {
+  const w = 96, h = 64;
+  // The gun adds a glider every 30 generations until its gliders come round: on course at 750, hit by 780.
+  const gun = patternGrid("gun", w, h);
+  assert.equal(population(advance(gun, w, h, 750)), 36 + 5 * 25);
+  assert.notEqual(population(advance(gun, w, h, 780)), 36 + 5 * 26);
+  // The R-pentomino settles at 1,103 with 116 cells when it has room (tested above); here it takes 1,123 and leaves 142.
+  const r = run(patternGrid("rpentomino", w, h), w, h, 3000);
+  assert.deepEqual([r.settledAt, population(r.final)], [1123, 142]);
 });
 
 test("random grids are reproducible and have the density asked for", () => {
@@ -211,4 +283,7 @@ test("the finding: a 96 x 64 soup from seed 25", () => {
   assert.equal(round(last.activity), 0.009);
   assert.ok(series.slice(2, settledAt).every((m) => m.complexity > 0), "complexity is positive for the whole transient");
   assert.ok(same(advance(final, 96, 64, 2), final));
+  // The grid a phone starts on: the same seed and density on 48 x 32.
+  const phone = run(randomGrid(48, 32, 0.5, 25), 48, 32, 5000);
+  assert.deepEqual([phone.settledAt, population(phone.final)], [188, 60]);
 });
