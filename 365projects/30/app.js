@@ -5,28 +5,51 @@ import { PRIORS, EXAMPLES, MAX_COUNT, MAX_PRIOR, MAX_RUN, problem, betaQuantile,
 mount();
 
 /* ---------- formatting ---------- */
-/** A chance with enough decimals to stay distinct from 0% and 100%. */
-function pct(p) {
+/** A chance with enough decimals to stay distinct from 0% and 100%, and at least `min` of them. */
+function pct(p, min = 0) {
   if (p == null || !Number.isFinite(p)) return "–";
   if (p === 0 || p === 1) return p ? "100%" : "0%";
   const q = Math.min(p, 1 - p) * 100;
   if (q < 1e-8) return p < 0.5 ? "under 0.00000001%" : "over 99.99999999%";
-  return `${fmt.num(p * 100, q >= 1 ? 1 : Math.ceil(-Math.log10(q)) + 1)}%`;
+  return `${fmt.num(p * 100, Math.max(min, q >= 1 ? 1 : Math.ceil(-Math.log10(q)) + 1))}%`;
 }
 const big = (x) => (x >= 1e12 ? fmt.compact(x) : x >= 1000 ? fmt.int(Math.round(x)) : fmt.sig(x, 3));
 function oddsText(o) {
   if (o == null) return "–";
   if (o === Infinity) return "certain";
   if (o === 0) return "impossible";
-  if (o === 1) return "evens";
-  return o > 1 ? `${big(o)} to 1` : `${big(1 / o)} to 1 against`;
+  const text = big(o >= 1 ? o : 1 / o);
+  if (text === "1") return o === 1 ? "evens" : "about evens"; // never "1 to 1 against"
+  return o > 1 ? `${text} to 1` : `${text} to 1 against`;
 }
 const betaName = (p) => `Beta(${fmt.sig(p.a, 4)}, ${fmt.sig(p.b, 4)})`;
 const times = (k) => (k === 1 ? "once" : `${fmt.int(k)} times`);
 function intervalText(r) {
-  if (r.interval) return `${pct(r.interval.lo)} to ${pct(r.interval.hi)}`;
-  if (r.next == null) return "–";
-  return r.B === 0 ? "none: all the weight is on 100%" : "none: all the weight is on 0%";
+  if (!r.interval) return r.next == null ? "–" : r.B === 0 ? "none: all the weight is on 100%" : "none: all the weight is on 0%";
+  const { lo, hi, kind } = r.interval;
+  // Enough decimals to tell the two ends apart (two figures of the interval's width), so a narrow interval is never
+  // printed as "50.0% to 50.0%".
+  const width = (hi - lo) * 100;
+  const d = width > 0 && width < 10 ? Math.min(10, Math.ceil(-Math.log10(width)) + 1) : 0;
+  // An end too close to 100% or 0% for the computer to tell apart from it is still not 100% or 0%.
+  const low = kind === "upper" && lo === 1 ? "over 99.99999999%" : pct(lo, d);
+  const high = kind === "lower" && hi === 0 ? "under 0.00000001%" : pct(hi, d);
+  return `${low} to ${high}`;
+}
+/** How the interval was cut, said exactly: it is central unless the density is highest at one end alone. */
+const intervalRule = (r) => (r.interval.kind === "central" ? "central: 2.5% is left out at each end"
+  : r.interval.kind === "upper" ? "one-sided: the density is highest at 100%, so the interval runs up to 100% and leaves out the lowest 5%"
+    : "one-sided: the density is highest at 0%, so the interval runs down to 0% and leaves out the highest 5%");
+/** A run's chance. A positive chance too small for the computer to hold is shown as small, not as 0%. */
+const runText = (r) => pct(r.run === 0 && r.A > 0 ? Number.MIN_VALUE : r.run);
+/** The even-bet run length and the line under it. Lengths past ten million are good to about three figures. */
+function evenText(r) {
+  const e = r.evenRun;
+  if (e == null) return ["–", ""];
+  if (e === Infinity && r.B === 0) return ["for ever", "no run is long enough to become an even bet"];
+  if (e === Infinity) return ["over 10¹⁵ more", "the shortest run that is no better than a coin flip is longer than a thousand million million, and the page stops counting there"];
+  if (e === 1) return ["1 more", "the very next time is already no better than a coin flip"];
+  return [e >= 1e7 ? `about ${fmt.compact(e)} more` : `${fmt.int(e)} more`, "the shortest run that is no better than a coin flip"];
 }
 
 const first = EXAMPLES[0];
@@ -78,6 +101,7 @@ const tRun = stat("Chance of a run");
 const tEven = stat("An even bet that the run lasts");
 const tiles = [tNext, tInterval, tRun, tEven];
 const tableBox = el("div");
+const tableNote = el("p", { class: "small muted", text: "Each interval is the central 95% of that prior's belief about the underlying chance, with 2.5% left out at each end, unless the density is highest at 100% alone or at 0% alone. Those intervals are marked “one-sided”: they run to that end and leave out 5% at the other, so that the most probable values are never the ones left out." });
 const densityBox = el("div");
 const densityNote = el("p", { class: "small muted" });
 const convBox = el("div");
@@ -85,7 +109,7 @@ const convNote = el("p", { class: "small muted" });
 
 const top = el("div", { class: "out lab-top" },
   el("div", { class: "panel record" }, el("div", { class: "pair" }, fields.s.el, fields.f.el), el("div", { class: "field" }, el("div", { class: "lab" }, el("span", { text: "Examples" })), examples, exampleNote)),
-  message, verdict, el("div", { class: "stats" }, tiles.map((t) => t.el)), tableBox);
+  message, verdict, el("div", { class: "stats" }, tiles.map((t) => t.el)), el("div", {}, tableBox, tableNote));
 const controls = el("div", { class: "controls" }, priorSeg.el, el("div", { class: "pair" }, fields.a.el, fields.b.el), fields.m.el, viewSeg.el);
 const rest = el("div", { class: "out lab-rest" }, el("div", {}, densityBox, densityNote), el("div", {}, convBox, convNote));
 $("#app").append(el("div", { class: "lab-grid" }, top, controls, rest));
@@ -98,6 +122,7 @@ function blank(text) {
   verdict.textContent = "";
   for (const t of tiles) t.set("–", "");
   tableBox.replaceChildren();
+  tableNote.hidden = true;
   rest.hidden = true;
 }
 
@@ -106,7 +131,7 @@ function update() {
   const bad = problem(state);
   if (bad) return blank(bad);
   message.replaceChildren();
-  rest.hidden = false;
+  rest.hidden = tableNote.hidden = false;
 
   const n = s + f;
   const list = priors();
@@ -123,17 +148,16 @@ function update() {
   verdict.textContent = featured.next == null
     ? `${record} ${who} gives no answer here: the formula comes to 0 ÷ 0. It has nothing to say until there is data.`
     : !featured.proper
-      ? `${record} ${who} puts the chance it happens next time at ${pct(featured.next)}. With no weight held back for the outcome that has not been seen, it treats the record as proof.`
+      ? `${record} ${who} puts the chance it happens next time at ${pct(featured.next)}. ${n === 0 ? "It gives the other outcome no weight at all, so it is certain before anything has been observed." : "With no weight held back for the outcome that has not been seen, it treats the record as proof."}`
       : `${record} ${who} puts the chance it happens next time at ${pct(featured.next)}${featured.odds >= 1000 || featured.odds <= 0.001 ? `: odds of ${oddsText(featured.odds)}` : ""}.`;
 
   /* Headline numbers for the featured prior. */
   tNext.set(pct(featured.next), featured.next == null ? "0 ÷ 0" : `(${fmt.int(s)} + ${fmt.sig(fp.a, 4)}) ÷ (${fmt.int(n)} + ${fmt.sig(fp.a + fp.b, 4)}); odds: ${oddsText(featured.odds)}`);
   tInterval.set(featured.interval ? intervalText(featured) : "–", featured.interval
-    ? `for the underlying chance${featured.interval.kind === "central" ? "" : "; one-sided, because the most likely values are at the end"}`
+    ? `for the underlying chance; ${intervalRule(featured)}`
     : featured.next == null ? "" : "this is not a proper distribution, so it has no interval");
-  tRun.set(pct(featured.run), `that it happens ${times(m)} in a row from now`);
-  tEven.set(featured.evenRun == null ? "–" : featured.evenRun === Infinity ? "for ever" : `${big(featured.evenRun)} more`,
-    featured.evenRun == null ? "" : featured.evenRun === Infinity ? "no run is long enough to become an even bet" : featured.evenRun === 1 ? "the very next time is already no better than a coin flip" : "the shortest run that is no better than a coin flip");
+  tRun.set(runText(featured), `that it happens ${times(m)} in a row from now`);
+  tEven.set(...evenText(featured));
 
   /* Every prior side by side. */
   const mark = (r, text) => (r === featured ? el("strong", { text }) : text);
@@ -145,7 +169,8 @@ function update() {
     ],
     rows: results.map((r) => ({
       prior: el("span", {}, mark(r, r.prior.label), el("br"), el("span", { class: "small muted", text: betaName(r.prior) })),
-      next: mark(r, pct(r.next)), odds: oddsText(r.odds), interval: intervalText(r), run: pct(r.run),
+      next: mark(r, pct(r.next)), odds: oddsText(r.odds), run: runText(r),
+      interval: r.interval && r.interval.kind !== "central" ? el("span", {}, intervalText(r), el("br"), el("span", { class: "small muted", text: "one-sided" })) : intervalText(r),
     })),
   }));
 

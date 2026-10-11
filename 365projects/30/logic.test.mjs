@@ -123,6 +123,45 @@ test("credible intervals: central, or one-sided when the peak is at an end", () 
   }
 });
 
+test("the interval is one-sided exactly when the density is highest at one end alone", () => {
+  // Found in review: Beta(1, 0.5) rises all the way to 100% and Beta(0.5, 1) falls all the way from 0%, but both were
+  // given central intervals, which left out their most probable values.
+  const up = credible(1, 0.5);
+  assert.equal(up.kind, "upper");
+  close(up.lo, 1 - 0.95 ** 2, 1e-12);          // cdf is 1 - (1 - x)^0.5, so the 5% point is 1 - 0.95^2
+  const down = credible(0.5, 1);
+  assert.equal(down.kind, "lower");
+  close(down.hi, 0.95 ** 2, 1e-12);            // cdf is x^0.5
+  assert.equal(credible(1, 1).kind, "central");     // flat: no highest point
+  assert.equal(credible(0.5, 0.5).kind, "central"); // climbs towards both ends
+  assert.equal(credible(0.9, 0.2).kind, "central");
+  assert.equal(credible(1, 2).kind, "lower");
+  assert.equal(credible(2, 1).kind, "upper");
+  assert.equal(credible(3, 0.5).kind, "upper");
+  assert.equal(credible(0.5, 3).kind, "lower");
+  assert.equal(credible(2, 2).kind, "central");
+  // Each rule agrees with where the density really is highest, on a grid.
+  for (const [A, B] of [[1, 0.5], [0.5, 1], [3, 0.5], [0.5, 3], [2, 1], [1, 2], [2, 2], [10, 2], [1.5, 1]]) {
+    const xs = Array.from({ length: 999 }, (_, i) => (i + 1) / 1000);
+    const ys = xs.map((x) => density(x, A, B));
+    const top = ys.indexOf(Math.max(...ys));
+    assert.equal(credible(A, B).kind, top === 998 ? "upper" : top === 0 ? "lower" : "central", `Beta(${A}, ${B})`);
+  }
+});
+
+test("runs stay accurate when the record holds a hundred million failures", () => {
+  // Found in review: with B near 10^8 the two log-gamma differences were each near 10^9 and their difference was out in
+  // the seventh figure, so an exact 50% chance next time came out as 49.99999%, and the even-bet run as 2 or as 1 at random.
+  rel(runProbability(1e8, 1e8, 1), 0.5, 1e-12);
+  rel(runProbability(5e7 + 1, 5e7 + 0.5, 1), (5e7 + 1) / (1e8 + 1.5), 1e-12);
+  rel(runProbability(1, 1e8 + 10, 3), (1 * 2 * 3) / ((1e8 + 11) * (1e8 + 12) * (1e8 + 13)), 1e-10);
+  rel(runProbability(1e8 + 1, 3, 1e9), ((1e8 + 1) * (1e8 + 2) * (1e8 + 3)) / ((1e9 + 1e8 + 1) * (1e9 + 1e8 + 2) * (1e9 + 1e8 + 3)), 1e-10);
+  assert.equal(evenRun(5e7, 5e7), 1);          // exactly evens next time
+  assert.equal(evenRun(5e7 + 0.5, 5e7 + 3), 1); // under evens next time
+  assert.equal(evenRun(5e7 + 1, 5e7 + 0.5), 2); // just over evens next time, so the second step takes it under
+  assert.equal(analyse({ a: 0, b: 0 }, 1e8, 1e8).evenRun, 1);
+});
+
 test("the chance of a run of successes is the product of the step-by-step chances", () => {
   for (const [A, B, m] of [[11, 1, 5], [9.5, 1.5, 12], [2, 11, 3], [1, 1, 1], [0.5, 0.5, 40]]) {
     let product = 1;

@@ -102,13 +102,18 @@ export function betaQuantile(q, a, b) {
 
 /**
  * A credible interval for the underlying chance under Beta(A, B). Central (equal tails), except when the
- * density is highest at an end of the range: then the interval is one-sided and includes that end, so
+ * density is highest at just one end of the range: then the interval is one-sided and includes that end, so
  * that it never leaves out the most probable values. kind: "central" | "upper" | "lower".
+ *
+ * The density p^(A−1) (1−p)^(B−1) never falls as p rises when A >= 1 and B <= 1 (so it is highest at 100%), and
+ * never rises when A <= 1 and B >= 1 (highest at 0%). The flat Beta(1, 1) has no highest point, and a density that
+ * climbs towards both ends (A and B both below 1) has two, so both keep the central interval.
  */
 export function credible(A, B, level = 0.95) {
   if (!(A > 0 && B > 0)) return null;
-  if (B <= 1 && A > 1) return { lo: betaQuantile(1 - level, A, B), hi: 1, kind: "upper" };
-  if (A <= 1 && B > 1) return { lo: 0, hi: betaQuantile(level, A, B), kind: "lower" };
+  const flat = A === 1 && B === 1;
+  if (!flat && A >= 1 && B <= 1) return { lo: betaQuantile(1 - level, A, B), hi: 1, kind: "upper" };
+  if (!flat && A <= 1 && B >= 1) return { lo: 0, hi: betaQuantile(level, A, B), kind: "lower" };
   return { lo: betaQuantile((1 - level) / 2, A, B), hi: betaQuantile((1 + level) / 2, A, B), kind: "central" };
 }
 
@@ -120,7 +125,11 @@ export function runProbability(A, B, m) {
   if (!(A + B > 0)) return null;
   if (m === 0 || B === 0) return 1;
   if (A === 0) return 0;
-  return Math.exp(lnGammaRatio(A, B) - lnGammaRatio(A + m, B));
+  // Γ(A + m) Γ(A + B) / (Γ(A) Γ(A + B + m)) is the same with m and B exchanged. Taking the smaller of the two as the
+  // step keeps the log-gamma differences small: with 10^8 failures on record and m = 1 the other order subtracts two
+  // numbers near 10^9 and is out in the seventh figure, enough to call an exact 50% chance "under a half".
+  const d = Math.min(m, B), e = Math.max(m, B);
+  return Math.exp(lnGammaRatio(A, d) - lnGammaRatio(A + e, d));
 }
 
 /**
