@@ -7,8 +7,8 @@ Live at https://varad-patel.github.io/365projects/8/ (part of [365 projects in 3
 | | |
 |---|---|
 | Question | If people get used to higher incomes, how quickly does a raise stop making them happier, and does the pattern show up in what countries report? |
-| One finding | Across 138 countries, a doubling of income per person between 2009-11 and 2023-25 went with about one more point of life evaluation, so country averages show no treadmill over this period. |
-| Main limit | Adaptation happens to individuals, and national averages over fourteen survey periods cannot show whether any person got used to their income. |
+| One finding | Across 139 countries, a doubling of income per person between 2010-12 and 2023-25 went with about one more point of life evaluation, so country averages show no treadmill over this period. |
+| Main limit | Adaptation happens to individuals, and national averages over thirteen survey periods cannot show whether any person got used to their income. |
 | PPE concept | Hedonic adaptation |
 | Skills | Difference equations, curve fitting |
 | Data | World Happiness Report 2026, World Bank |

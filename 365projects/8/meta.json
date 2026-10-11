@@ -1,7 +1,7 @@
 {
   "question": "If people get used to higher incomes, how quickly does a raise stop making them happier, and does the pattern show up in what countries report?",
-  "finding": "Across 138 countries, a doubling of income per person between 2009-11 and 2023-25 went with about one more point of life evaluation, so country averages show no treadmill over this period.",
-  "limit": "Adaptation happens to individuals, and national averages over fourteen survey periods cannot show whether any person got used to their income.",
+  "finding": "Across 139 countries, a doubling of income per person between 2010-12 and 2023-25 went with about one more point of life evaluation, so country averages show no treadmill over this period.",
+  "limit": "Adaptation happens to individuals, and national averages over thirteen survey periods cannot show whether any person got used to their income.",
   "sources": ["World Happiness Report 2026", "World Bank"],
   "built": "2026-10-10"
 }

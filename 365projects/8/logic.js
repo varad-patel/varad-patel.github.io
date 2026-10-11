@@ -39,19 +39,29 @@ export function simulate(incomes, { alpha = 0.3, k = 1, b = 0.8, base = 5.5, tim
   };
 }
 
-/** Years for half of a gap between income and the reference level to close. Infinity when alpha is 0. */
-export const halfLife = (alpha) => (alpha <= 0 ? Infinity : alpha >= 1 ? 1 : Math.log(0.5) / Math.log(1 - alpha));
+/**
+ * Years for half of a gap between income and the reference level to close: (1 - alpha)^n = 0.5.
+ * Infinity when alpha is 0, and 0 when alpha is 1 (the whole gap closes in the first year).
+ */
+export const halfLife = (alpha) => (alpha <= 0 ? Infinity : alpha >= 1 ? 0 : Math.log(0.5) / Math.log(1 - alpha));
 
-/** A country's observed years: [{ year, gdp, ladder, lo, hi }] where both income and life evaluation exist. */
+/**
+ * The first survey period the page uses. The report's earliest point, 2011, comes from the first World
+ * Happiness Report, which pooled every survey from 2005 to mid-2011. It is not a three-year average, so the
+ * data module (scripts/data/wellbeing.py) leaves it out.
+ */
+export const FIRST_YEAR = 2012;
+
+/** A country's observed years from FIRST_YEAR on: [{ year, gdp, ladder, lo, hi }] where both income and life evaluation exist. */
 export function countrySeries(data, name) {
   const c = data.countries.find((x) => x.name === name);
   if (!c) return [];
-  return data.years.map((year, i) => ({ year, gdp: c.gdp[i], ladder: c.ladder[i], lo: c.lo[i], hi: c.hi[i] })).filter((p) => p.gdp && p.ladder != null);
+  return data.years.map((year, i) => ({ year, gdp: c.gdp[i], ladder: c.ladder[i], lo: c.lo[i], hi: c.hi[i] })).filter((p) => p.year >= FIRST_YEAR && p.gdp && p.ladder != null);
 }
 
-/** Countries with at least `min` observed years. */
+/** Countries with at least `min` observed years from FIRST_YEAR on. */
 export function countriesWithSeries(data, min = 8) {
-  return data.countries.filter((c) => c.ladder.filter((v, i) => v != null && c.gdp[i]).length >= min).map((c) => c.name).sort((a, b) => a.localeCompare(b));
+  return data.countries.filter((c) => c.ladder.filter((v, i) => data.years[i] >= FIRST_YEAR && v != null && c.gdp[i]).length >= min).map((c) => c.name).sort((a, b) => a.localeCompare(b));
 }
 
 /** Cross-country slope of life evaluation on log income in one year: { b, perDoubling, r2, n }. */
