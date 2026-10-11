@@ -934,7 +934,12 @@ export function chart(target, spec) {
     return [(e.clientX - box.left) * scale, (e.clientY - box.top) * scale];
   };
   svg.addEventListener("pointermove", (e) => { if (layout) showHover(nearest(...local(e))); });
-  svg.addEventListener("pointerleave", () => showHover(-1));
+  // A finger does not hover. A tap shows the values at that point (a sideways drag moves them), and they stay up
+  // until the next tap outside the chart: the pointer "leaves" the moment the finger lifts, so that cannot hide them.
+  const finger = (e) => e.pointerType === "touch" || e.pointerType === "pen";
+  svg.addEventListener("pointerdown", (e) => { if (layout && finger(e)) showHover(nearest(...local(e))); });
+  svg.addEventListener("pointerleave", (e) => { if (!finger(e)) showHover(-1); });
+  document.addEventListener("pointerdown", (e) => { if (hover >= 0 && finger(e) && !root.contains(e.target)) showHover(-1); });
   svg.addEventListener("blur", () => showHover(-1));
   svg.addEventListener("click", (e) => {
     if (!layout || !cur.onClick) return;

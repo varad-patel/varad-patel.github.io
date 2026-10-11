@@ -151,6 +151,11 @@ async function inPage() {
   fire(svg1, "pointermove", { clientX: rect.left + dots[1][0] * scale + 2, clientY: rect.top + dots[1][1] * scale - 2 });
   ok(!tip.hidden && tip.querySelector("b").textContent === "mid" && tip.textContent.includes("5"), "hovering near a dot shows that dot's label and values");
   fire(svg1, "pointerleave"); ok(tip.hidden, "leaving the chart hides the tooltip");
+  // A finger: the tap itself shows the values, lifting the finger leaves them up, a tap elsewhere puts them away.
+  const at = { clientX: rect.left + dots[2][0] * scale - 2, clientY: rect.top + dots[2][1] * scale + 2, pointerType: "touch" };
+  fire(svg1, "pointerdown", at); ok(!tip.hidden && tip.querySelector("b").textContent === "far", "a tap on a chart shows the values at that point");
+  fire(svg1, "pointerup", at); fire(svg1, "pointerleave", at); ok(!tip.hidden, "and they stay when the finger lifts");
+  fire(document.body, "pointerdown", { pointerType: "touch" }); ok(tip.hidden, "until a tap somewhere else");
   fire(svg1, "keydown", { key: "ArrowRight" }); ok(!tip.hidden && tip.querySelector("b").textContent === "origin", "arrow keys walk the points from the left");
   fire(svg1, "keydown", { key: "End" }); ok(tip.querySelector("b").textContent === "far", "End jumps to the last point");
   fire(svg1, "keydown", { key: "Escape" }); ok(tip.hidden, "Escape hides the tooltip");
