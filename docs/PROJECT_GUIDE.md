@@ -108,8 +108,10 @@ stats.histogram(values, { bins }), stats.logGamma, logChoose, binomPmf, betaPdf,
 csv.parse(text)  csv.toObjects(text)  csv.stringify(rows)
 
 // Controls return { el, value } (value is live and settable). Put .el in the page.
-slider({ label, min, max, step, value, format, hint, onInput })
+slider({ label, min, max, step, value, format, hint, onInput })   // format's text is also what a screen reader says;
+                                                                // with step "any" an arrow key moves 1% of the range
 numberField({ label, min, max, step, value, hint, onInput })   // onInput only fires for valid numbers; value is NaN if invalid
+                                                                // step only sets the arrow keys: check Number.isInteger yourself
 select({ label, options: ["a", { value, label }], value, onChange })
 segmented({ label, options, value, onChange })                 // radio group
 checkbox({ label, checked, onChange })                         // { el, checked, input }
@@ -166,12 +168,14 @@ From the repository root:
 
 ```bash
 node --test 365projects/<N>/logic.test.mjs
-node scripts/smoke.mjs <N>
+node scripts/smoke.mjs <N> --browser all
 ```
 
-The smoke test loads the page at desktop and phone width in a real browser, fails on any console
-error, uncaught exception, failed request, missing section or sideways scroll, and operates every
-slider, select, checkbox and button once. It saves screenshots to `.smoke/`:
+The smoke test loads the page at desktop and phone width in Chromium, Firefox and WebKit (Safari's
+engine), fails on any console error, uncaught exception, failed request, missing section, sideways
+scroll or `NaN`/`undefined` in the tool, and operates every slider, select, checkbox and button once.
+In Chromium it also runs the axe-core accessibility audit (WCAG 2.1 A and AA) on load, after use and at
+phone width; any violation is a failure. It saves screenshots to `.smoke/`:
 `00N-app.png` (the tool at load), `00N-app-after.png` (after every control was used),
 `00N-app-phone.png`, `00N-desktop.png` and `00N-phone.png` (whole page). **Open them and look.** Check
 for overlapping labels, clipped text, a chart with the wrong scale, an ugly default, anything you
@@ -181,6 +185,9 @@ would not ship. To capture a particular state:
 node scripts/smoke.mjs <N> --eval "document.querySelector('#app button').click()"    # writes .smoke/00N-eval.png
 ```
 
-A project is done when both commands pass, the screenshots look right at both widths, and the
-write-up is complete. `scripts/build_data.py`, the thumbnail and the commit are done afterwards for
-the whole batch (see `CLAUDE.md`).
+A project is built when both commands pass, the screenshots look right at both widths, and the
+write-up is complete. It is then reviewed by someone who did not build it, following
+`docs/REVIEW_CHECKLIST.md`: every feature used on purpose, the numbers recomputed independently, every
+fact and reference checked against a source, keyboard and screen-reader access checked. Only then is it
+published. `scripts/build_data.py`, the thumbnail and the commit are done afterwards for the whole
+batch (see `CLAUDE.md`).

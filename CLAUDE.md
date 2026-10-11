@@ -43,7 +43,10 @@ assets/site.css, fonts/, favicon   site styles (tokens at the top: --paper, --in
 data/challenge.tsv, sections.json, site.json   the list, the 13 parts, start date and repository
 docs/PROJECT_GUIDE.md              how to build one project (read this before building)
 scripts/build_data.py              regenerate challenge-data.js and the project READMEs
-scripts/smoke.mjs                  browser test for project pages (Playwright + Chromium), also takes thumbnails
+scripts/smoke.mjs                  browser test for project pages (three engines, accessibility audit), also takes thumbnails
+scripts/smoke-gallery.mjs          browser test for the home page and the gallery
+scripts/kit-check.mjs              browser tests for the shared kit (controls, chart geometry, tooltips, keyboard, canvas)
+docs/REVIEW_CHECKLIST.md           the independent review every page gets before it is published
 scripts/data/                      scripts that built each bundled dataset, with sources and cleaning rules
 tests/test_data.py                 site data checks (pytest)
 package.json                       dev tooling only (playwright-core for the smoke test)
@@ -52,10 +55,13 @@ package.json                       dev tooling only (playwright-core for the smo
 ## Commands
 
 ```bash
-npm install                               # once, for the smoke test (playwright-core; uses an installed Chromium)
+npm install                               # once, for the smoke test (playwright-core and axe-core)
+npx playwright-core install chromium firefox webkit   # once: the three test browsers
 npm test                                  # every project's logic tests and the kit's (node --test)
-node scripts/smoke.mjs 4 5                # browser-test projects 4 and 5; screenshots go to .smoke/
+node scripts/smoke.mjs 4 5                # browser-test projects 4 and 5 in Chromium; screenshots go to .smoke/
+node scripts/smoke.mjs 4 --browser all    # the same in Chromium, Firefox and WebKit
 node scripts/smoke.mjs                    # browser-test every project
+node scripts/kit-check.mjs --browser all  # browser tests for the shared kit; run after any change to kit.js or kit.css
 python scripts/build_data.py              # after adding a project or changing anything under data/
 python -m pytest -q                       # site data checks; must pass before every push
 python -m http.server 8000                # preview at http://localhost:8000/365projects/
@@ -66,11 +72,15 @@ python -m http.server 8000                # preview at http://localhost:8000/365
 1. Read `docs/PROJECT_GUIDE.md`, the project's row in `data/challenge.tsv`, and `365projects/1/`.
 2. Create `365projects/<N>/` with the five files. Build on the kit. If the project needs data, add a script under
    `scripts/data/` that downloads it from the open source and writes an ES module, and record the source and licence.
-3. `node --test 365projects/<N>/logic.test.mjs` and `node scripts/smoke.mjs <N>` must pass. Open the screenshots in
-   `.smoke/` and look at them at both widths.
-4. `node scripts/smoke.mjs <N> --shoot` (writes the thumbnail), `python scripts/build_data.py`, `python -m pytest -q`,
+3. `node --test 365projects/<N>/logic.test.mjs` and `node scripts/smoke.mjs <N> --browser all` must pass (three
+   browser engines plus the accessibility audit). Open the screenshots in `.smoke/` and look at them at both widths.
+4. Have the page reviewed independently against `docs/REVIEW_CHECKLIST.md` (a fresh sub-agent that did not build it
+   works well): features used on purpose, numbers recomputed, every fact and reference checked against a source.
+5. `node scripts/smoke.mjs <N> --shoot` (writes the thumbnail), `python scripts/build_data.py`, `python -m pytest -q`,
    `npm test`.
-5. Check the gallery locally, then commit (`Add project <N>: <title>`) and push. Pages deploys in about a minute.
+6. Check the gallery (`python -m http.server 8123` then `node scripts/smoke-gallery.mjs`), commit
+   (`Add project <N>: <title>`) and push. Pages deploys in about a minute. Then run
+   `node scripts/smoke.mjs <N> --base https://varad-patel.github.io --browser all` against the published page.
 
 ## Rules for editing
 
@@ -79,8 +89,10 @@ python -m http.server 8000                # preview at http://localhost:8000/365
   planned exceptions are the ten projects marked "LLM key" in the list, which call a language model with a key the
   visitor supplies.
 * `challenge-data.js`, the project READMEs and the thumbnails are generated. Change the inputs, then regenerate.
-* The kit is shared by every project. Additive changes only; run `node scripts/smoke.mjs` on everything after
-  touching it.
+* The kit is shared by every project. Additive changes only; after touching it run `node scripts/kit-check.mjs
+  --browser all` and then `node scripts/smoke.mjs --browser all` on everything.
+* `assets/site.css` already uses the class names `.tip`, `.num`, `.bar`, `.body`, `.cell`, `.shot`, `.plate`, `.rows`
+  and `.sec` for the gallery. Do not reuse them for something else inside a project page.
 * Reuse the tokens in `assets/site.css`. The look is a ledger-paper theme with one hue per part. Light only.
 * Charts follow the rules in the guide: fixed palette in order, one y-axis, a legend for two or more series, labels
   in ink, never a number on every point. `chart()` in the kit does this for you.
@@ -91,6 +103,14 @@ python -m http.server 8000                # preview at http://localhost:8000/365
 ## Notes
 
 * Git pushes need a GitHub sign-in for the `varad-patel` account; the credential manager opens a browser window.
-* The smoke test finds Chromium under `%LOCALAPPDATA%/ms-playwright`, or uses installed Chrome or Edge, or `CHROME_PATH`.
+* The smoke test uses Playwright's own browser builds under `%LOCALAPPDATA%/ms-playwright`. If Chromium is missing it
+  falls back to another installed build, Chrome or Edge, or `CHROME_PATH`.
 * `element.replaceChildren(a, null)` prints the word "null": filter out empty values before passing them.
+* The smoke test's audit is axe (WCAG 2.1 A and AA) plus its own measurement of the contrast of text drawn in SVG,
+  which axe cannot see. It cannot replace a person with a screen reader or a real iPhone: say so when reporting.
+* `365projects/data/wellbeing.js` starts at 2012 (surveys of 2010 to 2012). The report's 2011 row pools 2005 to
+  mid-2011 and is left out by `scripts/data/wellbeing.py`. Both data scripts take `--cache DIR` and rebuild the same
+  file from the cached downloads.
+* In Git Bash on this machine, heredocs and `node -e` strings lose backslashes. Put any script that contains a
+  regular expression or an escaped newline in a file first.
 * A custom domain is optional: add a `CNAME` file, set it under Settings, Pages, and point DNS at GitHub Pages.

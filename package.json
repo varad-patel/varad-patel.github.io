@@ -5,9 +5,12 @@
   "description": "Dev tooling only. The site itself has no build step and no runtime dependencies.",
   "scripts": {
     "test": "node --test \"365projects/**/*.test.mjs\"",
-    "smoke": "node scripts/smoke.mjs"
+    "kit": "node scripts/kit-check.mjs --browser all",
+    "smoke": "node scripts/smoke.mjs --browser all",
+    "gallery": "node scripts/smoke-gallery.mjs --browser all"
   },
   "devDependencies": {
+    "axe-core": "^4.14.0",
     "playwright-core": "^1.64.0"
   }
 }
