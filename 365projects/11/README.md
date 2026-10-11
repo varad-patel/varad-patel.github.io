@@ -7,7 +7,7 @@ Live at https://varad-patel.github.io/365projects/11/ (part of [365 projects in 
 | | |
 |---|---|
 | Question | Who sits at the centre of the web of philosophical influence, and how is any one thinker connected to the rest? |
-| One finding | Kant has the most recorded followers (79), but PageRank puts Plato first and lifts Heraclitus from 30th by follower count to 5th. |
+| One finding | Kant has the most recorded followers (79), but PageRank puts Plato first and lifts Heraclitus from joint 30th by follower count to 5th. |
 | Main limit | The graph is Wikidata's volunteer-written record of influence, which is incomplete, leans European and says nothing about the strength or kind of each link. |
 | PPE concept | History of ideas |
 | Skills | Wikidata snapshot, PageRank, graph visualisation |

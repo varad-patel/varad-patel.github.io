@@ -53,40 +53,42 @@
 
     <section class="p-sec finding">
       <h2>One finding</h2>
-      <p>Kant has the most recorded followers in the data (79), but PageRank puts Plato first. It lifts Heraclitus from 30th by number of followers to 5th: only 13 thinkers name him as an influence, but they include Plato, Aristotle, Hegel and Nietzsche. Following chains of influence, 49% of all 1,301 thinkers are downstream of Socrates.</p>
+      <p>Kant has the most recorded followers in the data (79), but PageRank puts Plato first. It lifts Heraclitus from joint 30th by number of followers to 5th: only 13 thinkers are recorded as influenced by him, but they include Plato, Aristotle, Hegel and Nietzsche. Following chains of influence, 49% of all 1,301 thinkers (638) are downstream of Socrates.</p>
     </section>
 
     <section class="p-sec">
       <h2>The idea</h2>
-      <p>Alfred North Whitehead said that the safest general description of European philosophy is that it consists of a series of footnotes to Plato. That is a claim about a network: philosophers respond to earlier philosophers, and some names are responded to by almost everyone. If the history of ideas is a web of influence, then "who matters most" becomes a question you can ask of the web itself.</p>
-      <p>The obvious measure is to count followers. Its weakness is that it treats every follower alike. Being named as an influence by Aristotle is not the same as being named by a minor commentator. The alternative is to let standing flow along the links: a thinker is central if they influenced people who were themselves central. That circular definition has an exact solution, and it is the one a search engine uses to rank pages. Larry Page and Sergey Brin published it in 1998 as PageRank.</p>
+      <p>Alfred North Whitehead wrote that the safest general characterisation of the European philosophical tradition is that it consists of a series of footnotes to Plato. That is a claim about a network: philosophers respond to earlier philosophers, and some names are responded to by almost everyone. If the history of ideas is a web of influence, then "who matters most" becomes a question you can ask of the web itself.</p>
+      <p>The obvious measure is to count followers. Its weakness is that it treats every follower alike. Being named as an influence by Aristotle is not the same as being named by a minor commentator. The alternative is to let standing flow along the links: a thinker is central if they influenced people who were themselves central. That circular definition has an exact solution. Sergey Brin and Larry Page published it in 1998 as PageRank, the method their search engine, Google, used to rank web pages.</p>
       <p>What this cannot settle, and what makes it worth doing, is the difference between being influential and being right, and between history and the record of it. The graph shows who was written down as having influenced whom. Who gets written down is its own question in the politics of knowledge.</p>
     </section>
 
     <section class="p-sec">
       <h2>How it works</h2>
       <h3>The data</h3>
-      <p>Wikidata is the structured database behind Wikipedia, released into the public domain. It has a property called "influenced by". The snapshot here contains every such statement in which both people have the occupation "philosopher": 2,582 links among 1,301 people, retrieved on 10 October 2026. Two cleaning rules were applied: a birth year later than the death year is repaired from the entry's own description or treated as unknown, and a link to an influencer born after the influenced person had died is dropped.</p>
+      <p>Wikidata is the structured database that sits alongside Wikipedia, edited by volunteers and released into the public domain. It has a property called "influenced by". The snapshot here contains every such statement in which both people have the occupation "philosopher" and an English name: 2,582 links among 1,301 people, retrieved on 11 October 2026. Two cleaning rules were applied: a birth year later than the death year is repaired from the entry's own description or treated as unknown, and a link to an influencer born in or after the year the influenced person died is dropped. Where Wikidata gives several dates for a birth or a death, the page takes those its editors have marked as preferred (or, if none is marked, all that are not marked as wrong), then the most precise of them, then the earliest. A date recorded in the Julian calendar is read in that calendar, as historians write it.</p>
       <h3>PageRank</h3>
       <p>Imagine a reader who starts with a random thinker and repeatedly asks "who influenced this person?", moving to one of the answers at random. With probability 1 − <var>d</var> the reader gets bored and jumps to a random thinker instead. A thinker's score is the share of time the reader spends on them. Writing <var>n</var> for the number of thinkers and <var>out</var>(<var>j</var>) for the number of influences recorded for <var>j</var>:</p>
       <p class="eq"><var>r</var>(<var>i</var>) = (1 − <var>d</var>) / <var>n</var> + <var>d</var> · Σ<sub><var>j</var> influenced by <var>i</var></sub> <var>r</var>(<var>j</var>) / <var>out</var>(<var>j</var>) + <var>d</var> · <var>D</var> / <var>n</var></p>
-      <p>The last term handles thinkers with no recorded influences, where the reader has nowhere to go: their combined score <var>D</var> is shared equally among everyone. The scores are found by starting everyone at 1/<var>n</var> and applying the formula repeatedly until nothing changes by more than a trillionth, which takes about 130 rounds at the default <var>d</var> = 0.85.</p>
-      <p>The damping slider is <var>d</var>. Turn it down and the reader rarely follows a chain more than a step or two, so the ranking approaches a count of direct followers. Turn it up and standing travels far upstream, which favours the ancients.</p>
+      <p>The last term handles thinkers with no recorded influences, where the reader has nowhere to go: their combined score <var>D</var> is shared equally among everyone. The scores are found by starting everyone at 1/<var>n</var> and applying the formula repeatedly until the changes in one round add up to less than a trillionth, which takes about 130 rounds at the default <var>d</var> = 0.85 and about 400 at 0.95. Thinkers with exactly the same score share a position: the 527 whom nobody is recorded as following are all level at the bottom.</p>
+      <p>The damping slider is <var>d</var>. Turn it down and the reader rarely follows a chain more than a step or two, so the ranking approaches a count of direct followers, with each follower's vote split among everyone they name: at 0.5 Kant is first. Turn it up and standing travels far upstream, which favours the ancients: at 0.95 Heraclitus is third.</p>
       <h3>Reach and chains</h3>
-      <p>"Downstream" is everyone who can be reached by repeatedly asking "whom did this person influence?", found by breadth-first search. The chain tool uses the same search to find the shortest sequence in which each thinker is recorded as an influence on the next, trying both directions.</p>
+      <p>"Downstream" is everyone who can be reached by repeatedly asking "whom did this person influence?", found by breadth-first search. The chain tool uses the same search to find the shortest sequence in which each thinker is recorded as an influence on the next, first from the chosen thinker to the second name and, if there is none, the other way round.</p>
+      <h3>Search</h3>
+      <p>The search box matches any part of a name, ignoring case and accents. If no name contains what was typed, it offers the nearest spellings: names, or single words of names, within one edit (a letter added, dropped or changed) for every four letters typed, up to three.</p>
       <h3>The map</h3>
-      <p>The map shows one step in each direction from the chosen thinker, ordered by score, and every name on it can be clicked to move there. The chart underneath places every thinker by year of birth and score.</p>
+      <p>The map shows one step in each direction from the chosen thinker, ordered by score, and every name on it is a button that moves there. The chart underneath places every thinker with a recorded year of birth by that year and by score; the table below it lists all 1,301 with the same figures.</p>
     </section>
 
     <section class="p-sec">
       <h2>What this cannot tell you</h2>
       <ul>
         <li><strong>What actually happened.</strong> This is Wikidata's record, written by volunteers. On the day of the snapshot George Berkeley's year of birth was recorded as 2000. 481 of the 1,301 thinkers have no recorded influences at all, which is a gap in the data and not a fact about them.</li>
-        <li><strong>Who is missing.</strong> Coverage follows the interests of the people who edit Wikidata, and it leans heavily European. Whole traditions are thin or absent. A ranking from this graph is a ranking of the Western canon as volunteers have encoded it.</li>
-        <li><strong>What kind of influence.</strong> A link does not say how strong the influence was or whether it was agreement. Marx is linked to Hegel, whom he set out to turn upside down.</li>
+        <li><strong>Who is missing.</strong> Coverage follows the interests of the people who edit Wikidata, and it leans heavily towards Europe and North America: about 240 of the descriptions say "French", 170 "American" and 160 "German", against 29 "Indian", 19 "Chinese" and 9 "Japanese". Whole traditions are thin or absent. A ranking from this graph is a ranking of the Western canon as volunteers have encoded it.</li>
+        <li><strong>What kind of influence.</strong> A link does not say how strong the influence was or whether it was agreement. Marx is linked to Hegel, whose dialectic he said was standing on its head and had to be turned the right way up.</li>
         <li><strong>Who was the better philosopher.</strong> PageRank measures position in a web of citations. Early figures gain simply because standing flows backwards in time and they have had longer to acquire descendants.</li>
         <li><strong>Who counts as a philosopher.</strong> The occupation tag is broad. Darwin, Goethe and Dostoyevsky are in the graph because someone tagged them.</li>
-        <li><strong>Exact dates.</strong> Years are the earliest that Wikidata records, and for ancient figures they can be off by a year or more.</li>
+        <li><strong>Exact dates.</strong> The years are Wikidata's choice among sources that often disagree, so for ancient figures they can differ from the ones in a textbook. For 36 of the 1,301 thinkers Wikidata gives a birth or a death only to the decade or the century, and the page says so: Plato appears as "420s to 340s BC". The chart and the era filter place such a thinker at the middle of the span.</li>
       </ul>
     </section>
 
@@ -104,9 +106,9 @@
     <section class="p-sec">
       <h2>Data and sources</h2>
       <ul class="refs">
-        <li>Wikidata, "influenced by" (P737) statements between people with the occupation philosopher (Q4964182). Public domain (CC0). Retrieved 10 October 2026.</li>
-        <li>Brin, S., and Page, L. (1998). The anatomy of a large-scale hypertextual web search engine. <em>Computer Networks and ISDN Systems</em>, 30, 107-117.</li>
-        <li>Whitehead, A. N. (1929). <em>Process and Reality</em>.</li>
+        <li>Wikidata, "influenced by" (P737) statements between people with the occupation philosopher (Q4964182). Public domain (CC0). Retrieved 11 October 2026.</li>
+        <li>Brin, S., and Page, L. (1998). The anatomy of a large-scale hypertextual web search engine. <em>Computer Networks and ISDN Systems</em>, 30(1-7), 107-117.</li>
+        <li>Whitehead, A. N. (1929). <em>Process and Reality</em>, part II, chapter 1, section 1.</li>
         <li>Collins, R. (1998). <em>The Sociology of Philosophies: A Global Theory of Intellectual Change</em>. Harvard University Press.</li>
       </ul>
     </section>
