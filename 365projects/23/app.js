@@ -72,16 +72,17 @@ const kindSeg = segmented({
 const kS = slider({ label: "Number of new guests, k", min: 2, max: 20, step: 1, value: hotel.k, format: fmt.int, onInput: (v) => { hotel.k = v; drawRule(); } });
 const checkBtn = button("Check them in", checkIn, { primary: true });
 const resetHotelBtn = button("Reset the hotel", () => { mover.stop(); hotel.anim = null; hotel.history = []; drawHotelState("The hotel is back to its first evening: full, with guest n in room n."); });
-const capHint = el("div", { class: "hint" });
+const capHint = el("div", { class: "hint", role: "status" });
 const logBox = el("div", { class: "field" });
 
 const askN = numberField({ label: "A guest is now in room", min: 1, max: MAX_NUMBER, step: 1, value: 7 });
 const askSeat = numberField({ label: "A passenger is in seat", min: 1, max: MAX_NUMBER, step: 1, value: 3 });
 const askCoach = numberField({ label: "of coach", min: 1, max: MAX_NUMBER, step: 1, value: 2 });
 const askM = numberField({ label: "Who ends up in room", min: 1, max: MAX_NUMBER, step: 1, value: 12 });
-const ansN = el("p", { class: "small answer" });
-const ansNew = el("p", { class: "small answer" });
-const ansM = el("p", { class: "small answer" });
+// Each answer changes as its box is typed in, so it is announced to screen readers as well as shown.
+const ansN = el("p", { class: "small answer", "aria-live": "polite" });
+const ansNew = el("p", { class: "small answer", "aria-live": "polite" });
+const ansM = el("p", { class: "small answer", "aria-live": "polite" });
 for (const f of [askN, askSeat, askCoach, askM]) f.input.addEventListener("input", drawAsk);
 
 const hotelControls = el("div", { class: "controls" },
@@ -190,7 +191,12 @@ function checkIn() {
   }
   mover.stop();
   hotel.anim = reducedMotion() ? null : { tokens, a: 0 };
-  drawHotelState(`Arrival ${LETTERS[hotel.history.length - 1]}: ${KIND_TEXT[a.kind].done(a.k)}`);
+  // The guests who leave the picture have not left the hotel: say which rooms they went to.
+  const first = tokens.find((t) => t.from != null && t.to > ROOMS).from;   // every rule moves the guest in the last room drawn beyond it
+  const gone = first === ROOMS
+    ? `The guest who was in room ${ROOMS} is now in room ${fmt.int(moveGuest(a, ROOMS))}`
+    : `The guests who were in rooms ${first} to ${ROOMS} are now in rooms numbered from ${fmt.int(moveGuest(a, first))} up to ${fmt.int(moveGuest(a, ROOMS))}`;
+  drawHotelState(`Arrival ${LETTERS[hotel.history.length - 1]}: ${KIND_TEXT[a.kind].done(a.k)} ${gone}, further along the corridor than the ${ROOMS} rooms drawn here.`);
   if (hotel.anim) mover.start();
 }
 
@@ -228,7 +234,7 @@ function drawRule() {
 
   // Who gets which room, for the first eight of everybody.
   const N = 8;
-  const cols = [{ key: "who", label: "" }, ...Array.from({ length: N }, (_, i) => ({ key: `c${i + 1}`, label: String(i + 1), num: true })), { key: "more", label: "", num: true }];
+  const cols = [{ key: "who", label: "Who" }, ...Array.from({ length: N }, (_, i) => ({ key: `c${i + 1}`, label: String(i + 1), num: true })), { key: "more", label: "…", num: true }];
   const line = (who, f, endless) => {
     const row = { who, more: endless ? "…" : "" };
     for (let i = 1; i <= N; i++) { const m = f(i); row[`c${i}`] = m == null ? "" : fmt.int(m); }
