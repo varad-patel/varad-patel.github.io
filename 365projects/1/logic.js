@@ -39,7 +39,16 @@ export function fit(rows, controlKeys = []) {
   const keys = CONTROLS.map((k) => k.key).filter((k) => controlKeys.includes(k));
   const sample = rows.filter((r) => keys.every((k) => r[k] != null));
   const n = sample.length;
-  if (n < keys.length + 8) return { error: `Only ${n} countries have all of these measures. Choose fewer controls, another year or a wider region.`, n };
+  if (n < keys.length + 8) {
+    const have = `Only ${n} ${n === 1 ? "country has" : "countries have"}`;
+    const need = `at least ${keys.length + 8} are needed`;
+    return {
+      n,
+      error: keys.length
+        ? `${have} all of these measures, and ${need} to fit this many controls. Choose fewer controls, another year or a wider region.`
+        : `${have} a life evaluation and an income here, and ${need} to fit a line. Choose a wider region or put back the countries left out.`,
+    };
+  }
 
   const x = sample.map((r) => r.doublings);
   const y = sample.map((r) => r.ladder);

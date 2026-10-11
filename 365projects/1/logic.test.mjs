@@ -78,6 +78,55 @@ test("real data: richer countries report higher life evaluations, and controls s
   close(predictAlone(alone, 2 ** 13), alone.alone.intercept + 13 * alone.alone.perDoubling, 1e-9);
 });
 
+test("the finding on the page: 142 countries, 63%, 0.55 and 0.16 points, under one percentage point unique to income", () => {
+  const f = fit(rowsFor(WELLBEING, 2025), CONTROLS.map((c) => c.key));
+  assert.equal(f.n, 142);
+  assert.equal(f.alone.r2.toFixed(2), "0.63");
+  assert.equal(f.alone.perDoubling.toFixed(2), "0.55");
+  assert.equal(f.withControls.perDoubling.toFixed(2), "0.16");
+  assert.ok(f.split.income > 0 && f.split.income < 0.01, `only income ${f.split.income}`);
+});
+
+test("real data agrees with a separate implementation (normal equations in Python, run during review)", () => {
+  // No controls, 2023 to 2025: 144 countries.
+  const a = fit(rowsFor(WELLBEING, 2025), []);
+  assert.equal(a.n, 144);
+  close(a.alone.perDoubling, 0.547527, 1e-5);
+  close(a.alone.se, 0.0698 / 1.96, 1e-4);
+  close(a.alone.r2, 0.624866, 1e-5);
+  // All five controls.
+  const f = fit(rowsFor(WELLBEING, 2025), CONTROLS.map((c) => c.key));
+  close(f.withControls.perDoubling, 0.155498, 1e-5);
+  close(f.withControls.r2, 0.819173, 1e-5);
+  close(f.split.income, 0.007532, 1e-5);
+  close(f.split.shared, 0.620041, 1e-5);
+  close(f.split.controls, 0.1916, 1e-5);
+  close(f.coefficients.find((c) => c.key === "social").perSd, 0.4881, 1e-4);
+  assert.deepEqual(outliers(f, 3).below.map((r) => r.name), ["Botswana", "Sri Lanka", "Cambodia"]);
+  // Health only, 2013 to 2015.
+  const h = fit(rowsFor(WELLBEING, 2015), ["health"]);
+  assert.equal(h.n, 151);
+  close(h.withControls.perDoubling, 0.359232, 1e-5);
+  close(h.split.shared, 0.584902, 1e-5);
+});
+
+test("the shared part can be negative, and the three parts still add up", () => {
+  // Generosity is measured net of income, so the two explain more together than apart.
+  const f = fit(rowsFor(WELLBEING, 2019), ["generosity"]);
+  assert.ok(f.split.shared < 0, `shared ${f.split.shared}`);
+  close(f.split.income + f.split.shared + f.split.controls + f.split.unexplained, 1, 1e-9);
+});
+
+test("too few countries: the message says what is short and how to fix it", () => {
+  const rows = rowsFor(WELLBEING, 2025);
+  const two = fit(rows.filter((r) => r.region === "North America"), []);
+  assert.equal(two.n, 2);
+  assert.match(two.error, /Only 2 countries have a life evaluation and an income here, and at least 8 are needed/);
+  assert.doesNotMatch(two.error, /fewer controls/);
+  assert.match(fit(rows.slice(0, 1), []).error, /Only 1 country has/);
+  assert.match(fit(rows.slice(0, 9), ["health", "social"]).error, /at least 10 are needed to fit this many controls. Choose fewer controls/);
+});
+
 test("years before the factor data exist offer only the health control", () => {
   const rows = rowsFor(WELLBEING, 2015);
   assert.ok(rows.length > 100);
