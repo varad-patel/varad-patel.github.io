@@ -37,7 +37,17 @@ test("theory: the twin method counts interaction as genes and the gene-environme
     const t = theory(p);
     close(t.falconer, (p.va + p.vi) / t.vp, 1e-12);
     close(t.components.interaction, p.vi * (1 + p.rge ** 2));
+    // The shared-environment estimate takes the covariance and the rge^2 part of the interaction.
+    close(t.c2, (p.vc + t.components.covariance + p.rge ** 2 * p.vi) / t.vp, 1e-12);
+    close(t.falconer + t.c2 + t.e2, 1, 1e-12);
   }
+  // Written out from the covariances, not from the code's own shortcut: va 10, vc 80, ve 5, vi 60, rge 0.7.
+  // cov = 2 (0.7) sqrt(800) = 39.598, interaction = 60 (1.49) = 89.4, vp = 95 + 89.4 + 39.598 = 223.998.
+  const t = theory({ va: 10, vc: 80, ve: 5, vi: 60, rge: 0.7 });
+  close(t.vp, 223.998, 0.001);
+  close(t.rMZ, 218.998 / 223.998, 1e-5);                            // everything but ve
+  close(t.rDZ, (5 + 80 + 39.598 + 60 * 0.99) / 223.998, 1e-5);      // half of va, all of vc and cov, vi (1/2 + rge^2)
+  close(t.falconer, 70 / 223.998, 1e-5);
 });
 
 test("simulated populations have the variances the theory says, including with interaction and correlation", () => {

@@ -31,7 +31,7 @@ const sliders = {
   ve: vary("ve", "Non-shared environment", 200, "Everything that differs even between twins raised together, including chance."),
   vi: vary("vi", "Gene-environment interaction", 100, "How much the effect of someone's genes depends on the family environment."),
   rge: vary("rge", "Gene-environment correlation", RGE_MAX, "How closely the family environment follows the parents' genes.", 0.05, two),
-  pairs: vary("pairs", "Twin pairs of each kind", 5000, "The size of the simulated twin study.", 50),
+  pairs: vary("pairs", "Twin pairs of each kind", 5000, null, 50),
 };
 sliders.pairs.input.min = 50;
 const seedField = numberField({ label: "Seed", min: 0, max: 999999, step: 1, value: state.seed, hint: "The same seed always gives the same population." });
@@ -63,10 +63,12 @@ const message = el("div", { class: "stack", role: "status" });
 const splitBox = el("div");
 const histBox = el("div"), mzBox = el("div"), dzBox = el("div"), curveBox = el("div"), peopleBox = el("div", { class: "stack" });
 const body = el("div", { class: "out" }, splitBox, histBox, el("div", { class: "grid2" }, mzBox, dzBox), curveBox, peopleBox);
-const out = el("div", { class: "out" }, el("div", { class: "stats" }, sTrue.el, sEst.el, sMZ.el, sDZ.el), message, body);
+const caveat = el("p", { class: "small muted" }, el("strong", { text: "Everything here is simulated. " }),
+  "Each variance is a setting you choose, not a measurement. Nothing on this page describes a real trait, a real person or a real group of people.");
+const out = el("div", { class: "out" }, el("div", { class: "stats" }, sTrue.el, sEst.el, sMZ.el, sDZ.el), caveat, message, body);
 
 const soilSliders = [
-  slider({ label: "Heritability inside each field", min: 0.1, max: 1, step: 0.05, value: soil.h2, format: two, hint: "How far a plant's height follows its parents' within one field.", onInput: (v) => { soil.h2 = v; drawSoil(); } }),
+  slider({ label: "Heritability inside each field", min: 0.1, max: 1, step: 0.05, value: soil.h2, format: two, hint: "The share of the differences in height inside one field that goes with differences in the seed.", onInput: (v) => { soil.h2 = v; drawSoil(); } }),
   slider({ label: "Gap between the field averages", min: 0, max: 30, step: 1, value: soil.gap, format: (v) => `${v} units`, onInput: (v) => { soil.gap = v; drawSoil(); } }),
   slider({ label: "Share of the gap that comes from the seed", min: 0, max: 1, step: 0.05, value: soil.share, format: (v) => fmt.pct(v, 0), hint: "0% is Lewontin's case: the same seed in both fields, and the whole gap is soil.", onInput: (v) => { soil.share = v; drawSoil(); } }),
 ];
@@ -81,11 +83,11 @@ const soilPanel = el("div", { class: "soil" },
 
 $("#app").append(el("div", { class: "tool-grid" }, controls, out), soilPanel);
 
-const hist = chart(histBox, { series: [], height: 250 });
-const mzChart = chart(mzBox, { series: [], height: 300 });
-const dzChart = chart(dzBox, { series: [], height: 300 });
-const curveChart = chart(curveBox, { series: [], height: 270 });
-const soilChart = chart(soilBox, { series: [], height: 280 });
+const hist = chart(histBox, { series: [], height: 220 });
+const mzChart = chart(mzBox, { series: [], height: 260 });
+const dzChart = chart(dzBox, { series: [], height: 260 });
+const curveChart = chart(curveBox, { series: [], height: 240 });
+const soilChart = chart(soilBox, { series: [], height: 250 });
 
 /* ---------- the population and its twin study ---------- */
 function drawSplit(t) {
@@ -96,7 +98,7 @@ function drawSplit(t) {
     el("div", { class: "split-bar", role: "img", "aria-label": parts.map(text).join(", ") },
       parts.map((p) => el("span", { style: { width: `${(p.value / t.vp) * 100}%`, background: p.color }, title: text(p) }))),
     el("div", { class: "chart-legend" }, parts.map((p) => el("span", {}, el("i", { style: { background: p.color } }), `${p.label} `, el("strong", { text: fmt.pct(p.value / t.vp, 0) })))),
-    el("p", { class: "small muted", text: `Total variance ${fmt.num(t.vp, 1)}, worked out from the settings. Heritability is the first share and nothing else.` }));
+    el("p", { class: "small muted", text: `Total variance ${fmt.num(t.vp, 1)}, worked out from the settings. Heritability is the share labelled Genes and nothing else.` }));
 }
 
 function update() {
@@ -116,11 +118,14 @@ function update() {
   sMZ.set(`r = ${two(est.rMZ)}`, `expected ${two(t.rMZ)}`);
   sDZ.set(`r = ${two(est.rDZ)}`, `expected ${two(t.rDZ)}`);
 
-  const lines = [`Differences in genes account for ${fmt.pct(t.h2, 0)} of the variation in this population. A study of ${fmt.int(n)} identical and ${fmt.int(n)} fraternal pairs, seeing only the trait, estimates 2 × (${two(est.rMZ)} − ${two(est.rDZ)}) = ${two(est.h2)}.`];
+  const lines = [`In this simulated population, differences in genes account for ${fmt.pct(t.h2, 0)} of the variation. A study of ${fmt.int(n)} identical and ${fmt.int(n)} fraternal pairs, seeing only the trait, estimates 2 × (${two(est.rMZ)} − ${two(est.rDZ)}) = ${two(est.h2)}.`];
   if (est.h2 < 0 || est.h2 > 1) lines.push("An estimate outside 0 to 1 is sampling error, which is common in small twin studies. Add more pairs.");
+  else if (est.lo < 0 || est.hi > 1) lines.push("The interval is a rough one, the estimate plus or minus 1.96 standard errors, so it can run below 0 or above 1 although a share of variance cannot.");
   const notes = [note("", lines.join(" "))];
-  if (Math.abs(t.falconer - t.h2) > 0.005) notes.push(note("warn", `With unlimited twins the estimate would settle on ${two(t.falconer)}, not the true ${two(t.h2)}. Identical twins share the interaction in full and fraternal twins share about half of it, the same pattern as genes, so the twin method counts it as genetic.`));
-  if (state.rge > 0 && state.va > 0 && state.vc > 0) notes.push(note("warn", `${fmt.pct(t.components.covariance / t.vp, 0)} of the variation comes from genes and family environment moving together. It is neither one nor the other. The twin method files it under shared environment: its estimate of that share is ${two(est.c2)}, against a true ${two(state.vc / t.vp)}.`));
+  // Of the interaction variance vi (1 + rge^2), fraternal twins share vi (1/2 + rge^2): half of it when rge is 0.
+  const dzShare = (0.5 + state.rge ** 2) / (1 + state.rge ** 2);
+  if (Math.abs(t.falconer - t.h2) > 0.005) notes.push(note("warn", `With unlimited twins the estimate would settle on ${two(t.falconer)}, not the true ${two(t.h2)}. Identical twins share the interaction in full and fraternal twins share ${state.rge > 0 ? fmt.pct(dzShare, 0) : "half"} of it, ${state.rge > 0 ? "close to" : "which is"} the pattern genes show, so the twin method counts ${state.rge > 0 ? "most of it" : "it"} as genetic.`));
+  if (state.rge > 0 && state.va > 0 && state.vc > 0) notes.push(note("warn", `${fmt.pct(t.components.covariance / t.vp, 0)} of the variation comes from genes and family environment moving together. It is neither one nor the other. Both kinds of twin share it equally, so the twin method files it under shared environment${state.vi > 0 ? `, along with the part of the interaction that both kinds of twin share equally (${fmt.pct((state.vi * state.rge ** 2) / t.vp, 0)} of the variation)` : ""}. With unlimited twins its estimate of the shared-environment share would settle on ${two(t.c2)}, against a true ${two(state.vc / t.vp)}. This study's estimate is ${two(est.c2)}.`));
   message.replaceChildren(...notes);
   drawSplit(t);
 
@@ -161,19 +166,16 @@ function update() {
 
   // A few individuals.
   const dev = (v) => fmt.signed(v, 1);
+  const parts = [["G", "Genes", dev], ["C", "Shared environment", dev], ["E", "Non-shared environment", dev],
+    ...(state.vi > 0 ? [["I", "Interaction", dev]] : []), ["P", "Trait value", (v) => fmt.num(v, 1)]];
   const people = table({
-      caption: "Five people from this population",
-      columns: [
-        { key: "who", label: "Person" }, { key: "G", label: "Genes", num: true, format: dev }, { key: "C", label: "Shared environment", num: true, format: dev },
-        { key: "E", label: "Non-shared environment", num: true, format: dev },
-        ...(state.vi > 0 ? [{ key: "I", label: "Interaction", num: true, format: dev }] : []),
-        { key: "P", label: "Trait value", num: true, format: (v) => fmt.num(v, 1) },
-      ],
-      rows: sim.people.map((p, i) => ({ who: `${i + 1}`, ...p })),
-    });
+    caption: "Five simulated people from this population",
+    columns: [{ key: "part", label: "Person" }, ...sim.people.map((_, i) => ({ key: `p${i}`, label: `${i + 1}`, num: true }))],
+    rows: parts.map(([key, label, format]) => ({ part: label, ...Object.fromEntries(sim.people.map((p, i) => [`p${i}`, format(p[key])])) })),
+  });
   people.classList.add("people");
   peopleBox.replaceChildren(people,
-    el("p", { class: "small muted", text: `Each row shows one person's pushes above or below the average of 100. Heritability is ${two(t.h2)} for the population, but no row is "${fmt.pct(t.h2, 0)} genetic". In one person the pushes can point opposite ways, or the genetic push can be larger than the whole gap from the average${state.vi > 0 ? ", and the interaction column belongs to neither side" : ""}. The figure describes the spread across people, not the make-up of anyone.` }));
+    el("p", { class: "small muted", text: `Each column shows one simulated person's pushes above or below the average of 100, and the trait value they add up to. Heritability is ${two(t.h2)} for the population, but no column is "${fmt.pct(t.h2, 0)} genetic". In one person the pushes can point opposite ways, or the genetic push can be larger than the whole gap from the average${state.vi > 0 ? ", and the interaction row belongs to neither side" : ""}. The figure describes the spread across people, not the make-up of anyone.` }));
   drawSoil();
 }
 
@@ -198,7 +200,7 @@ function drawSoil() {
     marks: [{ type: "vline", x: s.rich.mean, text: "rich" }, { type: "vline", x: s.poor.mean, text: "poor", dy: 14 }],
   });
   soilNote.replaceChildren(note("", el("strong", { text: "Move the last slider. " }),
-    `The chart and the first three numbers do not change at all, because the plants are exactly the same plants: with the slider at ${fmt.pct(soil.share, 0)}, ${fmt.num(s.geneticGap, 1)} units of the gap are in the seed and ${fmt.num(s.gap - s.geneticGap, 1)} in the soil, and nothing measured inside either field shows it. Heritability of ${two(s.rich.h2)} inside the fields is equally at home with a gap that is all soil, all seed or anything between. Telling them apart takes a different experiment, such as sowing each field's seed in the other's soil.`));
+    `The chart and the first three numbers do not change at all, because the plants are exactly the same plants: with the slider at ${fmt.pct(soil.share, 0)}, ${fmt.num(s.geneticGap, 1)} units of the gap are in the seed and ${fmt.num(s.gap - s.geneticGap, 1)} in the soil, and nothing measured inside either field shows it. Heritability of ${two(s.rich.h2)} inside the fields is equally at home with a gap that is all soil, all seed or anything between. Telling them apart takes a different experiment, such as sowing each field's seed in the other's soil. The panel is about plants in a model: it shows what heritability inside groups cannot settle, and it is not evidence about a difference between any real groups.`));
 }
 
 update();
