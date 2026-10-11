@@ -15,14 +15,38 @@ export function countFeatures(text) {
   return counts;
 }
 
-/** Split text into sentences at ., ! or ? followed by a space. Short fragments are joined to the previous sentence. */
+// A full stop after a title, "vs" or a single letter ("Dr. Smith", "the U.S. economy", "e.g. this") does not end a sentence.
+const ABBREVIATION = /(?:^|[\s("'\[.])(?:mr|mrs|ms|dr|prof|st|sr|jr|vs|[a-z])\.$/i;
+
+/**
+ * Split text into sentences: at ., ! or ? followed by a space and a capital letter or an opening quote, and at line breaks.
+ * A fragment of fewer than three words is joined to the sentence before it (or after it, if it comes first).
+ * Written without regular-expression lookbehind, which Safari before 16.4 cannot parse.
+ */
 export function sentences(text) {
-  const parts = text.replace(/\s+/g, " ").trim().split(/(?<=[.!?]["')\]]?)\s+(?=[A-Z"'(\[])/).map((s) => s.trim()).filter(Boolean);
   const out = [];
-  for (const p of parts) {
-    if (out.length && tokenize(p).length < 3) out[out.length - 1] += ` ${p}`;
-    else out.push(p);
+  let carry = "";
+  const push = (piece) => {
+    const s = `${carry} ${piece}`.trim();
+    carry = "";
+    if (!s) return;
+    if (tokenize(s).length >= 3) out.push(s);
+    else if (out.length) out[out.length - 1] += ` ${s}`;
+    else carry = s;
+  };
+  for (const line of String(text).split(/[\r\n]+/)) {
+    const t = line.replace(/\s+/g, " ").trim();
+    const end = /[.!?]+["')\]]?\s+(?=[A-Z"'(\[])/g;
+    let start = 0, m;
+    while ((m = end.exec(t))) {
+      const piece = t.slice(start, m.index + m[0].length).trim();
+      if (ABBREVIATION.test(piece)) continue;
+      push(piece);
+      start = m.index + m[0].length;
+    }
+    push(t.slice(start));
   }
+  if (carry) out.push(carry);
   return out;
 }
 
@@ -103,8 +127,9 @@ export function prepare(model) {
 }
 
 /**
- * Classify a text. Returns probabilities for every label (best first), the number of known features, and for the
- * top label the features that pushed towards it most: weight for that label minus the average over labels, times the feature value.
+ * Classify a text. Returns probabilities for every label (best first), the number of known features (words and pairs),
+ * the number of words and how many of them are in the vocabulary, and for each label the features that pushed towards
+ * it most: weight for that label minus the average over labels, times the feature value.
  */
 export function predict(prepared, text, topFeatures = 6) {
   const { labels, weights, bias, index, idf, vocab } = prepared;
@@ -117,7 +142,38 @@ export function predict(prepared, text, topFeatures = 6) {
   const explain = (k) => x
     .map(([j, v]) => ({ feature: vocab[j], push: (weights[k][j] - weights.reduce((s, w) => s + w[j], 0) / K) * v }))
     .filter((f) => f.push > 0).sort((a, b) => b.push - a.push).slice(0, topFeatures);
-  return { ranked, known: x.length, words: tokenize(text).length, because: Object.fromEntries(ranked.map((r) => [r.label, explain(r.k)])) };
+  const tokens = tokenize(text);
+  return { ranked, known: x.length, words: tokens.length, knownWords: tokens.filter((t) => index.has(t)).length, because: Object.fromEntries(ranked.map((r) => [r.label, explain(r.k)])) };
+}
+
+/**
+ * Too little to judge: fewer than four known features, or fewer than a third of the words are in the vocabulary.
+ * Ordinary English scores well above a third (99% of the held-out training arguments score over a half);
+ * other languages and strings of unknown words score near zero.
+ */
+export const tooThin = (result) => result.known < 4 || result.knownWords * 3 < result.words;
+
+/**
+ * Does a confidence clear a bar? Both are compared as whole per cents, which is how the page shows them and how the
+ * cross-validation confidences are stored, so "42%" clears a bar of "42%" and a float such as 0.30000000000000004 is 30.
+ */
+export const clears = (p, bar) => Math.round(p * 100) >= Math.round(bar * 100);
+
+/**
+ * What the detector says about one text at a given confidence bar.
+ *   kind "thin"   too little to judge
+ *   kind "flag"   one or more fallacies clear the bar (flagged, best first)
+ *   kind "none"   nothing clears the bar and the first choice is "no fallacy"
+ *   kind "below"  the first choice is a fallacy, but it does not clear the bar
+ * top is the first choice whatever it is; nearest is the most likely fallacy.
+ */
+export function reading(result, bar, none = "No Fallacy") {
+  const top = result.ranked[0];
+  const fallacies = result.ranked.filter((r) => r.label !== none);
+  const nearest = fallacies[0];
+  if (tooThin(result)) return { kind: "thin", top, nearest, flagged: [] };
+  const flagged = fallacies.filter((r) => clears(r.p, bar));
+  return { kind: flagged.length ? "flag" : top.label === none ? "none" : "below", top, nearest, flagged };
 }
 
 /** Deterministic stratified folds: within each label, row i goes to fold i mod k (rows are shuffled by the caller). */
@@ -148,7 +204,7 @@ export function score(labels, truth, predicted) {
  */
 export function selective(pairs, thresholds) {
   return thresholds.map((t) => {
-    const kept = pairs.filter(([c]) => c >= t);
+    const kept = pairs.filter(([c]) => clears(c, t));
     return { threshold: t, coverage: pairs.length ? kept.length / pairs.length : 0, accuracy: kept.length ? kept.filter(([, ok]) => ok).length / kept.length : NaN, n: kept.length };
   });
 }

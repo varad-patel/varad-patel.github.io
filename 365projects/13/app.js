@@ -1,7 +1,7 @@
 // Day 13: Fallacy Detector. Interface.
 import { $, el, fmt, mount, slider, button, stat, note, table, bars, chart, debounce } from "../kit/kit.js";
 import { FALLACY_MODEL } from "./model.js";
-import { prepare, predict, sentences, selective } from "./logic.js";
+import { prepare, predict, sentences, selective, reading } from "./logic.js";
 
 mount();
 
@@ -18,6 +18,11 @@ const ABOUT = {
   [NONE]: { name: "No fallacy flagged", what: "The wording does not look like any of the five fallacies this detector knows. That is not a certificate of good reasoning: it cannot see whether the premises are true or whether the conclusion follows." },
 };
 const nameOf = (label) => ABOUT[label].name;
+const lower = (label) => (label === NONE ? "no fallacy" : nameOf(label).toLowerCase());
+const conf = (r) => fmt.pct(r.p, 0);
+const TESTED = FALLACY_MODEL.rows;
+const HALF = `its first choice is right about ${fmt.pct(EVAL.accuracy, 0)} of the time`;
+const MAX_SENTENCES = 30, LONG_TEXT = 100;
 
 // Written for this page, not taken from the training data. "written" is what a person would call each one,
 // so the page can say honestly whether the detector agrees.
@@ -42,7 +47,8 @@ const exampleRow = el("div", { class: "row", role: "group", "aria-label": "Examp
   button("Clear", () => { input.value = ""; state.text = ""; state.example = null; update(); input.focus(); }, { small: true }));
 const thresholdSlider = slider({
   label: "Only flag a fallacy when the detector is at least this confident", min: 0.2, max: 0.9, step: 0.05, value: state.threshold, format: (v) => fmt.pct(v, 0),
-  onInput: (v) => { state.threshold = v; update(); },
+  hint: "Confidence is the probability the detector gives a reading, rounded to a whole per cent.",
+  onInput: (v) => { state.threshold = Math.round(v * 100) / 100; update(); },
 });
 
 /* ---------- outputs ---------- */
@@ -53,12 +59,12 @@ const probBars = bars(barsBox, { items: [], max: 1, format: (v) => fmt.pct(v, 0)
 const whyBox = el("div");
 const explainBox = el("div", { class: "grid2" });
 const sentenceBox = el("div");
-const reliabilityNote = el("div");
+const reliabilityNote = el("div", { role: "status" });
 const chartBox = el("div");
 const plot = chart(chartBox, { series: [], height: 280 });
 
 const sAcc = stat("Right about the label", fmt.pct(EVAL.accuracy, 0), `on ${fmt.int(FALLACY_MODEL.rows)} arguments it had not seen. Always guessing the commonest label: ${fmt.pct(EVAL.majorityBaseline, 0)}`);
-const sBin = stat("Right about fallacy or not", fmt.pct(EVAL.fallacyOrNot, 0), "ignoring which fallacy. A coin would get 50%");
+const sBin = stat("Right about fallacy or not", fmt.pct(EVAL.fallacyOrNot, 0), `ignoring which fallacy. Always answering "fallacy" would get ${fmt.pct((TESTED - FALLACY_MODEL.counts[NONE]) / TESTED, 0)}`);
 const sWrong = stat("Wrong about the label", fmt.pct(1 - EVAL.accuracy, 0), "about one answer in two");
 
 function matrixTable() {
@@ -99,19 +105,27 @@ $("#app").append(
     }),
     matrixTable()));
 
-function update() {
-  const text = state.text.trim();
-  const words = text ? text.split(/\s+/).length : 0;
-
-  /* reliability at the chosen threshold */
-  const grid = Array.from({ length: 15 }, (_, i) => 0.2 + i * 0.05);
+// How reliable the detector was in testing at the chosen bar. Redrawn only when the bar moves, so that typing does not re-announce it.
+let shownBar = null;
+function updateReliability() {
+  if (shownBar === state.threshold) return;
+  shownBar = state.threshold;
+  const grid = Array.from({ length: 15 }, (_, i) => (20 + i * 5) / 100);
   const curve = selective(EVAL.pairs, grid);
   const here = selective(EVAL.pairs, [state.threshold])[0];
-  reliabilityNote.replaceChildren(note("",
-    el("strong", { text: `At ${fmt.pct(state.threshold, 0)} confidence or more, the detector's top answer was right ${fmt.pct(here.accuracy, 0)} of the time` }),
-    `, and it was that confident about ${fmt.pct(here.coverage, 0)} of the test arguments. Raising the bar makes it more accurate and more often silent.`));
+  const bar = fmt.pct(state.threshold, 0);
+  const share = `${fmt.int(here.n)} of the ${fmt.int(TESTED)} test arguments (${fmt.pct(here.coverage, here.coverage < 0.095 || (here.coverage > 0.995 && here.coverage < 1) ? 1 : 0)})`;
+  reliabilityNote.replaceChildren(
+    here.n === 0 ? note("", el("strong", { text: `In testing the detector was never as much as ${bar} confident. ` }),
+      `Its highest confidence in any of the ${fmt.int(TESTED)} test arguments was ${fmt.pct(Math.max(...EVAL.pairs.map(([c]) => c)), 0)}, so there is no measured accuracy for a bar this high.`)
+    : here.n < 10 ? note("", el("strong", { text: `At ${bar} confidence or more there is too little to measure. ` }),
+      `The detector was that confident about only ${share}, and its first choice was right in ${fmt.int(Math.round(here.accuracy * here.n))} of them. That is too few to give a rate.`)
+    : note("", el("strong", { text: `At ${bar} confidence or more, the detector's first choice was right ${fmt.pct(here.accuracy, 0)} of the time` }),
+      `, and it was that confident about ${share}. Raising the bar makes it more accurate and more often silent.`));
   plot.update({
     title: "Being choosier makes it more accurate, and quieter",
+    subtitle: "The accuracy line stops where fewer than 10 test arguments are left.",
+    label: "Line chart: as the confidence required rises from 20% to 90%, the share of the detector's answers that are right rises and the share of arguments it still answers falls",
     x: { label: "Confidence required before it gives an answer", format: (v) => fmt.pct(v, 0) },
     y: { domain: [0, 1], format: (v) => fmt.pct(v, 0) },
     series: [
@@ -120,6 +134,12 @@ function update() {
     ],
     marks: [{ type: "vline", x: state.threshold, text: "your setting" }],
   });
+}
+
+function update() {
+  const text = state.text.trim();
+  const words = text ? text.split(/\s+/).length : 0;
+  updateReliability();
 
   exampleNote.replaceChildren();
   if (!text) {
@@ -128,23 +148,28 @@ function update() {
     return;
   }
   const result = predict(model, text);
-  const top = result.ranked[0];
-  const fallacies = result.ranked.filter((r) => r.label !== NONE);
-  const flagged = fallacies.filter((r) => r.p >= state.threshold);
-  const thin = result.known < 4;
+  const read = reading(result, state.threshold, NONE);
+  const { top, nearest, flagged } = read;
+  const thin = read.kind === "thin";
 
   if (thin) {
     verdict.replaceChildren(note("warn", el("strong", { text: "Too little to go on. " }),
-      `The detector recognises only ${result.known} of the words and word pairs in this text. Write a full sentence or two of ordinary English.`));
-  } else if (flagged.length) {
-    verdict.replaceChildren(note("warn", el("strong", { text: `Possible ${nameOf(flagged[0].label).toLowerCase()} (${fmt.pct(flagged[0].p, 0)} confident). ` }),
-      `Treat this as a prompt to look again, not a verdict: on unseen arguments the detector's top answer is right about ${fmt.pct(EVAL.accuracy, 0)} of the time.`));
-  } else if (top.label === NONE) {
-    verdict.replaceChildren(note("good", el("strong", { text: `No fallacy flagged (${fmt.pct(top.p, 0)} confident that it is none of the five). ` }),
-      "This only means the wording does not resemble the fallacies in the training data. It says nothing about whether the argument is sound."));
+      result.words >= 8 && result.knownWords * 3 < result.words
+        ? `The detector knows ${result.knownWords === 0 ? "none" : `only ${fmt.int(result.knownWords)}`} of the ${fmt.int(result.words)} words in this text. It was trained on everyday English and cannot read other languages or specialist vocabulary.`
+        : `The detector recognises ${result.known === 0 ? "none" : `only ${result.known}`} of the words and word pairs in this text. Write a full sentence or two of everyday English.`));
+  } else if (read.kind === "flag") {
+    verdict.replaceChildren(note("warn", el("strong", { text: `Possible ${lower(flagged[0].label)} (${conf(flagged[0])} confident). ` }),
+      top.label === NONE ? `Its first choice, though, is "no fallacy" at ${conf(top)}. ` : "",
+      `Treat this as a prompt to look again, not a verdict: on arguments it has not seen, ${HALF}.`));
+  } else if (read.kind === "none") {
+    verdict.replaceChildren(note("good", el("strong", { text: `No fallacy flagged (${conf(top)} confident that it is none of the five). ` }),
+      `This only means the wording does not resemble the fallacies in the training data. It says nothing about whether the argument is sound, and when "no fallacy" was its answer in testing it was right ${fmt.pct(EVAL.perLabel.find((l) => l.label === NONE).precision, 0)} of the time.`));
   } else {
     verdict.replaceChildren(note("", el("strong", { text: "Nothing clears your confidence bar. " }),
-      `The nearest match is ${nameOf(fallacies[0].label).toLowerCase()} at ${fmt.pct(fallacies[0].p, 0)}, below the ${fmt.pct(state.threshold, 0)} you asked for.`));
+      `The nearest match is ${lower(nearest.label)} at ${conf(nearest)}, below the ${fmt.pct(state.threshold, 0)} you asked for. On arguments it has not seen, ${HALF}.`));
+  }
+  if (!thin && result.words > LONG_TEXT) {
+    verdict.append(note("", `This text is ${fmt.int(result.words)} words long. The detector was trained and tested on arguments of a sentence or two, so its reading of a long text as a whole is untested. The sentence table is the better guide.`));
   }
 
   const example = state.example != null ? EXAMPLES[state.example] : null;
@@ -152,16 +177,16 @@ function update() {
     const hit = top.label === example.written;
     exampleNote.replaceChildren(el("p", { class: "small" },
       el("strong", { text: "Checking the detector: " }),
-      `this example was written as ${example.written === NONE ? "a plain argument with no fallacy" : nameOf(example.written).toLowerCase()}. The detector's top reading is ${top.label === NONE ? "no fallacy" : nameOf(top.label).toLowerCase()} at ${fmt.pct(top.p, 0)}: ${hit ? "a hit" : "a miss"}. ${hit ? "" : "Misses like this are about half of what it does, which is why the numbers below matter more than any single answer."}`));
+      `this example was written as ${example.written === NONE ? "a plain argument with no fallacy" : lower(example.written)}. The detector's first choice is ${lower(top.label)} at ${conf(top)}: ${hit ? "a hit" : "a miss"}. ${hit ? "" : "Misses like this are about half of what it does, which is why the numbers below matter more than any single answer."}`));
   }
 
   probBars.update(result.ranked.map((r) => ({ label: r.label === NONE ? "No fallacy" : nameOf(r.label), value: r.p, highlight: r === top })));
   const because = result.because[top.label];
   whyBox.replaceChildren(...(because.length && !thin ? [
-    el("p", { class: "small muted", text: `Words that pushed it towards "${top.label === NONE ? "no fallacy" : nameOf(top.label).toLowerCase()}":` }),
+    el("p", { class: "small muted", text: `Words that pushed it towards "${lower(top.label)}":` }),
     el("div", { class: "chips" }, because.map((f) => el("span", { class: "chip", text: f.feature, title: `weight ${fmt.num(f.push, 2)}` })))] : []));
 
-  const shown = thin ? [] : (flagged.length ? flagged : top.label === NONE ? [top] : fallacies.slice(0, 1)).slice(0, 2);
+  const shown = thin ? [] : (flagged.length ? flagged : top.label === NONE ? [top] : [nearest]).slice(0, 2);
   explainBox.replaceChildren(...shown.map((r) => el("div", { class: "panel" },
     el("h3", { text: `${nameOf(r.label)}${r.label === NONE ? "" : `: ${fmt.pct(r.p, 0)}`}` }),
     el("p", { class: "small", style: { marginTop: "8px" }, text: ABOUT[r.label].what }),
@@ -169,17 +194,20 @@ function update() {
 
   const parts = sentences(text);
   if (parts.length > 1 && words >= 12) {
-    const rowsOut = parts.map((s) => {
-      const r = predict(model, s);
-      const best = r.ranked.find((x) => x.label !== NONE);
-      const flag = r.known >= 4 && best.p >= state.threshold;
-      return { sentence: s, reading: r.known < 4 ? "too short to judge" : flag ? nameOf(best.label) : "nothing flagged", confidence: r.known < 4 ? "" : fmt.pct(flag ? best.p : r.ranked[0].p, 0) };
+    const rowsOut = parts.slice(0, MAX_SENTENCES).map((sentence) => {
+      const r = reading(predict(model, sentence), state.threshold, NONE);
+      return r.kind === "thin" ? { sentence, reading: "Too little to judge", confidence: "" }
+        : r.kind === "flag" ? { sentence, reading: `Possible ${lower(r.flagged[0].label)}`, confidence: conf(r.flagged[0]) }
+        : r.kind === "none" ? { sentence, reading: "No fallacy flagged", confidence: conf(r.top) }
+        : { sentence, reading: `Below your bar (nearest: ${lower(r.nearest.label)})`, confidence: conf(r.nearest) };
     });
-    sentenceBox.replaceChildren(table({
-      caption: "Sentence by sentence",
+    const sentenceTable = table({
+      caption: parts.length > MAX_SENTENCES ? `Sentence by sentence: the first ${MAX_SENTENCES} of ${fmt.int(parts.length)}` : "Sentence by sentence",
       columns: [{ key: "sentence", label: "Sentence" }, { key: "reading", label: "Reading" }, { key: "confidence", label: "Confidence", num: true }],
       rows: rowsOut,
-    }), el("p", { class: "small muted", style: { marginTop: "8px" }, text: "Short sentences give the detector less to work with, so readings of single sentences are less reliable than the reading of the whole text." }));
+    });
+    sentenceTable.classList.add("sentences");
+    sentenceBox.replaceChildren(sentenceTable, el("p", { class: "small muted", style: { marginTop: "8px" }, text: `Each sentence is read on its own, out of context, against the same bar, and the confidence is for the reading shown. The error rates below were measured on whole arguments, not on sentences lifted out of a longer text, so these readings deserve at least as much doubt.` }));
   } else sentenceBox.replaceChildren();
 }
 

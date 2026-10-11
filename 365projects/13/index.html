@@ -18,6 +18,8 @@
     table.matrix th, table.matrix td { white-space: nowrap; }
     table.matrix td.diag { font-weight: 700; box-shadow: inset 0 0 0 1.5px var(--ink); }
     table.matrix tbody th { font-weight: 600; border-bottom: 1px solid var(--grid); }
+    #app .tbl:not(.matrix) th { white-space: normal; vertical-align: bottom; }
+    #app .sentences td:first-child { min-width: 10em; }
   </style>
 </head>
 <body class="proj" data-day="13">
@@ -46,27 +48,28 @@
     <section class="p-sec">
       <h2>How it works</h2>
       <h3>The training data</h3>
-      <p>The examples come from Argotario, a game built by researchers at the Technical University of Darmstadt in which players were given an everyday question ("Should cellphones be used during class?") and asked to write a short argument that commits a named fallacy, or none. After removing duplicates and fragments there are 1,297 English arguments: 396 with no fallacy, 234 appeals to emotion, 191 red herrings, 162 ad hominem attacks, 157 hasty generalisations and 157 appeals to irrelevant authority. The label is the fallacy the writer was aiming for. The data are in the public domain.</p>
+      <p>The examples come from Argotario, a game built by researchers at the Technical University of Darmstadt in which players were given a topic for debate ("Should cellphones be used during class?"), a side to take, and the task of writing a short argument that commits a named fallacy, or none. After removing arguments of fewer than four words and exact duplicates there are 1,297 English arguments: 396 with no fallacy, 234 appeals to emotion, 191 red herrings, 162 ad hominem attacks, 157 hasty generalisations and 157 appeals to irrelevant authority. The label is the fallacy the writer was aiming for, whether or not they hit it. The authors released the data under CC0, a public-domain dedication.</p>
       <h3>From text to numbers</h3>
-      <p>Each argument becomes a list of the words and adjacent word pairs it contains. Each of those gets a weight that is larger when it is repeated and when it is rare across the whole collection (TF-IDF), and the list is scaled to length one so that long and short arguments are comparable:</p>
+      <p>Each argument is put into lower case and becomes a list of the words and adjacent word pairs it contains. Each of those gets a weight that is larger when it is repeated and when it is rare across the whole collection (TF-IDF), and the list is scaled to length one so that long and short arguments are comparable:</p>
       <p class="eq"><var>x</var><sub><var>j</var></sub> ∝ (1 + ln <var>count</var><sub><var>j</var></sub>) · (ln((1 + <var>N</var>) / (1 + <var>df</var><sub><var>j</var></sub>)) + 1)</p>
       <p>Only words and pairs that occur in at least two arguments are kept: 3,846 of them.</p>
       <h3>The classifier</h3>
       <p>A softmax regression gives every label a score that is a weighted sum of those numbers, and turns the scores into probabilities:</p>
       <p class="eq"><var>P</var>(label <var>c</var> | text) = exp(<var>w</var><sub><var>c</var></sub> · <var>x</var> + <var>b</var><sub><var>c</var></sub>) / Σ<sub><var>k</var></sub> exp(<var>w</var><sub><var>k</var></sub> · <var>x</var> + <var>b</var><sub><var>k</var></sub>)</p>
-      <p>The weights are found by gradient descent, lowering the cross-entropy between these probabilities and the true labels, with a penalty on large weights so that the model does not memorise. Rare labels are given somewhat more say during training so that the commonest label does not swallow the rest. The "confidence" shown is the probability of the top label. The words listed under the bars are the ones whose weight for that label most exceeds their average weight across labels.</p>
+      <p>The weights are found by gradient descent (300 passes over all the arguments with a step of 4), lowering the cross-entropy between these probabilities and the true labels, with a penalty on large weights (an L2 term whose gradient is 0.0005 times each weight) so that the model does not memorise. Rare labels are given somewhat more say during training so that the commonest label does not swallow the rest: each argument counts in proportion to the square root of (average number of arguments per label ÷ number with its label). The "confidence" shown is the probability the model gives a label, rounded to a whole per cent, and a fallacy is flagged when that figure reaches the bar you set. The words listed under the bars are the ones that pushed hardest towards the first choice: those for which the weight for that label, less the average weight across labels, times the word's value in this text, is largest.</p>
+      <p>The page declines to give a reading when it recognises fewer than four of the words and pairs in a text, or fewer than a third of its words, which is what happens with a few stray words or with a language other than English.</p>
       <h3>Measuring the error rate</h3>
-      <p>The numbers under "How far to trust it" come from five-fold cross-validation. The arguments are split into five parts with the same mix of labels. The model is trained from scratch on four parts and asked to label the fifth, which it has never seen, and this is repeated five times so that every argument is tested once. The table of rows and columns shows every kind of mistake it made. The chart shows what happens if it is only allowed to answer when its confidence clears a bar: accuracy goes up, and the share of arguments it will say anything about goes down.</p>
+      <p>The numbers under "How far to trust it" come from five-fold cross-validation. The arguments are split into five parts with the same mix of labels. The model is trained from scratch on four parts and asked to label the fifth, which it has never seen, and this is repeated five times so that every argument is tested once. The table of rows and columns shows every kind of mistake it made. The chart shows what happens if it is only allowed to answer when its confidence clears a bar: accuracy goes up, and the share of arguments it will say anything about goes down. Its highest confidence in any test argument was 83%, so the top of the slider is a bar it never cleared.</p>
       <p>The model that runs on this page is trained on all 1,297 arguments. Everything is computed in your browser, and the text you type is not sent anywhere.</p>
     </section>
 
     <section class="p-sec">
       <h2>What this cannot tell you</h2>
       <ul>
-        <li><strong>Whether an argument is fallacious.</strong> Its top answer is wrong about half the time. Use a flag as a reason to reread, never as a ruling.</li>
+        <li><strong>Whether an argument is fallacious.</strong> Its first choice is wrong about half the time. Even on the plain question of fallacy or no fallacy it was right 68% of the time, when always answering "fallacy" would have scored 69%. Use a flag as a reason to reread, never as a ruling.</li>
         <li><strong>Anything that depends on context.</strong> It never sees the question being argued, so it cannot know that a subject has been changed. It cannot check whether a cited person is an expert, or how many cases a generalisation rests on. It finds 14% of red herrings and 21% of hasty generalisations.</li>
         <li><strong>Anything outside its five types.</strong> Circular arguments, false dilemmas, straw men and slippery slopes are all invisible to it, and will come back as "no fallacy" or as the wrong one.</li>
-        <li><strong>How real debates are argued.</strong> The examples are short, casual and written by people playing a game who were trying to be fallacious. Parliamentary speeches and newspaper columns do not look like that.</li>
+        <li><strong>How real debates are argued.</strong> The examples are a sentence or two long, casual, and written by people playing a game who were trying to be fallacious. Each is labelled with what its writer intended; the votes of other players on whether the writer succeeded are not used. Parliamentary speeches and newspaper columns do not look like that, and a reading of a long text is untested.</li>
         <li><strong>That an argument is sound.</strong> "No fallacy flagged" means only that the wording is unlike the training examples. It has no view on whether the premises are true.</li>
         <li><strong>That a conclusion is false.</strong> A bad argument can have a true conclusion. Rejecting a claim because it was badly argued is itself a fallacy.</li>
       </ul>
@@ -86,10 +89,10 @@
     <section class="p-sec">
       <h2>Data and sources</h2>
       <ul class="refs">
-        <li>Habernal, I., Hannemann, R., Pollak, C., Klamm, C., Pauli, P., and Gurevych, I. (2017). Argotario: computational argumentation meets serious games. <em>Proceedings of EMNLP 2017: System Demonstrations</em>. Data: github.com/UKPLab/argotario, CC0.</li>
-        <li>Aristotle. <em>Sophistical Refutations</em>.</li>
-        <li>Hamblin, C. L. (1970). <em>Fallacies</em>. Methuen.</li>
-        <li>Jin, Z., et al. (2022). Logical fallacy detection. <em>Findings of EMNLP 2022</em>. A larger benchmark, on which large language models also did poorly.</li>
+        <li>Habernal, I., Hannemann, R., Pollak, C., Klamm, C., Pauli, P., and Gurevych, I. (2017). Argotario: computational argumentation meets serious games. <em>Proceedings of the 2017 Conference on Empirical Methods in Natural Language Processing: System Demonstrations</em>, 7-12. Data: the English arguments file of 15 January 2018 at github.com/UKPLab/argotario, released under CC0.</li>
+        <li>Aristotle. <em>On Sophistical Refutations</em>.</li>
+        <li>Hamblin, C. L. (1970). <em>Fallacies</em>. London: Methuen.</li>
+        <li>Jin, Z., Lalwani, A., Vaidhya, T., Shen, X., Ding, Y., Lyu, Z., Sachan, M., Mihalcea, R., and Schölkopf, B. (2022). Logical fallacy detection. <em>Findings of the Association for Computational Linguistics: EMNLP 2022</em>, 7180-7198. A larger benchmark (2,449 examples of 13 types of fallacy) on which, the authors report, the pretrained language models of the time also performed poorly.</li>
       </ul>
     </section>
   </main>
