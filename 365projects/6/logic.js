@@ -9,13 +9,13 @@
 export const FEATURES = [
   { key: "saved", name: "the number of lives saved", easier: "more",
     says: (v) => `${v === 1 ? "one life is" : `${v.toLocaleString("en-GB")} lives are`} saved`,
-    claim: "that a constraint against killing can be outweighed if enough lives are at stake. That is threshold deontology; none of the other five rules moves with the number." },
+    claim: "that a constraint against killing can be outweighed if enough lives are at stake. That is threshold deontology; none of the other five rules treats a thousand lives differently from five." },
   { key: "means", name: "whether the death is a means or a side effect", easier: false,
     says: (v) => (v ? "the one's death is the means by which the others are saved" : "the one's death is a foreseen side effect"),
     claim: "that causing a death as the means to a good end is worse than causing it as a side effect. That is the core of the doctrine of double effect and of the Kantian constraint." },
   { key: "force", name: "whether you use your own physical force on the person", easier: false,
     says: (v) => (v ? "you use your own hands on him" : "you act at a distance, through a mechanism"),
-    claim: "that killing with your own hands is worse than killing with a lever. None of the six rules says this. It is the pattern Greene and colleagues found in ordinary judgements, and most philosophers treat it as a fact about psychology, not a reason." },
+    claim: "that killing with your own hands is worse than killing with a lever. None of the six rules says this. It is the pattern Greene and colleagues (2009) reported in ordinary judgements, and it is usually treated as a fact about psychology, not as a reason." },
   { key: "redirect", name: "whether an existing threat is redirected", easier: true,
     says: (v) => (v ? "an existing threat is turned away from the many" : "a new threat is made, or a person is moved into the threat's path"),
     claim: "that turning an existing threat onto fewer people differs from starting a new threat or moving someone into harm's way. That is Thomson's 1985 rights view." },
@@ -32,7 +32,11 @@ export const FEATURES = [
 
 const base = { saved: 5, lost: 1, means: false, force: false, redirect: false, duty: false, agentThreat: false, consent: false };
 
-/** The ten cases, in the order they are asked. `act` completes "Is it permissible to ...?" */
+/**
+ * The ten cases, in the order they are asked. `act` completes "Is it permissible to ...?"
+ * `source` names the publication a case comes from. Three cases were written for this page, each changing one
+ * feature of a published case; they carry `own: true` and their `source` says so and names nobody.
+ */
 export const CASES = [
   { id: "driver", title: "The tram driver", source: "Philippa Foot, 1967", scene: "fork",
     text: "You are driving a tram and the brakes have failed. Five people are working on the track ahead and cannot get clear. You can steer onto a side track, where one person is working. Whichever way the tram goes, you are the one driving it.",
@@ -46,19 +50,19 @@ export const CASES = [
   { id: "footbridge", title: "The footbridge", source: "Thomson, 1976 and 1985", scene: "bridge",
     text: "You are on a footbridge over the track, between the trolley and the five. Beside you stands a large stranger. The only way to stop the trolley is to push him off the bridge into its path. He will be killed and the five will live. You are too light to stop it yourself.",
     act: "push the stranger", f: { ...base, means: true, force: true } },
-  { id: "trapdoor", title: "The trapdoor", source: "The remote footbridge of Greene and colleagues, 2009", scene: "trapdoor",
+  { id: "trapdoor", title: "The trapdoor", source: "After the remote footbridge case of Greene and colleagues, 2009", scene: "trapdoor",
     text: "The stranger is standing on a trapdoor in the footbridge. You are some way off, next to a lever that opens it. If you pull the lever he drops into the trolley's path and stops it. You never touch him.",
     act: "pull the lever", f: { ...base, means: true } },
-  { id: "volunteer", title: "The volunteer", source: "A consent variant of the trapdoor", scene: "trapdoor",
+  { id: "volunteer", title: "The volunteer", source: "Written for this page: the trapdoor, with the stranger's consent", own: true, scene: "trapdoor",
     text: "The trapdoor again, with one change. The stranger can see what is about to happen and cannot reach the lever himself. He shouts to you to pull it.",
     act: "pull the lever", f: { ...base, means: true, consent: true } },
-  { id: "station", title: "The crowded station", source: "A numbers variant of the footbridge", scene: "bridge",
+  { id: "station", title: "The crowded station", source: "Written for this page: the footbridge, with a thousand lives at stake", own: true, scene: "bridge",
     text: "The footbridge again, with one change. The trolley is carrying fuel and is heading for a crowded station, where a thousand people will be killed if it arrives. Pushing the stranger into its path is still the only way to stop it.",
     act: "push the stranger", f: { ...base, saved: 1000, means: true, force: true } },
-  { id: "child", title: "Your own child", source: "A variant of the switch that changes who is on the track", scene: "fork",
+  { id: "child", title: "Your own child", source: "Written for this page: the switch, with your child on the side track", own: true, scene: "fork",
     text: "The switch again, with one change. The one person on the side track is your own child.",
     act: "throw the switch", f: { ...base, redirect: true, duty: true } },
-  { id: "transplant", title: "The transplant", source: "Thomson, 1976 and 1985, after Foot", scene: "transplant",
+  { id: "transplant", title: "The transplant", source: "Thomson, 1976 and 1985", scene: "transplant",
     text: "You are a surgeon. Five of your patients will die today without transplants: one needs a heart, two a lung each, two a kidney each. A healthy visitor has come in for a check-up and is a match for all five. He has not agreed to anything. You could operate, take the organs and save the five. He would die.",
     act: "take the organs", f: { ...base, means: true, force: true } },
   { id: "gas", title: "The hospital gas", source: "Foot, 1967", scene: "gas",
@@ -69,24 +73,27 @@ export const CASES = [
 const kantian = (f) => !(f.means && !f.consent);
 export const THRESHOLD = 100;
 
-/** Six theories as rules over the coded features. `permits(f)` is the verdict; `rule` is the same rule in words. */
+/**
+ * Six theories as rules over the coded features. `permits(f)` is the verdict; `rule` is the same rule in words;
+ * `inText` is the name as it reads in the middle of a sentence.
+ */
 export const THEORIES = [
-  { key: "util", name: "Act utilitarianism", short: "Utilitarian",
+  { key: "util", name: "Act utilitarianism", short: "Utilitarian", inText: "act utilitarianism",
     rule: "Permissible exactly when acting saves more lives than it costs. Nothing else counts.",
     permits: (f) => f.saved > f.lost },
-  { key: "kant", name: "Kantian means constraint", short: "Kantian",
+  { key: "kant", name: "Kantian means constraint", short: "Kantian", inText: "the Kantian means constraint",
     rule: "Not permissible when a person's death is the means of saving the others and he has not agreed to it. Otherwise permissible.",
     permits: kantian },
-  { key: "dde", name: "Doctrine of double effect", short: "Double effect",
+  { key: "dde", name: "Doctrine of double effect", short: "Double effect", inText: "the doctrine of double effect",
     rule: "Permissible only when the death is a foreseen side effect, not a means, and more lives are saved than lost. Consent does not change this.",
     permits: (f) => !f.means && f.saved > f.lost },
-  { key: "rights", name: "Rights view (Thomson, 1985)", short: "Rights",
+  { key: "rights", name: "Rights view (Thomson, 1985)", short: "Rights", inText: "the rights view",
     rule: "Permissible when the act only redirects an existing threat onto fewer people, or when the one consents. Making a new threat, or moving a person into the threat, infringes his rights.",
     permits: (f) => f.consent || (f.redirect && f.saved > f.lost) },
-  { key: "kld", name: "Killing versus letting die (Foot, 1967)", short: "Killing rule",
+  { key: "kld", name: "Killing versus letting die (Foot, 1967)", short: "Killing rule", inText: "the rule on killing and letting die",
     rule: "Not permissible to kill one person, without his consent, to save others whom you would otherwise only be failing to save. Permissible when you would be the killer either way and you kill fewer.",
     permits: (f) => f.consent || (f.agentThreat && f.saved > f.lost) },
-  { key: "threshold", name: "Threshold deontology", short: "Threshold",
+  { key: "threshold", name: "Threshold deontology", short: "Threshold", inText: "threshold deontology",
     rule: `The Kantian constraint, except that it gives way when at least ${THRESHOLD} lives are saved for each life lost. The number ${THRESHOLD} is arbitrary; the theory does not supply one.`,
     permits: (f) => kantian(f) || f.saved >= THRESHOLD * f.lost },
 ];
@@ -109,7 +116,7 @@ export function score(answers = {}) {
     const done = CASES.filter((c) => isAnswer(answers[c.id]));
     const misses = done.filter((c) => t.permits(c.f) !== answers[c.id]).map((c) => c.id);
     const matched = done.length - misses.length;
-    return { key: t.key, name: t.name, short: t.short, answered: done.length, matched, share: done.length ? matched / done.length : null, misses };
+    return { key: t.key, name: t.name, short: t.short, inText: t.inText, answered: done.length, matched, share: done.length ? matched / done.length : null, misses };
   });
 }
 
@@ -168,18 +175,25 @@ export function consistency(answers = {}) {
   return { lines, reversals, twins, uneven, checked, total: PAIRS.length + TWINS.length, features: [...new Set(lines.map((l) => l.feature))] };
 }
 
-/** Counts over all 2^10 complete sets of answers: how many have no reversal and no split twin, and how many of those also have no uneven line. */
+/**
+ * Counts over all 2^10 complete sets of answers.
+ *   reversalFree: no pair answered against the grain (the identically coded pair may still be split)
+ *   noReversal:   no pair against the grain and the identically coded pair answered alike
+ *   clean:        as noReversal, and no uneven line either
+ */
 export function countCoherent() {
   const n = CASES.length;
-  let noReversal = 0, clean = 0;
+  let reversalFree = 0, noReversal = 0, clean = 0;
   for (let mask = 0; mask < 2 ** n; mask++) {
     const answers = Object.fromEntries(CASES.map((c, i) => [c.id, Boolean(mask & (1 << i))]));
     const c = consistency(answers);
-    if (c.reversals.length || c.twins.length) continue;
+    if (c.reversals.length) continue;
+    reversalFree++;
+    if (c.twins.length) continue;
     noReversal++;
     if (!c.uneven.length) clean++;
   }
-  return { total: 2 ** n, noReversal, clean };
+  return { total: 2 ** n, reversalFree, noReversal, clean };
 }
 
 /** The cases on which every theory gives the same verdict. */

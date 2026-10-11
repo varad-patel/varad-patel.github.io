@@ -7,7 +7,7 @@ Live at https://varad-patel.github.io/365projects/6/ (part of [365 projects in 3
 | | |
 |---|---|
 | Question | Which moral theories do your answers to ten trolley cases match, and where do those answers pull against each other? |
-| One finding | Six theories written as rules agree on only one of the ten cases, and of the 1,024 possible sets of answers only 46 never permit a harder case while forbidding an easier one. |
+| One finding | Six theories written as rules agree on only one of the ten cases, and of the 1,024 possible sets of answers only 46 never permit a harder case while forbidding an easier one and also answer the two identically coded cases alike. |
 | Main limit | Ten yes-or-no answers to coded thought experiments cannot identify the theory a person holds, and the coding of each case is itself contestable. |
 | PPE concept | Consequentialism versus deontology |
 | Skills | Rule-based scoring, consistency checks |
