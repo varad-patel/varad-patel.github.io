@@ -5,7 +5,7 @@ import { MAX, DEFAULT_MARKS, SHAPES, grainsAt, positionOf, setMark, crisp, membe
 mount();
 
 const START = 60;
-const state = { n: START, marks: { ...DEFAULT_MARKS }, shape: "log", moved: [] };
+const state = { n: START, marks: { ...DEFAULT_MARKS }, own: { lo: false, mid: false, hi: false }, shape: "log", moved: [] };
 const grains = (n) => `${fmt.int(n)} grain${n === 1 ? "" : "s"}`;
 const MARK_NAMES = { lo: "certainly not a heap", mid: "where a heap starts", hi: "certainly a heap" };
 
@@ -14,8 +14,13 @@ const GRAINS = pile(MAX, 15);
 const look = rng(151);
 const LOOK = GRAINS.map(() => ({ dx: look.uniform(-0.12, 0.12), dy: look.uniform(-0.08, 0.08), shade: look.int(0, 2) }));
 // How far the pile of n grains reaches sideways and upwards, so that the drawing can zoom to fit it.
-const reach = new Int16Array(MAX + 1), top = new Int16Array(MAX + 1);
-GRAINS.forEach((g, i) => { reach[i + 1] = Math.max(reach[i], Math.abs(g.col) + 1); top[i + 1] = Math.max(top[i], g.row); });
+const reach = new Int16Array(MAX + 1), top = new Int16Array(MAX + 1), left = new Int16Array(MAX + 1), right = new Int16Array(MAX + 1);
+GRAINS.forEach((g, i) => {
+  reach[i + 1] = Math.max(reach[i], Math.abs(g.col) + 1); top[i + 1] = Math.max(top[i], g.row);
+  left[i + 1] = i ? Math.min(left[i], g.col) : g.col; right[i + 1] = i ? Math.max(right[i], g.col) : g.col;
+});
+// What the drawing shows, in words: the pile's width along the ground and its height at the peak, counted in grains.
+const pileInWords = (n) => `A drawing of a pile of ${grains(n)}, ${fmt.int(right[n] - left[n] + 1)} wide along the ground and ${fmt.int(top[n] + 1)} high at its peak`;
 const SHADES = [0.7, 0.85, 1];
 
 function drawPile(ctx, w, h) {
@@ -58,24 +63,27 @@ const step = (by) => { state.n = Math.min(MAX, Math.max(1, state.n + by)); state
 const lessBtn = button("Take one grain away", () => step(-1), { small: true });
 const moreBtn = button("Add one grain", () => step(1), { small: true });
 
-const mark = (which, n = state.n) => { const r = setMark(state.marks, which, n); state.marks = r.marks; state.moved = r.moved; render(); };
+const mark = (which, n = state.n) => { const r = setMark(state.marks, which, n); state.marks = r.marks; state.moved = r.moved; state.own[which] = true; render(); };
 const markRows = [
   { key: "lo", btn: button("Certainly not a heap", () => mark("lo")), says: (m) => `${grains(m.lo)} or fewer` },
   { key: "mid", btn: button("A heap starts here", () => mark("mid"), { primary: true }), says: (m) => `at ${grains(m.mid)}` },
   { key: "hi", btn: button("Certainly a heap", () => mark("hi")), says: (m) => `${grains(m.hi)} or more` },
-].map((r) => ({ ...r, value: el("span", { class: "mark-value" }) }));
+].map((r) => ({ ...r, value: el("span", { class: "mark-value", role: "status" }) }));
+const setText = (node, text) => { if (node.textContent !== text) node.textContent = text; };
 const movedBox = el("div");
+const placeholderBox = el("div");
 const shapeSeg = segmented({
   label: "Fuzzy curve between your marks", options: SHAPES, value: "log",
-  hint: "Straight lines on the log scale, an S-curve, or straight lines in the grain count. All three pass through 0 at your lower mark, one half at your boundary and 1 at your upper mark.",
+  hint: "Straight lines on the log scale, an S-curve, or straight lines in the grain count. All three pass through 0 at your lower mark, one half at your boundary and 1 at your upper mark. If the boundary and the upper mark are the same pile, the curve jumps to 1 there.",
   onChange: (v) => { state.shape = v; render(); },
 });
-const resetBtn = button("Reset the marks", () => { state.marks = { ...DEFAULT_MARKS }; state.moved = []; render(); }, { small: true });
+const resetBtn = button("Reset the marks", () => { state.marks = { ...DEFAULT_MARKS }; state.own = { lo: false, mid: false, hi: false }; state.moved = []; render(); }, { small: true });
 
 const controls = el("div", { class: "controls" },
   pileBox, summary, nSlider.el, el("div", { class: "row" }, lessBtn, moreBtn),
   el("div", { class: "field" },
     el("div", { class: "lab" }, el("span", { text: "Mark the pile on screen as" })),
+    placeholderBox,
     el("div", { class: "marks" }, markRows.map((r) => [r.btn, r.value])),
     el("div", { class: "hint", text: "Move the slider to a pile, then press the button that fits. You can also click the first chart to put the boundary there." }),
     movedBox),
@@ -131,34 +139,40 @@ function render() {
   moreBtn.disabled = n >= MAX;
   markRows[0].btn.disabled = n >= MAX;
   markRows[1].btn.disabled = markRows[2].btn.disabled = n < 2;
-  for (const r of markRows) r.value.textContent = r.says(m);
+  for (const r of markRows) setText(r.value, r.says(m) + (state.own[r.key] ? "" : " (placeholder)"));
+  const unset = markRows.filter((r) => !state.own[r.key]).length;
+  const wanted = unset === 0 ? "" : `${unset === 3 ? "None of the three marks is yours yet" : unset === 2 ? "Two of the marks are not yours yet" : "One mark is not yours yet"}. The page opens with placeholders at ${fmt.int(DEFAULT_MARKS.lo)}, ${fmt.int(DEFAULT_MARKS.mid)} and ${fmt.int(DEFAULT_MARKS.hi)} grains so that the charts have something to draw. They are round numbers, not a suggested answer: decide on your own before you look at them.`;
+  if (placeholderBox.textContent !== wanted) placeholderBox.replaceChildren(...(wanted ? [note("", wanted)] : []));
   movedBox.replaceChildren(...(state.moved.length ? [note("warn", `To keep the three marks in order, your mark for ${state.moved.map((k) => MARK_NAMES[k]).join(" and for ")} was moved too.`)] : []));
-  pileCanvas.el.setAttribute("aria-label", `A pile of ${grains(n)}`);
+  pileCanvas.el.setAttribute("aria-label", pileInWords(n));
   pileCanvas.redraw();
-  summary.textContent = `${grains(n)}: ${isHeap ? "a heap" : "not a heap"} on the sharp line, a heap to degree ${fmt.num(mu, 2)} on the fuzzy curve, ${sv.status === "gap" ? "neither true nor false" : sv.status === "true" ? "certainly a heap" : "certainly not a heap"} on the gap view.`;
+  setText(summary, `${grains(n)}: ${isHeap ? "a heap" : "not a heap"} on the sharp line, a heap to degree ${fmt.num(mu, 2)} on the fuzzy curve, ${sv.status === "gap" ? "neither true nor false" : sv.status === "true" ? "certainly a heap" : "certainly not a heap"} on the gap view.`);
 
   // The three readings of this pile.
   cSharp.v.textContent = isHeap ? "True" : "False";
   cSharp.about.textContent = `There is an exact number at which a heap begins. If it is your ${fmt.int(m.mid)}, then ${claim} is ${isHeap ? "true" : "false"}. On this view nobody can find the number out, so your mark is a guess that is simply right or wrong.`;
   cSharp.argument.textContent = arg.count === 1
     ? `The argument has one step, from ${fmt.int(m.mid)} to ${fmt.int(m.mid - 1)}, and it is false.`
-    : `The argument has one false step, from ${fmt.int(m.mid)} to ${fmt.int(m.mid - 1)}. The other ${fmt.int(arg.count - 1)} are true.`;
+    : `The argument has one false step, from ${fmt.int(m.mid)} to ${fmt.int(m.mid - 1)}. ${arg.count === 2 ? "The other one is true" : `The other ${fmt.int(arg.count - 1)} are true`}.`;
   cFuzzy.v.textContent = fmt.num(mu, 2);
-  cFuzzy.about.textContent = `${claim} is true to this degree. Heapness rises from 0 at ${fmt.int(m.lo)} through one half at ${fmt.int(m.mid)} to 1 at ${fmt.int(m.hi)}, so there is no number at which a heap begins.`;
+  cFuzzy.about.textContent = m.mid === m.hi
+    ? `${claim} is true to this degree. Your boundary and your "certainly a heap" mark are the same pile, so heapness ${m.mid - 1 === m.lo ? `is 0 up to ${fmt.int(m.lo)}` : `rises from 0 at ${fmt.int(m.lo)} to ${fmt.num(membership(m.mid - 1, m, shape), 3)} at ${fmt.int(m.mid - 1)}`} and then jumps to 1 at ${fmt.int(m.hi)}.`
+    : `${claim} is true to this degree. Heapness rises from 0 at ${fmt.int(m.lo)} through one half at ${fmt.int(m.mid)} to 1 at ${fmt.int(m.hi)}, so there is no number at which a heap begins.`;
   cFuzzy.argument.textContent = arg.count === 1
     ? "With the marks this close the curve is a sharp line, and the one step is false."
-    : `No step is false. The least true is true to degree ${deg(arg.weakest.truth)}, and the ${fmt.int(arg.count)} shortfalls add up to ${deg(arg.lost)}.`;
+    : arg.tied === arg.count ? `No step is false. ${arg.count === 2 ? "Both" : `All ${fmt.int(arg.count)}`} are true to the same degree, ${deg(arg.weakest.truth)}, and their shortfalls add up to ${deg(arg.lost)}.`
+    : `No step is false. The ${arg.tied > 1 ? `${fmt.int(arg.tied)} least true are each` : "least true is"} true to degree ${deg(arg.weakest.truth)}, and the ${fmt.int(arg.count)} shortfalls add up to ${deg(arg.lost)}.`;
   cGap.v.textContent = sv.status === "gap" ? "Neither" : sv.status === "true" ? "True" : "False";
-  cGap.about.textContent = `"Heap" could be made exact in ${fmt.int(sv.sharpenings)} acceptable way${sv.sharpenings === 1 ? "" : "s"}: a cut-off anywhere from ${fmt.int(m.lo + 1)} to ${fmt.int(m.hi)}. A sentence is true if it holds on all of them and false if on none. ${claim} holds on ${fmt.pct(sv.share, sv.share > 0 && sv.share < 0.1 ? 1 : 0)}.`;
+  cGap.about.textContent = `"Heap" could be made exact in ${fmt.int(sv.sharpenings)} acceptable way${sv.sharpenings === 1 ? "" : "s"}: a cut-off ${sv.sharpenings === 1 ? `at ${fmt.int(m.hi)}` : `anywhere from ${fmt.int(m.lo + 1)} to ${fmt.int(m.hi)}`}. A sentence is true if it holds on all of them and false if on none. ${claim} holds on ${fmt.pct(sv.share, sv.share > 0 && sv.share < 0.1 ? 1 : 0)}.`;
   cGap.argument.textContent = sv.sharpenings === 1
     ? "With one acceptable cut-off there is no gap, and the one step is false."
-    : `"Every step holds" fails on all ${fmt.int(sv.sharpenings)} cut-offs, so it is false, although each single step holds on ${fmt.int(sv.sharpenings - 1)} of them.`;
+    : `"Every step holds" fails on ${sv.sharpenings === 2 ? "both" : `all ${fmt.int(sv.sharpenings)}`} cut-offs, so it is false, although each single step holds on ${fmt.int(sv.sharpenings - 1)} of them.`;
 
   // First chart: the three models over the whole scale.
   const sizes = sampleSizes(m);
   modelChart.update({
     title: `How true is "n grains make a heap"?`,
-    subtitle: "Click the chart to put your boundary there.",
+    subtitle: "Click the chart to put your boundary there, or use the arrow keys and Enter.",
     label: "Line chart of the degree of truth of the claim that n grains make a heap, under three models",
     x: { label: "Grains (log scale)", type: "log", domain: [1, MAX], format: (v) => fmt.int(v) },
     y: { label: "Degree of truth", domain: [0, 1], format: (v) => fmt.num(v, 2) },
@@ -175,12 +189,15 @@ function render() {
   argumentText.replaceChildren(
     el("ol", { class: "argument" },
       el("li", { text: `${grains(m.hi)} make a heap. (Your "certainly a heap" mark.)` }),
-      el("li", { text: `If n grains make a heap, then n − 1 grains make a heap. (Asserted ${fmt.int(arg.count)} time${arg.count === 1 ? "" : "s"}, for n from ${fmt.int(m.hi)} down to ${fmt.int(m.lo + 1)}.)` }),
+      el("li", { text: `If n grains make a heap, then n − 1 grains make a heap. (Asserted ${arg.count === 1 ? `once, for n = ${fmt.int(m.hi)}` : `${arg.count === 2 ? "twice" : `${fmt.int(arg.count)} times`}, for n from ${fmt.int(m.hi)} down to ${fmt.int(m.lo + 1)}`}.)` }),
       el("li", { text: `So ${grains(m.lo)} make${m.lo === 1 ? "s" : ""} a heap. (Which you marked as certainly false.)` })),
     el("p", { class: "small muted", text: "In Łukasiewicz logic a step from n to n − 1 falls short of full truth by exactly the amount that heapness drops between the two piles. Each use of a step lets the conclusion's guaranteed truth fall by that much, and the drops must add up to the whole distance from 1 to 0." }));
   sSteps.set(fmt.int(arg.count), `from ${fmt.int(m.hi)} grains down to ${fmt.int(m.lo)}`);
-  sWeak.set(deg(arg.weakest.truth), `from ${fmt.int(arg.weakest.n)} grains to ${fmt.int(arg.weakest.n - 1)}`);
-  sLost.set(deg(arg.lost), `${fmt.int(arg.count - arg.perfect)} of ${fmt.int(arg.count)} steps lose something`);
+  sWeak.set(deg(arg.weakest.truth), arg.tied > 1 && arg.tiedFrom - arg.tiedTo + 1 === arg.tied
+    ? `shared by ${arg.tied === 2 ? "both" : `${arg.tied === arg.count ? "all" : "the"} ${fmt.int(arg.tied)}`} steps from ${fmt.int(arg.tiedFrom)} grains down to ${fmt.int(arg.tiedTo - 1)}`
+    : arg.tied > 1 ? `shared by ${fmt.int(arg.tied)} steps, the first from ${fmt.int(arg.weakest.n)} grains to ${fmt.int(arg.weakest.n - 1)}`
+    : `from ${fmt.int(arg.weakest.n)} grains to ${fmt.int(arg.weakest.n - 1)}`);
+  sLost.set(deg(arg.lost), arg.count === 1 ? "the one step loses all of it" : `${fmt.int(arg.count - arg.perfect)} of ${fmt.int(arg.count)} steps lose something`);
   sFalse.set("1", `from ${fmt.int(m.mid)} grains to ${fmt.int(m.mid - 1)}`);
 
   // Second chart: the chain, thinned to a few hundred points when it is long, always keeping the least true step.

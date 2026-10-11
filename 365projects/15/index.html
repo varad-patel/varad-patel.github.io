@@ -49,12 +49,12 @@
     <section class="p-sec">
       <h2>How it works</h2>
       <h3>The scale and the marks</h3>
-      <p>The slider has 401 positions, and position <var>v</var> shows <var>n</var> = 10<sup><var>v</var>/100</sup> grains rounded to a whole number, so it runs from 1 to 10,000 on a logarithmic scale. Two buttons move one grain at a time. You place three marks: the largest pile that is certainly not a heap, <var>L</var>; the smallest pile you would call a heap if you had to choose, <var>b</var>; and the smallest pile that is certainly a heap, <var>U</var>. The tool keeps 1 ≤ <var>L</var> &lt; <var>b</var> ≤ <var>U</var> ≤ 10,000 and moves a neighbouring mark, with a notice, when a new one would break that order.</p>
+      <p>The slider has 401 positions, and position <var>v</var> shows <var>n</var> = 10<sup><var>v</var>/100</sup> grains rounded to a whole number, so it runs from 1 to 10,000 on a logarithmic scale. Two buttons move one grain at a time. You place three marks: the largest pile that is certainly not a heap, <var>L</var>; the smallest pile you would call a heap if you had to choose, <var>b</var>; and the smallest pile that is certainly a heap, <var>U</var>. The tool keeps 1 ≤ <var>L</var> &lt; <var>b</var> ≤ <var>U</var> ≤ 10,000 and moves a neighbouring mark, with a notice, when a new one would break that order. So that the charts have something to draw before you have chosen, the page opens with placeholder marks at 10, 100 and 1,000 grains, and labels each one as a placeholder until you replace it.</p>
       <h3>The sharp line</h3>
       <p class="eq">heap(<var>n</var>) is true when <var>n</var> ≥ <var>b</var>, and false otherwise</p>
       <p>This is how an epistemicist reads your boundary: as a guess at a cut-off that exists whether or not anyone can know it.</p>
       <h3>The fuzzy curve</h3>
-      <p>The membership function <var>μ</var>(<var>n</var>) gives the degree to which <var>n</var> grains make a heap. It is 0 up to <var>L</var>, 1 from <var>U</var>, and passes through ½ at <var>b</var>. With <var>p</var>(<var>x</var>) = ln <var>x</var>:</p>
+      <p>The membership function <var>μ</var>(<var>n</var>) gives the degree to which <var>n</var> grains make a heap. It is 0 up to <var>L</var>, 1 from <var>U</var>, and passes through ½ at <var>b</var>. (If you put <var>b</var> and <var>U</var> on the same pile, the value there is 1: the curve climbs to just under ½ at <var>b</var> − 1 and then jumps.) With <var>p</var>(<var>x</var>) = ln <var>x</var>:</p>
       <p class="eq"><var>μ</var>(<var>n</var>) = ½ · (<var>p</var>(<var>n</var>) − <var>p</var>(<var>L</var>)) / (<var>p</var>(<var>b</var>) − <var>p</var>(<var>L</var>)) &nbsp; for <var>L</var> &lt; <var>n</var> &lt; <var>b</var></p>
       <p class="eq"><var>μ</var>(<var>n</var>) = ½ + ½ · (<var>p</var>(<var>n</var>) − <var>p</var>(<var>b</var>)) / (<var>p</var>(<var>U</var>) − <var>p</var>(<var>b</var>)) &nbsp; for <var>b</var> ≤ <var>n</var> &lt; <var>U</var></p>
       <p>That is two straight lines on the log scale, the option "Line (log)". "Line (grains)" uses <var>p</var>(<var>x</var>) = <var>x</var> instead. The S-curve keeps the log scale and replaces the fraction <var>t</var> in the first line by <var>t</var>² and in the second by 1 − (1 − <var>t</var>)², which flattens the curve near 0 and near 1. Only the three marks come from you; the shape between them is an assumption you can switch.</p>
@@ -69,7 +69,7 @@
       <p class="eq"><var>v</var>(<var>B</var>) ≥ max(0, <var>v</var>(<var>A</var>) + <var>v</var>(<var>A</var> → <var>B</var>) − 1)</p>
       <p>The tool starts from "<var>U</var> grains make a heap" at truth 1 and applies this bound once for each step down to <var>L</var>. The shortfalls telescope:</p>
       <p class="eq">(1 − <var>t</var><sub><var>U</var></sub>) + … + (1 − <var>t</var><sub><var>L</var>+1</sub>) = <var>μ</var>(<var>U</var>) − <var>μ</var>(<var>L</var>) = 1</p>
-      <p>Whatever the shape of the curve, the losses add up to exactly 1 and the conclusion is left with a guaranteed truth of 0. The shape decides only how the loss is shared out among the steps. The second chart plots both quantities for every step; when there are more than 500 steps it draws an evenly spaced sample, always including the least true step, and the figures in the tiles are computed from all of them.</p>
+      <p>Whatever the shape of the curve, the losses add up to exactly 1 and the conclusion is left with a guaranteed truth of 0. The shape decides only how the loss is shared out among the steps. On "Line (grains)" every step on the same straight piece loses the same amount, so the least true step is a tie between all of them, and the tool says so. The second chart plots both quantities for every step; when there are more than 500 steps it draws an evenly spaced sample, always including the least true step, and the figures in the tiles are computed from all of them.</p>
       <h3>The drawing</h3>
       <p>The pile is a simple sand model, fixed by a seed so that it is the same on every visit. Each grain is dropped near the middle and rolls downhill until neither neighbouring column is lower, which keeps every slope at one grain per column or less. Adding a grain never moves an earlier one, so the pile of <var>n</var> grains is always the first <var>n</var> grains of the same pile of 10,000.</p>
     </section>
@@ -77,7 +77,7 @@
     <section class="p-sec">
       <h2>What this cannot tell you</h2>
       <ul>
-        <li><strong>Where a heap starts.</strong> There is no measurement the tool could check your marks against. They record how you use a word, and people differ.</li>
+        <li><strong>Where a heap starts.</strong> There is no measurement the tool could check your marks against. They record how you use a word, and people differ. The placeholder marks the page opens with, 10, 100 and 1,000, are round numbers and not a finding; having seen them first, you may place your own nearer to them than you otherwise would.</li>
         <li><strong>Which theory of vagueness is right.</strong> All three handle your marks without contradiction. They disagree about what the marks mean, and nothing computed here chooses between them.</li>
         <li><strong>What to do about higher-order vagueness.</strong> The tool asks for exact bounds on "certainly", but the point at which a pile becomes certainly a heap is no sharper than the point at which it becomes a heap. A fuzzy value of exactly 0.389 and a gap that starts at exactly 11 grains are open to the same complaint as a sharp line at 100.</li>
         <li><strong>That the steps are "nearly true" on every fuzzy logic.</strong> That result belongs to Łukasiewicz's conditional. Under Gödel's, a step whose consequent is less true than its antecedent is only as true as the consequent, so the steps near the bottom of the curve are nearly false. Fuzzy logics also make "this is a heap and it is not a heap" half true of a borderline pile under the usual minimum rule, which critics count as a plain falsehood.</li>
@@ -101,15 +101,15 @@
     <section class="p-sec">
       <h2>Sources</h2>
       <ul class="refs">
-        <li>Hyde, D., and Raffman, D. Sorites paradox. <em>Stanford Encyclopedia of Philosophy</em>.</li>
+        <li>Raffman, D., and Hyde, D. Sorites paradox. <em>Stanford Encyclopedia of Philosophy</em> (first published 1997, revised 2025).</li>
         <li>Sorensen, R. Vagueness. <em>Stanford Encyclopedia of Philosophy</em>.</li>
-        <li>Williamson, T. (1994). <em>Vagueness</em>. Routledge.</li>
-        <li>Fine, K. (1975). Vagueness, truth and logic. <em>Synthese</em>, 30, 265-300.</li>
-        <li>Zadeh, L. A. (1965). Fuzzy sets. <em>Information and Control</em>, 8, 338-353.</li>
-        <li>Goguen, J. A. (1969). The logic of inexact concepts. <em>Synthese</em>, 19, 325-373.</li>
-        <li>Machina, K. F. (1976). Truth, belief, and vagueness. <em>Journal of Philosophical Logic</em>, 5, 47-78.</li>
+        <li>Williamson, T. (1994). <em>Vagueness</em>. London: Routledge.</li>
+        <li>Fine, K. (1975). Vagueness, truth and logic. <em>Synthese</em>, 30(3-4), 265-300.</li>
+        <li>Zadeh, L. A. (1965). Fuzzy sets. <em>Information and Control</em>, 8(3), 338-353.</li>
+        <li>Goguen, J. A. (1969). The logic of inexact concepts. <em>Synthese</em>, 19(3-4), 325-373.</li>
+        <li>Machina, K. F. (1976). Truth, belief, and vagueness. <em>Journal of Philosophical Logic</em>, 5(1), 47-78.</li>
         <li>Keefe, R. (2000). <em>Theories of Vagueness</em>. Cambridge University Press.</li>
-        <li>Keefe, R., and Smith, P. (eds.) (1997). <em>Vagueness: A Reader</em>. MIT Press.</li>
+        <li>Keefe, R., and Smith, P. (eds.). <em>Vagueness: A Reader</em>. MIT Press.</li>
         <li>Smith, N. J. J. (2008). <em>Vagueness and Degrees of Truth</em>. Oxford University Press.</li>
         <li>Raffman, D. (2014). <em>Unruly Words: A Study of Vague Language</em>. Oxford University Press.</li>
       </ul>

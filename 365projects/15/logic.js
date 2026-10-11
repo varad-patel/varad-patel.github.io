@@ -86,6 +86,9 @@ export const strongAnd = (a, b) => Math.max(0, a + b - 1);
  *   truth  its degree of truth in Lukasiewicz logic
  *   loss   1 - truth
  *   left   the degree of truth that modus ponens still guarantees for "n - 1 grains make a heap"
+ * weakest is the least true step. When several steps are equally untrue (every step on a straight piece of the
+ * "grains" shape loses the same amount) it is the first of them, tied says how many there are, and tiedFrom and tiedTo
+ * give the largest and smallest n among them.
  */
 export function sorites(marks, shape = "log") {
   const { lo, mid, hi } = marks;
@@ -105,7 +108,9 @@ export function sorites(marks, shape = "log") {
     above = below;
   }
   const strongest = steps.reduce((best, s) => (s.truth > best.truth ? s : best), steps[0]);
-  return { steps, count: hi - lo, lost, left, weakest, strongest, perfect, falseStep: mid };
+  // Steps within rounding error of the least true one count as equally untrue.
+  const level = steps.filter((s) => s.truth - weakest.truth < 1e-9);
+  return { steps, count: hi - lo, lost, left, weakest: level[0], tied: level.length, tiedFrom: level[0].n, tiedTo: level[level.length - 1].n, strongest, perfect, falseStep: mid };
 }
 
 /**

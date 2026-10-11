@@ -168,3 +168,50 @@ test("the pile: seeded, one grain per cell, every grain supported, slopes of at 
   assert.equal(pile(1).length, 1);
   assert.equal(pile(1e9).length, MAX);
 });
+
+test("equally untrue steps are reported as a tie, not as one arbitrary step", () => {
+  // Straight in grains, marks 3 / 40 / 9,000: each of the 37 steps from 40 down to 4 loses 0.5/37.
+  const g = sorites({ lo: 3, mid: 40, hi: 9000 }, "grains");
+  close(g.weakest.truth, 1 - 0.5 / 37);
+  assert.deepEqual([g.tied, g.tiedFrom, g.tiedTo, g.weakest.n], [37, 40, 4, 40]);
+  // Marks 99 / 100 / 101: two steps, each true to degree one half, whatever the shape.
+  for (const sh of SHAPES) {
+    const two = sorites({ lo: 99, mid: 100, hi: 101 }, sh.value);
+    assert.deepEqual([two.count, two.tied, two.tiedFrom, two.tiedTo], [2, 2, 101, 100]);
+    close(two.weakest.truth, 0.5);
+  }
+  // The default marks on the log scale have a single least true step.
+  const d = sorites(M, "log");
+  assert.deepEqual([d.tied, d.tiedFrom, d.tiedTo], [1, 11, 11]);
+});
+
+test("hand-computed chains for two other sets of marks", () => {
+  // 3 / 40 / 9,000 on the log scale: the largest drop is from 4 grains to 3, one half of ln(4/3) / ln(40/3).
+  const a = sorites({ lo: 3, mid: 40, hi: 9000 }, "log");
+  assert.equal(a.count, 8997);
+  assert.equal(a.weakest.n, 4);
+  close(a.weakest.truth, 1 - 0.5 * Math.log(4 / 3) / Math.log(40 / 3));
+  assert.equal(a.weakest.truth.toFixed(3), "0.944");
+  close(a.lost, 1, 1e-9);
+  // The same marks on the S-curve: the least true step is from 9 grains to 8.
+  const s = sorites({ lo: 3, mid: 40, hi: 9000 }, "s");
+  const t = (n) => Math.log(n / 3) / Math.log(40 / 3);
+  assert.equal(s.weakest.n, 9);
+  close(s.weakest.truth, 1 - 0.5 * (t(9) ** 2 - t(8) ** 2));
+  assert.equal(s.weakest.truth.toFixed(3), "0.982");
+});
+
+test("a boundary on the upper mark: the curve stays under one half below it and jumps to 1 at it", () => {
+  const marks = { lo: 1, mid: 5001, hi: 5001 };
+  for (const sh of SHAPES) {
+    assert.equal(membership(5001, marks, sh.value), 1);
+    assert.ok(membership(5000, marks, sh.value) < 0.5);
+    const s = sorites(marks, sh.value);
+    assert.equal(s.count, 5000);
+    assert.equal(s.weakest.n, 5001);
+    close(s.weakest.truth, membership(5000, marks, sh.value));
+    close(s.lost, 1, 1e-9);
+  }
+  assert.equal(supervaluation(5001, marks).status, "true");
+  assert.equal(supervaluation(5000, marks).status, "gap");
+});
