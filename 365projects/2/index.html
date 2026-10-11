@@ -14,6 +14,8 @@
     .formula-input { font-size: 1.15rem !important; padding: 12px 14px !important; }
     .keys .key { font-family: var(--mono); font-size: 1.05rem; min-width: 42px; padding: 6px 10px; }
     .caret-line { white-space: pre; overflow-x: auto; margin-top: 8px; }
+    /* A letter can be a long word; let it wrap instead of pushing the page sideways. */
+    #app .note, #app .panel { overflow-wrap: anywhere; }
     .pairs { margin: 8px 0 0; padding-left: 1.2em; }
     .pairs li + li { margin-top: 4px; }
     table.truth { width: auto; min-width: min(100%, 320px); font-family: var(--mono); font-size: 0.95rem; }
@@ -26,7 +28,8 @@
     table.truth th.main, table.truth td.main { background: color-mix(in srgb, var(--ink) 7%, transparent); }
     table.truth tbody tr { cursor: pointer; }
     table.truth tbody tr.counter td { background: color-mix(in srgb, var(--bad) 14%, transparent); }
-    table.truth tbody tr.sel td { box-shadow: inset 0 2px 0 var(--ink), inset 0 -2px 0 var(--ink); }
+    /* Rules above and below the selected row, drawn as backgrounds: an inset box-shadow on a cell leaves a stray vertical line in Firefox. */
+    table.truth tbody tr.sel td { background-image: linear-gradient(var(--ink), var(--ink)), linear-gradient(var(--ink), var(--ink)); background-size: 100% 2px; background-position: top, bottom; background-repeat: no-repeat; }
     table.truth tbody tr:focus-visible { outline: 3px solid var(--focus); outline-offset: -3px; }
     .steps { margin: 10px 0 0; padding-left: 1.4em; display: grid; gap: 6px; }
     .steps .f { color: var(--slate); }
@@ -48,7 +51,7 @@
 
     <section class="p-sec finding">
       <h2>One finding</h2>
-      <p>Affirming the consequent ("if p then q; q; therefore p") is invalid because of exactly one of its four rows: p false and q true. Modus ponens differs by one letter and has no such row. One row is all it takes to sink an argument, and no number of agreeable rows can save it.</p>
+      <p>Affirming the consequent ("if p then q; q; therefore p") is invalid because of exactly one of its four rows: p false and q true. Modus ponens uses the same three formulas with the second premise and the conclusion swapped, and has no such row. One row is all it takes to sink an argument, and no number of agreeable rows can save it.</p>
     </section>
 
     <section class="p-sec">
@@ -76,7 +79,7 @@
         <li><strong>Several formulas.</strong> Two formulas are logically equivalent when their columns agree in every row. The page checks each pair.</li>
       </ul>
       <h3>Normal forms</h3>
-      <p>Any truth table can be written as a formula using only ¬, ∧ and ∨. Take each row where the formula is true, write the conjunction that describes that row exactly, and join them with ∨: that is the disjunctive normal form. The conjunctive form does the mirror image with the false rows. This is the proof that those three connectives are enough to express every truth function.</p>
+      <p>Any truth table can be written as a formula using only ¬, ∧ and ∨. Take each row where the formula is true, write the conjunction that describes that row exactly, and join them with ∨: that is the disjunctive normal form. The conjunctive form does the mirror image with the false rows. This is the proof that those three connectives are enough to express every truth function. (A formula with no true row has nothing to join, so the page prints ⊥ for it; <var>p</var> ∧ ¬<var>p</var> says the same with the three connectives. The same goes for ⊤ when there is no false row.) The page shows both forms for formulas with up to four letters.</p>
     </section>
 
     <section class="p-sec">
@@ -105,7 +108,7 @@
     <section class="p-sec">
       <h2>Sources</h2>
       <ul class="refs">
-        <li>Wittgenstein, L. (1921). <em>Tractatus Logico-Philosophicus</em>. Truth tables appear at 4.31 and 5.101.</li>
+        <li>Wittgenstein, L. (1921). Logisch-philosophische Abhandlung. <em>Annalen der Naturphilosophie</em>, 14. In English as <em>Tractatus Logico-Philosophicus</em> (1922). The rows of a truth table are set out at 4.31, a complete table at 4.442 and the sixteen truth functions of two propositions at 5.101.</li>
         <li>Post, E. L. (1921). Introduction to a general theory of elementary propositions. <em>American Journal of Mathematics</em>, 43(3), 163-185.</li>
         <li>Cook, S. A. (1971). The complexity of theorem-proving procedures. <em>Proceedings of the Third Annual ACM Symposium on Theory of Computing</em>, 151-158.</li>
       </ul>

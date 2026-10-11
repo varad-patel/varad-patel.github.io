@@ -1,6 +1,8 @@
 // Day 2: Truth Table Playground. Parser and evaluator for propositional logic, with no DOM code.
 
 export const MAX_VARS = 10;
+export const MAX_LENGTH = 1000;
+const MAX_DEPTH = 100;
 
 const WORDS = {
   not: "not", and: "and", or: "or", xor: "xor", nand: "nand", nor: "nor",
@@ -8,7 +10,7 @@ const WORDS = {
 };
 // Longest spellings first so "<->" is not read as "<" followed by "->".
 const SYMBOLS = [
-  ["<->", "iff"], ["<=>", "iff"], ["->", "imp"], ["=>", "imp"], ["&&", "and"], ["||", "or"], ["|-", "turnstile"],
+  ["<->", "iff"], ["<=>", "iff"], ["->", "imp"], ["=>", "imp"], ["&&", "and"], ["||", "or"], ["|-", "turnstile"], ["==", "iff"], ["!=", "xor"],
   ["¬", "not"], ["~", "not"], ["!", "not"], ["∧", "and"], ["&", "and"], ["·", "and"], ["∨", "or"], ["|", "or"],
   ["⊕", "xor"], ["^", "xor"], ["→", "imp"], ["⇒", "imp"], ["↔", "iff"], ["⇔", "iff"], ["=", "iff"],
   ["↑", "nand"], ["↓", "nor"], ["⊢", "turnstile"], ["∴", "turnstile"], ["⊤", "true"], ["⊥", "false"],
@@ -28,7 +30,8 @@ export function tokenize(text) {
   while (i < text.length) {
     const ch = text[i];
     if (/\s/.test(ch)) { i++; continue; }
-    const word = /^[A-Za-z_][A-Za-z0-9_']*/.exec(text.slice(i));
+    // Any alphabet will do for a letter, so φ → ψ works as well as p → q.
+    const word = /^[\p{L}_][\p{L}\p{N}_']*/u.exec(text.slice(i));
     if (word) {
       const w = word[0];
       const key = WORDS[w.toLowerCase()];
@@ -51,6 +54,9 @@ function parseTokens(tokens, textLength) {
   const at = (...types) => peek() && types.includes(peek().type);
   const describe = (t) => (t ? `"${t.raw}"` : "the end of the formula");
   const where = (t) => (t ? t.pos : textLength);
+  const startsFormula = (t) => t && ["var", "(", "not", "true", "false"].includes(t.type);
+  const meet = (t) => new ParseError(`Two formulas meet at position ${t.pos + 1} with no connective between them. Add ∧, ∨, → or a comma.`, t.pos);
+  const open = []; // the brackets currently open, innermost last
 
   const binary = (next, ops, rightAssoc = false) => function level() {
     let left = next();
@@ -71,13 +77,28 @@ function parseTokens(tokens, textLength) {
     if (t.type === "var") { k++; return { op: "var", name: t.name }; }
     if (t.type === "true" || t.type === "false") { k++; return { op: "const", value: t.type === "true" }; }
     if (t.type === "(") {
+      if (open.length >= MAX_DEPTH) throw new ParseError(`Brackets are nested more than ${MAX_DEPTH} deep at position ${t.pos + 1}. That is as far as this page goes.`, t.pos);
       k++;
+      if (at(")")) throw new ParseError(`The brackets at position ${t.pos + 1} are empty. Put a formula inside them or remove them.`, t.pos);
+      open.push(t);
       const inner = formula();
-      if (!at(")")) throw new ParseError(`A bracket opened at position ${t.pos + 1} is never closed.`, where(peek()));
+      const next = peek();
+      if (!at(")")) {
+        if (startsFormula(next)) throw meet(next);
+        if (next && (next.type === "sep" || next.type === "turnstile")) throw new ParseError(`${next.type === "sep" ? "A comma" : "⊢"} cannot go inside brackets (position ${next.pos + 1}). It separates whole formulas.`, next.pos);
+        throw new ParseError(`A bracket opened at position ${t.pos + 1} is never closed.`, where(next));
+      }
+      // Round and square brackets both work, but a pair must be of one kind.
+      if ((t.raw === "(") !== (next.raw === ")")) throw new ParseError(`The bracket opened with ${t.raw} at position ${t.pos + 1} is closed with ${next.raw} at position ${next.pos + 1}. Use the same kind for both.`, next.pos);
+      open.pop();
       k++;
       return inner;
     }
-    if (t.type === ")") throw new ParseError(`There is a closing bracket at position ${t.pos + 1} with nothing to close.`, t.pos);
+    if (t.type === ")") {
+      throw open.length
+        ? new ParseError(`Something is missing before the closing bracket at position ${t.pos + 1}.`, t.pos)
+        : new ParseError(`There is a closing bracket at position ${t.pos + 1} with nothing to close.`, t.pos);
+    }
     throw new ParseError(`Expected a letter, a bracket or ¬ at position ${t.pos + 1}, but found ${describe(t)}.`, t.pos);
   }
   const and = binary(unary, ["and", "nand"]);
@@ -99,9 +120,7 @@ function parseTokens(tokens, textLength) {
   }
   if (k < tokens.length) {
     const t = peek();
-    if (t.type === "var" || t.type === "(" || t.type === "not" || t.type === "true" || t.type === "false") {
-      throw new ParseError(`Two formulas meet at position ${t.pos + 1} with no connective between them. Add ∧, ∨, → or a comma.`, t.pos);
-    }
+    if (startsFormula(t)) throw meet(t);
     if (t.type === "turnstile") throw new ParseError("Use only one ⊢. Everything before it is a premise and the one formula after it is the conclusion.", t.pos);
     if (t.type === "sep") throw new ParseError("After ⊢ there can be only one conclusion.", t.pos);
     if (t.type === ")") throw new ParseError(`There is a closing bracket at position ${t.pos + 1} with nothing to close.`, t.pos);
@@ -110,8 +129,9 @@ function parseTokens(tokens, textLength) {
   return { premises, conclusion, isArgument: sawTurnstile };
 }
 
-/** Parse text into { premises: [ast], conclusion: ast | null, isArgument }. Throws an Error with .pos on bad input. */
+/** Parse text into { premises: [ast], conclusion: ast | null, isArgument }. Throws an Error with .pos on bad input (pos is null when no one place is at fault). */
 export function parse(text) {
+  if (text.length > MAX_LENGTH) throw new ParseError(`This is ${text.length.toLocaleString("en-GB")} characters long. The limit is ${MAX_LENGTH.toLocaleString("en-GB")}.`, null);
   return parseTokens(tokenize(text), text.length);
 }
 
@@ -196,25 +216,29 @@ export function normalForms(vars, rows, values) {
  */
 export function analyse(text) {
   let parsed;
-  try { parsed = parse(text); } catch (e) { return { error: e.message, pos: e.pos ?? 0 }; }
+  try { parsed = parse(text); } catch (e) {
+    // Anything but a ParseError here is the JavaScript engine running out of stack on a very long formula.
+    return e instanceof ParseError ? { error: e.message, pos: e.pos } : { error: "This formula is too long for the page to work through. Try a shorter one.", pos: null };
+  }
   const mains = [...parsed.premises, ...(parsed.conclusion ? [parsed.conclusion] : [])];
   const vars = variables(mains);
   if (vars.length > MAX_VARS) {
-    return { error: `This uses ${vars.length} letters, which would need ${(2 ** vars.length).toLocaleString("en-GB")} rows. The limit is ${MAX_VARS} letters.`, pos: 0 };
+    return { error: `This uses ${vars.length} letters, which would need ${(2 ** vars.length).toLocaleString("en-GB")} rows. The limit is ${MAX_VARS} letters.`, pos: null };
   }
   const mainText = mains.map((m) => show(m));
+  // A formula can be typed more than once, so a column can be a premise and the conclusion at the same time.
+  const roleOf = (text) => {
+    if (!mainText.includes(text)) return null;
+    if (!parsed.isArgument) return "formula";
+    const premise = parsed.premises.some((_, i) => mainText[i] === text);
+    const conclusion = mainText[mainText.length - 1] === text;
+    return premise && conclusion ? "premise and conclusion" : premise ? "premise" : "conclusion";
+  };
   const subs = subformulas(mains);
-  const columns = subs.map((s) => {
-    const idx = mainText.lastIndexOf(s.text);
-    const role = idx < 0 ? null : parsed.isArgument ? (parsed.conclusion && idx === mains.length - 1 ? "conclusion" : "premise") : "formula";
-    return { text: s.text, ast: s.ast, kind: idx < 0 ? "sub" : "main", role };
-  });
+  const columns = subs.map((s) => ({ text: s.text, ast: s.ast, kind: mainText.includes(s.text) ? "main" : "sub", role: roleOf(s.text) }));
   // A main formula that is a bare letter or constant has no column of its own yet.
   mains.forEach((m, i) => {
-    if (m.op === "var" || m.op === "const") {
-      const role = parsed.isArgument ? (parsed.conclusion && i === mains.length - 1 ? "conclusion" : "premise") : "formula";
-      if (!columns.some((c) => c.text === mainText[i] && c.kind === "main")) columns.push({ text: mainText[i], ast: m, kind: "main", role });
-    }
+    if ((m.op === "var" || m.op === "const") && !columns.some((c) => c.text === mainText[i])) columns.push({ text: mainText[i], ast: m, kind: "main", role: roleOf(mainText[i]) });
   });
 
   const rows = [];
@@ -230,7 +254,7 @@ export function analyse(text) {
     const concl = column(parsed.conclusion);
     const counter = rows.map((_, i) => i).filter((i) => prem.every((p) => p[i]) && !concl[i]);
     const allTrue = rows.map((_, i) => i).filter((i) => prem.every((p) => p[i]));
-    result.verdict = { type: "argument", valid: counter.length === 0, counterexamples: counter, premisesTogetherTrue: allTrue.length };
+    result.verdict = { type: "argument", valid: counter.length === 0, counterexamples: counter, premisesTogetherTrue: allTrue.length, premiseValues: prem, conclusionValues: concl };
   } else if (mains.length === 1) {
     const values = column(mains[0]);
     result.verdict = { type: "formula", ...classify(values) };
