@@ -14,7 +14,7 @@
     .b-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
     .b-card { background: #fff; border: 1px solid var(--grid); padding: 10px 12px 12px; display: grid; gap: 6px; min-width: 0; align-content: start; }
     .b-card.on { border-color: var(--ink); box-shadow: inset 0 3px 0 var(--ink); }
-    .b-card h3 { display: flex; gap: 7px; align-items: center; font-size: 0.9rem; }
+    .b-card h2 { display: flex; gap: 7px; align-items: center; font-size: 0.9rem; }
     .b-card .sw { display: inline-block; width: 14px; height: 4px; border-radius: 2px; flex: none; }
     .b-card canvas.kit-canvas { border: 0; }
     .b-share { font-weight: 650; font-size: 1.5rem; line-height: 1.15; }
@@ -22,9 +22,11 @@
     @media (max-width: 560px) {
       .b-cards { gap: 6px; }
       .b-card { padding: 8px; }
-      .b-card h3 { font-size: 0.78rem; align-items: flex-start; }
+      .b-card h2 { font-size: 0.78rem; align-items: flex-start; }
       .b-card .sw { margin-top: 6px; }
       .b-share { font-size: 1.2rem; }
+      .b-jaynes .tbl th { white-space: normal; vertical-align: bottom; }
+      .b-jaynes .tbl th, .b-jaynes .tbl td { padding: 6px 5px; }
     }
   </style>
 </head>
@@ -41,34 +43,37 @@
 
     <section class="p-sec finding">
       <h2>One finding</h2>
-      <p>Draw 100,000 chords by each method (seed 20) and 33.1% are longer than the triangle's side when the two endpoints are random, 50.1% when a point on a random radius is, and 25.2% when the midpoint is. Three fair readings of "at random" give 1/3, 1/2 and 1/4, and more chords only sharpen the disagreement. Put the same question to a smaller circle off to one side and only the random-radius method keeps its answer, at 50.3%; the other two move to 47.3% and 46.6%.</p>
+      <p>Draw 100,000 chords by each method (seed 20: press "Start again", then "Draw 100,000") and 33.1% are longer than the triangle's side when the two endpoints are random, 50.1% when a point on a random radius is, and 25.2% when the midpoint is. Three fair readings of "at random" give 1/3, 1/2 and 1/4, and more chords only sharpen the disagreement. Put the same question to a smaller circle off to one side (the one the page opens with) and only the random-radius method keeps its answer, exactly 1/2; the other two move to 47.7% and 46.2%. A sample of 50,000 chords per method agrees, at 50.3%, 47.3% and 46.6%.</p>
     </section>
 
     <section class="p-sec">
       <h2>The idea</h2>
       <p>Joseph Bertrand posed the problem in his probability textbook of 1889. Draw a circle and the equilateral triangle that fits inside it. Now choose a chord of the circle at random. What is the probability that the chord is longer than a side of the triangle? Bertrand gave three arguments, each of which looks correct, and they give three different answers.</p>
       <p>His target was the <strong>principle of indifference</strong>, the rule Laplace had relied on and Keynes later named: if you have no reason to think one possibility more likely than another, give them equal probability. The rule needs a list of possibilities to treat alike, and for a chord there is no single list. You can treat all pairs of endpoints alike, or all distances from the centre, or all midpoints. Each is a way of being indifferent, and they are not the same assumption. "At random" turns out not to describe a procedure until somebody says which.</p>
-      <p>E. T. Jaynes argued in 1973 that the problem has an answer after all. It says nothing about how big the circle is or where it lies, so, he reasoned, the answer should not depend on either, or on the direction from which we look. Requiring the distribution of chords to be unchanged when the circle is rotated, rescaled or shifted leaves one candidate, the one in which a chord's distance from the centre is uniform. That is the random-radius method, and its answer is 1/2. Jaynes reported that tossing straws onto a circle drawn on the floor gave results consistent with it. Nicholas Shackel and others reply that this answers a narrower question, about lines thrown from far away, and that choosing which symmetries to respect is the old problem of choosing which possibilities to treat alike, moved to a new place.</p>
-      <p>The argument is not only about circles. A statistician who claims to know nothing about a quantity and gives it a flat prior has made a choice, because a prior that is flat for a length is not flat for the area it encloses. And when John Harsanyi argued that someone choosing a society from behind a veil of ignorance should treat every position in it as equally likely, and so maximise average welfare, John Rawls's reply was Bertrand's: ignorance does not supply the equal probabilities, an assumption does.</p>
+      <p>E. T. Jaynes argued in 1973 that the problem has an answer after all. It says nothing about how big the circle is or where it lies, so, he reasoned, the answer should not depend on either, or on the direction it is viewed from. Requiring the distribution of chords to be unchanged when the circle is rotated, rescaled or shifted leaves one candidate, the one in which a chord's distance from the centre is uniform. That is the random-radius method, and its answer is 1/2. Jaynes reported that tossing straws onto a circle drawn on the floor gave results consistent with it. Louis Marinoff and Nicholas Shackel reply that this answers a narrower question than Bertrand's: one about straws tossed at a circle, or lines laid across the whole plane, and not about the chords of a circle as such. Shackel concludes that the paradox still stands against the principle of indifference.</p>
+      <p>The argument is not only about circles. A statistician who claims to know nothing about a quantity and gives it a flat prior has made a choice, because a prior that is flat for a length is not flat for the area it encloses. And when John Harsanyi argued that someone choosing a society without knowing which place in it would be theirs should give every position an equal chance, and so choose the highest average welfare, part of John Rawls's answer was that such a chooser has no basis for any probabilities at all. Whether ignorance licenses equal chances is the question Bertrand raised.</p>
     </section>
 
     <section class="p-sec">
       <h2>How it works</h2>
       <h3>One number decides</h3>
       <p>Give the circle radius 1. The inscribed triangle then has side √3. A chord whose midpoint is at distance <var>m</var> from the centre has length 2√(1 − <var>m</var>²), so</p>
-      <p class="eq">the chord is longer than the side &nbsp;⇔&nbsp; 2√(1 − <var>m</var>²) &gt; √3 &nbsp;⇔&nbsp; <var>m</var> &lt; 1/2</p>
+      <p class="eq">the chord is longer than the side<br>⇔&nbsp; 2√(1 − <var>m</var>²) &gt; √3<br>⇔&nbsp; <var>m</var> &lt; 1/2</p>
       <p>Every method is therefore a way of choosing <var>m</var>, and the answer is the chance that it falls below one half. The dashed circle in the midpoint picture marks that boundary.</p>
       <h3>Three recipes</h3>
       <p><strong>Random endpoints.</strong> Two angles are drawn uniformly from the full turn and the points at those angles are joined. If the angles differ by Δ the midpoint is at distance |cos(Δ/2)| from the centre. A shorter argument: put a corner of the triangle at the first endpoint; the chord is long exactly when the second endpoint lands on the arc between the other two corners, which is a third of the circle.</p>
       <p><strong>Random radius.</strong> A direction is drawn uniformly, then a distance <var>m</var> uniformly between 0 and 1 along that radius, and the chord is drawn through that point at right angles to the radius. Half of the radius is within 1/2 of the centre.</p>
       <p><strong>Random midpoint.</strong> A point is drawn uniformly over the area of the disc, by taking a uniform direction and <var>m</var> = √<var>u</var> for a uniform <var>u</var>, and the chord with that midpoint is drawn. The disc of radius 1/2 has a quarter of the area.</p>
       <p>In each case the chance that the midpoint is within <var>x</var> of the centre is</p>
-      <p class="eq">endpoints: (2/π) arcsin <var>x</var> &nbsp;&nbsp;&nbsp; radius: <var>x</var> &nbsp;&nbsp;&nbsp; midpoint: <var>x</var>²</p>
+      <p class="eq">endpoints: (2/π) arcsin <var>x</var><br>radius: <var>x</var><br>midpoint: <var>x</var>²</p>
       <p>and putting <var>x</var> = 1/2 gives 1/3, 1/2 and 1/4. The tests check the simulated chords against these three curves at several values of <var>x</var>, not only at one half.</p>
       <h3>The simulation</h3>
-      <p>Each press draws the same number of chords by all three methods, from three separate streams of a seeded generator, so a seed always reproduces the same chords however they are batched. The estimate is the count of long chords over the number drawn, <var>n</var>. Its standard error is √(<var>p</var>(1 − <var>p</var>)/<var>n</var>), where <var>p</var> is the method's exact answer, and the last tile reports the gap between estimate and exact answer in those units: values around 1 are what chance produces. The pictures show the latest 300 chords and the latest 2,000 midpoints; the counts and the chart use every chord. The chart records the running share at counts spaced about 4% apart.</p>
+      <p>Each press draws the same number of chords by all three methods, from three separate streams of a seeded generator, so a seed always reproduces the same chords however they are batched. The estimate is the count of long chords over the number drawn, <var>n</var>. Its standard error is √(<var>p</var>(1 − <var>p</var>)/<var>n</var>), where <var>p</var> is the method's exact answer, and the last tile reports the gap between estimate and exact answer in those units: values around 1 are what chance produces. The large picture shows the latest 300 chords and the latest 2,000 midpoints, and the three small ones the latest 150 chords each; the counts and the chart use every chord. A batch of 100,000 is drawn 20,000 at a time so that the page can show its progress, which does not change the chords. The chart records the running share at counts spaced about 4% apart.</p>
       <h3>Jaynes's test</h3>
-      <p>A chord with midpoint distance <var>m</var> in direction φ lies on a line at distance |<var>a</var> cos φ + <var>b</var> sin φ − <var>m</var>| from a point (<var>a</var>, <var>b</var>). The panel puts a small circle of radius ρ at such a point, keeps the chords whose lines pass within ρ of it, and counts those passing within ρ/2, which are the ones whose piece inside the small circle is longer than the side of its own inscribed triangle. It draws 50,000 chords per method and calls the answer unchanged when the small-circle share is within three standard errors of the method's exact answer for the big circle.</p>
+      <p>A chord with midpoint distance <var>m</var> in direction φ lies on a line at distance |<var>a</var> cos φ + <var>b</var> sin φ − <var>m</var>| from a point (<var>a</var>, <var>b</var>). The panel puts a small circle of radius ρ at such a point, keeps the chords whose lines pass within ρ of it, and counts those passing within ρ/2, which are the ones whose piece inside the small circle is longer than the side of its own inscribed triangle.</p>
+      <p>The verdict is worked out exactly, not from a sample. Write <var>F</var>(<var>x</var>) for the chance that <var>m</var> is at most <var>x</var> under the method in question: one of the three functions above, with 0 below <var>x</var> = 0 and 1 above <var>x</var> = 1. For a fixed direction the line passes within <var>h</var> of the point with chance <var>F</var>(<var>c</var> + <var>h</var>) − <var>F</var>(<var>c</var> − <var>h</var>), where <var>c</var> = <var>a</var> cos φ + <var>b</var> sin φ. The direction is uniform and independent of <var>m</var>, so the chance <var>P</var>(<var>h</var>) of passing within <var>h</var> is an average over directions, and the small circle's answer is a ratio of two such chances:</p>
+      <p class="eq"><var>P</var>(<var>h</var>) = mean over φ [<var>F</var>(<var>c</var> + <var>h</var>) − <var>F</var>(<var>c</var> − <var>h</var>)]<br>small-circle answer = <var>P</var>(ρ/2) / <var>P</var>(ρ)</p>
+      <p>The tool takes the average over 20,000 evenly spaced directions and calls the answer the same only when the result equals the method's answer for the big circle. Beside it the table gives the share in a sample of 50,000 chords per method, which should differ from the exact figure only by sampling error. The sample could not carry the verdict by itself: a small circle 0.05 from the centre moves the random-midpoint answer by less than a sample of that size can detect.</p>
       <p>The random-radius method passes for every small circle, and this can be proved. Its chords are lines with a uniform direction and a uniform offset, which is the one way of spreading lines over the plane that looks the same after any rotation or shift. Seen from the small circle's centre, the lines that cross it are again uniform in direction and in distance, so exactly half pass within ρ/2. The random-midpoint method passes when the two circles share a centre, because <var>x</var>² keeps its shape when rescaled, and fails once the small circle is moved. Random endpoints fail both ways.</p>
     </section>
 
@@ -80,7 +85,7 @@
         <li><strong>That there are only three candidates.</strong> These are the three in Bertrand's book. Any rule for choosing the midpoint's distance gives a method, and the answer can be made anything between 0 and 1.</li>
         <li><strong>Anything about a physical experiment.</strong> Straws thrown at a floor, a spinner with two stops and a dart thrown at a board are three different pieces of apparatus. Each would favour one recipe, and the tool cannot tell you which apparatus you have.</li>
         <li><strong>More than the sample allows.</strong> Every simulated share carries sampling error, which the page reports, and comes from a pseudo-random generator. The exact answers come from the geometry, not from the dots.</li>
-        <li><strong>A proof of invariance.</strong> The panel tests one small circle at a time and finds agreement within noise. That the random-radius method passes for all of them rests on the argument above, not on the table.</li>
+        <li><strong>A proof of invariance.</strong> The panel works out one small circle at a time. That the random-radius method passes for every circle rests on the argument above, not on the table.</li>
       </ul>
     </section>
 
@@ -100,11 +105,11 @@
       <ul class="refs">
         <li>Bertrand, J. (1889). <em>Calcul des probabilités</em>. Gauthier-Villars.</li>
         <li>Keynes, J. M. (1921). <em>A Treatise on Probability</em>. Macmillan.</li>
-        <li>Jaynes, E. T. (1973). The well-posed problem. <em>Foundations of Physics</em>, 3.</li>
-        <li>Marinoff, L. (1994). A resolution of Bertrand's paradox. <em>Philosophy of Science</em>, 61.</li>
-        <li>Shackel, N. (2007). Bertrand's paradox and the principle of indifference. <em>Philosophy of Science</em>, 74.</li>
+        <li>Jaynes, E. T. (1973). The well-posed problem. <em>Foundations of Physics</em>, 3(4), 477-492.</li>
+        <li>Marinoff, L. (1994). A resolution of Bertrand's paradox. <em>Philosophy of Science</em>, 61(1), 1-24.</li>
+        <li>Shackel, N. (2007). Bertrand's paradox and the principle of indifference. <em>Philosophy of Science</em>, 74(2), 150-175.</li>
         <li>van Fraassen, B. C. (1989). <em>Laws and Symmetry</em>. Oxford University Press.</li>
-        <li>Harsanyi, J. C. (1955). Cardinal welfare, individualistic ethics, and interpersonal comparisons of utility. <em>Journal of Political Economy</em>.</li>
+        <li>Harsanyi, J. C. (1955). Cardinal welfare, individualistic ethics, and interpersonal comparisons of utility. <em>Journal of Political Economy</em>, 63(4), 309-321.</li>
         <li>Rawls, J. (1971). <em>A Theory of Justice</em>. Harvard University Press.</li>
       </ul>
     </section>

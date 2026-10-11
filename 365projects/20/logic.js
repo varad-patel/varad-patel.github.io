@@ -89,9 +89,13 @@ export function crossing(c, inner) {
   return { hits: d < inner.r, long: d < inner.r / 2 };
 }
 
+function needInside(inner) {
+  if (!(inner.r > 0) || Math.hypot(inner.x, inner.y) + inner.r > 1) throw new Error("the small circle must lie inside the big one");
+}
+
 /** Draw n chords by one method and report those that cross the small circle. share is null if none did. */
 export function innerTest(method, inner, n, seed = 1) {
-  if (!(inner.r > 0) || Math.hypot(inner.x, inner.y) + inner.r > 1) throw new Error("the small circle must lie inside the big one");
+  needInside(inner);
   const r = rng(seed);
   let hits = 0, long = 0;
   for (let i = 0; i < n; i++) {
@@ -100,3 +104,28 @@ export function innerTest(method, inner, n, seed = 1) {
   }
   return { n, hits, long, share: hits ? long / hits : null };
 }
+
+/**
+ * The same question answered exactly, with no sampling. For a chord in direction phi the line passes within h of
+ * the small centre when |c - m| < h, where c = x cos phi + y sin phi. That has chance F(c + h) - F(c - h), with F the
+ * method's distribution of m (0 below 0, 1 above 1), and the direction is uniform and independent of m, so the
+ * chance overall is the average over phi. crossing is the chance of crossing the small circle (h = r); share is the
+ * chance of being long for it given that it crosses (h = r / 2 over h = r). Midpoint rule over `steps` directions.
+ */
+export function innerExact(method, inner, steps = 20000) {
+  needInside(inner);
+  const cdf = midpointCdf[method];
+  if (!cdf) throw new Error(`unknown method "${method}"`);
+  const F = (x) => (x <= 0 ? 0 : x >= 1 ? 1 : cdf(x));
+  let long = 0, hits = 0;
+  for (let i = 0; i < steps; i++) {
+    const phi = (TAU * (i + 0.5)) / steps;
+    const c = inner.x * Math.cos(phi) + inner.y * Math.sin(phi);
+    long += F(c + inner.r / 2) - F(c - inner.r / 2);
+    hits += F(c + inner.r) - F(c - inner.r);
+  }
+  return { crossing: hits / steps, share: long / hits };
+}
+
+/** Is the small circle's exact answer the method's answer for the big circle? Decided from the geometry, not from a sample. */
+export const keepsAnswer = (method, inner) => Math.abs(innerExact(method, inner).share - METHODS.find((m) => m.key === method).theory) < 1e-9;

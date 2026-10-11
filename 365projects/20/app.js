@@ -1,6 +1,6 @@
 // Day 20: Bertrand's Paradox Simulator. Interface.
-import { $, el, fmt, mount, slider, segmented, button, stat, note, table, chart, canvas, ticker, palette } from "../kit/kit.js";
-import { SIDE, METHODS, standardError, createRun, crossing, innerTest } from "./logic.js";
+import { $, el, fmt, mount, debounce, slider, segmented, button, stat, note, table, chart, canvas, ticker, palette } from "../kit/kit.js";
+import { SIDE, METHODS, standardError, createRun, crossing, innerTest, innerExact, keepsAnswer } from "./logic.js";
 
 mount();
 
@@ -11,10 +11,12 @@ const FONT = getComputedStyle(document.body).fontFamily;
 const CHORDS_SHOWN = 300;      // chords drawn in the big picture
 const START = 300;             // chords drawn on load
 const CAP = 2000000;           // chords per method at which the Draw buttons stop
-const JAYNES_N = 50000;        // chords per method in the small-circle test
+const JAYNES_N = 50000;        // chords per method in the small-circle sample
+const SLICE = 20000;           // a larger batch is drawn this many chords at a time, with the page repainted in between
 
 const state = { method: "endpoints", seed: 20, innerR: 0.4, innerOffset: 0.5 };
 let run = createRun(state.seed).add(START);
+let batch = null;              // the run a large batch is being added to, while that is in progress
 const method = () => METHODS.find((m) => m.key === state.method);
 const inner = () => ({ x: state.innerOffset, y: 0, r: state.innerR });
 
@@ -28,7 +30,7 @@ const recipe = el("div", { class: "hint" });
 methodSeg.el.append(recipe);
 
 const drawButtons = [1, 100, 100000].map((count) => button(`Draw ${fmt.int(count)}`, () => { add(count); }, { small: true }));
-const streamBtn = button("Keep drawing", () => { stream.running ? stream.stop() : stream.start(); render(); }, { primary: true });
+const streamBtn = button("Keep drawing", () => { if (batch) return; stream.running ? stream.stop() : stream.start(); render(); }, { primary: true });
 const restartBtn = button("Start again", () => { stream.stop(); run = createRun(state.seed); render(); });
 const seedS = slider({
   label: "Seed", min: 1, max: 99, step: 1, value: state.seed, format: fmt.int,
@@ -57,7 +59,9 @@ const legend = el("div", { class: "chart-legend" },
   el("span", {}, el("i", { class: "line", style: { borderTopColor: SHORT } }), "Shorter"),
   el("span", {}, el("i", { class: "line", style: { borderTopColor: INK, borderTopStyle: "dashed" } }), "Half the radius: a chord is long when its midpoint is inside"));
 const mainBox = el("div");
-const latest = el("p", { class: "small", role: "status" });
+const latest = el("p", { class: "small" });
+// Announced to screen readers when a draw finishes. Nothing is announced while chords are streaming.
+const said = el("p", { class: "sr-only", role: "status" });
 const cardsBox = el("div", { class: "b-cards" });
 const chartBox = el("div");
 
@@ -131,20 +135,14 @@ const cards = METHODS.map((m) => {
   const cvBox = el("div");
   const big = el("div", { class: "b-share" });
   const small = el("div", { class: "small muted" });
-  box.append(el("h3", {}, el("i", { class: "sw", style: { background: palette[METHOD_COLOR[m.key]] } }), m.label), cvBox, big, small);
+  box.append(el("h2", {}, el("i", { class: "sw", style: { background: palette[METHOD_COLOR[m.key]] } }), m.label), cvBox, big, small);
   cardsBox.append(box);
   const cv = canvas(cvBox, {
     height: 140,
     draw(ctx, W, H) {
-      // The kit's canvas never reports a width under 200 px, and on a phone these cards are narrower than that.
-      // Scaling by reported over real width lets the drawing use real CSS pixels, so the circle stays round.
-      const real = ctx.canvas.clientWidth || W;
-      ctx.save();
-      ctx.scale(W / real, 1);
-      const R = Math.min(real, H) / 2 - 6;
-      for (const c of run.data[m.key].recent.slice(-150)) chordLine(ctx, real / 2, H / 2, R, c, c.long ? LONG : SHORT, 1, 0.35);
-      circle(ctx, real / 2, H / 2, R, { width: 1.25 });
-      ctx.restore();
+      const R = Math.min(W, H) / 2 - 6;
+      for (const c of run.data[m.key].recent.slice(-150)) chordLine(ctx, W / 2, H / 2, R, c, c.long ? LONG : SHORT, 1, 0.35);
+      circle(ctx, W / 2, H / 2, R, { width: 1.25 });
     },
   });
   cv.el.setAttribute("role", "img");
@@ -168,7 +166,7 @@ function fitInner() {
 }
 const jaynesCanvasBox = el("div");
 const jaynesTable = el("div");
-const jaynesNote = el("div");
+const jaynesNote = el("div", { role: "status" });
 const jaynesCanvas = canvas(jaynesCanvasBox, {
   height: (w) => Math.min(w, 260),
   draw(ctx, W, H) {
@@ -184,7 +182,7 @@ const jaynesCanvas = canvas(jaynesCanvasBox, {
 });
 jaynesCanvas.el.setAttribute("role", "img");
 const jaynesPanel = el("div", { class: "panel b-jaynes" },
-  el("h3", { text: "Jaynes's test: ask the same question of a smaller circle" }),
+  el("h2", { text: "Jaynes's test: ask the same question of a smaller circle" }),
   el("p", { class: "small" }, "The question does not say how big the circle is or where it sits, so E. T. Jaynes argued that a good answer should not depend on either. Take the chords each method throws at the big circle, keep the ones that cross a smaller circle inside it, and ask whether the piece inside is longer than the side of the small circle's own triangle."),
   el("div", { class: "grid2" },
     el("div", { class: "controls" }, jaynesCanvasBox,
@@ -192,31 +190,50 @@ const jaynesPanel = el("div", { class: "panel b-jaynes" },
     el("div", { class: "controls" }, rS.el, oS.el, jaynesNote)),
   jaynesTable);
 
-function drawJaynes() {
+// The verdict comes from the exact small-circle share, so sampling error cannot mislabel a method. The sample of
+// 50,000 chords per method is shown beside it and is drawn a moment after the sliders stop, to keep them responsive.
+let sample = null;   // [{ hits, share }] per method for the current seed and small circle, or null while it is pending
+function fillJaynes() {
   const small = inner();
-  jaynesCanvas.redraw();
-  jaynesCanvas.el.setAttribute("aria-label", `The big circle with a smaller circle of radius ${fmt.num(small.r, 2)} placed ${fmt.num(small.x, 2)} from its centre, and the latest chords drawn by the ${method().label.toLowerCase()} method.`);
-  const rows = METHODS.map((m) => {
-    const t = innerTest(m.key, small, JAYNES_N, state.seed);
-    const se = standardError(m.theory, t.hits);
-    const same = t.share != null && Math.abs(t.share - m.theory) <= 3 * se;
-    return { m, t, same, method: m.label, big: fmt.pct(m.theory, 1), hits: fmt.int(t.hits), small: t.share == null ? "–" : fmt.pct(t.share, 1), verdict: t.share == null ? "–" : same ? "Same" : "Changed" };
-  });
+  // One column per method, as in the three pictures above, so that the table fits a phone.
+  const cols = METHODS.map((m, i) => ({ m, exact: innerExact(m.key, small).share, same: keepsAnswer(m.key, small), t: sample?.[i] }));
+  const row = (q, cell) => Object.fromEntries([["q", q], ...cols.map((c) => [c.m.key, cell(c)])]);
   jaynesTable.replaceChildren(table({
-    caption: `Share of long chords: ${fmt.int(JAYNES_N)} chords per method, seed ${state.seed}`,
-    columns: [
-      { key: "method", label: "Method" }, { key: "big", label: "Big circle (exact)", num: true },
-      { key: "hits", label: "Chords crossing the small circle", num: true }, { key: "small", label: "Long for the small circle", num: true }, { key: "verdict", label: "Answer" },
+    caption: `Share of chords that are long. The sample is ${fmt.int(JAYNES_N)} chords per method, seed ${state.seed}.`,
+    columns: [{ key: "q", label: "Share of long chords" }, ...METHODS.map((m) => ({ key: m.key, label: m.label, num: true }))],
+    rows: [
+      row("Big circle, exact", (c) => fmt.pct(c.m.theory, 1)),
+      row("Small circle, exact", (c) => fmt.pct(c.exact, 1)),
+      row("Small circle, in the sample", (c) => (!c.t ? "\u2026" : fmt.pct(c.t.share, 1))),
+      row("Sampled chords that cross the small circle", (c) => (!c.t ? "\u2026" : fmt.int(c.t.hits))),
+      row("Answer for the small circle", (c) => (c.same ? "Same" : "Changed")),
     ],
-    rows,
   }));
-  const kept = rows.filter((r) => r.same).map((r) => r.m.label.toLowerCase());
-  jaynesNote.replaceChildren(note("",
-    kept.length === 1 && kept[0] === "random radius"
-      ? "Only the random-radius method gives the small circle the answer it gave the big one. That is a theorem, not luck: its chords are spread evenly over distance from any point, so every circle sees the same pattern."
-      : kept.includes("random midpoint") && state.innerOffset === 0
-        ? "With a shared centre the random-midpoint method passes as well: it survives a change of size. Move the small circle off centre and it fails. The random-radius method passes wherever the circle is."
-        : `Within sampling error the answer is unchanged for: ${kept.join(", ") || "none of them"}. The random-radius method is the one that passes for every small circle.`));
+  const kept = cols.filter((c) => c.same).map((c) => c.m.key).join(" ");
+  const text = kept === "radius"
+    ? "Only the random-radius method gives the small circle the answer it gave the big one. That is a theorem, not luck: its lines are spread evenly over direction and over distance from any point, so every circle sees the same pattern. The verdicts come from the exact shares; the sampled shares differ from them only by sampling error."
+    : kept === "radius midpoint"
+      ? "With a shared centre the random-midpoint method passes as well: it survives a change of size. Move the small circle off centre and it fails, although near the centre the change is smaller than a sample of this size can show. The random-radius method passes wherever the circle is."
+      : `The exact answer is unchanged for: ${cols.filter((c) => c.same).map((c) => c.m.label.toLowerCase()).join(", ") || "none of them"}.`;
+  if (jaynesNote.textContent !== text) jaynesNote.replaceChildren(note("", text));
+}
+function drawSample() {
+  const small = inner();
+  sample = METHODS.map((m) => innerTest(m.key, small, JAYNES_N, state.seed));
+  fillJaynes();
+}
+const drawSampleSoon = debounce(drawSample, 150);
+function labelJaynes() {
+  const small = inner();
+  jaynesCanvas.el.setAttribute("aria-label", `The big circle with a smaller circle of radius ${fmt.num(small.r, 2)} placed ${fmt.num(small.x, 2)} from its centre, and the latest chords drawn by the ${method().label.toLowerCase()} method.`);
+}
+function drawJaynes(now = false) {
+  jaynesCanvas.redraw();
+  labelJaynes();
+  if (now) { drawSample(); return; }
+  sample = null;
+  fillJaynes();
+  drawSampleSoon();
 }
 
 /* ---------- convergence chart ---------- */
@@ -252,6 +269,7 @@ function render() {
   const d = run.data[m.key];
   recipe.textContent = m.recipe;
   renderFast();
+  labelJaynes();
 
   if (d.n) {
     const share = d.long / d.n;
@@ -286,16 +304,38 @@ function render() {
   for (const b of drawButtons) b.disabled = full;
   streamBtn.disabled = full && !stream.running;
   streamBtn.textContent = stream.running ? "Pause" : "Keep drawing";
-  capNote.textContent = full ? `That is ${fmt.int(CAP)} chords per method, which is where this page stops. Start again to draw more.` : "";
-  capNote.hidden = !full;
+  if (!batch) {
+    capNote.textContent = full ? `That is ${fmt.int(CAP)} chords per method, which is where this page stops. Start again to draw more.` : "";
+    capNote.hidden = !full;
+  }
+  if (!stream.running && !batch) {
+    said.textContent = d.n
+      ? `${fmt.int(d.n)} chords drawn with each method. Longer than the triangle's side: ${METHODS.map((k) => `${fmt.pct(run.data[k.key].long / d.n, 1)} by ${k.label.toLowerCase()}`).join(", ")}.`
+      : "No chords drawn.";
+  }
   drawChart();
 }
 
 function add(count) {
+  if (batch) return;
   const room = CAP - run.data.endpoints.n;
   if (room <= 0) return;
-  run.add(Math.min(count, room));
+  let left = Math.min(count, room);
+  if (left <= SLICE) { run.add(left); render(); return; }
+  // A large batch takes a noticeable moment, so it is drawn in slices and the page says how far it has got.
+  stream.stop();
+  const target = batch = run, total = left;
+  const progress = () => { capNote.hidden = false; capNote.textContent = `Drawing ${fmt.int(total)} chords with each method: ${fmt.int(total - left)} done.`; };
+  const slice = () => {
+    if (run !== target) { batch = null; render(); return; }   // the run was restarted in the meantime
+    const now = Math.min(SLICE, left);
+    run.add(now);
+    left -= now;
+    if (left > 0) { progress(); renderFast(); setTimeout(slice, 0); } else { batch = null; render(); }
+  };
   render();
+  progress();
+  setTimeout(slice, 0);
 }
 
 // Streaming: slow enough to watch at first, then faster. The numbers and chart refresh a few times a second.
@@ -312,9 +352,9 @@ $("#app").append(el("div", { class: "tool-grid" }, controls,
   el("div", { class: "out" },
     el("div", { class: "stats" }, sN.el, sShare.el, sTheory.el, sGap.el),
     message,
-    el("div", {}, el("p", { class: "chart-title", text: "Chords and their midpoints for the selected method" }), legend, mainBox, latest),
+    el("div", {}, el("p", { class: "chart-title", text: "Chords and their midpoints for the selected method" }), legend, mainBox, latest, said),
     el("div", {}, el("p", { class: "chart-title", text: "The same question, three ways of choosing at random" }), cardsBox),
     chartBox, jaynesPanel)));
 
 render();
-drawJaynes();
+drawJaynes(true);

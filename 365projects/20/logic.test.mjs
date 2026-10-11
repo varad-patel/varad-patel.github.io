@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { rng } from "../kit/kit.js";
-import { SIDE, METHODS, midpointCdf, chord, sample, standardError, createRun, crossing, innerTest } from "./logic.js";
+import { SIDE, METHODS, midpointCdf, chord, sample, standardError, createRun, crossing, innerTest, innerExact, keepsAnswer } from "./logic.js";
 
 const close = (a, b, tol = 1e-9) => assert.ok(Math.abs(a - b) <= tol, `${a} is not within ${tol} of ${b}`);
 const KEYS = METHODS.map((m) => m.key);
@@ -151,13 +151,65 @@ test("Jaynes's test: only the random-radius method gives a small circle the answ
   assert.ok(Math.abs(innerTest("endpoints", { x: 0, y: 0, r: 0.4 }, n, 11).share - 1 / 3) > 0.1);
 });
 
+test("the exact small-circle answer agrees with closed forms worked out by hand", () => {
+  // Random radius: every circle sees uniform distances, so the answer is 1/2 and the chance of crossing is the radius.
+  for (const inner of [{ x: 0.5, y: 0, r: 0.4 }, { x: 0, y: 0, r: 0.4 }, { x: -0.2, y: 0.3, r: 0.6 }, { x: 0.1, y: -0.7, r: 0.15 }, { x: 0.8, y: 0, r: 0.15 }]) {
+    const e = innerExact("radius", inner);
+    close(e.share, 0.5, 1e-12);
+    close(e.crossing, inner.r, 1e-12);
+  }
+  // A shared centre: P(m < r/2) / P(m < r), which is arcsin(r/2) / arcsin(r) for endpoints and (r/2)^2 / r^2 = 1/4 for midpoints.
+  close(innerExact("endpoints", { x: 0, y: 0, r: 0.4 }).share, Math.asin(0.2) / Math.asin(0.4), 1e-12);
+  close(innerExact("midpoint", { x: 0, y: 0, r: 0.4 }).share, 0.25, 1e-12);
+  close(innerExact("midpoint", { x: 0, y: 0, r: 0.4 }).crossing, 0.16, 1e-12);
+  // Midpoints, centre moved by a < r/2: averaging (c + h)^2 over the direction gives a^2/2 + h^2, so the answer is
+  // (a^2/2 + r^2/4) / (a^2/2 + r^2). With a = 0.05 and r = 0.6 that is 0.09125 / 0.36125.
+  close(innerExact("midpoint", { x: 0.05, y: 0, r: 0.6 }).share, 0.09125 / 0.36125, 1e-9);
+  close(innerExact("midpoint", { x: 0, y: -0.05, r: 0.6 }).share, 0.09125 / 0.36125, 1e-9);   // the direction of the move does not matter
+  assert.throws(() => innerExact("radius", { x: 0.8, y: 0, r: 0.4 }), /inside/);
+  assert.throws(() => innerExact("nope", { x: 0, y: 0, r: 0.4 }), /unknown method/);
+});
+
+test("the exact small-circle answer agrees with simulation", () => {
+  for (const inner of [{ x: 0.5, y: 0, r: 0.4 }, { x: -0.2, y: 0.3, r: 0.6 }, { x: 0.05, y: 0, r: 0.2 }]) {
+    for (const key of KEYS) {
+      const e = innerExact(key, inner), t = innerTest(key, inner, 200000, 5);
+      close(t.share, e.share, 4 * standardError(e.share, t.hits));
+      close(t.hits / 200000, e.crossing, 4 * standardError(e.crossing, 200000));
+    }
+  }
+});
+
+test("the verdict comes from the exact answer, so sampling error cannot mislabel a method", () => {
+  // Every position of the page's two sliders: radius 0.15 to 0.6 and distance 0 to 0.8 in steps of 0.05, kept inside the big circle.
+  for (let ri = 3; ri <= 12; ri++) for (let oi = 0; oi <= 16; oi++) {
+    if (oi + ri > 19) continue;
+    const inner = { x: oi / 20, y: 0, r: ri / 20 };
+    assert.equal(keepsAnswer("radius", inner), true, JSON.stringify(inner));
+    assert.equal(keepsAnswer("midpoint", inner), oi === 0, JSON.stringify(inner));
+    assert.equal(keepsAnswer("endpoints", inner), false, JSON.stringify(inner));
+  }
+  // The case a three-standard-error rule got wrong: 0.05 off centre the midpoint answer has moved (to 25.6%),
+  // but a sample of 50,000 chords cannot tell it from 25%.
+  const near = { x: 0.05, y: 0, r: 0.4 };
+  const t = innerTest("midpoint", near, 50000, 20);
+  assert.ok(Math.abs(t.share - 0.25) < 3 * standardError(0.25, t.hits));
+  assert.equal((innerExact("midpoint", near).share * 100).toFixed(1), "25.6");
+  assert.equal(keepsAnswer("midpoint", near), false);
+});
+
 test("the finding: 100,000 chords per method with seed 20, and the small-circle test", () => {
   const run = createRun(20).add(100000);
   assert.equal((run.share("endpoints") * 100).toFixed(1), "33.1");
   assert.equal((run.share("radius") * 100).toFixed(1), "50.1");
   assert.equal((run.share("midpoint") * 100).toFixed(1), "25.2");
-  const inner = { x: 0.5, y: 0, r: 0.4 };
-  // The page's small-circle test uses 50,000 chords per method and the same seed.
+  // Pressing "Draw 100,000" without "Start again" first adds to the 300 chords drawn on load; the rounded shares are the same.
+  const loaded = createRun(20).add(300).add(100000);
+  assert.deepEqual(KEYS.map((k) => (loaded.share(k) * 100).toFixed(1)), ["33.1", "50.1", "25.2"]);
+  const inner = { x: 0.5, y: 0, r: 0.4 };   // the small circle the page opens with
+  assert.deepEqual(KEYS.map((k) => (innerExact(k, inner).share * 100).toFixed(1)), ["47.7", "50.0", "46.2"]);
+  assert.deepEqual(KEYS.map((k) => keepsAnswer(k, inner)), [false, true, false]);
+  // The page's sample uses 50,000 chords per method and the same seed.
   const shares = KEYS.map((k) => (innerTest(k, inner, 50000, 20).share * 100).toFixed(1));
   assert.deepEqual(shares, ["47.3", "50.3", "46.6"]);
 });
