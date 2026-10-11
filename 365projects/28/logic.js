@@ -50,6 +50,16 @@ export function meanSmaller(prior) {
 }
 
 /**
+ * Whether X has a finite variance. For the doubling prior E[X²] = (1 − q) Σ (4q)^n, which converges only when q < 1/4.
+ * Between 1/4 and 1/2 the mean is finite and the variance is not: averages still converge, but slowly, and a standard
+ * error computed from a sample of anything that scales with X means nothing.
+ */
+export function finiteVariance(prior) {
+  need(prior);
+  return prior.kind !== "doubling" || prior.q < 0.25;
+}
+
+/**
  * What seeing the amount 2^j tells you. Null if that amount can never be seen.
  *   chance        P(you see 2^j) = [P(X = 2^j) + P(X = 2^(j−1))] / 2
  *   otherLarger   P(the other envelope holds more | you see 2^j) = P(X = 2^j) / [P(X = 2^j) + P(X = 2^(j−1))]
@@ -72,8 +82,11 @@ export function seen(prior, j) {
     chance = (here + below) / 2;
     otherLarger = here / (here + below);
   }
-  const gain = amount * otherLarger - (amount / 2) * (1 - otherLarger);
-  return { j, amount, chance, otherLarger, gain, share: gain / amount, contribution: chance * gain };
+  // P − (1 − P)/2, written as (3P − 1)/2 so that P = 1/3 (the doubling prior at q = 1/2) gives exactly zero and not a
+  // rounding error, while P = 1, 1/2, 1/4 and 0 still give exact shares.
+  const share = (3 * otherLarger - 1) / 2;
+  const gain = amount * share;
+  return { j, amount, chance, otherLarger, gain, share, contribution: chance * gain };
 }
 
 /** Every amount that can be seen, lowest first, cut off after `limit` rows. complete is false if there are more. */

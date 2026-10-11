@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { rng } from "../kit/kit.js";
-import { MAX_N, problem, weight, range, meanSmaller, seen, seenTable, partialGain, strategyExact, bestThreshold, drawSmaller, deal, simulate } from "./logic.js";
+import { MAX_N, problem, weight, range, meanSmaller, finiteVariance, seen, seenTable, partialGain, strategyExact, bestThreshold, drawSmaller, deal, simulate } from "./logic.js";
 
 const close = (a, b, tol = 1e-12) => assert.ok(Math.abs(a - b) <= tol, `${a} is not within ${tol} of ${b}`);
 const FIXED = { kind: "fixed", n: 6 };          // 64 and 128
@@ -53,6 +53,21 @@ test("the mean of the smaller amount: finite cases by hand, infinite from q = 1/
   assert.equal(range(BROOME).last, Infinity);
 });
 
+test("the variance of the smaller amount is finite only below q = 1/4", () => {
+  // E[X²] = (1 − q) Σ (4q)^n. At q = 0.2 it is 0.8 / (1 − 0.8) = 4; at q = 1/4 every term is 0.75, so it grows for ever.
+  const secondMoment = (q, terms) => { let s = 0; for (let n = 0; n < terms; n++) s += (1 - q) * (4 * q) ** n; return s; };
+  close(secondMoment(0.2, 400), 4, 1e-9);
+  close(secondMoment(0.25, 400), 300, 1e-9);
+  close(secondMoment(0.25, 800), 600, 1e-9);
+  assert.equal(finiteVariance({ kind: "doubling", q: 0.2 }), true);
+  assert.equal(finiteVariance({ kind: "doubling", q: 0.25 }), false);
+  assert.equal(finiteVariance(THIRD), false); // finite mean, infinite variance
+  assert.equal(finiteVariance(BROOME), false);
+  assert.equal(finiteVariance(UNIFORM), true);
+  assert.equal(finiteVariance(FIXED), true);
+  assert.throws(() => finiteVariance({ kind: "doubling", q: 2 }), RangeError);
+});
+
 test("a uniform prior over 1, 2, 4 worked by hand", () => {
   const { rows, complete } = seenTable({ kind: "uniform", count: 3 });
   assert.equal(complete, true);
@@ -99,8 +114,9 @@ test("the doubling prior: chance q / (1 + q) that the other holds more, and gain
   for (const j of [1, 2, 7, 40, 900]) { close(seen(BROOME, j).otherLarger, 2 / 5); close(seen(BROOME, j).share, 1 / 10); }
   // q = 1/3: chance 1/4, and switching loses an eighth of what you hold.
   for (const j of [1, 5, 30]) { close(seen(THIRD, j).otherLarger, 1 / 4); close(seen(THIRD, j).share, -1 / 8); }
-  // q = 1/2: chance 1/3, and switching neither gains nor loses on average.
-  for (const j of [1, 5, 30]) { close(seen(HALF, j).otherLarger, 1 / 3); close(seen(HALF, j).share, 0); }
+  // q = 1/2: chance 1/3, and switching neither gains nor loses on average. The gain is exactly zero, not a rounding
+  // error that the page would print as "-0.00".
+  for (const j of [1, 5, 30]) { close(seen(HALF, j).otherLarger, 1 / 3); assert.equal(seen(HALF, j).share, 0); assert.equal(seen(HALF, j).gain, 0); }
   // The lowest amount is always the smaller one.
   for (const prior of [THIRD, HALF, BROOME]) { assert.equal(seen(prior, 0).otherLarger, 1); assert.equal(seen(prior, 0).gain, 1); }
   // Switching is favoured at every amount exactly when q > 1/2.
@@ -281,9 +297,11 @@ test("the numbers quoted under 'One finding' (uniform over 1 to 512, seed 28, 10
   assert.equal(sim.keep.toFixed(2), "154.02");
   assert.equal(sim.switch.toFixed(2), "153.43");
   assert.equal(sim.threshold.toFixed(2), "179.16");
-  // "True for nine of the eleven amounts you can see, and false at the top one, 1,024, where switching always loses 512."
+  // "True for nine of the eleven amounts you can see. It is false at the two ends: at 1, where the other envelope
+  // always holds 2, and at 1,024, where switching always loses 512."
   const { rows } = seenTable(UNIFORM);
   assert.equal(rows.length, 11);
   assert.equal(rows.filter((r) => r.otherLarger === 0.5).length, 9);
+  assert.deepEqual([rows[0].amount, rows[0].otherLarger, rows[0].gain], [1, 1, 1]);
   assert.deepEqual([rows.at(-1).amount, rows.at(-1).otherLarger, rows.at(-1).gain], [1024, 0, -512]);
 });

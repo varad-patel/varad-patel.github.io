@@ -1,6 +1,6 @@
 // Day 28: Two Envelopes Paradox. Interface.
 import { $, el, fmt, debounce, mount, slider, select, segmented, checkbox, numberField, button, stat, note, table, chart, rng, randomSeed } from "../kit/kit.js";
-import { meanSmaller, range, weight, seenTable, partialGain, strategyExact, bestThreshold, deal, simulate } from "./logic.js";
+import { meanSmaller, finiteVariance, range, weight, seenTable, partialGain, strategyExact, bestThreshold, deal, simulate } from "./logic.js";
 
 mount();
 
@@ -11,15 +11,22 @@ const prior = () => (state.kind === "fixed" ? { kind: "fixed", n: state.fixedN }
 
 /* ---------- number formats: amounts run from 1 to far beyond a billion ---------- */
 const SUP = "⁰¹²³⁴⁵⁶⁷⁸⁹";
-const sci = (v) => { const [m, e] = Math.abs(v).toExponential(1).split("e"); return `${v < 0 ? "-" : ""}${m} × 10${[...String(Number(e))].map((c) => SUP[c]).join("")}`; };
+const sci = (v) => { const [m, e] = Math.abs(v).toExponential(1).split("e"); return `${v < 0 ? "-" : ""}${m} × 10${[...String(Number(e))].map((c) => (c === "-" ? "⁻" : SUP[c])).join("")}`; };
 const big = (v) => Math.abs(v) >= 1e9;
 const money = (v) => (typeof v !== "number" || Number.isNaN(v) ? "–" : !Number.isFinite(v) ? "infinite" : big(v) ? sci(v) : Number.isInteger(v) ? fmt.int(v) : fmt.num(v, 2));
 const avg = (v) => (typeof v !== "number" || Number.isNaN(v) ? "–" : !Number.isFinite(v) ? "infinite" : big(v) ? sci(v) : Math.abs(v) >= 1e6 ? fmt.int(v) : fmt.num(v, 2));
 const gainFmt = (v) => (v === 0 ? "0" : big(v) ? `${v > 0 ? "+" : ""}${sci(v)}` : fmt.signed(v, Number.isInteger(v) ? 0 : Math.abs(v) >= 100 ? 1 : 2));
-const small = (v) => (v !== 0 && Math.abs(v) < 0.01 ? `${v > 0 ? "+" : ""}${fmt.sig(v, 2)}` : gainFmt(Number(v.toPrecision(3))));
+const small = (v) => (v !== 0 && Math.abs(v) < 0.01 ? `${v > 0 ? "+" : ""}${Math.abs(v) < 1e-6 ? sci(v) : fmt.sig(v, 2)}` : gainFmt(Number(v.toPrecision(3))));
+// A gain too small for two decimals is still not zero, so it is never printed as "0.00".
+const tiny = (v) => v !== 0 && Math.abs(v) < 0.005;
+const cellGain = (v) => (tiny(v) ? small(v) : gainFmt(v));
+const edgeFmt = (v) => (tiny(v) ? small(v) : gainFmt(Number(v.toPrecision(4))));
 const pm = (v, se) => `${v === 0 ? "0" : gainFmt(Number(v.toPrecision(4)))} ± ${fmt.sig(2 * se, 2)}`;
-const pct = (v) => (v > 0 && v < 0.001 ? `${fmt.sig(v * 100, 2)}%` : fmt.pct(v, 1));
-const frac = (q) => (Math.abs(q - 1 / 3) < 1e-12 ? "1/3" : Math.abs(q - 1 / 2) < 1e-12 ? "1/2" : Math.abs(q - 2 / 3) < 1e-12 ? "2/3" : fmt.num(q, 3));
+const pct = (v) => (v > 0 && v < 1e-8 ? "under 0.000001%" : v > 0 && v < 0.001 ? `${fmt.sig(v * 100, 2)}%` : fmt.pct(v, 1));
+// A screen reader announces a slider's raw value (9) unless it is given the readout (512) as its value text.
+const voice = (s) => s.input.setAttribute("aria-valuetext", s.el.querySelector("output").textContent);
+const voiced = (s) => { s.input.addEventListener("input", () => voice(s)); voice(s); return s; };
+const put = (s, v) => { s.value = v; voice(s); };
 const sub = (main, small) => el("span", {}, main, el("span", { class: "te-sub", text: small }));
 
 let sim;   // the latest simulation of the three strategies
@@ -32,29 +39,38 @@ const head = (title, text) => el("div", { class: "te-head" }, el("h3", { text: t
 const kindSeg = segmented({
   label: "Prior for the smaller amount", value: state.kind,
   options: [{ value: "fixed", label: "Fixed pair" }, { value: "uniform", label: "Uniform" }, { value: "doubling", label: "Doubling" }],
-  hint: "A fixed pair, a uniform range of amounts, or an unbounded prior in which each doubling is less likely than the last.",
-  onChange: (v) => { state.kind = v; state.t = bestThreshold(prior()) ?? 5; tSlider.value = state.t; newPrior(); },
+  hint: "Every amount is a power of two: 1, 2, 4, 8 and so on. Choose a fixed pair, a uniform prior that makes each power of two up to a limit equally likely (not every whole number up to it), or an unbounded prior in which each doubling is less likely than the last.",
+  onChange: (v) => { state.kind = v; state.t = bestThreshold(prior()) ?? 5; put(tSlider, state.t); newPrior(); },
 });
-const fixedSlider = slider({
+const fixedSlider = voiced(slider({
   label: "Smaller amount", min: 0, max: 10, step: 1, value: state.fixedN, format: (v) => money(2 ** v),
   onInput: (v) => { state.fixedN = v; newPrior(); },
-});
-const countSlider = slider({
-  label: "Largest value the smaller amount can take", min: 1, max: 14, step: 1, value: state.count - 1, format: (v) => money(2 ** v),
+}));
+const countSlider = voiced(slider({
+  label: "Largest power of two the smaller amount can be", min: 1, max: 14, step: 1, value: state.count - 1, format: (v) => money(2 ** v),
   onInput: (v) => { state.count = v + 1; newPrior(); },
-});
-const qSlider = slider({
-  label: "Ratio q", min: 0.05, max: 0.9, step: "any", value: state.q, format: (v) => fmt.num(v, 3),
+}));
+// The slider counts in steps of 1/120, so that 1/3, 1/2 and 2/3 are exact stops and the arrow keys move it one step in
+// every browser (a slider with step "any" jumps from end to end in Firefox).
+const Q_STEPS = 120;
+const qSlider = voiced(slider({
+  label: "Ratio q", min: 6, max: 108, step: 1, value: Math.round(state.q * Q_STEPS), format: (v) => fmt.num(v / Q_STEPS, 3),
   hint: "Each amount is q times as likely as the one half its size. The mean is finite only when q is below 1/2.",
-  onInput: (v) => { state.q = v; newPrior(); },
-});
-const setQ = (q) => { state.q = q; qSlider.value = q; newPrior(); };
+  onInput: (v) => { state.q = v / Q_STEPS; newPrior(); },
+}));
+const setQ = (q) => { state.q = q; put(qSlider, Math.round(q * Q_STEPS)); newPrior(); };
 const qBox = el("div", { class: "controls" }, qSlider.el,
   el("div", { class: "row" }, button("q = 1/3", () => setQ(1 / 3), { small: true }), button("q = 1/2", () => setQ(1 / 2), { small: true }), button("q = 2/3", () => setQ(2 / 3), { small: true })));
 const priorText = el("p", { class: "small", role: "status" });
 
 const lookBox = checkbox({ label: "Look inside my envelope before deciding", checked: state.look, onChange: (on) => { state.look = on; renderGame(); } });
-const gameBox = el("div", { class: "panel te-game" });
+// The box is built once and only its envelopes, message and buttons are redrawn: the checkbox and the reset button keep
+// the keyboard focus when they are used, and the message is a live region that was on the page before its text changed.
+const envBox = el("div", { class: "te-envs" });
+const gameMsg = el("p", { class: "te-msg", role: "status" });
+const actionBox = el("span", { style: { display: "contents" } });
+const gameBox = el("div", { class: "panel te-game" }, envBox, gameMsg, el("div", { class: "row" }, actionBox, lookBox.el),
+  el("div", { class: "row" }, button("Reset the tally", () => { newGame(); renderGame(); }, { small: true })));
 const sRounds = stat("Rounds played");
 const sYou = stat("Your average winnings");
 const sKeep = stat("Had you always kept");
@@ -71,7 +87,7 @@ function describePrior() {
   if (p.kind === "fixed") return `The envelopes always hold ${money(2 ** p.n)} and ${money(2 ** (p.n + 1))}. Only which is which is left to chance.`;
   if (p.kind === "uniform") {
     const list = p.count <= 4 ? Array.from({ length: p.count }, (_, n) => money(2 ** n)).join(", ") : `1, 2, 4, …, ${money(2 ** (p.count - 1))}`;
-    return `The smaller amount is equally likely to be any of ${list}: ${p.count} values, each with chance ${pct(1 / p.count)}. Its mean is ${avg(mean)}.`;
+    return `The smaller amount is one of the ${p.count} powers of two ${list}, each with chance ${pct(1 / p.count)}. No amount in between can occur. Its mean is ${avg(mean)}.`;
   }
   return `The smaller amount is 1 with chance ${pct(weight(p, 0))}, 2 with chance ${pct(weight(p, 1))}, 4 with chance ${pct(weight(p, 2))}, and so on without limit. Its mean is ${Number.isFinite(mean) ? avg(mean) : "infinite, because q is not below 1/2"}.`;
 }
@@ -132,11 +148,9 @@ function renderGame(focus) {
     actions = [button("Deal again", () => { dealRound(); renderGame("left"); }, { primary: true })];
     actions[0].dataset.act = "again";
   }
-  gameBox.replaceChildren(
-    el("div", { class: "te-envs" }, envelope("left"), envelope("right")),
-    el("p", { class: "te-msg", role: "status", text: message }),
-    el("div", { class: "row" }, actions, lookBox.el),
-    el("div", { class: "row" }, button("Reset the tally", () => { newGame(); renderGame(); }, { small: true })));
+  envBox.replaceChildren(envelope("left"), envelope("right"));
+  gameMsg.textContent = message;
+  actionBox.replaceChildren(...actions);
   const n = t.rounds;
   sRounds.set(fmt.int(n), n ? `kept ${fmt.int(t.kept)}, switched ${fmt.int(t.switched)}` : "pick an envelope to start");
   sYou.set(n ? avg(t.won / n) : "–", n ? `${money(t.won)} in all` : "");
@@ -183,7 +197,7 @@ function renderExact() {
   const body = rows.map((r) => ({
     amount: sub(el("strong", { text: money(r.amount) }), `seen ${pct(r.chance)} of the time`),
     odds: sub(el("strong", { text: pct(r.otherLarger) }), simulated(r.j)),
-    gain: sub(el("strong", { text: gainFmt(r.gain) }), `${fmt.signed(r.share * 100, 1)}% of it`),
+    gain: sub(el("strong", { text: cellGain(r.gain) }), `${fmt.signed(r.share * 100, 1)}% of it`),
   }));
   if (!complete) {
     const r = rows.at(-1);
@@ -241,11 +255,11 @@ function renderExact() {
 
 /* ====================================== 3. strategies over many rounds */
 
-const tSlider = slider({
+const tSlider = voiced(slider({
   label: "Switch only if I see this or less", min: 0, max: 20, step: 1, value: state.t, format: (v) => money(2 ** v),
   onInput: (v) => { state.t = v; rerun(); },
-});
-const bestBtn = button("Use the best threshold", () => { const b = bestThreshold(prior()); if (b != null) { state.t = b; tSlider.value = b; rerun(); } }, { small: true });
+}));
+const bestBtn = button("Use the best threshold", () => { const b = bestThreshold(prior()); if (b != null) { state.t = b; put(tSlider, b); rerun(); } }, { small: true });
 const roundsSel = select({
   label: "Rounds to simulate", value: String(state.rounds),
   options: [1000, 10000, 100000, 1000000].map((n) => ({ value: String(n), label: fmt.int(n) })),
@@ -255,7 +269,7 @@ const seedField = numberField({ label: "Seed", min: 0, max: MAX_SEED, step: 1, v
 const seedMsg = el("div");
 seedField.input.addEventListener("input", () => {
   const v = seedField.value;
-  if (!Number.isInteger(v)) { seedMsg.replaceChildren(note("bad", `The seed must be a whole number from 0 to ${fmt.int(MAX_SEED)}.`)); return; }
+  if (!Number.isInteger(v)) { seedField.input.classList.add("invalid"); seedMsg.replaceChildren(note("bad", `The seed must be a whole number from 0 to ${fmt.int(MAX_SEED)}. The results still use the last valid seed.`)); return; }
   seedMsg.replaceChildren();
   state.seed = v;
   rerun();
@@ -283,6 +297,7 @@ const runChart = chart(runBox, {
 
 function renderStrategies() {
   const p = prior(), x = strategyExact(p, state.t), finite = Number.isFinite(x.keep);
+  const steady = finiteVariance(p); // if not, a standard error for always-switching's gain would mean nothing
   const { first, last } = range(p);
   const T = money(2 ** state.t), best = bestThreshold(p);
   bestBtn.disabled = best == null || best === state.t;
@@ -290,33 +305,36 @@ function renderStrategies() {
   stratBox.replaceChildren(table({
     caption: `${fmt.int(sim.rounds)} simulated rounds, with the exact values`,
     columns: [{ key: "q", label: "Per round" }, { key: "keep", label: "Always keep", num: true }, { key: "swap", label: "Always switch", num: true }, { key: "thr", label: `Switch on ${T} or less`, num: true }],
+    // With an infinite mean the averages are labelled for what they are: the record of one run, not an estimate.
     rows: [
-      { q: "Average winnings, simulated", keep: avg(sim.keep), swap: avg(sim.switch), thr: avg(sim.threshold) },
+      { q: finite ? "Average winnings, simulated" : sub("Average winnings in this run", "not an estimate of anything: the expected value is infinite"), keep: avg(sim.keep), swap: avg(sim.switch), thr: avg(sim.threshold) },
       { q: "Expected winnings, exact", keep: avg(x.keep), swap: avg(x.switch), thr: avg(x.threshold) },
-      { q: "Gain over always keeping, simulated (± 2 standard errors)", keep: "0", swap: finite ? pm(sim.switchGain, sim.switchGainSe) : gainFmt(Number(sim.switchGain.toPrecision(4))), thr: pm(sim.edge, sim.edgeSe) },
-      { q: "Gain over always keeping, exact", keep: "0", swap: finite ? "0" : "not defined", thr: gainFmt(Number(x.edge.toPrecision(4))) },
+      { q: "Gain over always keeping, simulated (± 2 standard errors)", keep: "0", swap: steady ? pm(sim.switchGain, sim.switchGainSe) : sub(gainFmt(Number(sim.switchGain.toPrecision(4))), finite ? "no reliable ±" : "this run only, not an estimate"), thr: pm(sim.edge, sim.edgeSe) },
+      { q: "Gain over always keeping, exact", keep: "0", swap: finite ? "0" : "not defined", thr: edgeFmt(x.edge) },
     ],
   }));
 
   let text;
   const inside = state.t >= first && state.t <= last;
-  const noisy = x.edge > 0 && 2 * sim.edgeSe > x.edge ? ` The simulated gain is ${pm(sim.edge, sim.edgeSe)}: at this threshold it rests on rare, large deals, and ${fmt.int(sim.rounds)} rounds are too few to pin it down.` : "";
+  const noisy = x.edge > 0 && 2 * sim.edgeSe > x.edge ? ` The simulated gain is ${pm(sim.edge, sim.edgeSe)}: the noise in ${fmt.int(sim.rounds)} rounds is larger than the gain itself, so the simulation cannot confirm it.` : "";
   const where = state.t < first
     ? `You never see ${T} or less under this prior, so the rule never switches: it is always-keep under another name.`
     : `You never see more than ${T} under this prior, so the rule always switches.`;
   if (finite) {
     text = inside
-      ? `Keeping and switching tie exactly. The threshold of ${T} lies inside the prior's range, so it beats both by ${gainFmt(Number(x.edge.toPrecision(4)))} a round: whenever the smaller amount is exactly ${T}, you end up with the larger envelope whichever one you were handed.${best !== state.t ? ` The best threshold for this prior is ${money(2 ** best)}.` : " No threshold does better for this prior."}${noisy}`
+      ? `Keeping and switching tie exactly. The threshold of ${T} lies inside the prior's range, so it beats both by ${edgeFmt(x.edge)} a round: whenever the smaller amount is exactly ${T}, you end up with the larger envelope whichever one you were handed.${best !== state.t ? ` The best threshold for this prior is ${money(2 ** best)}.` : " No threshold does better for this prior."}${noisy}`
       : `Keeping and switching tie exactly. ${where} A threshold only helps when it falls inside the prior's range; the best one here is ${money(2 ** best)}.`;
+    if (!steady) text += " At this q the mean is finite but the variance is not (it is infinite from q = 1/4 upwards). The simulated averages therefore close in on the exact values slowly, more slowly the nearer q is to 1/2, and the simulated gain of always switching has no reliable margin of error.";
   } else {
     const largest = 2 ** Math.max(...sim.amounts.keys());
-    text = `Every strategy's expected winnings are infinite, so the simulated averages are not estimates of anything: they are set by the few largest deals (the largest amount seen here was ${money(largest)}) and jump when the seed changes. One comparison is still well defined: the threshold rule's expected gain over always keeping is exactly ${gainFmt(Number(x.edge.toPrecision(4)))} a round, a finite number because that gain can never exceed ${T}.${noisy} ${state.q > 0.5 ? "There is no best threshold: a higher one always gains more." : "Every threshold gains the same."}`;
+    text = `Every strategy's expected winnings are infinite, so the simulated averages are not estimates of anything: they are set by the few largest deals (the largest amount seen here was ${money(largest)}) and jump when the seed changes. One comparison is still well defined: the threshold rule's expected gain over always keeping is exactly ${edgeFmt(x.edge)} a round, a finite number because that gain can never exceed ${T}.${noisy} ${state.q > 0.5 ? "There is no best threshold: a higher one always gains more." : "Every threshold gains the same."}`;
   }
   stratMsg.replaceChildren(note(finite ? (inside ? "good" : "") : "warn", text));
 
   const line = (i) => sim.history.map((h) => [h[0], h[i]]);
+  const cut = finite && sim.history.some((h) => Math.max(h[1], h[2], h[3]) > 2 * x.threshold);
   runChart.update({
-    subtitle: finite ? "The dashed lines are the exact expected winnings." : "Log scale. With an infinite mean the averages keep jumping and never settle.",
+    subtitle: finite ? `The dashed lines are the exact expected winnings.${cut ? " Early averages that swing above the top of the chart are cut off." : ""}` : "Log scale. With an infinite mean the averages keep jumping and never settle: they are not estimates of anything.",
     y: finite
       ? { label: "Average winnings per round", domain: [0, 2 * x.threshold], format: (v) => fmt.compact(v) }
       : { label: "Average winnings per round (log scale)", type: "log", format: (v) => (v >= 1e6 ? sci(v) : fmt.int(v)) },
@@ -343,7 +361,11 @@ function runNow() {
 }
 // A million rounds take a noticeable fraction of a second, so wait for a slider to stop moving before running them.
 const runSoon = debounce(runNow, 150);
-function rerun() { if (state.rounds > 100000) runSoon(); else runNow(); }
+function rerun() {
+  if (state.rounds <= 100000) { runNow(); return; }
+  stratMsg.replaceChildren(note("", `Running ${fmt.int(state.rounds)} rounds…`));
+  runSoon();
+}
 /** The prior changed: show its controls, start the hand-played game again and re-run the simulation. */
 function newPrior() {
   fixedSlider.el.hidden = state.kind !== "fixed";
