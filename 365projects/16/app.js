@@ -16,13 +16,14 @@ const state = {
 };
 let a = null;        // the current analysis
 let num = new Map(); // claim id -> its number on the page
+let focusNext = null; // data-key of the control that should hold the keyboard focus after the next redraw
 
 const claimOf = (id) => state.map.claims.find((c) => c.id === id);
 const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
 const WORDS = { critical: "critical", redundant: "redundant", idle: "idle", unused: "unused", removed: "removed", restores: "removed", inplay: "in play" };
 const MEANING = {
   critical: "Critical: remove it alone and the conclusion falls.",
-  redundant: "Redundant: it does work in one line of support, but another line still holds without it.",
+  redundant: "Redundant: it belongs to a line of support, but the conclusion would still stand without it.",
   idle: "Idle: no smallest set of premises that carries the conclusion includes it.",
   unused: "Unused: the conclusion does not rest on it anywhere in the map.",
   removed: "Removed: switched out of the argument.",
@@ -31,12 +32,15 @@ const MEANING = {
 };
 
 /* ---------- state changes ---------- */
+// Every change, to the map or to which premises are removed, is one step that Undo takes back.
+function remember() {
+  state.undo.push({ map: state.map, off: [...state.off] });
+  if (state.undo.length > 60) state.undo.shift();
+  state.undoKey = null;
+}
 function commit(result, { key = null, keepOff = true, flash = null, editor = true } = {}) {
   if (result.error) { state.flash = { kind: "bad", text: result.error }; render({ editor: false }); return false; }
-  if (!key || key !== state.undoKey) {
-    state.undo.push({ map: state.map, off: [...state.off] });
-    if (state.undo.length > 60) state.undo.shift();
-  }
+  if (!key || key !== state.undoKey) remember();
   state.undoKey = key;
   state.map = result.map;
   if (!keepOff) { state.off = new Set(); centre = true; }
@@ -47,20 +51,22 @@ function commit(result, { key = null, keepOff = true, flash = null, editor = tru
 function undo() {
   const last = state.undo.pop();
   if (!last) return;
+  if (last.map !== state.map) centre = true;
   state.map = last.map;
   state.off = new Set(last.off);
   state.form = null;
   state.undoKey = null;
-  centre = true;
   state.flash = { kind: "", text: "Undone." };
   render();
 }
 function toggle(id) {
+  remember();
   state.off.has(id) ? state.off.delete(id) : state.off.add(id);
   state.flash = null;
   render({ editor: false });
 }
 function setOff(ids) {
+  remember();
   state.off = new Set(ids);
   state.flash = null;
   render({ editor: false });
@@ -72,6 +78,8 @@ fileInput.addEventListener("change", async () => {
   const file = fileInput.files?.[0];
   fileInput.value = "";
   if (!file) return;
+  // The largest map this page can hold is a few tens of kilobytes, so anything much bigger is not one.
+  if (file.size > 2e6) { commit({ error: "That file is too large to be an argument map saved from this page." }); return; }
   let text = "";
   try { text = await file.text(); } catch { /* reported as invalid JSON below */ }
   state.form = null;
@@ -94,7 +102,8 @@ const toolbar = el("div", { class: "am-bar" },
     fileInput));
 
 /* ---------- outputs ---------- */
-const flashBox = el("div");
+const flashBox = el("div", { class: "am-flash", role: "status" }); // news: loaded, drawn, deleted, undone
+const errorBox = el("div", { class: "am-flash" });               // refusals; the note inside is an alert
 const verdict = el("div", { role: "status" });
 const sVerdict = stat("Main conclusion");
 const sPlay = stat("Premises in play");
@@ -102,7 +111,7 @@ const sCritical = stat("Critical premises");
 const sObjection = stat("Smallest objection");
 const mapTitle = el("h3");
 const mapBox = el("div", { class: "am-map", tabindex: "0", role: "region", "aria-label": "Argument map" });
-const wideHint = el("p", { class: "small muted", hidden: true, text: "The map is wider than this screen. Drag it sideways to see the rest, or read it as text below." });
+const wideHint = el("p", { class: "small muted", hidden: true, text: "The map is wider than this screen. Slide it sideways to see the rest. The same map is written out as text below, and every premise can be switched off in the list under it." });
 const outlineBox = el("div");
 const premiseBox = el("div", { class: "panel am-panel" });
 const linesBox = el("div", { class: "panel am-panel" });
@@ -137,11 +146,12 @@ const quickBox = el("div", { class: "panel am-panel" },
     state.form = null;
     commit(res, { keepOff: false, flash: { kind: "good", text: `Drawn: ${plural(res.map.claims.length - 1, "premise")} and a conclusion.` } });
     toolbar.scrollIntoView({ block: "start" });
+    mapBox.focus({ preventScroll: true });
   }, { primary: true })),
   quick.message);
 
 $("#app").append(
-  toolbar, flashBox, verdict,
+  toolbar, el("div", {}, flashBox, errorBox, verdict),
   el("div", { class: "stats" }, sVerdict.el, sPlay.el, sCritical.el, sObjection.el),
   el("div", { class: "am-mapwrap" },
     mapTitle,
@@ -166,16 +176,20 @@ function tagOf(id) {
 }
 
 let centre = true; // bring the main conclusion into view the next time the map is drawn
+let wide = false;  // the drawing is wider than the box it scrolls in
+let wasWide = false;
 function drawMap() {
   const narrow = (mapBox.clientWidth || 800) < 560;
   const L = layout(state.map, { nodeWidth: narrow ? 156 : 172, gapX: narrow ? 14 : 20, measure: bodyWidth });
-  const svg = svgEl("svg", { width: L.width, height: L.height, viewBox: `0 0 ${L.width} ${L.height}` });
+  // The drawing as a whole is not one image: a screen reader gets each claim in turn, and the same structure as text under the map.
+  const svg = svgEl("svg", { width: L.width, height: L.height, viewBox: `0 0 ${L.width} ${L.height}`, role: "presentation" });
   for (const link of L.links) {
     const holds = a.holds.get(link.id);
-    const g = svgEl("g", { class: "link" });
+    const g = svgEl("g", { class: "link", "aria-hidden": "true" });
     for (const m of link.members) {
-      const mid = (m.y + link.y) / 2;
-      g.append(svgEl("path", { class: a.stands.get(m.id) ? "" : "dead", d: `M${m.x},${m.y}C${m.x},${mid} ${link.x},${mid} ${link.x},${link.y}` }));
+      // Each leg of the route is an S-curve that leaves and arrives vertically; a leg with no sideways travel is a straight line.
+      const d = m.route.map(([x, y], i) => { if (!i) return `M${x},${y}`; const [px, py] = m.route[i - 1]; return `C${px},${(py + y) / 2} ${x},${(py + y) / 2} ${x},${y}`; }).join("");
+      g.append(svgEl("path", { class: a.stands.get(m.id) ? "" : "dead", d }));
     }
     const { x, y } = link.tip;
     g.append(svgEl("path", { class: holds ? "" : "dead", d: `M${link.x},${link.y}V${y + 9}` }));
@@ -198,11 +212,14 @@ function drawMap() {
       svgEl("text", { class: "m-tag", x: 10, y: 19, textLength: tagWidth(tag) > room ? room : null, lengthAdjust: "spacingAndGlyphs" }, tag),
       svgEl("text", { class: "m-num", x: n.w - 10, y: 19, "text-anchor": "end" }, String(num.get(n.id))),
       body);
-    if (p) {
+    if (!p) {
+      g.setAttribute("role", "img");
+      g.setAttribute("aria-label", `${main ? "Main conclusion" : "Sub-conclusion"} ${num.get(n.id)}: ${c.text} (${main && !a.argued ? "not argued" : a.stands.get(n.id) ? "stands" : "falls"})`);
+    } else {
       g.setAttribute("role", "switch");
       g.setAttribute("tabindex", "0");
       g.setAttribute("aria-checked", String(p.on));
-      g.setAttribute("aria-label", `Premise ${num.get(n.id)}: ${c.text} ${MEANING[p.role]}`);
+      g.setAttribute("aria-label", `${c.unstated ? "Unstated premise" : "Premise"} ${num.get(n.id)}: ${c.text} ${MEANING[p.role]}`);
       g.addEventListener("click", () => toggle(n.id));
       g.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(n.id); } });
     }
@@ -210,7 +227,7 @@ function drawMap() {
   }
   const at = mapBox.scrollLeft;
   mapBox.replaceChildren(svg);
-  const wide = mapBox.scrollWidth > mapBox.clientWidth + 1;
+  wide = mapBox.scrollWidth > mapBox.clientWidth + 1;
   wideHint.hidden = !wide;
   if (centre) {
     const top = L.nodes.find((n) => n.id === state.map.conclusion);
@@ -251,7 +268,8 @@ function drawOutline() {
   const used = new Set(state.map.reasons.flatMap((r) => r.premises));
   const loose = [];
   for (const c of [...state.map.claims.filter((c) => !used.has(c.id)), ...state.map.claims]) if (!visited.has(c.id)) loose.push(item(c.id));
-  const open = outlineBox.querySelector("details")?.open;
+  const open = outlineBox.querySelector("details")?.open || (wide && !wasWide);
+  wasWide = wide;
   outlineBox.replaceChildren(el("details", { class: "chart-table", open: open || null },
     el("summary", { text: "Read the map as text" }), list,
     loose.length ? el("p", { class: "small muted", text: "Not connected to the main conclusion:" }) : null,
@@ -278,7 +296,7 @@ function drawLines() {
   if (!a.argued) kids.push(el("p", { class: "small muted", text: "The main conclusion has no reason yet, so there is nothing to carry it." }));
   else if (!a.supports) kids.push(note("warn", `This map has more than ${LIMITS.sets.toLocaleString("en-GB")} different ways to support its conclusion, too many to list. The map and the premise roles are still exact.`));
   else {
-    kids.push(el("p", { class: "small muted", text: "Each line is a smallest set of premises that is enough for the conclusion by itself. Hover a number for its text." }));
+    kids.push(el("p", { class: "small muted", text: "Each line is a smallest set of premises that is enough for the conclusion by itself. The numbers are the ones in the map and in the list of premises." }));
     kids.push(el("ol", { class: "am-sets" }, a.supports.slice(0, 12).map((s) => el("li", {}, chips(s.premises), el("span", { class: `am-pill ${s.intact ? "intact" : "removed"}`, text: s.intact ? "intact" : "broken" })))));
     if (a.supports.length > 12) kids.push(el("p", { class: "small muted", text: `and ${a.supports.length - 12} more.` }));
   }
@@ -286,7 +304,12 @@ function drawLines() {
     const size = sets[0].length;
     const smallest = sets.filter((s) => s.length === size);
     return [
-      el("ul", { class: "am-sets" }, smallest.slice(0, 10).map((s) => el("li", {}, chips(s), button(label, () => act(s), { small: true })))),
+      el("ul", { class: "am-sets" }, smallest.slice(0, 10).map((s, i) => {
+        const b = button(label, () => { focusNext = `set-${i}`; act(s); }, { small: true });
+        b.dataset.key = `set-${i}`;
+        b.setAttribute("aria-label", `${label} ${s.length === 1 ? "premise" : "premises"} ${s.map((id) => num.get(id)).join(" and ")}`);
+        return el("li", {}, chips(s), b);
+      })),
       smallest.length > 10 || sets.length > smallest.length
         ? el("p", { class: "small muted", text: `${smallest.length > 10 ? `${smallest.length - 10} more of this size. ` : ""}${sets.length > smallest.length ? `${plural(sets.length - smallest.length, "larger set")} would also do it.` : ""}` })
         : null,
@@ -305,7 +328,7 @@ function drawLines() {
 }
 
 /* ---------- the editor ---------- */
-const titleField = textField({ label: "Title of the map", onInput: (v) => { state.map = { ...state.map, title: v.trim().slice(0, 80) || "Untitled argument" }; save(); mapTitle.textContent = state.map.title; } });
+const titleField = textField({ label: "Title of the map", onInput: (v) => commit({ map: { ...state.map, title: v.replace(/\s+/g, " ").trim().slice(0, 80) || "Untitled argument" } }, { key: "title", editor: false }) });
 const addField = textField({ label: "New claim", placeholder: "Type a claim, then add it" });
 const addMessage = el("div");
 const addNew = () => {
@@ -319,37 +342,73 @@ const addNew = () => {
 addField.input.addEventListener("keydown", (e) => { if (e.key === "Enter") addNew(); });
 const addRow = el("div", { class: "am-add" }, addField.el, button("Add claim", addNew, { primary: true }), addMessage);
 
+// The editor is rebuilt after every change, which would drop the keyboard focus on the floor. Each control that can be
+// rebuilt carries a data-key, and focusOn() puts the focus on the first of the given keys that is on the page.
+function focusOn(...keys) {
+  for (const key of keys) {
+    const node = key && $(`#app [data-key="${key}"]`);
+    if (node) { if (document.activeElement !== node) node.focus({ preventScroll: true }); return; }
+  }
+}
+/** A small editor button. `name` is its accessible name, which says which claim or reason it acts on. */
+function tool(label, key, onClick, name, primary = false) {
+  const b = button(label, onClick, { small: true, primary });
+  b.dataset.key = key;
+  if (name) b.setAttribute("aria-label", name);
+  return b;
+}
+const openForm = (form) => { state.form = form; drawEditor(); focusOn("form-first", "form-cancel"); };
+
+/** What deleting a claim took with it, so that nothing changes without being said. */
+function deletedNote(c) {
+  const own = state.map.reasons.filter((r) => r.claim === c.id).length;
+  const used = state.map.reasons.filter((r) => r.claim !== c.id && r.premises.includes(c.id));
+  const lost = used.filter((r) => r.premises.length === 1).length, cut = used.length - lost;
+  return `Deleted “${c.text}”.`
+    + (own ? ` The ${own === 1 ? "reason" : `${own} reasons`} given for it went with it.` : "")
+    + (cut ? ` It was one of several premises in ${plural(cut, "reason")}, which now ${cut === 1 ? "rests" : "rest"} on the others alone.` : "")
+    + (lost ? ` It was the only premise of ${plural(lost, "reason")}, which ${lost === 1 ? "has" : "have"} gone too.` : "")
+    + " Undo brings it all back.";
+}
+
 function reasonForm(c) {
   const f = state.form;
   const others = state.map.claims.filter((o) => o.id !== c.id);
-  const close = () => { state.form = null; drawEditor(); };
+  const opener = f.reason ? `edit-${f.reason}` : `reason-${c.id}`; // the button that opened this form
   return el("div", { class: "am-form" },
     el("p", { class: "small", text: f.reason
       ? `Change which claims make up this reason for claim ${num.get(c.id)}.`
       : `Tick the claims that together make one reason for claim ${num.get(c.id)}. They are linked: lose any one and this reason fails. For a second, independent reason, save this one and add another.` }),
     others.length
-      ? el("div", { class: "am-picks" }, others.map((o) => checkbox({ label: `${num.get(o.id)}. ${o.text}`, checked: f.picked.has(o.id), onChange: (on) => { on ? f.picked.add(o.id) : f.picked.delete(o.id); } }).el))
+      ? el("div", { class: "am-picks" }, others.map((o, i) => {
+        const box = checkbox({ label: `${num.get(o.id)}. ${o.text}`, checked: f.picked.has(o.id), onChange: (on) => { on ? f.picked.add(o.id) : f.picked.delete(o.id); } });
+        if (!i) box.input.dataset.key = "form-first";
+        return box.el;
+      }))
       : note("", "There is no other claim to use yet. Add a claim above first."),
     f.error ? note("bad", f.error) : null,
     el("div", { class: "row" },
-      button("Save reason", () => {
+      tool("Save reason", "form-save", () => {
         const res = setReason(state.map, c.id, [...f.picked], f.reason);
-        if (res.error) { f.error = res.error; drawEditor(); return; }
+        if (res.error) { f.error = res.error; drawEditor(); focusOn("form-save"); return; }
         state.form = null;
+        focusNext = opener;
         commit(res);
-      }, { small: true, primary: true }),
-      button("Cancel", close, { small: true })));
+      }, null, true),
+      tool("Cancel", "form-cancel", () => { state.form = null; drawEditor(); focusOn(opener); })));
 }
 
 function drawEditor() {
   const by = reasonsByClaim(state.map);
   if (state.form && !claimOf(state.form.claim)) state.form = null;
+  if (state.form) for (const id of [...state.form.picked]) if (!claimOf(id)) state.form.picked.delete(id);
   if (document.activeElement !== titleField.input) titleField.value = state.map.title;
   editorBox.replaceChildren(
     el("h3", { text: "Edit the map" }),
     titleField.el, addRow,
     el("ol", { class: "am-claims" }, state.map.claims.map((c) => {
       const main = c.id === state.map.conclusion;
+      const n = num.get(c.id);
       const input = el("input", { type: "text", value: c.text, maxlength: LIMITS.text, "aria-label": `Text of claim ${num.get(c.id)}`, "data-key": `text-${c.id}`, autocomplete: "off" });
       input.addEventListener("input", () => {
         const res = editClaim(state.map, c.id, { text: input.value });
@@ -359,18 +418,24 @@ function drawEditor() {
       input.addEventListener("blur", () => { if (!input.value.trim()) { input.value = claimOf(c.id)?.text ?? ""; input.classList.remove("invalid"); } });
       const hidden = checkbox({ label: "Unstated", checked: c.unstated, onChange: (on) => commit(editClaim(state.map, c.id, { unstated: on }), { editor: false }) });
       hidden.el.title = "Mark a premise the argument relies on but does not say out loud";
+      hidden.input.setAttribute("aria-label", `Unstated: claim ${n}`);
       const open = state.form?.claim === c.id;
       return el("li", { class: `am-claim${main ? " main" : ""}` },
         el("div", { class: "am-claim-top" }, el("span", { class: "am-chip", text: String(num.get(c.id)) }), input),
         el("div", { class: "row am-actions" },
-          main ? el("span", { class: "am-pill main", text: "Main conclusion" }) : button("Make main conclusion", () => commit(setConclusion(state.map, c.id)), { small: true }),
-          button("Add a reason", () => { state.form = { claim: c.id, reason: null, picked: new Set(), error: null }; drawEditor(); }, { small: true }),
+          main ? el("span", { class: "am-pill main", text: "Main conclusion" }) : tool("Make main conclusion", `main-${c.id}`, () => { focusNext = `text-${c.id}`; commit(setConclusion(state.map, c.id)); }, `Make main conclusion: claim ${n}`),
+          tool("Add a reason", `reason-${c.id}`, () => openForm({ claim: c.id, reason: null, picked: new Set(), error: null }), `Add a reason for claim ${n}`),
           hidden.el,
-          main ? null : button("Delete", () => { if (state.form?.claim === c.id) state.form = null; commit(deleteClaim(state.map, c.id)); }, { small: true })),
+          main ? null : tool("Delete", `delete-${c.id}`, () => {
+            if (state.form?.claim === c.id) state.form = null;
+            const at = state.map.claims.indexOf(c);
+            focusNext = `text-${(state.map.claims[at + 1] ?? state.map.claims[at - 1]).id}`; // the claim that takes its place in the list
+            commit(deleteClaim(state.map, c.id), { flash: { kind: "", text: deletedNote(c) } });
+          }, `Delete claim ${n}`)),
         by.get(c.id).length ? el("ul", { class: "am-reasons" }, by.get(c.id).map((r, j) => el("li", {},
           el("span", {}, `Reason ${j + 1}: `, chips(r.premises), r.premises.length > 1 ? " together" : ""),
-          button("Edit", () => { state.form = { claim: c.id, reason: r.id, picked: new Set(r.premises), error: null }; drawEditor(); }, { small: true }),
-          button("Remove", () => { state.form = null; commit(deleteReason(state.map, r.id)); }, { small: true })))) : null,
+          tool("Edit", `edit-${r.id}`, () => openForm({ claim: c.id, reason: r.id, picked: new Set(r.premises), error: null }), `Edit reason ${j + 1} for claim ${n}`),
+          tool("Remove", `remove-${r.id}`, () => { state.form = null; focusNext = `reason-${c.id}`; commit(deleteReason(state.map, r.id)); }, `Remove reason ${j + 1} for claim ${n}`)))) : null,
         open ? reasonForm(c) : null);
     })));
 }
@@ -387,8 +452,10 @@ function render({ editor = true } = {}) {
   state.off = new Set(a.premises.filter((p) => !p.on).map((p) => p.id)); // forget switches on claims that are no longer premises
   save();
 
-  const focusKey = document.activeElement?.dataset?.key;
-  flashBox.replaceChildren(...(state.flash ? [note(state.flash.kind, state.flash.text)] : []));
+  const focusKey = focusNext ?? document.activeElement?.dataset?.key;
+  focusNext = null;
+  flashBox.replaceChildren(...(state.flash && state.flash.kind !== "bad" ? [note(state.flash.kind, state.flash.text)] : []));
+  errorBox.replaceChildren(...(state.flash?.kind === "bad" ? [note("bad", state.flash.text)] : []));
   undoBtn.disabled = !state.undo.length;
   resetBtn.disabled = !state.off.size;
   mapTitle.textContent = state.map.title;
@@ -410,7 +477,7 @@ function render({ editor = true } = {}) {
     kind = "warn";
     const back = a.premises.filter((p) => p.role === "restores");
     text = `The conclusion falls: with ${plural(counts.premises - counts.inPlay, "premise")} removed, no reason for it is left whole. `;
-    text += back.length ? `Putting back ${back.length === 1 ? quote(back[0].id) : `any one of premises ${back.map((p) => num.get(p.id)).join(", ")}`} would restore it.`
+    text += back.length ? `Putting back ${back.length === 1 ? quote(back[0].id) : `any one of premises ${back.slice(0, -1).map((p) => num.get(p.id)).join(", ")} or ${num.get(back.at(-1).id)}`} would restore it.`
       : a.repairs?.length ? `No single premise restores it; the smallest repair puts back ${a.repairs[0].length}.` : "";
   }
   verdict.replaceChildren(note(kind, text));
@@ -427,7 +494,7 @@ function render({ editor = true } = {}) {
   drawPremises();
   drawLines();
   if (editor) drawEditor();
-  if (focusKey && document.activeElement?.dataset?.key !== focusKey) $(`#app [data-key="${focusKey}"]`)?.focus({ preventScroll: true });
+  focusOn(focusKey, focusKey?.startsWith("set-") && "set-0");
 }
 
 render();

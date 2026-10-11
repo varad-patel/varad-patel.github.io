@@ -7,7 +7,7 @@ Live at https://varad-patel.github.io/365projects/16/ (part of [365 projects in 
 | | |
 |---|---|
 | Question | Which premises does an argument's conclusion actually depend on, and which could be removed without it falling? |
-| One finding | In a congestion-charge argument with two independent lines of support and seven premises, six premises can each be removed alone without the conclusion falling, but the one premise both lines share brings it down by itself. |
+| One finding | In a congestion-charge argument that gives two separate reasons for its conclusion and rests on seven premises, six premises can each be removed alone without the conclusion falling, but the one premise both reasons share brings it down by itself. |
 | Main limit | The map shows structure and dependence only: it cannot tell whether any premise is true or whether any inference is valid. |
 | PPE concept | Argument analysis |
 | Skills | Directed graphs, dependency analysis |

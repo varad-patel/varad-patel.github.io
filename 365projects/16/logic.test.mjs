@@ -222,6 +222,9 @@ test("export and import round-trip, and unsound files are refused", () => {
   assert.match(fromJSON("{not json").error, /not valid JSON/);
   assert.match(fromJSON("[1,2]").error, /not an argument map/);
   assert.match(fromJSON({ claims: [{ id: 1, text: "a" }], reasons: [{}] }).error, /malformed/);
+  assert.match(fromJSON({ conclusion: 1, claims: [{ id: 1, text: { not: "text" } }], reasons: [] }).error, /malformed/);
+  assert.match(fromJSON({ conclusion: 1, claims: [{ id: 1, text: 7 }], reasons: [] }).error, /malformed/);
+  assert.match(fromJSON({ conclusion: 1, claims: [{ id: 1 }], reasons: [] }).error, /no text/);
   assert.match(fromJSON({ conclusion: "x", claims: [{ id: "x", text: "a" }, { id: "x", text: "b" }], reasons: [] }).error, /share an id/);
   assert.match(fromJSON({ claims: [{ id: "x", text: "a" }], reasons: [] }).error, /main conclusion/);
   assert.match(fromJSON({ conclusion: "x", claims: [{ id: "x", text: "a" }], reasons: [{ claim: "x", premises: ["nope"] }] }).error, /not in the map/);
@@ -281,4 +284,63 @@ test("layout: premises sit below what they support and nothing overlaps", () => 
   // The main conclusion of the policy map is on the top layer, with five claims under it and four under those.
   const L = layout(PRESETS[0].map);
   assert.deepEqual([0, 1, 2].map((k) => L.nodes.filter((n) => n.layer === k).length), [1, 5, 4]);
+});
+
+// Every point where a drawn line or arrow shaft is strictly inside a box, found by sampling the curves the page draws.
+function hiddenLines(L) {
+  const bez = (a, b, c, d, t) => (1 - t) ** 3 * a + 3 * (1 - t) ** 2 * t * b + 3 * (1 - t) * t * t * c + t ** 3 * d;
+  const hits = new Set();
+  const check = (x, y, what) => { for (const n of L.nodes) if (x > n.x + 0.01 && x < n.x + n.w - 0.01 && y > n.y + 0.01 && y < n.y + n.h - 0.01) hits.add(`${what} crosses box ${n.id}`); };
+  for (const l of L.links) {
+    for (const m of l.members) for (let s = 0; s + 1 < m.route.length; s++) {
+      const [x0, y0] = m.route[s], [x1, y1] = m.route[s + 1], mid = (y0 + y1) / 2;
+      for (let i = 0; i <= 40; i++) check(bez(x0, x0, x1, x1, i / 40), bez(y0, mid, mid, y1, i / 40), `line ${m.id} to ${l.claim}`);
+    }
+    for (let i = 0; i <= 20; i++) check(l.x, l.y + ((l.tip.y - l.y) * i) / 20, `arrow into ${l.claim}`);
+  }
+  return [...hits];
+}
+
+test("layout: no line or arrow runs behind a box, however many layers it spans", () => {
+  // Premise c3 supports the top claim directly and a claim two layers down, so its line to the top spans three layers.
+  const deep = {
+    title: "", conclusion: "c1",
+    claims: ["Top", "A sub-conclusion with a long text that wraps over several lines in its box, making its row tall", "Shared premise", "Middle", "Leaf"].map((text, i) => ({ id: `c${i + 1}`, text })),
+    reasons: [{ id: "r1", claim: "c1", premises: ["c2", "c3"] }, { id: "r2", claim: "c2", premises: ["c4"] }, { id: "r3", claim: "c4", premises: ["c3", "c5"] }],
+  };
+  const D = layout(deep);
+  const at = new Map(D.nodes.map((n) => [n.id, n]));
+  assert.equal(at.get("c3").layer, 3);
+  const long = D.links.find((l) => l.id === "r1").members.find((m) => m.id === "c3");
+  assert.equal(long.route.length, 6, "start, bottom and top of a lane in each of two layers, meeting point");
+  assert.deepEqual(long.route[0], [long.x, long.y]);
+  for (const k of [1, 3]) {
+    assert.equal(long.route[k][0], long.route[k + 1][0], "a lane is vertical");
+    for (const n of D.nodes) if (n.y < long.route[k][1] && n.y + n.h > long.route[k + 1][1]) assert.ok(long.route[k][0] < n.x - 10 || long.route[k][0] > n.x + n.w + 10, "a lane keeps clear of the boxes in its layer");
+  }
+  assert.deepEqual(hiddenLines(D), []);
+  // A short box beside a tall one: the meeting point is below the tall one, so lines to the short one do not cut across it.
+  for (const l of D.links) for (const n of D.nodes) if (n.layer === at.get(l.claim).layer) assert.ok(l.y > n.y + n.h);
+
+  for (const m of [...PRESETS.map((p) => p.map), small()]) assert.deepEqual(hiddenLines(layout(m)), []);
+  // Random maps, with reasons that reach any number of layers down and texts of very different lengths.
+  const r = rng(61);
+  for (let trial = 0; trial < 150; trial++) {
+    const n = r.int(3, 14);
+    const m = { title: "", conclusion: "c1", claims: Array.from({ length: n }, (_, i) => ({ id: `c${i + 1}`, text: "word ".repeat(r.int(1, 30)).trim() })), reasons: [] };
+    for (let i = 1; i < n; i++) for (let k = r.int(0, 2); k > 0; k--) {
+      const pool = r.shuffle(Array.from({ length: n - i }, (_, j) => `c${i + 1 + j}`));
+      m.reasons.push({ id: `r${m.reasons.length + 1}`, claim: `c${i}`, premises: pool.slice(0, r.int(1, Math.min(3, pool.length))) });
+    }
+    for (const opts of [{}, { nodeWidth: 156, gapX: 14 }]) {
+      const L = layout(m, opts);
+      assert.deepEqual(hiddenLines(L), [], `trial ${trial}`);
+      const w = opts.nodeWidth ?? 172, gap = opts.gapX ?? 20;
+      for (const a of L.nodes) {
+        assert.ok(a.x >= 0 && a.x + a.w <= L.width && a.y + a.h <= L.height);
+        for (const b of L.nodes) if (a !== b && a.layer === b.layer) assert.ok(Math.abs(a.x - b.x) >= w + gap - 1e-6, "boxes in a layer keep their gap");
+      }
+      for (const l of L.links) for (const mem of l.members) for (const [x, y] of mem.route) assert.ok(Number.isFinite(x) && Number.isFinite(y) && x >= 0 && x <= L.width && y >= 0 && y <= L.height);
+    }
+  }
 });

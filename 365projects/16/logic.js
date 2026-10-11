@@ -366,7 +366,7 @@ export function fromJSON(input) {
     try { raw = JSON.parse(input); } catch { return fail("That file is not valid JSON."); }
   }
   if (!raw || typeof raw !== "object" || !Array.isArray(raw.claims) || !Array.isArray(raw.reasons)) return fail("That file is not an argument map: it needs a list of claims and a list of reasons.");
-  if (raw.claims.some((c) => !c || typeof c !== "object") || raw.reasons.some((r) => !r || typeof r !== "object" || !Array.isArray(r.premises))) return fail("That file is not an argument map: a claim or a reason is malformed.");
+  if (raw.claims.some((c) => !c || typeof c !== "object" || (c.text != null && typeof c.text !== "string")) || raw.reasons.some((r) => !r || typeof r !== "object" || !Array.isArray(r.premises))) return fail("That file is not an argument map: a claim or a reason is malformed.");
   const rename = new Map();
   raw.claims.forEach((c, i) => { const key = c.id == null ? `#${i}` : String(c.id); if (!rename.has(key)) rename.set(key, `c${i + 1}`); });
   if (rename.size !== raw.claims.length) return fail("Two claims in that file share an id.");
@@ -408,30 +408,35 @@ export function wrapText(text, maxWidth, measure, maxLines = 6) {
   return lines.length ? lines : [""];
 }
 
-/** Positions with at least `sep` between neighbours that are as close as possible (least squares) to the wanted ones. */
-function spread(want, sep) {
+/** Positions as close as possible (least squares) to the wanted ones, with item i at least gaps[i] to the right of item i - 1. */
+function spread(want, gaps) {
+  const off = [];
+  want.forEach((_, i) => off.push(i ? off[i - 1] + gaps[i] : 0));
   const blocks = [];
   want.forEach((d, i) => {
-    blocks.push({ sum: d - i * sep, n: 1 });
+    blocks.push({ sum: d - off[i], n: 1 });
     while (blocks.length > 1 && blocks.at(-2).sum / blocks.at(-2).n > blocks.at(-1).sum / blocks.at(-1).n) {
       const b = blocks.pop();
       blocks.at(-1).sum += b.sum;
       blocks.at(-1).n += b.n;
     }
   });
-  return blocks.flatMap((b) => Array(b.n).fill(b.sum / b.n)).map((z, i) => z + i * sep);
+  return blocks.flatMap((b) => Array(b.n).fill(b.sum / b.n)).map((z, i) => z + off[i]);
 }
 
 /**
  * Layered drawing. A claim sits one layer below the lowest claim it supports, so every arrow points up.
- * Returns { width, height, nodes: [{ id, x, y, w, h, lines, layer }], links: [{ id, claim, x, y, tip, members: [{ id, x, y }] }] }
+ * Returns { width, height, nodes: [{ id, x, y, w, h, lines, layer }], links: [{ id, claim, x, y, tip, members: [{ id, x, y, route }] }] }
  * where a link is one reason: its members' lines meet at (x, y) and one arrow runs from there to `tip` on the claim.
+ * A member's `route` is the list of points its line passes through, from the premise's top edge to the meeting point.
+ * Each pair of points is joined by an S-curve that leaves and arrives vertically (a straight line when they share an x).
+ * No line and no arrow crosses a box: lines bend only in the gaps between layers, and a premise that sits more than
+ * one layer below its claim gets a narrow lane of its own through each layer in between.
  */
-export function layout(map, { nodeWidth = 172, gapX = 20, gapY = 72, pad = 10, tag = 17, lineHeight = 16, maxLines = 6, margin = 6, measure = (s) => s.length * 6.4 } = {}) {
+export function layout(map, { nodeWidth = 172, gapX = 20, gapY = 72, pad = 10, tag = 17, lineHeight = 16, maxLines = 6, margin = 6, lane = 16, measure = (s) => s.length * 6.4 } = {}) {
   const by = reasonsByClaim(map);
   const parents = new Map(map.claims.map((c) => [c.id, new Set()]));
   for (const r of map.reasons) for (const p of r.premises) parents.get(p)?.add(r.claim);
-  const kids = new Map(map.claims.map((c) => [c.id, [...new Set(by.get(c.id).flatMap((r) => r.premises))].filter((p) => parents.has(p))]));
 
   const layerOf = new Map();
   const layer = (id) => {
@@ -442,15 +447,40 @@ export function layout(map, { nodeWidth = 172, gapX = 20, gapY = 72, pad = 10, t
     layerOf.set(id, deepest);
     return deepest;
   };
+  for (const c of map.claims) layer(c.id);
+
+  // What gets placed: every claim, plus one lane in each layer that a long line has to pass through.
+  // `up` and `down` join each of them to its neighbours along the lines, one layer apart.
+  const width = new Map(map.claims.map((c) => [c.id, nodeWidth]));
+  const up = new Map(map.claims.map((c) => [c.id, []]));
+  const down = new Map(map.claims.map((c) => [c.id, []]));
+  const join = (hi, lo) => { if (!down.get(hi).includes(lo)) { down.get(hi).push(lo); up.get(lo).push(hi); } };
+  const lanesOf = new Map(); // reason id -> premise id -> its lanes, from the claim downwards
+  for (const r of map.reasons) {
+    if (!parents.has(r.claim)) continue;
+    lanesOf.set(r.id, new Map());
+    for (const p of r.premises) {
+      if (!parents.has(p)) continue;
+      const lanes = [];
+      for (let k = layerOf.get(r.claim) + 1; k < layerOf.get(p); k++) {
+        const id = Symbol("lane");
+        width.set(id, lane); layerOf.set(id, k); up.set(id, []); down.set(id, []);
+        join(lanes.at(-1) ?? r.claim, id);
+        lanes.push(id);
+      }
+      join(lanes.at(-1) ?? r.claim, p);
+      lanesOf.get(r.id).set(p, lanes);
+    }
+  }
 
   // Order inside a layer: depth-first from the top, starting with the tree that holds the main conclusion.
   const layers = [];
   const seen = new Set();
   const visit = (id) => {
-    if (seen.has(id) || !parents.has(id)) return;
+    if (seen.has(id) || !up.has(id)) return;
     seen.add(id);
-    (layers[layer(id)] ||= []).push(id);
-    kids.get(id).forEach(visit);
+    (layers[layerOf.get(id)] ||= []).push(id);
+    down.get(id).forEach(visit);
   };
   const top = (id) => { const guard = new Set(); while (parents.get(id)?.size && !guard.has(id)) { guard.add(id); id = [...parents.get(id)][0]; } return id; };
   if (parents.has(map.conclusion)) visit(top(map.conclusion));
@@ -458,52 +488,63 @@ export function layout(map, { nodeWidth = 172, gapX = 20, gapY = 72, pad = 10, t
   for (const c of map.claims) visit(c.id);
   for (let k = 0; k < layers.length; k++) layers[k] ||= [];
 
-  // Horizontal positions (centres): pull each node towards the claims it supports, then towards its premises.
-  const sep = nodeWidth + gapX;
+  // Horizontal positions (centres): pull each item towards what it supports, then towards what supports it.
   const cx = new Map();
-  layers.forEach((ids) => ids.forEach((id, i) => cx.set(id, (i - (ids.length - 1) / 2) * sep)));
+  const gapsOf = (ids) => ids.map((id, i) => (i ? (width.get(ids[i - 1]) + width.get(id)) / 2 + gapX : 0));
   const mean = (ids) => ids.reduce((s, id) => s + cx.get(id), 0) / ids.length;
-  const settle = (ids, want) => spread(want, sep).forEach((v, i) => cx.set(ids[i], v));
+  const settle = (ids, want) => spread(want, gapsOf(ids)).forEach((v, i) => cx.set(ids[i], v));
+  for (const ids of layers) settle(ids, ids.map(() => 0)); // to begin with, each layer packed and centred
   for (let pass = 0; pass < 6; pass++) {
-    for (let k = 1; k < layers.length; k++) settle(layers[k], layers[k].map((id) => (parents.get(id).size ? mean([...parents.get(id)]) : cx.get(id))));
-    for (let k = layers.length - 2; k >= 0; k--) settle(layers[k], layers[k].map((id) => (kids.get(id).length ? mean(kids.get(id)) : cx.get(id))));
+    for (let k = 1; k < layers.length; k++) settle(layers[k], layers[k].map((id) => (up.get(id).length ? mean(up.get(id)) : cx.get(id))));
+    for (let k = layers.length - 2; k >= 0; k--) settle(layers[k], layers[k].map((id) => (down.get(id).length ? mean(down.get(id)) : cx.get(id))));
   }
-  const left = Math.min(...cx.values()) - nodeWidth / 2 - margin;
+  const left = Math.min(...[...cx].map(([id, x]) => x - width.get(id) / 2)) - margin;
+  const at = (id) => cx.get(id) - left;
 
   const text = byId(map);
   const nodes = new Map();
+  const rows = []; // the top and bottom of each layer
   let y = margin;
   layers.forEach((ids, k) => {
     let tallest = 0;
     for (const id of ids) {
+      if (!text.has(id)) continue; // a lane has no box
       const lines = wrapText(text.get(id).text, nodeWidth - 2 * pad, measure, maxLines);
       const h = pad + tag + lines.length * lineHeight + pad - 4;
-      nodes.set(id, { id, x: cx.get(id) - nodeWidth / 2 - left, y, w: nodeWidth, h, lines, layer: k });
+      nodes.set(id, { id, x: at(id) - nodeWidth / 2, y, w: nodeWidth, h, lines, layer: k });
       tallest = Math.max(tallest, h);
     }
+    rows.push({ top: y, bottom: y + tallest });
     y += tallest + gapY;
   });
 
-  // One meeting point per reason, spaced along the bottom edge of the claim it supports.
+  // One meeting point per reason, spaced along the bottom edge of the claim it supports, below the tallest box in that layer.
   const links = [];
   for (const c of map.claims) {
     const node = nodes.get(c.id);
-    const reasons = by.get(c.id).map((r) => ({ r, at: r.premises.reduce((s, p) => s + cx.get(p), 0) / r.premises.length }));
-    reasons.sort((a, b) => a.at - b.at).forEach(({ r }, i) => {
+    const reasons = by.get(c.id).map((r) => {
+      const members = r.premises.filter((p) => nodes.has(p)).map((p) => ({ id: p, lanes: lanesOf.get(r.id).get(p) }));
+      return { r, members, at: mean(members.map((m) => m.lanes[0] ?? m.id)) };
+    });
+    reasons.sort((a, b) => a.at - b.at).forEach(({ r, members }, i) => {
       const x = node.x + (node.w * (i + 1)) / (reasons.length + 1);
-      links.push({ id: r.id, claim: c.id, x, y: node.y + node.h + 28, tip: { x, y: node.y + node.h }, members: r.premises.map((p) => ({ id: p })) });
+      links.push({ id: r.id, claim: c.id, x, y: rows[node.layer].bottom + 28, tip: { x, y: node.y + node.h }, members });
     });
   }
   // A premise used by several reasons sends each line from its own point on the top edge.
   for (const node of nodes.values()) {
-    const ends = links.flatMap((l) => l.members.filter((m) => m.id === node.id).map((m) => ({ m, x: l.x }))).sort((a, b) => a.x - b.x);
+    const ends = links.flatMap((l) => l.members.filter((m) => m.id === node.id).map((m) => ({ m, x: m.lanes.length ? at(m.lanes.at(-1)) : l.x }))).sort((a, b) => a.x - b.x);
     ends.forEach(({ m }, i) => { m.x = node.x + (node.w * (i + 1)) / (ends.length + 1); m.y = node.y; });
   }
+  // Up from the premise, straight through each lane, to the meeting point.
+  for (const l of links) for (const m of l.members) {
+    m.route = [[m.x, m.y], ...[...m.lanes].reverse().flatMap((id) => [[at(id), rows[layerOf.get(id)].bottom], [at(id), rows[layerOf.get(id)].top]]), [l.x, l.y]];
+    delete m.lanes;
+  }
 
-  const all = [...nodes.values()];
   return {
-    width: Math.max(...all.map((n) => n.x + n.w)) + margin,
-    height: Math.max(...all.map((n) => n.y + n.h)) + margin,
+    width: Math.max(...[...cx.keys()].map((id) => at(id) + width.get(id) / 2)) + margin, // boxes and lanes
+    height: Math.max(...[...nodes.values()].map((n) => n.y + n.h)) + margin,
     nodes: map.claims.map((c) => nodes.get(c.id)),
     links,
   };
