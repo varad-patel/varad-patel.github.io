@@ -7,7 +7,7 @@ Live at https://varad-patel.github.io/365projects/27/ (part of [365 projects in 
 | | |
 |---|---|
 | Question | How much does a white shoe, or a black raven, confirm that all ravens are black? |
-| One finding | In a world of 100 ravens and a million non-black other things, a black raven picked from the ravens has a likelihood ratio of 1.111 and a white shoe picked from the non-black things 1.00001, so it takes 10,536 such shoes to match one raven, and a white shoe met by sampling everything is worth nothing. |
+| One finding | In a world of 100 ravens and a million non-black other things, a black raven picked from the ravens has a likelihood ratio of 1.111 and a white shoe picked from the non-black things 1.00001, so it takes 10,536 such shoes to match one raven, and a white shoe met by sampling everything is worth nothing unless the rival world is assumed, as textbooks do, to hold the same number of non-black things. |
 | Main limit | The size of the effect depends on how many non-black things are counted and on what the rival world is assumed to be, and neither is fixed by the paradox. |
 | PPE concept | Confirmation theory |
 | Skills | Bayesian confirmation measures |

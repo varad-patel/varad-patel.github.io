@@ -133,6 +133,11 @@ test("Good's two worlds: a black raven picked at random counts against 'all rave
   rel(e.lr, (100 / 1000100) / (999 / 1001000), 1e-12);
   assert.ok(e.lr > 0.1 && e.lr < 0.1003);
   assert.ok(e.posterior < 0.1);
+  // Good's own rival world has 1,000 black ravens and one white (1,001 in all); the preset rounds that to 999 and one.
+  // His numbers give 0.1001 and the preset's 0.1002, as the source note on the page says.
+  assert.deepEqual(w.r, { br: 999, nr: 1, bn: 200000, nn: 800000 });
+  assert.equal(((100 / 1000100) / (1000 / 1001001)).toFixed(4), "0.1001");
+  assert.equal(e.lr.toFixed(4), "0.1002");
   // Picked from the ravens it still confirms, minutely.
   assert.ok(lnOf(w, "raven", "br") > 0);
 });
@@ -226,6 +231,11 @@ test("the finding on the page", () => {
   assert.equal(shoe.lr.toFixed(5), "1.00001");
   assert.equal(Math.round(worth(raven.lnLR, shoe.lnLR)), 10536);
   assert.equal(evidence(w, "any", "nn", 0.5).lnLR, 0);
+  // The same shoe on the textbook assumption (the same number of non-black things in both worlds): 1.00001 however it was found.
+  const book = worlds(PRESETS.find((p) => p.key === "textbook"));
+  for (const proc of ["any", "nonblack", "nonraven"]) assert.equal(evidence(book, proc, "nn", 0.5).lr.toFixed(5), "1.00001");
+  // In the opening world every measure puts the shoe about four orders of magnitude below the raven.
+  for (const key of ["difference", "ratioExcess", "excess", "bits", "ko"]) { const ratio = raven[key] / shoe[key]; assert.ok(ratio > 9000 && ratio < 12000, `${key}: ${ratio}`); }
   assert.equal((raven.posterior * 100).toFixed(1), "52.6");
   assert.equal((shoe.posterior * 100).toFixed(5), "50.00025");
   assert.equal(needed(0.5, raven.lnLR), 44);

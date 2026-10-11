@@ -1,6 +1,6 @@
 {
   "question": "How much does a white shoe, or a black raven, confirm that all ravens are black?",
-  "finding": "In a world of 100 ravens and a million non-black other things, a black raven picked from the ravens has a likelihood ratio of 1.111 and a white shoe picked from the non-black things 1.00001, so it takes 10,536 such shoes to match one raven, and a white shoe met by sampling everything is worth nothing.",
+  "finding": "In a world of 100 ravens and a million non-black other things, a black raven picked from the ravens has a likelihood ratio of 1.111 and a white shoe picked from the non-black things 1.00001, so it takes 10,536 such shoes to match one raven, and a white shoe met by sampling everything is worth nothing unless the rival world is assumed, as textbooks do, to hold the same number of non-black things.",
   "limit": "The size of the effect depends on how many non-black things are counted and on what the rival world is assumed to be, and neither is fixed by the paradox.",
   "sources": [],
   "built": "2026-10-10"

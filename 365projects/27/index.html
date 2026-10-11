@@ -26,6 +26,14 @@
     .meter-needle { position: absolute; top: -5px; bottom: -5px; width: 4px; margin-left: -2px; background: var(--ink); border-radius: 2px; }
     .meter-scale { display: grid; grid-template-columns: 1fr auto 1fr; font-size: 0.8rem; color: var(--slate); }
     .meter-scale span:last-child { text-align: right; }
+    .aside-note:empty { display: none; }
+    /* The 12-row table needs about 700px. In a narrower column the same rows are shown as a list. */
+    .lab-rest { container-type: inline-size; }
+    .all-narrow { display: none; list-style: none; margin: 0; padding: 0; font-size: 0.9rem; line-height: 1.45; }
+    .all-narrow li { padding: 8px 0 8px 10px; border-bottom: 1px solid var(--grid); border-left: 3px solid transparent; }
+    .all-narrow li.on, .all-wide tbody tr.on { background: color-mix(in srgb, var(--ink) 7%, transparent); }
+    .all-narrow li.on { border-left-color: var(--ink); }
+    @container (max-width: 719px) { .all-wide { display: none; } .all-narrow { display: block; } }
   </style>
 </head>
 <body class="proj" data-day="27">
@@ -41,14 +49,15 @@
 
     <section class="p-sec finding">
       <h2>One finding</h2>
-      <p>In a world of 100 ravens and a million non-black other things, weighed against a rival in which 10% of ravens are not black, a black raven picked from the ravens is 1.111 times as likely if all ravens are black, and a white shoe picked from the non-black things is 1.00001 times as likely. Both confirm, and it takes 10,536 such shoes to match one raven. A white shoe that merely turns up when sampling everything is worth exactly nothing.</p>
+      <p>In a world of 100 ravens and a million non-black other things, weighed against a rival in which 10% of ravens are not black, a black raven picked from the ravens is 1.111 times as likely if all ravens are black, and a white shoe picked from the non-black things is 1.00001 times as likely. Both confirm, and it takes 10,536 such shoes to match one raven. A white shoe that merely turns up when sampling everything is worth exactly nothing on this page's opening assumption, that the rival world differs only in the colour of its ravens. On the textbook assumption, that both worlds hold the same number of non-black things, the same shoe is worth 1.00001 however it was found.</p>
     </section>
 
     <section class="p-sec">
       <h2>The idea</h2>
-      <p>Carl Hempel set out the puzzle in the 1940s from two principles that each look harmless. The first, due to Jean Nicod, says a generalisation is confirmed by its instances: "all ravens are black" is supported by finding a raven that is black. The second says that two statements which mean the same thing are supported by the same evidence. Now "all ravens are black" means exactly the same as "everything that is not black is not a raven". An instance of the second statement is a thing that is not black and not a raven, such as a white shoe. So a white shoe confirms that all ravens are black, and you can do ornithology without leaving the house.</p>
+      <p>Carl Hempel raised the puzzle in 1937 and set it out in full in 1945, from two principles that each look harmless. The first, due to Jean Nicod, says a generalisation is confirmed by its instances: "all ravens are black" is supported by finding a raven that is black. The second says that two statements which mean the same thing are supported by the same evidence. Now "all ravens are black" means exactly the same as "everything that is not black is not a raven". An instance of the second statement is a thing that is not black and not a raven, such as a white shoe. So a white shoe confirms that all ravens are black, and you can do ornithology without leaving the house.</p>
       <p>Hempel accepted the conclusion and blamed the sense of absurdity on background knowledge that cannot be switched off. The answer that has become standard is older than his best-known paper and comes from Janina Hosiasson-Lindenbaum in 1940: treat confirmation as a matter of degree. Evidence supports a hypothesis to the extent that it is more probable if the hypothesis is true than if it is false. A white shoe does then confirm that all ravens are black, by an amount so small that intuition rounds it to zero, because the world holds so many more non-black things than ravens.</p>
       <p>Two refinements matter as much as the headline. I. J. Good showed in 1967 that even a black raven need not confirm: if the alternative to "all ravens are black" is a world with far more ravens in it, meeting a black raven is a sign you are in that world. And the way the object was found changes its weight. Going through the non-black things looking for a raven is a test the hypothesis could have failed. Looking down at your own shoe is not. The tool keeps these apart: you choose the object, the group it was drawn from, and what the rival world is like.</p>
+      <p>One warning for readers who know the standard answer. The textbook version assumes that the rival world, the one in which some ravens are not black, contains the same number of non-black things as the world in which all are black. On that assumption a white shoe confirms by the same minute amount however it is found. This page opens on a different and simpler rival, in which the same objects exist and some ravens are a different colour. There a white shoe confirms only if it was drawn from the non-black things, and one that merely turns up is no evidence at all. Both are legitimate models and the tool offers both. The assumption that separates them is the one Peter Vranas argued the standard solution relies on without defending.</p>
       <p>The lesson reaches well beyond birds. A claim is not supported by the bare number of cases that fit it. What counts is how much less likely each case would have been had the claim been false, and that depends on where the cases came from. A policy "confirmed" by a hundred success stories that would have happened anyway has collected a hundred white shoes.</p>
     </section>
 
@@ -56,7 +65,7 @@
       <h2>How it works</h2>
       <h3>Two worlds</h3>
       <p>Every object is a raven or not, and black or not, so a world is four counts. Write <var>R</var> for the number of ravens, <var>K</var> for the black things that are not ravens and <var>W</var> for the non-black things that are not ravens. The hypothesis <var>H</var>, "all ravens are black", is the world</p>
-      <p class="eq">black ravens = <var>R</var> &nbsp;&nbsp;&nbsp; non-black ravens = 0<br>black others = <var>K</var> &nbsp;&nbsp;&nbsp; non-black others = <var>W</var></p>
+      <p class="eq">black ravens = <var>R</var> &nbsp; non-black ravens = 0<br>black others = <var>K</var> &nbsp; non-black others = <var>W</var></p>
       <p>The rival says a share <var>f</var> of ravens are not black. That alone does not fix a world, so the tool offers three ways to complete it, each listed as black ravens, non-black ravens, black others, non-black others.</p>
       <p><strong>Only the ravens' colours differ.</strong> The same objects, with <var>f</var><var>R</var> of the ravens repainted:</p>
       <p class="eq">(1 − <var>f</var>)<var>R</var> &nbsp;&nbsp; <var>f</var><var>R</var> &nbsp;&nbsp; <var>K</var> &nbsp;&nbsp; <var>W</var></p>
@@ -66,12 +75,12 @@
       <p class="eq">(1 − <var>f</var>)<var>R</var>′ &nbsp;&nbsp; <var>f</var><var>R</var>′ &nbsp;&nbsp; <var>K</var> &nbsp;&nbsp; <var>W</var></p>
       <h3>An observation is a draw from a pool</h3>
       <p>An observation is one object, drawn uniformly at random from a stated group, whose other property is then seen. The five groups are the ravens, the non-black things, the black things, the non-ravens and everything. The probability of drawing a given kind of object is its share of the pool, in whichever world is the true one:</p>
-      <p class="eq">P(<var>E</var> | world) = number of objects of that kind ÷ number of objects in the pool</p>
+      <p class="eq">P(<var>E</var> | world) =<br>&nbsp; number of objects of that kind<br>&nbsp; ÷ number of objects in the pool</p>
       <p>The pool is counted in the same world as the object. That is where the sampling procedure enters: the pool "non-black things" has <var>W</var> members if all ravens are black and <var>W</var> + <var>f</var><var>R</var> if they are not.</p>
       <h3>The likelihood ratio</h3>
       <p>The weight of an observation is the ratio of its two probabilities:</p>
       <p class="eq"><var>LR</var> = P(<var>E</var> | <var>H</var>) ÷ P(<var>E</var> | rival)</p>
-      <p>Above 1 it confirms <var>H</var>, below 1 it counts against, and exactly 1 is no evidence. Working through the cases with only the ravens' colours differing:</p>
+      <p>Above 1 it confirms <var>H</var>, below 1 it counts against, and exactly 1 is no evidence. Working through the cases with only the ravens' colours differing, which is the assumption the tool opens on and not the textbook one:</p>
       <ul>
         <li><strong>A black raven from the ravens.</strong> Certain under <var>H</var>; probability 1 − <var>f</var> under the rival. <var>LR</var> = 1 ÷ (1 − <var>f</var>). With <var>f</var> = 10% that is 1.111.</li>
         <li><strong>A white shoe from the non-black things.</strong> Certain under <var>H</var>, since every non-black thing is a non-raven; probability <var>W</var> ÷ (<var>W</var> + <var>f</var><var>R</var>) under the rival. <var>LR</var> = 1 + <var>f</var><var>R</var> ÷ <var>W</var>. With 100 ravens and a million non-black things that is 1.00001.</li>
@@ -81,7 +90,7 @@
       <p>On the textbook assumption every pool has the same size in both worlds, so the way of picking drops out and a white shoe has <var>LR</var> = <var>W</var> ÷ (<var>W</var> − <var>f</var><var>R</var>) however it was found. That is the usual statement of the Bayesian resolution. The same assumption makes a black shoe count slightly against <var>H</var>, with <var>LR</var> = <var>K</var> ÷ (<var>K</var> + <var>f</var><var>R</var>).</p>
       <h3>From weight to belief</h3>
       <p>If your confidence in <var>H</var> before looking is <var>p</var>, Bayes' theorem gives your confidence afterwards. In odds it is one multiplication:</p>
-      <p class="eq">P(<var>H</var> | <var>E</var>) = <var>p</var> · P(<var>E</var> | <var>H</var>) ÷ ( <var>p</var> · P(<var>E</var> | <var>H</var>) + (1 − <var>p</var>) · P(<var>E</var> | rival) )<br>odds after = odds before × <var>LR</var></p>
+      <p class="eq">P(<var>H</var> | <var>E</var>) = <var>p</var> · P(<var>E</var> | <var>H</var>)<br>&nbsp; &nbsp; ÷ ( <var>p</var> · P(<var>E</var> | <var>H</var>) + (1 − <var>p</var>) · P(<var>E</var> | rival) )<br>odds after = odds before × <var>LR</var></p>
       <h3>Five measures</h3>
       <p>Philosophers have proposed several ways to turn "how much does <var>E</var> confirm <var>H</var>" into a number. The table in the tool shows five:</p>
       <ul>
@@ -91,7 +100,7 @@
         <li>its logarithm to base 2, the <strong>weight of evidence</strong> in bits, which adds up across independent observations;</li>
         <li>the <strong>Kemeny-Oppenheim measure</strong> (P(<var>E</var> | <var>H</var>) − P(<var>E</var> | rival)) ÷ (P(<var>E</var> | <var>H</var>) + P(<var>E</var> | rival)), which runs from −1 for a refutation to +1 for a proof and is what the meter shows.</li>
       </ul>
-      <p>The first two change with your starting confidence. The last three do not. All five agree on the sign here, and all five put the white shoe several orders of magnitude below the raven.</p>
+      <p>The first two change with your starting confidence. The last three do not. All five always agree on the sign, and in the opening world all five put the white shoe about four orders of magnitude below the raven.</p>
       <h3>The two comparison tiles</h3>
       <p>Because log-likelihood ratios add, the number of observations of one kind that weigh as much as one black raven picked from the ravens is ln <var>LR</var><sub>raven</sub> ÷ ln <var>LR</var><sub>this</sub>. For the opening world that is ln 1.1111 ÷ ln 1.00001 = 10,536. The number of independent observations needed to take your confidence from <var>p</var> to 99% is the smallest whole number <var>n</var> with</p>
       <p class="eq"><var>n</var> · ln <var>LR</var> ≥ ln(0.99 ÷ 0.01) − ln(<var>p</var> ÷ (1 − <var>p</var>))</p>
@@ -127,15 +136,16 @@
     <section class="p-sec">
       <h2>Sources</h2>
       <ul class="refs">
-        <li>Hempel, C. G. (1945). Studies in the logic of confirmation. <em>Mind</em>, 54, 1-26 and 97-121.</li>
-        <li>Nicod, J. <em>Foundations of Geometry and Induction</em>. The source of the criterion that a generalisation is confirmed by its instances.</li>
+        <li>Hempel, C. G. (1937). Le problème de la vérité. <em>Theoria</em>, 3, 206-246. Where the puzzle first appears.</li>
+        <li>Hempel, C. G. (1945). Studies in the logic of confirmation. <em>Mind</em>, 54(213), 1-26, and 54(214), 97-121.</li>
+        <li>Nicod, J. (1930). <em>Foundations of Geometry and Induction</em>, translated by P. P. Wiener. Kegan Paul, Trench, Trubner. It contains "The logical problem of induction", first published in French in 1924 and the source of the criterion that a generalisation is confirmed by its instances.</li>
         <li>Hosiasson-Lindenbaum, J. (1940). On confirmation. <em>Journal of Symbolic Logic</em>, 5(4), 133-148.</li>
-        <li>Good, I. J. (1967). The white shoe is a red herring. <em>British Journal for the Philosophy of Science</em>, 17(4), 322. The "Good's two worlds" example uses his numbers, with the rival world rounded to 1,000 ravens of which one is white; the split of the million other things into black and non-black is an addition and does not affect his result.</li>
-        <li>Kemeny, J. G., and Oppenheim, P. (1952). Degrees of factual support. <em>Philosophy of Science</em>, 19(4), 307-324.</li>
+        <li>Good, I. J. (1967). The white shoe is a red herring. <em>British Journal for the Philosophy of Science</em>, 17(4), 322. Good's two worlds hold 100 black ravens and no others, or 1,000 black ravens and one white one, each among a million other birds. The "Good's two worlds" example here rounds the second world to 999 black ravens and one white, which moves the likelihood ratio from 0.1001 to 0.1002; the split of the million other things into black and non-black is an addition and does not affect his result.</li>
+        <li>Kemeny, J. G., and Oppenheim, P. (1952). Degree of factual support. <em>Philosophy of Science</em>, 19(4), 307-324.</li>
         <li>Horwich, P. (1982). <em>Probability and Evidence</em>. Cambridge University Press.</li>
         <li>Fitelson, B. (1999). The plurality of Bayesian measures of confirmation and the problem of measure sensitivity. <em>Philosophy of Science</em>, 66 (Supplement), S362-S378.</li>
         <li>Vranas, P. B. M. (2004). Hempel's raven paradox: a lacuna in the standard Bayesian solution. <em>British Journal for the Philosophy of Science</em>, 55(3), 545-560.</li>
-        <li>Fitelson, B., and Hawthorne, J. (2010). How Bayesian confirmation theory handles the paradox of the ravens. In E. Eells and J. H. Fetzer (eds.), <em>The Place of Probability in Science</em>. Springer.</li>
+        <li>Fitelson, B., and Hawthorne, J. (2010). How Bayesian confirmation theory handles the paradox of the ravens. In E. Eells and J. H. Fetzer (eds.), <em>The Place of Probability in Science</em> (Boston Studies in the Philosophy of Science), 247-275. Springer.</li>
       </ul>
     </section>
   </main>

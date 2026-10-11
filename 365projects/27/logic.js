@@ -42,9 +42,9 @@ export const PRESETS = [
     ravens: 20, black: 10, nonblack: 70, fraction: 0.1, rival: "extra", rivalRavens: 20, kind: "nn", proc: "nonblack" },
   { key: "country", label: "A country", note: "10,000 ravens among a billion other things.",
     ravens: 10000, black: 200000000, nonblack: 800000000, fraction: 0.1, rival: "extra", rivalRavens: 10000, kind: "nn", proc: "nonblack" },
-  { key: "textbook", label: "The county, textbook assumption", note: "The same county, with the number of non-black things held the same in both worlds.",
+  { key: "textbook", label: "The county, textbook assumption", note: "The same county, with the number of non-black things held the same in both worlds, as the usual Bayesian treatment assumes. A white shoe then confirms minutely however it is found.",
     ravens: 100, black: 250000, nonblack: 1000000, fraction: 0.1, rival: "fixed", rivalRavens: 100, kind: "nn", proc: "any" },
-  { key: "good", label: "Good's two worlds", note: "I. J. Good's example: 100 ravens if all are black, 1,000 if one is not, among a million other things. Here a black raven counts against.",
+  { key: "good", label: "Good's two worlds", note: "After I. J. Good's example: 100 ravens if all are black and ten times as many if one is not, among a million other things. Good's rival world has 1,000 black ravens and one white; this page rounds it to 999 and one. Here a black raven counts against.",
     ravens: 100, black: 200000, nonblack: 800000, fraction: 0.001, rival: "more", rivalRavens: 1000, kind: "br", proc: "any" },
 ];
 

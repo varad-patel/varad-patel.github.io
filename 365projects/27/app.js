@@ -73,6 +73,7 @@ const procSeg = segmented({
 const procLabels = [...procSeg.el.querySelectorAll(".seg label")];
 
 const verdict = el("p", { class: "verdict", role: "status" });
+const textbook = el("div", { class: "aside-note" });
 const meter = el("div", { class: "meter" });
 const message = el("div");
 const tLr = stat("Likelihood ratio");
@@ -137,7 +138,7 @@ const chartBox = el("div");
 const allBox = el("div");
 const top = el("div", { class: "out lab-top" },
   el("div", { class: "panel pick" }, kindSeg.el, procSeg.el),
-  message, verdict, meter, el("div", { class: "stats" }, tiles.map((t) => t.el)));
+  message, verdict, textbook, meter, el("div", { class: "stats" }, tiles.map((t) => t.el)));
 const controls = el("div", { class: "controls" },
   presetSelect.el, fields.ravens.el, fields.black.el, fields.nonblack.el, fractionSlider.el, rivalSelect.el, fields.rivalRavens.el, priorSlider.el);
 const rest = el("div", { class: "out lab-rest" }, measuresBox, worldsBox, chartBox, allBox);
@@ -148,6 +149,7 @@ let plot = null;
 function blank(text) {
   message.replaceChildren(note("bad", text));
   verdict.textContent = "";
+  textbook.replaceChildren();
   meter.replaceChildren();
   for (const t of tiles) t.set("–", "");
   rest.hidden = true;
@@ -204,6 +206,10 @@ function update() {
     : e.lnLR === 0 ? `${what} is no evidence either way. It is exactly as likely in one world as in the other.`
     : e.lnLR > 0 ? `${what} confirms "all ravens are black"${tiny ? ", but only just" : ""}. It is ${lrText(e)} times as likely to turn up if all ravens are black as if the rival is true.`
     : `${what} counts against "all ravens are black"${tiny ? ", but only just" : ""}. It is ${lrText(e)} times as likely to turn up if all ravens are black as if the rival is true, and that is less than 1.`;
+  // The opening assumption is not the textbook one, and for a shoe that merely turns up the two give different answers. Say so.
+  const shoe0 = state.rival === "extra" && e.lnLR === 0 && (state.kind === "nn" || state.kind === "bn");
+  textbook.replaceChildren(...(shoe0 ? [note("", el("strong", { text: "This is not the textbook answer. " }),
+    `The usual Bayesian treatment says that a white shoe confirms by a minute amount, and that a black shoe counts against by a minute amount, however they were found. It gets there by assuming the rival world holds the same number of non-black things. Here the rival world differs only in the colour of some ravens, so it has exactly as many ${state.kind === "nn" ? "white" : "black"} shoes among exactly as many ${state.proc === "any" ? "things" : "non-ravens"}, and this draw could not have told the two worlds apart. To see the textbook figure, set "What else differs in the rival world" to "Same number of non-black things".`)] : []));
   drawMeter(e);
 
   if (e.impossible) {
@@ -262,17 +268,27 @@ function update() {
 
   // Everything each way of picking can turn up.
   const strong = (text, on) => el(on ? "strong" : "span", { style: { whiteSpace: "nowrap" }, text });
-  allBox.replaceChildren(el("p", { class: "chart-title", text: "Every object each way of picking can turn up, with its chance in each world" }), table({
+  const all = allEvidence(w, state.prior).map((r) => ({
+    on: r.proc === state.proc && r.kind === state.kind, from: procOf(r.proc).from, what: kindOf(r.kind).label,
+    pH: share(r.pH), pR: share(r.pR), lr: r.impossible ? "–" : lrText(r), says: reading(r),
+  }));
+  const wide = table({
     columns: [
       { key: "from", label: "Picked from" }, { key: "what", label: "It was" },
       { key: "pH", label: "If all black", num: true }, { key: "pR", label: "If rival", num: true },
       { key: "lr", label: "Likelihood ratio", num: true }, { key: "says", label: "Reading" },
     ],
-    rows: allEvidence(w, state.prior).map((r) => {
-      const on = r.proc === state.proc && r.kind === state.kind;
-      return { from: strong(cap(procOf(r.proc).from.replace(/^the /, "")), on), what: strong(kindOf(r.kind).label, on), pH: share(r.pH), pR: share(r.pR), lr: r.impossible ? "–" : lrText(r), says: strong(reading(r), on) };
-    }),
-  }));
+    rows: all.map((r) => ({ from: strong(cap(r.from.replace(/^the /, "")), r.on), what: strong(r.what, r.on), pH: r.pH, pR: r.pR, lr: r.lr, says: strong(r.says, r.on) })),
+  });
+  // The chosen observation is tinted as well as bold, so the mark does not depend on the weight of the type.
+  wide.querySelectorAll("tbody tr").forEach((tr, i) => { if (all[i].on) tr.classList.add("on"); });
+  allBox.replaceChildren(
+    el("p", { class: "chart-title", text: "Every object each way of picking can turn up, with its chance in each world" }),
+    // Six columns need about 700 pixels. Where the tool has them it shows the table; where it has not, the same rows as a list.
+    el("div", { class: "all-wide" }, wide),
+    el("ul", { class: "all-narrow" }, all.map((r) => el("li", { class: r.on ? "on" : null },
+      el("strong", { text: r.what }), ` from ${r.from}. Chance ${r.pH} if all ravens are black, ${r.pR} if the rival is true. `,
+      r.lr === "–" ? "It cannot happen in either world." : `Likelihood ratio ${r.lr}: `, r.lr === "–" ? "" : el("strong", { text: `${r.says}.` })))));
 }
 
 update();
