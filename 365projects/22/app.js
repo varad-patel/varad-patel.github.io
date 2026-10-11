@@ -37,7 +37,7 @@ const insert = (glyph) => {
   fromFormula();
 };
 const keys = el("div", { class: "keys", role: "group", "aria-label": "Symbols of the language with their codes" },
-  SYMBOLS.map((s) => el("button", { type: "button", title: `${s.name}, code ${s.code}`, "aria-label": `Insert ${s.glyph}: ${s.name}, code ${s.code}`, onclick: () => insert(s.glyph) }, el("b", { text: s.glyph }), el("small", { text: s.code }))));
+  SYMBOLS.map((s) => el("button", { type: "button", title: `${s.name}, code ${s.code}`, "aria-label": `Insert ${s.glyph}: ${s.name}, code ${s.code}`, "data-code": s.code, onclick: () => insert(s.glyph) }, el("b", { text: s.glyph }))));
 const copied = el("span", { class: "small muted", role: "status" });
 const copy = () => {
   const done = (text) => { copied.textContent = text; setTimeout(() => { copied.textContent = ""; }, 2500); };
@@ -50,13 +50,22 @@ const upTo = select({ label: "How rare are formulas? Check every number up to", 
 const censusOut = el("div", { class: "small", role: "status" });
 const censusButton = button("Count the codes", () => runCensus(Number(upTo.value)), { small: true });
 
-const controls = el("div", { class: "controls" },
+// On a phone the examples and the count sit below the results. When one of their buttons changes the two boxes,
+// bring the boxes (and so the start of the results) back into view.
+const reveal = () => { const r = formula.el.getBoundingClientRect(); if (r.top < 0 || r.bottom > innerHeight) formula.el.scrollIntoView({ block: "start" }); };
+const useFormula = (text) => { formula.value = text; fromFormula(); reveal(); };
+const useNumber = (text) => { number.value = text; fromNumber(); reveal(); };
+
+// Three blocks in reading order: the two boxes, the results, then things to try. On a wide screen the results take
+// the right-hand column; on a narrow one they come straight after the boxes instead of below every control.
+const boxes = el("div", { class: "controls" },
   formula.el,
   el("div", { class: "field" }, el("div", { class: "lab" }, el("span", { text: "The 17 symbols and their codes" })), keys),
-  el("div", { class: "field" }, el("div", { class: "lab" }, el("span", { text: "Example formulas" })), el("div", { class: "row" }, FORMULAS.map((f) => button(f.label, () => { formula.value = f.text; fromFormula(); }, { small: true })))),
   number.el,
-  el("div", { class: "row" }, button("Copy the number", copy, { small: true, primary: true }), copied),
-  el("div", { class: "field" }, el("div", { class: "lab" }, el("span", { text: "Numbers to decode" })), el("div", { class: "row" }, NUMBERS.map((n) => button(fmt.int(Number(n)), () => { number.value = n; fromNumber(); }, { small: true })))),
+  el("div", { class: "row" }, button("Copy the number", copy, { small: true, primary: true }), copied));
+const extras = el("div", { class: "controls" },
+  el("div", { class: "field" }, el("div", { class: "lab" }, el("span", { text: "Example formulas" })), el("div", { class: "row" }, FORMULAS.map((f) => button(f.label, () => useFormula(f.text), { small: true })))),
+  el("div", { class: "field" }, el("div", { class: "lab" }, el("span", { text: "Numbers to decode" })), el("div", { class: "row" }, NUMBERS.map((n) => button(fmt.int(Number(n)), () => useNumber(n), { small: true })))),
   upTo.el, el("div", { class: "row" }, censusButton), censusOut);
 
 /* ---------- outputs ---------- */
@@ -68,9 +77,9 @@ const numberBox = el("div", { class: "panel" });
 const syntaxBox = el("div", { class: "panel" });
 const tableBox = el("div");
 const out = el("div", { class: "out" }, el("div", { class: "stats" }, sSymbols.el, sDigits.el, sKind.el), message, numberBox, syntaxBox, tableBox);
-$("#app").append(el("div", { class: "tool-grid wide-controls" }, controls, out));
+$("#app").append(el("div", { class: "tool-grid wide-controls" }, boxes, out, extras));
 
-const power = (p, c) => [String(p), el("sup", { text: c })];
+const power = (p, c) => [String(p), el("span", { class: "sr-only", text: " to the power " }), el("sup", { text: c })];
 const raised = (n) => [...String(n)].map((d) => "⁰¹²³⁴⁵⁶⁷⁸⁹"[d]).join(""); // for places that take plain text only
 const KIND = { formula: ["Well formed", "a formula of the language"], term: ["A term", "a name for a number, not a formula"], neither: ["Malformed", "a string of symbols, but not a formula"] };
 
@@ -114,11 +123,11 @@ function render(codes, n, lead) {
 
   const rows = factors(codes);
   numberBox.replaceChildren(...[
-    el("h3", { text: "The number" }),
+    el("h2", { text: "The number" }),
     el("p", { class: "bignum", text: info.short }),
     info.digits > 40 && el("p", { class: "small muted", text: `${fmt.int(info.digits)} digits; the first and last 18 are shown, and the whole number is in the box.` }),
     el("p", { class: "small", style: { marginTop: "10px" } }, "As a product of consecutive primes, each raised to the code of the symbol in that position:"),
-    el("p", { class: "factors", "aria-label": `Factorisation: ${rows.map((r) => `${r.prime} to the power ${r.code}`).join(", times ")}` }, rows.flatMap((r, i) => [i ? " × " : "", el("span", {}, power(r.prime, r.code))])),
+    el("p", { class: "factors" }, rows.flatMap((r, i) => [i ? " × " : "", el("span", {}, power(r.prime, r.code))])),
   ].filter(Boolean));
 
   const marked = (at) => el("p", { class: "string" }, codes.map((_, i) => el("span", { class: i === at ? "bad" : null, text: show([codes[i]]) })), at >= codes.length ? el("span", { class: "bad", text: " " }) : null);
@@ -140,7 +149,7 @@ function render(codes, n, lead) {
   } else {
     body = [el("div", { class: "note warn" }, el("strong", { text: "Not well formed. " }), `It is a string of symbols with a Gödel number, but the grammar cannot build it. ${c.error}`), marked(c.position)];
   }
-  syntaxBox.replaceChildren(el("h3", { text: "Syntax check" }), ...body.filter((b) => b && (typeof b === "string" || b.textContent)));
+  syntaxBox.replaceChildren(el("h2", { text: "Syntax check" }), ...body.filter((b) => b && (typeof b === "string" || b.textContent)));
 
   const shown = rows.slice(0, 200);
   tableBox.replaceChildren(el("div", { class: "scroll" }, table({
@@ -168,7 +177,7 @@ function runCensus(limit) {
     if (to < limit) { censusOut.textContent = `Checked ${fmt.int(to)} of ${fmt.int(limit)} …`; setTimeout(() => stepFrom(to + 1), 0); return; }
     censusOut.replaceChildren(
       `From 1 to ${fmt.int(limit)}: ${fmt.int(total.strings)} ${total.strings === 1 ? "number is" : "numbers are"} the code of a string, ${fmt.int(total.terms)} of a term, and ${fmt.int(total.formulas.length)} of a well-formed formula${total.formulas.length ? ": " : "."}`,
-      ...total.formulas.slice(0, 12).flatMap((n, i) => [i ? " " : "", button(fmt.int(n), () => { number.value = String(n); fromNumber(); }, { small: true })]));
+      ...total.formulas.slice(0, 12).flatMap((n, i) => [i ? " " : "", button(fmt.int(n), () => useNumber(String(n)), { small: true })]));
   };
   stepFrom(1);
 }

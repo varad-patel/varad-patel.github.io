@@ -152,6 +152,82 @@ test("how a formula is read: precedence, association and brackets", () => {
   assert.notEqual(number("x+y×z=0"), number("(x+(y×z))=0"));
 });
 
+test("the grammar is unambiguous, and the parser accepts exactly the strings the grammar builds", () => {
+  // Written from the grammar and not from the parser: the number of ways each rule can build codes[i..j), by dynamic programming.
+  const [ZERO, SUCC, PLUS, TIMES, EQ, OPEN, CLOSE, NOT, AND, OR, IMP, ALL, SOME, X, Y, Z, PRIME] = SYMBOLS.map((s) => s.code);
+  const ways = (t) => {
+    const memo = new Map();
+    const rule = (name, f) => (i, j) => {
+      if (j <= i) return 0;
+      const key = `${name}${i},${j}`;
+      if (!memo.has(key)) memo.set(key, f(i, j));
+      return memo.get(key);
+    };
+    const variable = (i, j) => (j > i && [X, Y, Z].includes(t[i]) && t.slice(i + 1, j).every((c) => c === PRIME) ? 1 : 0);
+    const factor = rule("f", (i, j) => (j === i + 1 && t[i] === ZERO ? 1 : 0) + variable(i, j) + (t[i] === SUCC ? factor(i + 1, j) : 0) + (t[i] === OPEN && t[j - 1] === CLOSE ? term(i + 1, j - 1) : 0));
+    // lower { op lower }: everything up to the last operator is the same rule again.
+    const repeated = (name, lower, op) => {
+      const self = rule(name, (i, j) => { let n = lower(i, j); for (let k = i + 1; k < j - 1; k++) if (t[k] === op) n += self(i, k) * lower(k + 1, j); return n; });
+      return self;
+    };
+    const product = repeated("p", factor, TIMES);
+    const term = repeated("t", product, PLUS);
+    const unit = rule("u", (i, j) => {
+      let n = 0;
+      for (let k = i + 1; k < j - 1; k++) if (t[k] === EQ) n += term(i, k) * term(k + 1, j);
+      if (t[i] === NOT) n += unit(i + 1, j);
+      if (t[i] === OPEN && t[j - 1] === CLOSE) n += formula(i + 1, j - 1);
+      if (t[i] === ALL || t[i] === SOME) for (let k = i + 2; k < j; k++) n += variable(i + 1, k) * unit(k, j);
+      return n;
+    });
+    const conj = repeated("c", unit, AND);
+    const disj = repeated("d", conj, OR);
+    const formula = rule("F", (i, j) => { let n = disj(i, j); for (let k = i + 1; k < j - 1; k++) if (t[k] === IMP) n += disj(i, k) * formula(k + 1, j); return n; });
+    return { formula: formula(0, t.length), term: term(0, t.length) };
+  };
+  const check = (codes) => {
+    const n = ways(codes);
+    assert.ok(n.formula <= 1 && n.term <= 1 && n.formula + n.term <= 1, `${show(codes)} can be built in ${n.formula + n.term} ways`);
+    assert.equal(parse(codes, "formula").ok, n.formula === 1, show(codes));
+    assert.equal(parse(codes, "term").ok, n.term === 1, show(codes));
+    return n;
+  };
+  // Known cases first, so that the counter itself is checked.
+  assert.deepEqual(ways(codesOf("0=0")), { formula: 1, term: 0 });
+  assert.deepEqual(ways(codesOf("x+y×z")), { formula: 0, term: 1 });
+  assert.deepEqual(ways(codesOf("x=y=z")), { formula: 0, term: 0 });
+  // Every string of one to four symbols: 17 + 17² + 17³ + 17⁴ = 88,740 of them.
+  let strings = 0, formulas = 0, terms = 0;
+  const codes = [];
+  const sweep = () => {
+    if (codes.length) { strings++; const n = check(codes); formulas += n.formula; terms += n.term; }
+    if (codes.length < 4) for (let c = 1; c <= MAX_CODE; c++) { codes.push(c); sweep(); codes.pop(); }
+  };
+  sweep();
+  // By hand: with a and b drawn from 0, x, y, z there are 16 formulas a=b, and 72 of four symbols
+  // (¬a=b, Sa=b and a=Sb, 16 each; v′=a and a=v′ for a variable v, 12 each). 193 strings are terms.
+  assert.deepEqual([strings, formulas, terms], [88740, 88, 193]);
+  // Longer strings drawn from the grammar itself, with brackets only where a rule calls for them.
+  const r = rng(2222);
+  const v = () => r.pick(["x", "y", "z"]) + "′".repeat(r.bool(0.25) ? r.int(1, 2) : 0);
+  const factorOf = (d) => { const u = r(); return d <= 0 || u < 0.35 ? (r.bool() ? "0" : v()) : u < 0.6 ? `S${factorOf(d - 1)}` : `(${termOf(d - 1)})`; };
+  const chain = (lower, op) => (d) => { let s = lower(d); while (r.bool(0.3)) s += op + lower(d - 1); return s; };
+  const termOf = chain(chain(factorOf, "×"), "+");
+  const unitOf = (d) => { const u = r(); return d <= 0 || u < 0.4 ? `${termOf(2)}=${termOf(2)}` : u < 0.55 ? `¬${unitOf(d - 1)}` : u < 0.8 ? r.pick(["∀", "∃"]) + v() + unitOf(d - 1) : `(${formulaOf(d - 1)})`; };
+  const disjOf = chain(chain(unitOf, "∧"), "∨");
+  const formulaOf = (d) => { const s = disjOf(d); return r.bool(0.3) ? `${s}→${formulaOf(d - 1)}` : s; };
+  let long = 0;
+  while (long < 2000) {
+    const t = tokenise(formulaOf(3));
+    if (!t.ok || t.codes.length < 5 || t.codes.length > 60) continue;
+    assert.deepEqual(check(t.codes), { formula: 1, term: 0 }, show(t.codes));
+    // Writing out every bracket gives a string that reads back as the same tree.
+    const ast = parse(t.codes).ast;
+    assert.deepEqual(parse(codesOf(bracketed(ast))).ast, ast);
+    long++;
+  }
+});
+
 test("free variables and the truth of closed, quantifier-free formulas", () => {
   const ast = (text) => classify(codesOf(text)).ast;
   assert.deepEqual(freeVariables(ast("∀x¬Sx=0")), []);
