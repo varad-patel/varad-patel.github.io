@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>House Price Predictor · 365 projects</title>
+  <meta name="description" content="Describe a flat in Paris and get a price estimate from a hedonic regression fitted to 85,332 real sales, with what each feature adds and how far out the model is on sales it never saw.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    /* Called .part because assets/site.css keeps the name "block" for the gallery, with up to 72px of padding above. */
+    .part { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-content: start; min-width: 0; }
+    .grid2 > .part { padding-top: 14px; }
+    .breakdown .sub { display: block; font-size: 0.8rem; color: var(--slate); white-space: normal; }
+    .breakdown td.num { white-space: normal; }
+    .breakdown th, .breakdown th.num { white-space: normal; vertical-align: bottom; line-height: 1.25; }
+    .breakdown td:first-child { min-width: 9.5em; }
+    @media (max-width: 520px) {
+      .breakdown .tbl th, .breakdown .tbl td { padding: 6px 5px; }
+      .breakdown td:first-child { min-width: 0; }
+      .breakdown .tbl { font-size: 0.86rem; }
+    }
+    .breakdown tr:last-child td { border-top: 1.5px solid var(--ink); }
+    .chain { overflow-wrap: anywhere; }
+    .stat .v { font-size: 1.45rem; }
+    .eq-lines { white-space: normal !important; }
+    /* The box for the "unusual flat" warning takes no room while it is empty. */
+    #app .out > div:empty { display: none; }
+    /* On a phone the controls are taller than the screen, so the estimate rides along at the top while they are in view. */
+    .mini { display: none; }
+    @media (max-width: 860px) {
+      .mini { display: block; position: sticky; top: 0; z-index: 4; margin: -6px 0; padding: 8px 0; background: var(--sheet); border-bottom: 1px solid var(--rule); font-size: 0.9rem; line-height: 1.35; pointer-events: none; }
+      .mini strong { font-weight: 700; }
+    }
+  </style>
+</head>
+<body class="proj" data-day="36">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>House Price Predictor</h1>
+      <p class="lede">Describe a flat in Paris and get an estimate from a regression fitted to 85,332 real sales, with what each feature adds to the price and how far out the model is on sales it never saw.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Price estimate for a flat in Paris">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>The reference flat (42 m², two rooms, one outbuilding, sold in the second half of 2025) is estimated at €578,000 in the 6th arrondissement and €338,000 in the 19th: 71% more for the address alone. Load the page and choose the 6th, then the 19th, in the arrondissement menu to see both. On 28,445 sales kept out of the fit, half of the model's estimates were within 12.8% of the price paid, and a plain table of median prices per square metre by arrondissement and half-year does slightly better (12.7%).</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>A flat is not one good. It is a bundle: so many square metres, so many rooms, an address, perhaps a cellar. None of these is sold on its own, so none has a posted price. <strong>Hedonic pricing</strong> recovers the missing prices from the prices of whole bundles. Line up many sales, regress the price on the features, and each coefficient reads as the going rate for one feature with the others held fixed.</p>
+      <p>The economics behind the regression came in two steps. Kelvin Lancaster argued in 1966 that people do not want goods as such but the characteristics goods carry, so demand is really demand for characteristics. Sherwin Rosen showed in 1974 how a market for a differentiated good produces a price schedule over those characteristics: buyers who care most about space and sellers who can supply it most cheaply find each other along it, and the slope of the schedule at any point is the implicit price of a little more of that characteristic.</p>
+      <p>That is why the method matters outside the classroom. Official statistics use it to compare this year's sales with last year's when the homes sold are never the same homes: the UK House Price Index, for one, is built on a hedonic regression. It is also the standard way to put a price on things with no market of their own, such as a quiet street or a good school nearby, by asking how much more the homes that have them sell for.</p>
+      <p>Rosen's paper also carries the main warning. An implicit price is a market price, set where many different buyers and sellers meet. It is not what any one buyer would pay for an extra room, and it is not what would happen to one flat's price if a wall were moved. The tool below estimates going rates. It does not run experiments.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The data</h3>
+      <p>France publishes the property sales of the last five years as open data, for the whole country except Alsace, Moselle and Mayotte: the <em>Demandes de valeurs foncières</em> (DVF), drawn by the tax authority from notaries' deeds and the land register. This page uses the edition that was online on 11 October 2026 (the tax authority's update of 7 April 2026), for Paris, which holds 207,365 sales dated from January 2021 to December 2025. The price is the one declared in the deed. It includes the agency's fee when the seller pays it and leaves out notaries' fees and any furniture.</p>
+      <p>The model is fitted to ordinary sales of a single flat. A sale is kept if it is a plain sale (not an exchange, an auction or a sale off-plan), if it contains exactly one flat and nothing else except outbuildings, and if the flat has 9 to 250 m² of floor, 1 to 8 main rooms and a price of €3,000 to €30,000 per m². The last rule removes 5,268 sales below €3,000 per m², of which 1,799 are below €100 per m² and so are not market prices at all, and 399 above €30,000 per m². That leaves 142,221 sales. The script that does this, with every count, is in the repository.</p>
+      <p>Floor area is the land register's figure: floor space between the walls, rounded down to a whole square metre, without outbuildings. Main rooms leave out kitchens and bathrooms. An outbuilding (<em>dépendance</em>) is an accessory space recorded in the same sale, such as a cellar, a store room, a garage or a parking space; the file does not say which.</p>
+
+      <h3>The split</h3>
+      <p>The sales are shuffled with a fixed seed and cut in three. The model is fitted to 60% (85,332 sales, the training set). The ranges are set on another 20% (28,444, the calibration set). Every error figure on this page comes from the last 20% (28,445, the test set), which plays no part in either step.</p>
+
+      <h3>The model</h3>
+      <p>For sale <var>i</var>, by ordinary least squares on the training set:</p>
+      <p class="eq eq-lines">ln <var>price</var><sub><var>i</var></sub> = <var>b</var><sub>0</sub> + <var>b</var><sub>1</sub> <var>L</var><sub><var>i</var></sub> + <var>b</var><sub>2</sub> <var>L</var><sub><var>i</var></sub><sup>2</sup> + <var>rooms</var><sub><var>i</var></sub> + <var>arrondissement</var><sub><var>i</var></sub> + <var>outbuildings</var><sub><var>i</var></sub> + <var>half-year</var><sub><var>i</var></sub> + <var>e</var><sub><var>i</var></sub><br>where <var>L</var><sub><var>i</var></sub> = ln(<var>area</var><sub><var>i</var></sub> / 42)</p>
+      <p>Each of the four named terms is a set of 0/1 columns, one for every level except the reference flat's (two rooms, the 15th arrondissement, one outbuilding, July to December 2025). The reference flat is a common kind of sale: the median floor area, the most frequent number of rooms, arrondissement and number of outbuildings, and the latest half-year. Because every column is zero for it, exp(<var>b</var><sub>0</sub>) is its price, €398,000. There are 38 coefficients in all, and the fit explains 88% of the variation in log price (<var>R</var>² = 0.8845).</p>
+      <p>The logarithm is the usual choice for prices, for a reason: features then act as percentages. A cellar plausibly adds 3% to any flat, not the same number of euros to a studio and to a 200 m² apartment. The squared term lets the percentage response to floor area change with size. The elasticity of price to floor area is <var>b</var><sub>1</sub> + 2 <var>b</var><sub>2</sub> <var>L</var>: 0.91 at 20 m², 0.98 at 42 m², 1.06 at 100 m². So with the number of rooms held fixed, doubling a small flat's floor area does not quite double its price, and above about 54 m², where the elasticity passes 1, a larger flat costs more per square metre than a smaller one.</p>
+
+      <h3>What each feature adds</h3>
+      <p>For a 0/1 column with coefficient <var>b</var>, the price is multiplied by exp(<var>b</var>), a change of exp(<var>b</var>) − 1. The coefficient itself is close to that percentage only when it is small: the 6th arrondissement's 0.375 is a premium of 45%, not 37.5%. For floor area the multiplier is exp(<var>b</var><sub>1</sub> <var>L</var> + <var>b</var><sub>2</sub> <var>L</var><sup>2</sup>). Each row of the table compares the flat with the reference flat on one feature, so</p>
+      <p class="eq eq-lines"><var>estimate</var> = €398,000 × <var>m</var><sub>area</sub> × <var>m</var><sub>rooms</sub> × <var>m</var><sub>arrondissement</sub> × <var>m</var><sub>outbuildings</sub> × <var>m</var><sub>half-year</sub></p>
+      <p>exactly; the line under the table prints this product. The euro column is one way of turning a multiplier into money, and the page says which: <var>estimate</var> − <var>estimate</var> / <var>m</var>, the estimate minus what the same flat would fetch with that one feature set back to the reference. Because the model multiplies, these amounts depend on everything else about the flat (a 45% premium is more euros on a large flat) and they do not sum to the gap between the flat and the reference. The last row gives that gap directly.</p>
+      <p>Among flats of the same size in the same place, the smaller features move the price little. A third room in the same 42 m² goes with 1.7% more, a single room with 3.4% less, having no outbuilding with 2.7% less. The same flat sold in the first half of 2021 fetched 10.6% more than at the end of 2025.</p>
+      <p>"One more m² adds" is the slope of the price in floor area at the flat's own size: the elasticity times the price, divided by the area.</p>
+
+      <h3>The estimate is a geometric mean</h3>
+      <p>The regression predicts the mean of log price. Turned back into euros, exp(<var>x</var>′<var>b</var>) is the geometric mean of prices for such flats, which is what the page calls the estimate. It sits a little below the middle of the sales, because bargains run deeper than premiums: 53.5% of the test sales fetched more than their estimate. The arithmetic mean is higher still. Duan's smearing estimate, the estimate times the average of exp(<var>e</var><sub><var>i</var></sub>) over the training residuals, puts it 2.9% above (a factor of 1.0288).</p>
+
+      <h3>The range</h3>
+      <p>The range answers "where do sales of such flats land?", which is a different question from how well the coefficients are known. With 85,332 sales the coefficients are known closely: the 95% interval for the reference flat's geometric mean is €395,000 to €401,000. Individual sales scatter far more widely, because of everything the data does not record.</p>
+      <p>So the range is taken from sales, not from a formula. For each calibration sale the script records the residual, ln(<var>price</var>) − <var>x</var>′<var>b</var>. For a range meant to hold a share 1 − <var>a</var> of sales, the limits are the residuals ranked ⌊(<var>n</var> + 1) <var>a</var>/2⌋ from the bottom and ⌈(<var>n</var> + 1)(1 − <var>a</var>/2)⌉ from the bottom, where <var>n</var> is the number of calibration sales, and the range is the estimate times exp of each limit. This is split conformal prediction: if a new sale is drawn in the same way as the calibration sales, it falls outside with probability at most <var>a</var>, whatever the distribution of the errors.</p>
+      <p>The limits are worked out separately for each arrondissement, because prices are much more scattered in the centre. One pair of limits for all of Paris would hold only 80% of the test sales in the 1st arrondissement. With separate limits, the 90% range holds 89.9% of the 28,445 test sales, and between 88.0% (20th) and 92.7% (2nd) in every arrondissement. It is not exact for every kind of flat: by number of rooms it runs from 88.2% to 91.5%.</p>
+
+      <h3>The intervals for the effects</h3>
+      <p>The 95% interval beside each effect is exp(<var>b</var> ± 1.96 <var>se</var>) − 1. The standard errors come from White's heteroskedasticity-consistent covariance matrix, with the usual <var>n</var>/(<var>n</var> − <var>p</var>) correction, since the spread of the errors clearly differs between arrondissements. For floor area the two coefficients are combined with their covariance.</p>
+
+      <h3>How good is it?</h3>
+      <p>On the test set the median error is 12.8% of the price paid; 40% of estimates are within 10%, 70% within 20%, and 16% miss by more than 30%. The comparison that matters is with the best rule that needs no regression. Floor area times the median price per m² in Paris gives a median error of 15.9%. Using the arrondissement's median gives 13.4%. Using the median for the arrondissement and half-year gives 12.7%, a little better than the model. The regression is not the better predictor. Its use is that it separates the features, which a table of medians cannot do.</p>
+      <p>These figures flatter the model in one way. The rule that removes sales below €3,000 or above €30,000 per m² looks at the price, which is the thing being predicted, so the test set holds no sale that the model could miss very badly. Least squares needs some rule of the kind: the 1,799 sales recorded at under €100 per m² would otherwise drag the whole fit towards them. To show what it hides, the script puts 1,133 of the 5,667 removed sales, one in five as in the test set, back beside the 28,445 test sales. On those 29,578 sales the model's median error is 13.4% and the table of medians' is 13.3%, 19% of estimates miss by more than 30%, and the 90% range holds 86.5% of sales, not 89.9%.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>What your home is worth.</strong> The model knows flats sold in Paris between 2021 and 2025. It says nothing about houses, about any other city or country, or about a sale after December 2025.</li>
+        <li><strong>Anything about what it cannot see.</strong> The floor, a lift, the state of the kitchen, light, noise, the street, the age of the building and its energy rating are all missing from the data. They are why half of the estimates are more than 12.8% out, and no amount of extra sales would fix that.</li>
+        <li><strong>What changing a feature would do.</strong> Flats with more rooms differ from flats with fewer in ways the data does not record, and so do flats in different arrondissements. A coefficient is a going rate across different flats, not the result of altering one.</li>
+        <li><strong>The price of an unusual sale.</strong> About 5% of single-flat sales were left out for a floor area, room count or price per m² outside the limits, and the error figures and the ranges describe only the sales that were kept: with the sales removed for their price put back, the 90% range holds 86.5%. The data does not mark sales between relatives or sales of a flat with a sitting tenant, so any that passed the limits are in the fit. The range describes recorded sales, with their oddities.</li>
+        <li><strong>Different trends in different places.</strong> One half-year effect is applied to the whole city. If prices fell further in some arrondissements than others, the model averages over that.</li>
+        <li><strong>A guaranteed range for your kind of flat.</strong> The range is right on average within an arrondissement. For a subgroup, such as very large flats, it can hold fewer sales than it says.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Use the coordinates in the data to price location as a smooth surface, so that two sides of an arrondissement can differ.</li>
+        <li>Let the half-year effects vary by arrondissement, and test whether the centre and the edge moved together after 2022.</li>
+        <li>Fit the limits of the range with quantile regression, so that the range can widen for large flats and narrow for small ones.</li>
+        <li>Link each sale to a register of building age or energy rating and measure how much of the unexplained scatter those two remove.</li>
+        <li>Fit the same model to houses in another département, where land area becomes a feature with a price of its own.</li>
+        <li>Compare the half-year effects with a repeat-sales index built from flats that sold twice in the five years.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>Direction générale des Finances publiques. <em>Demandes de valeurs foncières</em> (DVF), and Etalab's <em>Demandes de valeurs foncières géolocalisées</em>, which republishes the same records as one CSV file per département. Files for Paris (département 75), sales from January 2021 to December 2025, last updated by the Direction générale des Finances publiques on 7 April 2026. Licence Ouverte / Open Licence 2.0. Retrieved from data.gouv.fr on 11 October 2026.</li>
+        <li>Direction générale des Finances publiques (2022). <em>Notice descriptive des fichiers de valeurs foncières</em>. The definitions of the price, the floor area, the main rooms and the outbuildings used above.</li>
+        <li>HM Land Registry. <em>About the UK House Price Index</em>, section on methodology. Guidance published on gov.uk, read 11 October 2026.</li>
+        <li>Lancaster, K. J. (1966). A new approach to consumer theory. <em>Journal of Political Economy</em>, 74(2), 132-157.</li>
+        <li>Rosen, S. (1974). Hedonic prices and implicit markets: product differentiation in pure competition. <em>Journal of Political Economy</em>, 82(1), 34-55.</li>
+        <li>Halvorsen, R., and Palmquist, R. (1980). The interpretation of dummy variables in semilogarithmic equations. <em>American Economic Review</em>, 70(3), 474-475.</li>
+        <li>White, H. (1980). A heteroskedasticity-consistent covariance matrix estimator and a direct test for heteroskedasticity. <em>Econometrica</em>, 48(4), 817-838.</li>
+        <li>Duan, N. (1983). Smearing estimate: a nonparametric retransformation method. <em>Journal of the American Statistical Association</em>, 78(383), 605-610.</li>
+        <li>Lei, J., G'Sell, M., Rinaldo, A., Tibshirani, R. J., and Wasserman, L. (2018). Distribution-free predictive inference for regression. <em>Journal of the American Statistical Association</em>, 113(523), 1094-1111.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "question": "What does each feature of a flat add to its price, and how close can a regression on recorded sales get to the price paid?",
+  "finding": "The same 42 m² two-room flat is estimated at €578,000 in the 6th arrondissement of Paris and €338,000 in the 19th, 71% more for the address alone, and on 28,445 held-out sales half of the model's estimates were within 12.8% of the price paid.",
+  "limit": "The model knows only flats sold in Paris from 2021 to 2025 and sees nothing of a flat's floor, condition or street, so it is not a valuation of any home.",
+  "sources": [
+    "DGFiP Demandes de valeurs foncières"
+  ],
+  "built": "2026-10-13"
+}
