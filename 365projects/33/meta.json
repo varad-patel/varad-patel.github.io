@@ -1,0 +1,10 @@
+{
+  "question": "What does a salary actually buy in one place compared with another, and how much of the difference is rent?",
+  "finding": "In 2024 a salary of $100,000 in the San Francisco area, the dearest of 387 US metropolitan areas, bought what about $72,300 bought in Monroe, Louisiana, the cheapest, and housing cost 78.0% less there against 13.6% less for goods.",
+  "limit": "The page has city-level price data only for the United States, so every other country is one national average and its cities cannot be told apart.",
+  "sources": [
+    "U.S. Bureau of Economic Analysis",
+    "World Bank"
+  ],
+  "built": "2026-10-13"
+}

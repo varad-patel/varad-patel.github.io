@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Real Cost of Living · 365 projects</title>
+  <meta name="description" content="Enter a salary and two places and see what it buys in each: the pay needed to match, how far the same money goes, and how much of the gap is rent.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .jump { display: none; width: fit-content; font-size: 0.9rem; font-weight: 600; }
+    @media (max-width: 860px) { .jump { display: inline-block; } }
+    .place { display: grid; gap: 10px; padding: 12px; border: 1px solid var(--grid); background: #fff; min-width: 0; }
+    .reading { display: grid; gap: 8px; font-size: 0.97rem; line-height: 1.5; overflow-wrap: anywhere; }
+    .levels { display: grid; gap: 8px; padding: 12px 14px; border-left: 3px solid var(--slate); background: color-mix(in srgb, var(--slate) 9%, transparent); overflow-wrap: anywhere; }
+    .levels p { line-height: 1.5; }
+    #app .tbl th { white-space: normal; }
+    #app .tbl caption { overflow-wrap: anywhere; }
+    .p-sec .eq { white-space: normal; overflow-wrap: anywhere; }
+  </style>
+</head>
+<body class="proj" data-day="33">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>The Real Cost of Living</h1>
+      <p class="lede">A salary is only worth what it buys where you spend it. Enter one, pick two places, and see what it buys in each, what you would need in the second to match the first, and how much of the gap is rent.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Salary comparison between two places by price level">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>The page opens on the two ends of the United States. In 2024 a salary of $100,000 in the San Francisco area, the dearest of 387 metropolitan areas, bought what about $72,300 bought in Monroe, Louisiana, the cheapest: the same pay went 38.3% further there. Almost all of that is rent. Housing cost 78.0% less in Monroe, while goods cost 13.6% less and services other than housing and utilities 9.9% less.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Economists separate the nominal wage, the number on the payslip, from the real wage, what that number buys. Over time the difference is inflation. Across places it is the price level: the same basket of rent, food, transport and services costs different amounts in different places, so the same payslip is a different standard of living. Comparing pay between two cities without correcting for this compares numbers, not lives.</p>
+      <p>Prices do not differ evenly. A phone or a pair of trainers can be shipped anywhere, so its price cannot drift far apart between cities. A flat cannot be moved. Across the 387 American metropolitan areas in this page's data, the price level of goods runs only from 94 to 112 with the national average at 100, while the price level of rents runs from 42 to 212. That is why the gap between an expensive place and a cheap one is concentrated in housing, and why the tool breaks the comparison into goods, rents, utilities and other services wherever its source does.</p>
+      <p>The correction changes conclusions that matter. Enrico Moretti showed that because American graduates have gathered in cities with expensive housing, the gap between their real wages and those of high-school graduates has grown significantly less since 1980 than the gap in their payslips. Between countries the same correction is the purchasing-power parity, the exchange rate at which a basket costs the same in two currencies. It is the reason an income of a few thousand dollars in a poor country is not the destitution that the market exchange rate makes it look.</p>
+      <p>The data impose a limit that the tool states rather than hides. The Bureau of Economic Analysis publishes an official price level every year for each American metropolitan area, rents included. Nothing open and comparable was found for the cities of other countries (the nearest, the United Kingdom's regional figures, is described under the limits below), so the rest of the world gets one number per country. The tool can set San Francisco against Monroe, or against India as a whole, but it cannot tell Mumbai from a village in Bihar, and it says so whenever a country is chosen.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>A price level for every place</h3>
+      <p>Each place gets one number, <var>L</var>: the cost of household spending there, with the United States average at 1.</p>
+      <p>For places inside the United States, <var>L</var> is the regional price parity for 2024 published by the Bureau of Economic Analysis (BEA), divided by 100. BEA publishes one for each of 387 metropolitan areas, for the 50 states and the District of Columbia, and for the non-metropolitan part of the country taken together. A metropolitan area here is the official one, a city with the surrounding counties tied to it by commuting, as drawn by the Office of Management and Budget in 2023. Alongside the all-items figure BEA gives separate parities for goods, housing, utilities and other services. Its housing figure is a price level for rents, estimated from what tenants pay. Only the all-items figure is scaled so that the United States is exactly 100: BEA's own national figures for the four parts in 2024 are 99.6 for goods, 100.6 for housing, 98.4 for utilities and 100.1 for other services.</p>
+      <p>For a country, <var>L</var> is the World Bank's purchasing-power parity for household consumption in 2024, divided by the official exchange rate, both in local currency per dollar:</p>
+      <p class="eq"><var>L</var> = PPP for household consumption ÷ exchange rate</p>
+      <p>The PPP is the number of units of local currency that buy what one dollar buys in the United States. If 19.9 rupees buy what a dollar buys and a dollar costs 83.7 rupees, prices in India are 19.9 / 83.7 = 0.238 of the American level.</p>
+
+      <h3>The sums</h3>
+      <p>Write <var>S</var> for the salary in dollars, A for the first place and B for the second.</p>
+      <p class="eq">what <var>S</var> buys in A, at US-average prices = <var>S</var> / <var>L</var><sub>A</sub><br>salary needed in B to match = <var>S</var> × <var>L</var><sub>B</sub> / <var>L</var><sub>A</sub><br>how much further the same pay goes in B = <var>L</var><sub>A</sub> / <var>L</var><sub>B</sub> − 1</p>
+      <p>A salary typed in the first country's own currency is first divided by its exchange rate to give dollars. The salary needed in a second country is also shown in that country's currency, multiplied back by its exchange rate. Amounts are rounded to three significant figures, because the price levels behind them are estimates and do not support more.</p>
+
+      <h3>Where the official exchange rate cannot be used</h3>
+      <p>Dividing the PPP by the official exchange rate is only safe when that rate is the one the World Bank itself uses to turn the country's figures into dollars: the same currency unit, over the same twelve months. For some countries it is not. Bulgaria's PPP for 2024 is already expressed in euros, which it adopted in January 2026, while its official rate is still in leva; dividing the two gives a price level of 0.22, about half the true figure. So the script that builds the data first compares each official exchange rate with the rate implied by the World Bank's own GDP figures, in which the units cancel:</p>
+      <p class="eq">implied rate = PPP for GDP ÷ (GDP per person in dollars / GDP per person in international dollars)</p>
+      <p>For 2024 the implied rate is the one the World Bank publishes as its alternative conversion factor, to within 0.1% for every country here. For 157 of the 171 countries the official rate agrees with it within 2% and the formula above is used. For the other 14 the level is built from ratios alone:</p>
+      <p class="eq"><var>L</var> = (PPP for household consumption / PPP for GDP) × (GDP per person in dollars / GDP per person in international dollars)</p>
+      <p>which is the household PPP divided by the implied rate, and the tool works in dollars only for that country, saying so. The World Bank's notes on each country give three kinds of reason.</p>
+      <ul>
+        <li><strong>No official rate for 2024 in the series.</strong> Afghanistan, Guinea, Iran, Malawi, Mauritania, Sierra Leone and the West Bank and Gaza.</li>
+        <li><strong>A different currency unit.</strong> Bulgaria, as above, and Liberia, whose accounts are kept in US dollars while the official rate is for the Liberian dollar.</li>
+        <li><strong>A different rate for the same currency.</strong> Bangladesh, Egypt and Ethiopia report their accounts for a fiscal year that ends in the middle of the calendar year, and the World Bank converts them at the average rate for those months, so "2024" for them is the fiscal year ending in mid-2024. For Angola, Burundi and Ethiopia its notes say that more than one exchange rate was in use, and it converts at its own estimate, not at the official rate. The choice matters. At the official rate the price level would come out at 0.36 instead of 0.31 for Angola, 0.36 instead of 0.21 for Burundi and 0.15 instead of 0.19 for Egypt, so for these countries the figure shown is the World Bank's view of the exchange rate, not what a bank counter offered.</li>
+      </ul>
+
+      <h3>Where housing drives the gap</h3>
+      <p>For two places inside the United States the tool compares each part of the basket, <var>part</var><sub>B</sub> / <var>part</var><sub>A</sub> − 1, and names the part where the two differ most in proportion. It does not say how many dollars of the difference are rent: that would need each area's spending weights, which this table does not give. The World Bank's figure for a country is a single price level with rents not separated out, so a comparison that involves a country has no breakdown.</p>
+
+      <h3>Putting two sources on one scale</h3>
+      <p>Setting a US metropolitan area against another country treats BEA's "US average = 100" and the World Bank's "United States = 1" as the same yardstick. Both are averages of American consumer prices, but they are built from different baskets by different methods, so a mixed comparison is rougher than one made inside either source, and the tool says so under any such pair.</p>
+      <p>The last chart is a count of the 387 metropolitan areas by price level in bands two points wide, with the two chosen places marked, to show how unusual each one is.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>The cost of a city outside the United States.</strong> A country's figure is a national average. This page has no city-level data for India, Britain or anywhere else abroad, so London is treated like the rest of the United Kingdom and Mumbai like the rest of India. The United Kingdom's Office for National Statistics has published regional price levels, most recently for 2016, which put London 7.0% above the national average. They are left out because they are eight years older than everything else here, cover five areas of which London is the only city, and exclude rents and the costs of owning a home, the part of the basket that differs most between places. Angus Deaton and Alan Heston single out the treatment of urban and rural areas of large countries as one of the practical difficulties in building these figures at all.</li>
+        <li><strong>What you keep after tax.</strong> The salary is taken as typed. Income tax, social insurance, and what the state provides in return (health care, schooling) differ between places by more than many price gaps.</li>
+        <li><strong>Your own basket.</strong> The price level is for the average household's spending. Someone who owns their home outright is barely touched by rents; someone who spends half their pay on rent is hit harder than the all-items figure says. BEA's housing figure is estimated from tenants' rents only.</li>
+        <li><strong>Whether the things compared are the same.</strong> A flat in one place is not the flat in another, and the same holds for schools, commutes and safety. Deaton and Heston warn that some international comparisons are close to impossible even in theory.</li>
+        <li><strong>Today's prices, or a country that is missing.</strong> Everything is for 2024. For most countries the figure is the World Bank's estimate carried forward from the last full round of price surveys, for 2021; members of the Eurostat and OECD programme are updated from those bodies' own figures. The exchange rate is the official average for 2024, not the rate you would get today. Countries with no 2024 figure in one of the World Bank's series, Argentina, the Democratic Republic of the Congo and Venezuela among them, are not in the list.</li>
+        <li><strong>What the job would pay.</strong> The tool answers what a given sum buys. It does not know whether an employer in the cheaper place would offer anything like that sum.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Work out pay after income tax and social insurance in each place before comparing what it buys.</li>
+        <li>Let the visitor set their own shares of spending on rent, goods, utilities and services and build a personal price level, as Day 32 does for inflation.</li>
+        <li>Add typical pay by occupation in each US metropolitan area, to show whether wages rise by enough to cover the higher prices.</li>
+        <li>Use the detailed results of the International Comparison Program to give countries a housing figure of their own.</li>
+        <li>Add regional price levels for other countries where a statistical office publishes them under an open licence.</li>
+        <li>Show the whole run from 2008 to 2024, to see which places have become dearer relative to the rest.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>U.S. Bureau of Economic Analysis. Regional price parities by metropolitan statistical area (table MARPP) and by state (table SARPP), 2024, last updated 19 February 2026. <a href="https://apps.bea.gov/regional/downloadzip.htm">apps.bea.gov/regional/downloadzip.htm</a>. Retrieved 11 October 2026. A work of the United States government, which is not subject to copyright in the United States (17 U.S.C. 105), and so in the public domain there. BEA's catalogue of open data names no licence for these tables; it lists them with the access level "public", and its guidelines for citing say that "Citations are appreciated and appropriate" and that a reference must not suggest BEA endorses anything.</li>
+        <li>World Bank, World Development Indicators, last updated 8 October 2026: PPP conversion factor for household consumption (PA.NUS.PRVT.PP), PPP conversion factor for GDP (PA.NUS.PPP), GDP per person in current US dollars (NY.GDP.PCAP.CD) and at PPP (NY.GDP.PCAP.PP.CD), and the official exchange rate (PA.NUS.FCRF), all for 2024. CC BY 4.0. Retrieved 11 October 2026. The PPPs come from the International Comparison Program with the Eurostat and OECD programmes; the exchange rates from the International Monetary Fund. The alternative conversion factor (PA.NUS.ATLS) and the World Bank's notes on each country were read to check the 14 countries with no usable official rate; they are not bundled.</li>
+        <li>Office for National Statistics (2018). Relative regional consumer price levels of goods and services, UK: 2016. Released 1 March 2018. Open Government Licence v3.0. Described under the limits; not used in the tool.</li>
+        <li>Aten, B. H. (2017). Regional price parities and real regional income for the United States. <em>Social Indicators Research</em>, 131(1), 123-143.</li>
+        <li>Moretti, E. (2013). Real wage inequality. <em>American Economic Journal: Applied Economics</em>, 5(1), 65-103.</li>
+        <li>Deaton, A., and Heston, A. (2010). Understanding PPPs and PPP-based national accounts. <em>American Economic Journal: Macroeconomics</em>, 2(4), 1-35.</li>
+        <li>World Bank (2020). <em>Purchasing Power Parities and the Size of World Economies: Results from the 2017 International Comparison Program</em>. Washington, DC: World Bank. The method behind the country figures; the values used here start from the following round, for 2021, whose results were released in May 2024.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
