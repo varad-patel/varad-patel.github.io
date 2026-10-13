@@ -1,0 +1,7 @@
+{
+  "question": "Does the format of an auction change what the seller earns, and what should a bidder do in each format?",
+  "finding": "With four equal bidders and values spread evenly from 0 to 100, 10,000 simulated auctions (seed 52) raise an average of 60.09 first-price, 59.96 second-price and 60.20 all-pay against 60 in theory for each, with standard deviations of 12.2, 20.1 and 40.1.",
+  "limit": "The bots play the equilibrium of a private-values model with evenly spread values, so nothing here says how real people bid or what happens when bidders value the item for the same reasons.",
+  "sources": [],
+  "built": "2026-10-13"
+}

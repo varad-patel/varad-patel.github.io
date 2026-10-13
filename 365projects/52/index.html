@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Auction Simulator · 365 projects</title>
+  <meta name="description" content="Bid against bots in five kinds of auction, compare your results with the equilibrium strategy on the same deals, and simulate thousands of auctions to see when every format raises the same revenue.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    #app > section { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; min-width: 0; scroll-margin-top: 12px; }
+    #app .jump { display: flex; flex-wrap: wrap; gap: 6px 22px; font-weight: 600; font-size: 0.92rem; }
+    #app .part-head { font-size: 1.12rem; padding-bottom: 6px; border-bottom: 1.5px solid var(--ink); }
+    #app .round-head { font-size: 1.05rem; }
+    #app .round-head:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+    .action .panel, .result { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    .bid-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: start; }
+    .bid-row > .btn { margin-top: 26px; }
+    .clock-price { font: 650 2.6rem/1.1 var(--sans); font-variant-numeric: tabular-nums; }
+    .hint-box summary { cursor: pointer; font-weight: 600; font-size: 0.9rem; width: fit-content; }
+    .hint-box p { margin-top: 8px; }
+    #app .note, #app .stat .n, #app .chart-sub { overflow-wrap: anywhere; }
+    #app .stack .tbl th { white-space: normal; vertical-align: bottom; }
+    #app .stack .tbl td:first-child { min-width: 7.5em; }
+    @media (min-width: 621px) { #app .stack .tbl td:nth-child(2) { white-space: nowrap; } }
+    @media (max-width: 620px) {
+      .stack .tbl thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+      .stack .tbl, .stack .tbl tbody, .stack .tbl tr { display: block; width: 100%; }
+      .stack .tbl caption { display: block; }
+      .stack .tbl tr { padding: 8px 0; border-bottom: 1.5px solid var(--ink); }
+      .stack .tbl td { display: flex; justify-content: space-between; gap: 16px; border: 0; padding: 2px 0; text-align: right; white-space: normal; }
+      .stack .tbl td::before { content: attr(data-label); font-weight: 600; text-align: left; }
+    }
+    @media (max-width: 420px) { .bid-row { grid-template-columns: minmax(0, 1fr); } .bid-row > .btn { margin-top: 0; justify-self: start; } }
+  </style>
+</head>
+<body class="proj" data-day="52">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Auction Simulator</h1>
+      <p class="lede">Bid against bots in five kinds of auction and see what the best strategy would have earned on the same deals. Then run thousands of auctions to see when every format raises the same money for the seller, and when it does not.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Auction simulator">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>Leave the second part of the tool on its opening settings: four equal bidders, no reserve, risk-neutral bidders, 10,000 auctions, seed 52. The seller's average revenue is 60.09 in the first-price and Dutch auctions, 59.96 in the second-price and English auctions and 60.20 in the all-pay auction, against 60 in theory for all five. The averages agree; the risk does not. The standard deviation of revenue is 12.2, 20.1 and 40.1.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>The rules of an auction look as if they should matter a great deal. If the winner pays their own bid, everyone bids low. If the winner pays the runner-up's bid, nobody has a reason to. If every bidder pays, win or lose, most people hardly bid at all. William Vickrey treated auctions as games in 1961 and proposed the sealed second-price auction that now carries his name: because the price is set by someone else's bid, the best thing to write down is exactly what the item is worth to you. A Dutch auction, in which the price falls until someone stops the clock, asks a bidder the same single question as a sealed first-price bid, so those two are one game under two names.</p>
+      <p>The surprise is what happens to the seller. Bidders who shade their bids in a first-price auction shade them by just enough that the seller ends up, on average, with the same money as in a second-price auction. Roger Myerson, and John Riley and William Samuelson, showed in 1981 that this is general. If bidders are risk neutral, their values are private and drawn independently, the bidder with the highest value always wins, and a bidder with the lowest possible value expects to gain nothing, then the seller's expected revenue is the same whatever the rules. This is the <strong>revenue equivalence theorem</strong>. Myerson also showed how to do better than any of these auctions: set a reserve price and sometimes refuse to sell.</p>
+      <p>The theorem is most useful as a list of what has to hold. Take one condition away and the formats separate. Risk-averse bidders pay more in a first-price auction. A bidder known to be stronger than the rest changes who bids boldly. And when bidders' information is related rather than independent, as Paul Milgrom and Robert Weber showed in 1982, an English auction, where bidders learn from watching each other drop out, raises more on average than a Dutch one. Governments selling radio spectrum, search engines selling advertising slots and anyone running a tender have to decide which of these worlds they are in.</p>
+      <p>This page lets you sit in the bidder's seat first. The bots play the equilibrium strategy of each format, so the only way to do as well as them is to find it.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The setting</h3>
+      <p>There is one item and <var>n</var> bidders. Each bidder's value for the item is drawn independently and evenly from 0 to 100, and each knows only its own. A bidder who wins at price <var>p</var> gains <var>v</var> − <var>p</var>; a loser gains nothing, except in the all-pay auction, where a loser is out of pocket by its bid. In the live auctions money is held in hundredths, and equal highest bids are settled by lot. The deals come from a seed: the same seed and round always give every bidder the same value, whichever format is chosen.</p>
+      <h3>What the bots bid</h3>
+      <p>In a symmetric equilibrium a bidder with value <var>v</var> wins when the other <var>n</var> − 1 values are lower, which has probability (<var>v</var>/100)<sup><var>n</var>−1</sup>. Whatever the format, such a bidder's expected payment works out as the expected highest rival value in the cases where it wins:</p>
+      <p class="eq"><var>m</var>(<var>v</var>) = (<var>n</var> − 1) / <var>n</var> · <var>v</var><sup><var>n</var></sup> / 100<sup><var>n</var>−1</sup></p>
+      <p>Each format turns that payment into a bid differently.</p>
+      <p class="eq">first-price and Dutch: &nbsp; <var>b</var>(<var>v</var>) = <var>v</var> · (<var>n</var> − 1) / <var>n</var><br>second-price and English: &nbsp; <var>b</var>(<var>v</var>) = <var>v</var><br>all-pay: &nbsp; <var>b</var>(<var>v</var>) = <var>m</var>(<var>v</var>) = <var>v</var> · (<var>n</var> − 1) / <var>n</var> · (<var>v</var>/100)<sup><var>n</var>−1</sup></p>
+      <p>In the first-price auction the winner pays its bid, so the bid is the payment divided by the chance of winning. In the all-pay auction the bid is paid for certain, so the bid is the payment itself. In the second-price and English auctions bidding the value is a dominant strategy: it is best whatever the others do. The bots' bids are rounded to the nearest hundredth. The English auction here is the clock version, in which the price rises steadily and a bidder who drops out cannot return; in a saleroom, bidders call out prices of their own.</p>
+      <h3>The two clocks</h3>
+      <p>The clock moves at 4, 8 or 16 a second and shows hundredths. When it starts, the keyboard focus is on the one button that acts, so Space or Enter presses it, and a press in the first 0.4 seconds is ignored as the tail of the press that started the clock. A key held down counts once. For a screen reader the price is read out about every 1.25 seconds (every 5, 10 or 20, by speed), and each rival's exit is announced as it happens. If the browser asks for reduced motion the price moves in whole numbers. If the tab goes into the background the clock pauses and waits for "Resume the clock". A price can also be typed in advance, and the auction is then run to its end at once. Nothing is saved: a reload starts again at round 1 with the same deals.</p>
+      <h3>What your bid earns on average</h3>
+      <p>After each round the tool draws the expected payoff of every bid you could have made with your value, against rivals who play the strategies above. With <var>k</var> = <var>n</var> − 1 rivals:</p>
+      <p class="eq">first-price and Dutch: &nbsp; (<var>v</var> − <var>b</var>) · min(1, <var>n</var><var>b</var> / (100<var>k</var>))<sup><var>k</var></sup><br>second-price and English: &nbsp; <var>v</var> (<var>c</var>/100)<sup><var>k</var></sup> − (<var>k</var>/<var>n</var>) · <var>c</var> (<var>c</var>/100)<sup><var>k</var></sup>, &nbsp; <var>c</var> = min(<var>b</var>, 100)<br>all-pay: &nbsp; <var>v</var> (<var>t</var>/100)<sup><var>k</var></sup> − <var>b</var>, &nbsp; <var>t</var> = min(100, (100<sup><var>k</var></sup> <var>n</var><var>b</var> / <var>k</var>)<sup>1/<var>n</var></sup>)</p>
+      <p>Each curve peaks at the equilibrium bid, where it equals <var>v</var><sup><var>n</var></sup> / (<var>n</var> · 100<sup><var>n</var>−1</sup>) in every format. These curves ignore the rounding to hundredths. In the clock auctions the "bid" is the price at which you plan to act; if a rival ends the auction first, your plan is never revealed and no dot is drawn.</p>
+      <h3>Scoring a round</h3>
+      <p>The line "the equilibrium bid would have earned" replays the same round, with the same rivals, the same values and the same tie-break, after replacing your bid with the equilibrium one. In the second-price and English auctions that replay can never do worse than you did, on any deal. In the other three formats it can lose to you on one deal and still win over many, which is what the curve shows.</p>
+      <h3>The experiment</h3>
+      <p>The second part draws fresh values for each auction from its own seed, lets every bidder play the equilibrium, and runs every format on the same values. Money is not rounded there. A reserve price <var>r</var> keeps out bidders whose values are below it. The standard error of an average is the standard deviation divided by the square root of the number of auctions. With <var>n</var> risk-neutral bidders the expected revenue of the first-price, Dutch, second-price and English auctions is</p>
+      <p class="eq"><var>R</var>(<var>r</var>) = 100 (<var>n</var> − 1)/(<var>n</var> + 1) + <var>r</var> (<var>r</var>/100)<sup><var>n</var>−1</sup> − 2<var>n</var> / (<var>n</var> + 1) · <var>r</var> (<var>r</var>/100)<sup><var>n</var></sup></p>
+      <p>which is largest at <var>r</var> = 50, half the highest possible value, for every <var>n</var>: the reserve of Myerson's optimal auction when the item is worth nothing to the seller.</p>
+      <p>A risk-averse bidder is given the utility <var>x</var><sup><var>a</var></sup> for a gain of <var>x</var>, with 0 &lt; <var>a</var> ≤ 1. Bidding the value stays dominant in the second-price and English auctions. In the first-price and Dutch auctions the equilibrium bid becomes</p>
+      <p class="eq"><var>b</var>(<var>v</var>) = <var>v</var> − (<var>v</var><sup><var>m</var>+1</sup> − <var>r</var><sup><var>m</var>+1</sup>) / ((<var>m</var> + 1) <var>v</var><sup><var>m</var></sup>), &nbsp; <var>m</var> = (<var>n</var> − 1)/<var>a</var></p>
+      <p>With no reserve this is <var>v</var> (<var>n</var> − 1)/(<var>n</var> − 1 + <var>a</var>), higher than the risk-neutral bid, and the seller's expected revenue rises to 100 · <var>n</var>/(<var>n</var> + 1) · (<var>n</var> − 1)/(<var>n</var> − 1 + <var>a</var>).</p>
+      <p>"One strong bidder" has two bidders, one with values spread evenly from 0 to <var>w</var> and one from 0 to 100. In the first-price auction, with <var>k</var> = 1/100² − 1/<var>w</var>²,</p>
+      <p class="eq">strong bidder: &nbsp; <var>b</var>(<var>v</var>) = (√(1 + <var>k</var><var>v</var>²) − 1) / (<var>k</var><var>v</var>)<br>weak bidder: &nbsp; <var>b</var>(<var>v</var>) = (1 − √(1 − <var>k</var><var>v</var>²)) / (<var>k</var><var>v</var>)</p>
+      <p>The weak bidder bids more than the strong one would with the same value, so the item sometimes goes to the bidder who values it less. Both bid their values in the second-price auction, whose expected revenue is the mean of the lower value, 50 − 100²/(6<var>w</var>). The first-price figure comes from integrating the distribution of the winning bid. The tests check every one of these formulas against a numerical integral and check that each bid function is a best reply to the others.</p>
+      <h3>Reading the verdict</h3>
+      <p>"Revenue equivalence holds" is a statement about the formulas, not about the run: it is printed when the theoretical revenues of the formats covered are equal. The run is then reported beside it, with its standard errors, so that you can see how far 10,000 auctions land from the theory by chance.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>How people bid.</strong> The bots never err, never tire and never learn anything about you. Whether real bidders find these strategies is an empirical question that the page does not touch.</li>
+        <li><strong>Anything about common values.</strong> Here the item is worth to you what it is worth to you, whatever the others think. An oil lease or a company is worth roughly the same to every bidder, and each has only an estimate. Winning then means you were the most optimistic, the winner's curse, and the English and Dutch auctions stop being equivalent to their sealed twins.</li>
+        <li><strong>What happens with other distributions.</strong> Every formula here is for values spread evenly over a known range. The theorem holds for other distributions, but the bid functions and the best reserve change. First-price auctions between unequal bidders generally have no formula at all and are solved numerically; two bidders with evenly spread values over different ranges is one of the few cases that has one, which is why "one strong bidder" stops at two.</li>
+        <li><strong>Which auction a seller should run.</strong> Equal averages hide unequal risk: the all-pay auction here has more than three times the spread of the first-price auction. A seller who dislikes risk, fears collusion or wants bidders to turn up will not be indifferent.</li>
+        <li><strong>The all-pay auction off the textbook case.</strong> With a reserve or with risk-averse bidders its equilibrium has no formula on this page, so it is left out of those experiments rather than guessed.</li>
+        <li><strong>More than one item.</strong> Selling several identical items, or items that are worth more together, raises problems of its own that single-item results do not settle.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Add a common-value auction, with each bidder shown a noisy estimate, so that the winner's curse can be felt and the English and second-price auctions can be told apart.</li>
+        <li>Let the bots learn from play instead of starting at the equilibrium, and see whether they reach it.</li>
+        <li>Solve the equilibrium numerically for other value distributions and for several unequal bidders, where no formula exists.</li>
+        <li>Build Myerson's optimal auction for unequal bidders, which sets a different reserve for each and can favour the weaker one.</li>
+        <li>Compute the all-pay equilibrium with risk-averse bidders numerically, to fill the gap in the experiment.</li>
+        <li>Sell several items at once and compare a uniform-price auction with a pay-your-bid one.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Vickrey, W. (1961). Counterspeculation, auctions, and competitive sealed tenders. <em>Journal of Finance</em>, 16(1), 8-37.</li>
+        <li>Myerson, R. B. (1981). Optimal auction design. <em>Mathematics of Operations Research</em>, 6(1), 58-73.</li>
+        <li>Riley, J. G., and Samuelson, W. F. (1981). Optimal auctions. <em>American Economic Review</em>, 71(3), 381-392.</li>
+        <li>Milgrom, P. R., and Weber, R. J. (1982). A theory of auctions and competitive bidding. <em>Econometrica</em>, 50(5), 1089-1122.</li>
+        <li>Holt, C. A. (1980). Competitive bidding for contracts under alternative auction procedures. <em>Journal of Political Economy</em>, 88(3), 433-445. First-price auctions cost risk-averse bidders more.</li>
+        <li>Maskin, E., and Riley, J. (1984). Optimal auctions with risk averse buyers. <em>Econometrica</em>, 52(6), 1473-1518.</li>
+        <li>Griesmer, J. H., Levitan, R. E., and Shubik, M. (1967). Toward a study of bidding processes, part IV: games with unknown costs. <em>Naval Research Logistics Quarterly</em>, 14(4), 415-433. The two-bidder case with unequal ranges.</li>
+        <li>Maskin, E., and Riley, J. (2000). Asymmetric auctions. <em>Review of Economic Studies</em>, 67(3), 413-438.</li>
+        <li>Krishna, V. (2010). <em>Auction Theory</em>, second edition. Academic Press. The derivations used here follow its chapters on private values, the revenue equivalence principle and its extensions.</li>
+        <li>The Royal Swedish Academy of Sciences, press release for the 1996 prize in economic sciences (on Vickrey) and popular science background for the 2020 prize (on Milgrom and Wilson), nobelprize.org.</li>
+      </ul>
+      <p>No data is used. Every number in the tool is computed or simulated in the browser.</p>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
