@@ -108,13 +108,16 @@ const keyOf = (t) => t.name;
 
 function drawTreemap(items, split, describe) {
   const hadFocus = mapSvg.contains(document.activeElement);
+  // The rectangle the keyboard is on keeps the tab stop through a redraw (a resize, say), where it still exists.
+  const held = hadFocus ? tiles[Number(document.activeElement.closest(".tm-tile")?.dataset.i)]?.name : null;
   const W = Math.max(260, mapBox.clientWidth || 640);
   const H = W < 520 ? 440 : 420;
   tiles = squarify(items, 0, 0, W, H);
   mapSvg.setAttribute("viewBox", `0 0 ${W} ${H}`);
   mapSvg.setAttribute("height", H);
   const chosen = state.level === "all" ? state.ministry : state.demand;
-  active = Math.max(0, tiles.findIndex((t) => keyOf(t) === chosen));
+  const at = (name) => tiles.findIndex((t) => keyOf(t) === name);
+  active = Math.max(0, held != null && at(held) >= 0 ? at(held) : at(chosen));
   // Buttons first, then one layer of drawn labels. The labels are hidden from screen readers (a cut-off name must not
   // stand in for the full one in aria-label) and sit outside the buttons, whose names are their aria-labels.
   const labels = svgEl("g", { "aria-hidden": "true" });
@@ -312,7 +315,7 @@ function update() {
     y: { label: "Share of Union spending", zero: true, format: (v) => `${String(Number(v.toPrecision(3))).replace("-", "−")}%` },
     series: [
       { name: "Actual", type: "line", color: 0, data: series.filter((p) => p.status === "Actuals" && p.share != null).map((p) => [p.year, p.share * 100]) },
-      { name: "Estimate (revised for 2025-26, budget for 2026-27)", type: "line", color: "#8a94a3", dash: true, endLabel: percent(lastKnown.share), data: series.filter((p) => p.status !== "Actuals" && p.share != null).map((p) => [p.year, p.share * 100]) },
+      { name: "Estimate", type: "line", color: "#8a94a3", dash: true, endLabel: percent(lastKnown.share), data: series.filter((p) => p.status !== "Actuals" && p.share != null).map((p) => [p.year, p.share * 100]) },
     ],
     // The first figure is written above its point; the last is the label at the end of the dashed line.
     marks: [{ type: "text", x: firstKnown.year, y: firstKnown.share * 100, text: percent(firstKnown.share), dy: -9, anchor: "middle" }],

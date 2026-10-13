@@ -26,28 +26,31 @@
     .tool input[type="text"] { overflow-wrap: anywhere; }
     .stat .v { font-size: 1.35rem; }
     .rt-wrap { margin-top: 8px; }
-    /* The same whenever the table's own column is narrow, as it is beside the controls on a tablet or a small laptop. */
+    /* The kit keeps headings and numbers on one line. These tables let them wrap, so a table can narrow to its box. */
+    .tbl.rt th, .tbl.rt td { white-space: normal; }
+    /* Each row becomes a short list of labelled lines whenever the table's own column is too narrow for the widest
+       table (695px), as it is on a phone and beside the controls on a tablet or a small laptop. A value that does
+       not fit beside its label drops to the next line, and breaks only if it is wider than the line itself. */
     div:has(> table.rt) { container-type: inline-size; }
-    @container (max-width: 600px) {
+    @container (max-width: 700px) {
       .rt, .rt tbody, .rt tr, .rt th, .rt td, .rt caption { display: block; }
       .rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
       .rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
-      .rt th[scope="row"], .rt td { border: 0; padding: 1px 0; white-space: normal; }
-      .rt td { display: flex; justify-content: space-between; gap: 14px; text-align: right; }
-      .rt td::before { content: attr(data-label); color: var(--slate); text-align: left; }
+      .rt th[scope="row"], .rt td { border: 0; padding: 1px 0; }
+      .rt td { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; overflow-wrap: anywhere; }
+      .rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
     }
     .rt caption { font-weight: 600; font-size: 0.86rem; color: var(--slate); }
-    .rt th[scope="row"] { font-weight: 600; white-space: normal; border-bottom: 1px solid var(--grid); }
+    .rt th[scope="row"] { font-weight: 600; border-bottom: 1px solid var(--grid); }
     details.chart-table .rt-wrap { max-height: none; }
-    /* On a narrow screen each row becomes a short list of labelled lines, so nothing scrolls sideways. */
+    /* The same on a narrow screen, for a browser without container queries. */
     @media (max-width: 640px) {
-      .rt, .rt tbody, .rt tr, .rt th, .rt td { display: block; }
-      .rt caption { display: block; }
+      .rt, .rt tbody, .rt tr, .rt th, .rt td, .rt caption { display: block; }
       .rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
       .rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
       .rt th[scope="row"], .rt td { border: 0; padding: 1px 0; }
-      .rt td { display: flex; justify-content: space-between; gap: 14px; text-align: right; white-space: normal; }
-      .rt td::before { content: attr(data-label); color: var(--slate); text-align: left; }
+      .rt td { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; overflow-wrap: anywhere; }
+      .rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
     }
     .jump { gap: 4px 16px; }
     .jump a { padding: 4px 0; }
