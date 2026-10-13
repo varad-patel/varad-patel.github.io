@@ -1,0 +1,7 @@
+{
+  "question": "How patient must the members of a cartel be for the agreement to hold, given how many they are and how cheating is punished?",
+  "finding": "With permanent punishment and prompt detection, two firms need a discount factor of 0.500 if they would otherwise compete on price and 0.529 on quantity, and ten firms need 0.900 and 0.752; a two-period price war raises the two-firm figures to 0.618 and 0.673, and a one-period war holds no cartel together at any patience.",
+  "limit": "Cheating is always detected and the market never changes, so the model leaves out the imperfect monitoring, demand swings, entry and bargaining that break most real cartels.",
+  "sources": [],
+  "built": "2026-10-13"
+}

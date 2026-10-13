@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cartel Stability Simulator · 365 projects</title>
+  <meta name="description" content="Set how patient the firms are, how many there are and how cheating is punished, and see whether a price-fixing agreement holds together or falls apart.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .out > h2 { margin-top: 6px; padding-top: 18px; border-top: 1px solid var(--rule); }
+    .jump { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 0.86rem; }
+    .jump span { color: var(--slate); }
+    .stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .stat .v { font-size: 1.4rem; }
+    .rt caption { font-weight: 600; font-size: 0.86rem; color: var(--slate); }
+    .rt th.num, .rt td.num { white-space: normal; }
+    .rt th[scope="row"] { font-weight: 600; white-space: normal; border-bottom: 1px solid var(--grid); }
+    /* On a narrow screen each row becomes a short list of labelled lines, so nothing scrolls sideways. */
+    @media (max-width: 760px) {
+      .rt, .rt tbody, .rt tr, .rt th, .rt td { display: block; }
+      .rt caption { display: block; }
+      .rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .rt th[scope="row"], .rt td { border: 0; padding: 1px 0; }
+      .rt td { display: flex; justify-content: space-between; gap: 14px; text-align: right; }
+      .rt td::before { content: attr(data-label); color: var(--slate); text-align: left; }
+    }
+    /* The same when the column is narrow on a wider screen: beside the controls it can be 410px, and the table needs 430px. */
+    .rt-box { container-type: inline-size; }
+    @container (max-width: 440px) {
+      .rt, .rt tbody, .rt tr, .rt th, .rt td { display: block; }
+      .rt caption { display: block; }
+      .rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .rt th[scope="row"], .rt td { border: 0; padding: 1px 0; }
+      .rt td { display: flex; justify-content: space-between; gap: 14px; text-align: right; }
+      .rt td::before { content: attr(data-label); color: var(--slate); text-align: left; }
+    }
+    .p-sec .eq { white-space: normal; }
+  </style>
+</head>
+<body class="proj" data-day="51">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Cartel Stability Simulator</h1>
+      <p class="lede">A cartel cannot take a cheat to court. Set how patient the firms are, how many there are and how cheating is punished, and see whether the agreement holds or falls apart.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Cartel stability simulator">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>As the page loads (two firms, punishment for ever, cheating noticed after one period) a cartel whose members would otherwise compete on price needs a patience of 0.500; press "Quantity (Cournot)" and it needs 0.529. Move "Number of firms" to 10 and the figures are 0.900 and 0.752. Press "A two-period price war" and two firms need 0.618 under price competition and, after switching to quantity, 0.673. Press "A one-period price war" and no patience is enough under either.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Firms in the same market would all be richer if they stopped competing and charged the monopoly price. Each of them would be richer still if the others did that while it quietly sold a little more. Because agreements to fix prices are illegal in most countries, a cartel cannot write a contract and sue the member who breaks it. Whatever holds it together has to come from the firms' own interests. George Stigler put the problem at the centre of oligopoly theory in 1964: a cartel is only as strong as its ability to notice secret price cuts and make them not worth while.</p>
+      <p>The answer that game theory gives is repetition. If firms meet in the market only once, cheating always pays and the agreement is worthless, which is the one-period result on day 49. If they meet again and again with no known end, a firm can be told: keep to the agreement and it continues; break it and everyone goes back to competing. Cheating then earns a larger profit once and smaller profits afterwards. Whether that is a good trade depends on how much the firm cares about afterwards, which economists summarise in one number, the discount factor <var>δ</var>: the value today of 1.00 of profit one period from now. A firm that expects the market to last, faces low interest rates and can change its price often has a <var>δ</var> close to 1.</p>
+      <p>James Friedman showed in 1971 that this logic is an equilibrium of the repeated game. It is one in the full sense that later theory asks for: the threat to return to competition is one each firm would really carry out, because competing is the best a firm can do when everyone else competes. The general result is the folk theorem, discussed below. It says that sufficiently patient firms can sustain not only the monopoly outcome but almost any outcome between competition and monopoly, without a word being exchanged. That is why competition law struggles with "tacit collusion", and why the conditions in this tool (few firms, quick detection, patient owners) are the ones competition authorities look for when deciding whether a merger makes coordination easier.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The market and the three profits</h3>
+      <p>There are <var>n</var> identical firms, demand is <var>P</var> = <var>a</var> − <var>b</var><var>Q</var> and every unit costs <var>c</var>; the tool fixes <var>a</var> = 100, <var>b</var> = 1 and <var>c</var> = 20. Write <var>A</var> = (<var>a</var> − <var>c</var>)² / <var>b</var>, which is 6,400. Three profits per period matter to a firm thinking of cheating.</p>
+      <p class="eq">Keeping to the agreement: &nbsp; <var>π</var><sub>c</sub> = <var>A</var> / 4<var>n</var></p>
+      <p>The firms make the monopoly output between them and share the monopoly profit <var>A</var>/4 equally.</p>
+      <p class="eq">Cheating: &nbsp; <var>π</var><sub>d</sub> = <var>A</var> / 4 (price) &nbsp; or &nbsp; <var>A</var> (<var>n</var> + 1)² / 16<var>n</var>² (quantity)</p>
+      <p>A firm that competes on price shades the agreed price by a hair and takes the whole market, so it earns the entire monopoly profit; the tool uses that limit. A firm that competes on quantity makes its best reply to the others' agreed outputs.</p>
+      <p class="eq">Competing: &nbsp; <var>π</var><sub>n</sub> = 0 (price) &nbsp; or &nbsp; <var>A</var> / (<var>n</var> + 1)² (quantity)</p>
+      <p>This is the one-period equilibrium of day 49: with identical goods, price competition (Bertrand) drives the price to cost, and quantity competition (Cournot) leaves each firm a smaller profit.</p>
+      <h3>The agreement</h3>
+      <p>Every firm keeps to the agreement as long as everyone has. If a firm cheats, the others notice after <var>L</var> periods; the cheat collects <var>π</var><sub>d</sub> in each of them. Then every firm competes for <var>T</var> periods, earning <var>π</var><sub>n</sub>, and after that the agreement resumes. <var>T</var> = ∞ is the grim trigger: one lapse and the agreement is over for good. Nobody needs to be forced to carry out the punishment, because competing is each firm's best reply when the others compete.</p>
+      <h3>When cheating does not pay</h3>
+      <p>Compare the two streams of profit from today. They differ only in the first <var>L</var> + <var>T</var> periods, so keeping to the agreement is at least as good when</p>
+      <p class="eq">(<var>π</var><sub>c</sub> − <var>π</var><sub>n</sub>) × <var>h</var> ≥ <var>π</var><sub>d</sub> − <var>π</var><sub>c</sub>, &nbsp; with &nbsp; <var>h</var> = <var>δ</var><sup><var>L</var></sup> (1 − <var>δ</var><sup><var>T</var></sup>) / (1 − <var>δ</var><sup><var>L</var></sup>)</p>
+      <p>The left side is what a cheat loses during the punishment and the right side what it gains before it, both per period; <var>h</var> converts one into the other and rises with <var>δ</var>. Dividing through, the cartel holds when <var>h</var> ≥ <var>ρ</var>, where <var>ρ</var> is the ratio of the gain to the loss:</p>
+      <p class="eq"><var>ρ</var> = <var>n</var> − 1 (price) &nbsp; or &nbsp; (<var>n</var> + 1)² / 4<var>n</var> (quantity)</p>
+      <p><var>A</var> has cancelled: the patience a cartel needs does not depend on the size of the market or on the cost, only on the number of firms and the form of the punishment.</p>
+      <h3>Grim trigger</h3>
+      <p>With <var>T</var> = ∞ and <var>L</var> = 1, <var>h</var> = <var>δ</var> / (1 − <var>δ</var>) and the condition becomes</p>
+      <p class="eq"><var>δ</var> ≥ 1 − 1/<var>n</var> (price) &nbsp; or &nbsp; <var>δ</var> ≥ (<var>n</var> + 1)² / (<var>n</var>² + 6<var>n</var> + 1) (quantity)</p>
+      <p>Two firms need 1/2 and 9/17. Both thresholds rise towards 1 as firms are added, because each firm's share of the cartel profit shrinks while the prize for cheating does not shrink as fast. From three firms on, the quantity threshold is the lower of the two: cheating on quantity gains less, since the cheat's own extra output drags the price down.</p>
+      <h3>Slow detection</h3>
+      <p>With a lag of <var>L</var> periods and the grim trigger, <var>δ</var> is replaced by <var>δ</var><sup><var>L</var></sup>, so the threshold is the <var>L</var>-th root of the one above. Two price-setting firms that take four periods to notice a cheat need 0.5<sup>1/4</sup> = 0.841 and not 0.5. Another way to read the same result: what matters is patience per detection period, so anything that lets firms see each other's prices sooner makes collusion easier.</p>
+      <h3>A price war that ends</h3>
+      <p>With a finite <var>T</var>, <var>h</var> can never exceed <var>T</var>/<var>L</var>, however patient the firms. So a cartel can hold only if</p>
+      <p class="eq"><var>T</var> &gt; <var>L</var> × <var>ρ</var></p>
+      <p>and otherwise no patience below 1 is enough. For two firms and <var>L</var> = 1, <var>ρ</var> is 1 under price competition and 9/8 under quantity competition, so a one-period war always fails. When the condition is met, the threshold is the one value of <var>δ</var> at which <var>h</var> = <var>ρ</var>; the tool finds it by halving an interval 200 times. With <var>T</var> = 2 it solves <var>δ</var> + <var>δ</var>² = <var>ρ</var>, which gives 0.618 for price and 0.673 for quantity. As <var>T</var> grows the threshold falls towards the grim-trigger value.</p>
+      <h3>The best agreement that holds</h3>
+      <p>If the monopoly price cannot be held, a less ambitious agreement may be. Under price competition it is all or nothing: the gain from undercutting and the loss from punishment both scale with the agreed profit, so either every price up to the monopoly price holds or only price equal to cost does. Under quantity competition there is a sliding scale. With <var>k</var> = 1 / (1 + <var>h</var>), the lowest output per firm that holds is <var>x</var> (<var>a</var> − <var>c</var>) / <var>b</var>, where</p>
+      <p class="eq"><var>x</var> = [<var>k</var> (<var>n</var> + 1)² + 4 (1 − <var>k</var>)] / [(<var>n</var> + 1) (4<var>n</var> + <var>k</var> (<var>n</var> − 1)²)]</p>
+      <p>or the monopoly share 1/2<var>n</var> if that is larger. At <var>δ</var> = 0 this is the Cournot output; it falls steadily as patience rises and reaches the monopoly share exactly at the threshold. The fourth tile reports the price that goes with it. Try the "Cournot, impatient" example: at a patience of 0.3 two firms cannot hold the monopoly price of 60 but can hold 54.02.</p>
+      <h3>The simulation</h3>
+      <p>The first chart and the table under it do not use the formulas above. The tool plays the game period by period: in each period it sets every firm's price or output according to the phase (agreement, cheating, war), works out the market price and the profits from those, multiplies each period's profit by <var>δ</var> raised to the period number, and adds up until what is left is below one part in 10<sup>13</sup>. The sentence under the table compares the two totals with the formulas. The page's tests check that the simulated totals change sign at the calculated threshold for a range of settings.</p>
+      <h3>The folk theorem</h3>
+      <p>The tool's logic is a special case of a family of results about repeated games. Friedman (1971) proved the version used here: any outcome that gives every player more than a one-period Nash equilibrium does can be sustained as an equilibrium of the repeated game by the threat of returning to that one-period equilibrium for ever, provided the players are patient enough. His strategies also pass the stricter test of subgame perfection, as Fudenberg and Maskin point out, because the punishment is itself an equilibrium of every period. Fudenberg and Maskin (1986) proved a stronger result: any feasible payoffs that give every player more than the worst the others could hold it down to (its minmax payoff) can be sustained in a subgame-perfect equilibrium for discount factors close enough to 1, always with two players and under a "full dimensionality" condition on the set of feasible payoffs with three or more. The punishments needed are more elaborate than a return to competition. Abreu (1988) showed that to find what can be sustained it is enough to consider the harshest credible punishment of each player, and Abreu (1986) characterised those punishments for firms that compete on quantity: among punishments that treat every firm alike, the harshest take a "stick and carrot" form, a single period of very high output followed at once by the most profitable outcome that can be sustained.</p>
+      <p>Two things follow. The thresholds for quantity competition on this page are what Cournot reversion needs; with Abreu's harsher punishments a cartel could hold at lower patience. Under price competition there is nothing harsher than zero profit, so with prompt detection 1 − 1/<var>n</var> is the true threshold for sharing the monopoly profit equally. And the theorem says what can happen, not what will: competing every period remains an equilibrium at any patience, and so do countless outcomes in between.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Whether a real cartel will form.</strong> The folk theorem makes collusion possible among patient firms. It does not say that they will find their way to it, agree on who sells how much, or choose the monopoly price among the many outcomes that could be sustained.</li>
+        <li><strong>What happens when cheating cannot be seen.</strong> Here a cheat is always found out after <var>L</var> periods. Green and Porter (1984) studied firms that see only a market price that also moves with demand: a low price may be bad luck or cheating, so the cartel must punish low prices, and price wars then break out from time to time although nobody has cheated.</li>
+        <li><strong>What happens when demand moves.</strong> The market is the same every period. Rotemberg and Saloner (1986) showed that when demand swings, the temptation to cheat is greatest in a boom, and a cartel may have to lower its price exactly when demand is high.</li>
+        <li><strong>Why real cartels end.</strong> Reviewing the evidence, Levenstein and Suslow (2006) found that cheating breaks cartels only occasionally; the larger problems are entry by new firms and renegotiating the agreement as conditions change. Neither is in this model, and nor is a competition authority.</li>
+        <li><strong>Whether the punishment would really be carried out.</strong> Once a war has started every firm would do better by calling it off. If firms expect that, the threat loses its force. The grim trigger in particular never forgives, which makes it a poor description of firms that can talk.</li>
+        <li><strong>Anything about unequal firms.</strong> All firms have the same cost and an equal share. With different costs or capacities the firm with the most to gain from cheating sets the threshold, and agreeing on shares becomes a bargaining problem of its own.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Add Abreu's stick-and-carrot punishment for quantity competition and show how far it lowers the threshold below Cournot reversion.</li>
+        <li>Add noisy demand and a trigger price in the manner of Green and Porter, and count how often price wars occur without any cheating.</li>
+        <li>Let demand alternate between booms and slumps and plot the highest price the cartel can hold in each, the Rotemberg and Saloner result.</li>
+        <li>Give firms different costs and let the visitor choose the market shares, to find which member is closest to cheating.</li>
+        <li>Add a competition authority that detects the cartel with some probability each period and fines it, and a leniency rule for the first firm to confess.</li>
+        <li>Let the learning bots of day 50 play this game and compare the punishments they invent with the ones assumed here.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Stigler, G. J. (1964). A theory of oligopoly. <em>Journal of Political Economy</em>, 72(1), 44-61.</li>
+        <li>Friedman, J. W. (1971). A non-cooperative equilibrium for supergames. <em>Review of Economic Studies</em>, 38(1), 1-12.</li>
+        <li>Green, E. J., and Porter, R. H. (1984). Noncooperative collusion under imperfect price information. <em>Econometrica</em>, 52(1), 87-100.</li>
+        <li>Abreu, D. (1986). Extremal equilibria of oligopolistic supergames. <em>Journal of Economic Theory</em>, 39(1), 191-225.</li>
+        <li>Fudenberg, D., and Maskin, E. (1986). The folk theorem in repeated games with discounting or with incomplete information. <em>Econometrica</em>, 54(3), 533-554.</li>
+        <li>Rotemberg, J. J., and Saloner, G. (1986). A supergame-theoretic model of price wars during booms. <em>American Economic Review</em>, 76(3), 390-407.</li>
+        <li>Abreu, D. (1988). On the theory of infinitely repeated games with discounting. <em>Econometrica</em>, 56(2), 383-396.</li>
+        <li>Levenstein, M. C., and Suslow, V. Y. (2006). What determines cartel success? <em>Journal of Economic Literature</em>, 44(1), 43-95.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
