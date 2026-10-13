@@ -1,0 +1,7 @@
+{
+  "question": "How do price, output, profit and lost surplus change with the number of firms and with the way they compete?",
+  "finding": "With demand P = 100 - Q and a cost of 20, a monopoly charges 60, two Cournot firms 46.67 and ten 27.27, and the deadweight loss falls from 25% to 11.1% to 0.83% of the competitive surplus, exactly 1/(n + 1)^2; two Bertrand firms with identical goods reach the competitive price of 20 at once.",
+  "limit": "Each outcome is for one period of a game that the tool takes as given, so it cannot say which game a real industry plays or what repeated meeting would sustain.",
+  "sources": [],
+  "built": "2026-10-13"
+}

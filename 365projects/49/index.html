@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Market Structure Lab · 365 projects</title>
+  <meta name="description" content="Change the number of firms, their costs and the way they compete, and see price, output, profit and deadweight loss under monopoly, Cournot, Stackelberg, Bertrand and perfect competition.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .out > h2 { margin-top: 6px; padding-top: 18px; border-top: 1px solid var(--rule); }
+    .jump { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 0.86rem; }
+    .jump span { color: var(--slate); }
+    .stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .market-line { padding: 10px 14px; background: #fff; border: 1px solid var(--grid); overflow-wrap: anywhere; }
+    .costs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 12px; }
+    .costs:empty { display: none; }
+    .stat .v { font-size: 1.45rem; }
+    .split-rows { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .split-row { display: grid; grid-template-columns: 11.5em minmax(0, 1fr); gap: 2px 12px; align-items: center; font-size: 0.9rem; }
+    .split-row .small { grid-column: 2; }
+    .split-row.on .name { font-weight: 700; }
+    .split-row.on .name::after { content: " (shown)"; font-weight: 400; color: var(--slate); }
+    .split-bar { display: flex; gap: 2px; height: 18px; background: color-mix(in srgb, var(--ink) 5%, transparent); }
+    .split-bar span { display: block; min-width: 2px; border-radius: 2px; }
+    @media (max-width: 560px) { .split-row { grid-template-columns: minmax(0, 1fr); } .split-row .small { grid-column: 1; } }
+    .rt caption { font-weight: 600; font-size: 0.86rem; color: var(--slate); }
+    .rt th.num, .rt td.num { white-space: normal; }
+    .rt th[scope="row"] { font-weight: 600; white-space: normal; border-bottom: 1px solid var(--grid); }
+    .rt tr.on { background: color-mix(in srgb, var(--ink) 5%, transparent); }
+    /* On a narrow screen each row becomes a short list of labelled lines, so nothing scrolls sideways. */
+    @media (max-width: 760px) {
+      .rt, .rt tbody, .rt tr, .rt th, .rt td { display: block; }
+      .rt caption { display: block; }
+      .rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .rt tr { padding: 8px 6px; border-bottom: 1px solid var(--grid); }
+      .rt th[scope="row"], .rt td { border: 0; padding: 1px 0; }
+      .rt td { display: flex; justify-content: space-between; gap: 14px; text-align: right; }
+      .rt td::before { content: attr(data-label); color: var(--slate); text-align: left; }
+    }
+    /* The same when the column is narrow on a wider screen: beside the controls it can be 410px, and the comparison needs 620px. */
+    .rt-box { container-type: inline-size; }
+    @container (max-width: 640px) {
+      .rt, .rt tbody, .rt tr, .rt th, .rt td { display: block; }
+      .rt caption { display: block; }
+      .rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .rt tr { padding: 8px 6px; border-bottom: 1px solid var(--grid); }
+      .rt th[scope="row"], .rt td { border: 0; padding: 1px 0; }
+      .rt td { display: flex; justify-content: space-between; gap: 14px; text-align: right; }
+      .rt td::before { content: attr(data-label); color: var(--slate); text-align: left; }
+    }
+    .p-sec .eq { white-space: normal; }
+  </style>
+</head>
+<body class="proj" data-day="49">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Market Structure Lab</h1>
+      <p class="lede">The same buyers, the same costs, six ways of competing. Change the number of firms and the kind of competition, and see what happens to price, output, profit and the surplus that is lost.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Market structure lab">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>With demand P = 100 − Q and a cost of 20 a unit, which is how the page loads, move "Number of firms" to 1, 2 and 10 under Cournot competition. The price goes from 60 to 46.67 to 27.27, against a competitive price of 20, and the deadweight loss from 25% of the competitive surplus to 11.1% to 0.83%: with equal costs it is exactly 1/(<var>n</var> + 1)² of it. Two Bertrand firms selling identical goods get to a price of 20 at once.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>How many firms does a market need before it behaves competitively? Economics has two famous answers, and they disagree. In 1838 Augustin Cournot analysed sellers who each decide how much to produce, taking the others' output as given. His answer is "gradually": every extra firm pushes the price a little closer to cost, and only with many firms does it get there. In 1883 the mathematician Joseph Bertrand, reviewing Cournot's book, objected that sellers name prices. If two firms sell the same thing, whichever is cheaper takes every customer, so each undercuts the other until the price equals cost. His answer is "two".</p>
+      <p>Both are right about their own game. What each described is what is now called a Nash equilibrium, after John Nash's 1951 paper: a set of choices, one per firm, such that no firm can do better by changing its own choice while the others keep theirs. The equilibrium depends on what firms choose (prices or quantities), on who moves first (Heinrich von Stackelberg's leader, in a book of 1934, commits to an output before its rivals and gains by it), and on whether the goods are identical. Bertrand's fierce result is softened as soon as products differ, because a small price cut then wins only some of the rival's buyers.</p>
+      <p>The disagreement matters outside the classroom. A competition authority that must decide whether to allow a merger from four firms to three is using some model of how the number of firms maps into prices. If the industry looks like Bertrand's, with identical goods, no limits on capacity and posted prices, three firms are as good as thirty. If it looks like Cournot's, where firms commit to capacity or output and the price then clears the market, every firm counts. David Kreps and José Scheinkman showed in 1983 that the two can be the same industry seen at different moments: firms that first choose capacity and then compete on price end up at Cournot's outcome, under their rule for how scarce goods are shared out among buyers.</p>
+      <p>This page puts the standard models side by side on one market, so that the only thing that changes is the game. It also lets costs differ between firms, which the textbook diagrams usually leave out and which changes the story: a firm can be priced out, a cost leader can hold the price just under a rival's cost, and a leader can produce exactly enough to keep a rival from producing at all.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The market</h3>
+      <p>Buyers will pay at most <var>a</var> for the first unit, and each extra unit sold lowers the price by <var>b</var>. With identical goods and total output <var>Q</var> the price is</p>
+      <p class="eq"><var>P</var> = <var>a</var> − <var>b</var> <var>Q</var></p>
+      <p>Firm <var>i</var> makes each unit at a constant cost <var>c</var><sub><var>i</var></sub> and has no fixed costs, so its profit is (<var>P</var> − <var>c</var><sub><var>i</var></sub>) <var>q</var><sub><var>i</var></sub>. The sliders set <var>a</var>, <var>b</var>, the number of firms <var>n</var> and one cost for all of them; tick "Give each firm its own cost" to set up to eight costs separately. Firm 1 is always the Stackelberg leader.</p>
+      <h3>Monopoly</h3>
+      <p>One seller with cost <var>c</var> chooses <var>Q</var> to maximise (<var>a</var> − <var>b</var><var>Q</var> − <var>c</var>) <var>Q</var>:</p>
+      <p class="eq"><var>Q</var> = (<var>a</var> − <var>c</var>) / 2<var>b</var>, &nbsp; <var>P</var> = (<var>a</var> + <var>c</var>) / 2</p>
+      <p>With several firms the monopoly row means one owner of all of them. Because each plant's cost per unit is constant, the owner uses only the cheapest plant.</p>
+      <h3>Cournot</h3>
+      <p>Each firm chooses its output taking the others' total <var>Q</var><sub>−<var>i</var></sub> as given. Its best reply is <var>q</var><sub><var>i</var></sub> = (<var>a</var> − <var>c</var><sub><var>i</var></sub> − <var>b</var> <var>Q</var><sub>−<var>i</var></sub>) / 2<var>b</var>, or nothing if that is negative. Solving all the best replies together, with <var>k</var> firms producing:</p>
+      <p class="eq"><var>P</var> = (<var>a</var> + <var>c</var><sub>1</sub> + … + <var>c</var><sub><var>k</var></sub>) / (<var>k</var> + 1), &nbsp; <var>q</var><sub><var>i</var></sub> = (<var>P</var> − <var>c</var><sub><var>i</var></sub>) / <var>b</var></p>
+      <p>Which firms produce is found by adding them in order of cost: a firm joins if its cost is below the price reached without it, and the first one that fails ends the list. With equal costs every firm makes (<var>a</var> − <var>c</var>) / <var>b</var>(<var>n</var> + 1) and the price is (<var>a</var> + <var>n</var><var>c</var>) / (<var>n</var> + 1), which falls towards <var>c</var> as <var>n</var> grows.</p>
+      <h3>Stackelberg</h3>
+      <p>Firm 1 chooses its output first. The other firms see it and play Cournot among themselves for what is left of the market, which is the same demand with <var>a</var> lowered by <var>b</var> times the leader's output. The leader chooses knowing how they will reply. With equal costs:</p>
+      <p class="eq"><var>q</var><sub>leader</sub> = (<var>a</var> − <var>c</var>) / 2<var>b</var>, &nbsp; <var>q</var><sub>follower</sub> = (<var>a</var> − <var>c</var>) / 2<var>b</var><var>n</var>, &nbsp; <var>P</var> = <var>c</var> + (<var>a</var> − <var>c</var>) / 2<var>n</var></p>
+      <p>With unequal costs the leader's profit curve has a kink at each output where a follower gives up. Between kinks, with <var>k</var> followers producing, the price is (<var>a</var> − <var>b</var><var>q</var> + their costs) / (<var>k</var> + 1) and the leader's best output is (<var>a</var> + their costs − (<var>k</var> + 1) <var>c</var><sub>1</sub>) / 2<var>b</var>. The curve is concave, so the tool takes that output in each stretch, moves it to the nearest kink if it falls outside the stretch, and keeps the best. When the best point is a kink, the leader is making exactly enough to keep a follower out.</p>
+      <h3>Bertrand, identical goods</h3>
+      <p>Firms post prices and buyers go to the cheapest. With equal costs and two or more firms the price equals cost. With unequal costs the cheapest firm serves everyone at</p>
+      <p class="eq"><var>P</var> = the lower of: the second-lowest cost, and its own monopoly price (<var>a</var> + <var>c</var>) / 2</p>
+      <p>The second case is a cost advantage so large that rivals cannot sell even against a monopolist. The tool assumes that a tie in price goes to the firm with the lower cost (and is shared equally by firms tied on both). Without that rule the cheapest firm would want to charge "just under" its rival's cost, and when prices can be any number there is no equilibrium in which every firm names one price for certain.</p>
+      <p>Even with the rule the equilibrium is not unique. Any lower price, down to the cheapest firm's own cost, is an equilibrium as well if a rival posts that same price: the rival sells nothing and so loses nothing, and the cheapest firm cannot raise its price without losing every buyer. Such a rival is posting a price below its own cost, which it would regret if a buyer ever took it up. The tool shows the one equilibrium in which no firm does that: the seller charges the second-lowest cost, and each firm that sells nothing posts its own cost.</p>
+      <h3>Bertrand, differentiated goods</h3>
+      <p>Each firm sells its own variety. The price of variety <var>i</var> falls with its own output and, less steeply, with the output of the others:</p>
+      <p class="eq"><var>p</var><sub><var>i</var></sub> = <var>a</var> − <var>b</var> (<var>q</var><sub><var>i</var></sub> + <var>θ</var> × the others' output), &nbsp; 0 ≤ <var>θ</var> &lt; 1</p>
+      <p>This is the linear demand system that Singh and Vives (1984) analysed for two firms, written here for any number;<var>θ</var> = 0 makes the goods unrelated and <var>θ</var> close to 1 makes them nearly identical. Firms choose prices. Writing <var>w</var><sub><var>i</var></sub> = <var>a</var> − <var>c</var><sub><var>i</var></sub> and <var>v</var><sub><var>i</var></sub> = <var>a</var> − <var>p</var><sub><var>i</var></sub>, with <var>m</var> firms selling, <var>A</var> = 1 + (<var>m</var> − 2) <var>θ</var>, and <var>W</var> and <var>V</var> the sums of the <var>w</var><sub><var>i</var></sub> and <var>v</var><sub><var>i</var></sub> over the sellers, the first-order conditions are</p>
+      <p class="eq">(2<var>A</var> + <var>θ</var>) <var>v</var><sub><var>i</var></sub> = <var>A</var> <var>w</var><sub><var>i</var></sub> + <var>θ</var> <var>V</var>, &nbsp; so &nbsp; <var>V</var> = <var>A</var> <var>W</var> / (2 + (<var>m</var> − 3) <var>θ</var>)</p>
+      <p>With equal costs this gives one price for every firm:</p>
+      <p class="eq"><var>p</var> = ((1 − <var>θ</var>) <var>a</var> + (1 + (<var>n</var> − 2) <var>θ</var>) <var>c</var>) / (2 + (<var>n</var> − 3) <var>θ</var>)</p>
+      <p>With unequal costs, firms join in order of cost while they would earn a margin. There is then a third possibility between "sells" and "priced out". If the next firm would find buyers at a price equal to its cost when the sellers charge the prices above, but would earn nothing once they respond, the sellers hold it exactly at the edge of the market: <var>V</var> is pinned at <var>w</var><sub>next</sub> (1 + (<var>m</var> − 1) <var>θ</var>) / <var>θ</var>. This is limit pricing. With one seller the price is unique. With two or more, each seller's demand has a kink at that point and a range of prices are equilibria; the tool reports the one that puts every seller the same fraction of the way between the lowest and the highest <var>v</var><sub><var>i</var></sub> it could hold. Zanchettin (2006) analyses the two-firm case with unequal costs.</p>
+      <h3>Perfect competition</h3>
+      <p>The benchmark: so many sellers have access to the cheapest technology that none can affect the price, which is therefore the lowest cost, and output is (<var>a</var> − <var>c</var>) / <var>b</var>. Firms with higher costs make nothing.</p>
+      <h3>Surplus and deadweight loss</h3>
+      <p>Buyers' demand comes from one utility function, <var>U</var> = <var>a</var><var>Q</var> − (<var>b</var>/2) [(1 − <var>θ</var>) × the sum of <var>q</var><sub><var>i</var></sub>² + <var>θ</var> <var>Q</var>²], with <var>θ</var> = 1 for identical goods. Consumer surplus is <var>U</var> minus what buyers spend, which for identical goods is the familiar triangle <var>b</var><var>Q</var>² / 2. Total surplus is consumer surplus plus profit. The deadweight loss is the shortfall from the competitive benchmark, in which every unit is sold at what it cost to make: (<var>a</var> − <var>c</var>)² / 2<var>b</var> for identical goods, at the lowest cost. For differentiated goods the benchmark is every variety sold at its own cost, so that row of the comparison is measured against a different total.</p>
+      <p>With equal costs the Cournot loss is (<var>a</var> − <var>c</var>)² / 2<var>b</var>(<var>n</var> + 1)², a fraction 1/(<var>n</var> + 1)² of the benchmark. With unequal costs the loss has two parts: units that are not made, and units made by a firm with a higher cost than the cheapest. The "A cost advantage" example under Cournot loses 1,100, of which 800 is missing output and 300 is ten units made at 40 that could have been made at 10.</p>
+      <h3>The equilibrium check</h3>
+      <p>The last chart is a test, not an illustration. It takes one firm, holds every other firm's choice where the outcome has it, and works out that firm's profit at 401 evenly spaced prices or outputs. If the outcome is an equilibrium, none beats what the firm is doing. For the Stackelberg leader the followers are allowed to reply, since that is the game. The page's tests run the same search, with 2,001 choices per firm, on 400 random markets for all six structures, including markets with priced-out firms, limit pricing and a leader at a kink.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Which game a real industry is playing.</strong> The tool takes the kind of competition as given. Deciding whether cement, airlines or software look more like Cournot or Bertrand is an empirical question about capacity, contracts and how prices are set, and it is most of the work in a real case.</li>
+        <li><strong>What happens when the firms meet again tomorrow.</strong> Every outcome here is for a single period. Firms that expect to compete for years can sustain prices well above these without any agreement, which is the subject of day 51; day 50 lets pricing algorithms learn to do it.</li>
+        <li><strong>How many firms there will be.</strong> The number of firms is a slider. With fixed costs and free entry it would be an outcome: firms enter until the next one would lose money, and a market can then have too many firms as well as too few.</li>
+        <li><strong>Anything that depends on the shape of demand.</strong> Straight-line demand and constant unit costs give tidy formulas such as 1/(<var>n</var> + 1)². Curved demand, capacity limits or costs that rise with output change the numbers and sometimes the ranking.</li>
+        <li><strong>The value of variety across the rows.</strong> With differentiated goods buyers gain from having more varieties, and the benchmark changes with the number of firms. That row's loss is a share of its own benchmark and should not be compared pound for pound with the identical-goods rows.</li>
+        <li><strong>A unique answer in every case.</strong> Bertrand with identical goods and unequal costs needs a tie-breaking rule and even then has a range of equilibria, and so does limit pricing with several sellers. In each case the tool shows one of them and says which.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Add a fixed cost and let firms enter until profit is exhausted, to show the free-entry number of firms against the number that maximises total surplus.</li>
+        <li>Add capacity limits to Bertrand competition, which produces Edgeworth's price cycles and, in the model of Kreps and Scheinkman, Cournot's outcome.</li>
+        <li>Offer Cournot with differentiated goods beside Bertrand with differentiated goods, the comparison Singh and Vives made, on the same demand system.</li>
+        <li>Simulate a merger: join two firms' plants under one owner, recompute, and report the price change and the cost saving that would be needed to offset it.</li>
+        <li>Replace straight-line demand with a constant-elasticity curve and report the Lerner index and the Herfindahl index for each outcome.</li>
+        <li>Let the visitor choose which firm leads in the Stackelberg game, and compare leading with following for the same firm.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Cournot, A. (1838). <em>Recherches sur les principes mathématiques de la théorie des richesses</em>. The chapter on competing producers is translated as "Of the competition of producers" in A. F. Daughety (ed.) (1989), <em>Cournot Oligopoly: Characterization and Applications</em>, 63-72. Cambridge University Press.</li>
+        <li>Bertrand, J. (1883). Review of Walras's <em>Théorie mathématique de la richesse sociale</em> and Cournot's <em>Recherches sur les principes mathématiques de la théorie des richesses</em>. <em>Journal des Savants</em>. Translated in Daughety (ed.) (1989), <em>Cournot Oligopoly</em>, 73-81.</li>
+        <li>von Stackelberg, H. (1934). <em>Marktform und Gleichgewicht</em>. Vienna: Springer. Translated by D. Bazin, L. Urch and R. Hill as <em>Market Structure and Equilibrium</em> (2011). Berlin and Heidelberg: Springer.</li>
+        <li>Nash, J. (1951). Non-cooperative games. <em>Annals of Mathematics</em>, 54(2), 286-295.</li>
+        <li>Kreps, D. M., and Scheinkman, J. A. (1983). Quantity precommitment and Bertrand competition yield Cournot outcomes. <em>Bell Journal of Economics</em>, 14(2), 326-337.</li>
+        <li>Singh, N., and Vives, X. (1984). Price and quantity competition in a differentiated duopoly. <em>RAND Journal of Economics</em>, 15(4), 546-554.</li>
+        <li>Zanchettin, P. (2006). Differentiated duopoly with asymmetric costs. <em>Journal of Economics &amp; Management Strategy</em>, 15(4), 999-1015.</li>
+        <li>Tirole, J. (1988). <em>The Theory of Industrial Organization</em>. Cambridge, MA: MIT Press.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
