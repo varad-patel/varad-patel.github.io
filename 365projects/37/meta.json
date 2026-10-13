@@ -1,0 +1,9 @@
+{
+  "question": "On your income and deposit, in which districts of England and Wales is a home within your budget, and how has that changed since 1997?",
+  "finding": "On the median full-time salary of £39,059 with a £29,500 deposit and a loan of 4.5 times salary, the median home is within budget in 57 of the 318 districts of England and Wales in 2025 and in none in the south, against 285 in 1997 for someone at the same place in the pay ladder with the same share of a year's pay saved.",
+  "limit": "The budget rule is a simplification of how lenders decide, and a district's median price is the middle of whatever sold there, not the price of any particular home.",
+  "sources": [
+    "Office for National Statistics"
+  ],
+  "built": "2026-10-13"
+}

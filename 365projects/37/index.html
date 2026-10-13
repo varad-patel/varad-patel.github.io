@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Housing Affordability Map · 365 projects</title>
+  <meta name="description" content="Enter an income and a deposit and see, on a map of the 318 local authority districts of England and Wales, where a home is within your budget in every year from 1997 to 2025.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    /* Called .part because assets/site.css keeps the name "block" for the gallery, with up to 72px of padding above. */
+    .part { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-content: start; min-width: 0; }
+    .grid2 > .part { padding-top: 14px; }
+    .year-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: end; }
+    .year-row .btn { margin-bottom: 2px; white-space: nowrap; }
+    .map-row { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 20px 28px; align-items: start; }
+    @media (max-width: 1040px) { .map-row { grid-template-columns: minmax(0, 1fr); } }
+    .pickers { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px 16px; align-items: end; }
+    .map-box { position: relative; background: #fff; border: 1px solid var(--grid); }
+    .map { display: block; width: 100%; height: auto; aspect-ratio: 2850 / 3252; max-height: 78vh; cursor: pointer; }
+    .map:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+    .map-tip { position: absolute; z-index: 5; left: 0; top: 0; max-width: 220px; padding: 7px 10px; border-radius: 3px; background: var(--ink); color: var(--paper); font-size: 0.8rem; line-height: 1.4; pointer-events: none; overflow-wrap: anywhere; }
+    .map-tip b, .map-tip span { display: block; }
+    .map-legend h2 { margin-bottom: 8px; }
+    .map-legend ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 0.88rem; }
+    .map-legend li { display: flex; align-items: center; gap: 9px; }
+    .map-legend i { display: inline-block; width: 26px; height: 15px; border: 1px solid #8a94a3; flex: none; }
+    .map-legend p { margin-top: 8px; }
+    .dot-key { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #fff; border: 2px solid var(--ink); vertical-align: -1px; }
+    .area-panel { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .area-panel h2 { font-size: 1.05rem; overflow-wrap: anywhere; }
+    .verdict { font: 400 1.02rem/1.5 var(--serif); }
+    .facts { margin: 0; padding-left: 1.15em; display: grid; gap: 4px; }
+    .formula { overflow-wrap: anywhere; }
+    .list-box { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .list-box .tbl-wrap { max-height: 520px; overflow: auto; border: 1px solid var(--grid); background: #fff; }
+    .list-box .tbl th { position: sticky; top: 0; background: #fff; white-space: normal; vertical-align: bottom; line-height: 1.25; }
+    .list-box .tbl caption { padding: 8px 10px 6px; }
+    .linkish { border: 0; background: none; padding: 2px 0; font: inherit; color: inherit; text-align: left; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; cursor: pointer; overflow-wrap: anywhere; }
+    .linkish:hover { text-decoration-thickness: 2px; }
+    @media (max-width: 520px) { .list-box .tbl th, .list-box .tbl td { padding: 6px 6px; } .list-box .tbl { font-size: 0.86rem; } }
+    .eq-lines { white-space: normal !important; }
+    /* On a phone the controls are taller than the screen, so the headline rides along at the top while they are in view. */
+    .mini { display: none; }
+    @media (max-width: 860px) {
+      .mini { display: block; position: sticky; top: 0; z-index: 4; margin: -6px 0; padding: 8px 0; background: var(--sheet); border-bottom: 1px solid var(--rule); font-size: 0.9rem; font-weight: 650; line-height: 1.35; pointer-events: none; }
+    }
+  </style>
+</head>
+<body class="proj" data-day="37">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Housing Affordability Map</h1>
+      <p class="lede">Enter an income and a deposit and see where in England and Wales a home is within your budget, district by district, in every year from 1997 to 2025.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Map of where a home is within a budget">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>As the page loads it shows a buyer on the median full-time salary in England and Wales, £39,059 in 2025, with a deposit of £29,500 and a loan of 4.5 times salary. The median-priced home is within that budget in 57 of the 318 districts, and in none at all in London, the South East, the South West or the East of England. Drag the year back to 1997 and the page scales the salary and the deposit by median pay, to £16,885 and £12,753: a buyer at the same place in the pay ladder, with the same share of a year's pay saved, could afford the median home in 285.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Whether a home is affordable depends on two numbers that are set in different places. Pay is set in the labour market and prices in the housing market, and since the late 1990s the second has run far ahead of the first. In 1997 the median home sold in England and Wales cost 3.55 times the median full-time salary. In 2025 it cost 7.55 times. The Office for National Statistics publishes that ratio every year for every local authority district, and it is the usual single measure of housing affordability.</p>
+      <p>A ratio describes a place. It does not say what a particular person can do there, because a buyer does not need the price, only a loan and a deposit that add up to it. Lenders cap the loan as a multiple of income. In June 2014 the Bank of England's Financial Policy Committee recommended that lenders make no more than 15% of their new mortgage loans at 4.5 times income or more, which is why 4.5 is the starting value here. That was a limit on each lender's lending as a whole, not on any one loan, and it has since been relaxed: from July 2025 the regulator let lenders set it aside on request, and in April 2026 it proposed removing the limit for individual lenders while still watching the total against 15%. Under any rule of that kind a salary turns into a budget, and the map shows where the budget is enough.</p>
+      <p>The map is a picture of geographical inequality. On an ordinary salary the districts within reach are a band across the North of England, the north Midlands and parts of Wales, and none of the places where pay is highest. A household that already owns a home in the South, or has family who do, brings a deposit that changes the answer completely; one that does not must move away from the jobs or rent. Why prices outran pay is argued over. One strand of evidence points to planning: Christian Hilber and Wouter Vermeulen, studying 353 English planning authorities from 1974 to 2008, found that house prices respond more strongly to local earnings where constraints on building are tight. The map takes no side on the cause. It shows the size of the gap.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The data</h3>
+      <p>Prices and pay come from one ONS release, "House price to workplace-based earnings ratio" (26 March 2026). The price is the median, or the lower quartile, of the prices paid for all homes sold in a district in the year ending in September, taken by the ONS from the Land Registry. Earnings are the median gross annual pay of full-time employees on adult rates who had been in the same job for more than a year, from the Annual Survey of Hours and Earnings in April of each year, counted where people work and not where they live. Part-time employees are left out, so "the median salary" on this page is the median for full-time employees, which is higher than the median for all employees. There are 318 districts, on the boundaries of December 2025, and 29 years.</p>
+
+      <h3>The budget</h3>
+      <p>With the first rule the loan is a multiple <var>m</var> of income:</p>
+      <p class="eq eq-lines"><var>loan</var> = <var>m</var> × <var>income</var></p>
+      <p>With the second, repayments may take a share <var>s</var> of income, and the loan is whatever those repayments pay off. For a monthly interest rate <var>i</var> (the annual rate divided by 12) and <var>n</var> monthly payments (12 for each year of the term), level repayments of <var>s</var> × <var>income</var> / 12 a month repay</p>
+      <p class="eq eq-lines"><var>loan</var> = (<var>s</var> × <var>income</var> / 12) × (1 − (1 + <var>i</var>)<sup>−<var>n</var></sup>) / <var>i</var></p>
+      <p>which is the standard formula for a repayment mortgage; at a rate of zero it becomes the payment times <var>n</var>. At 5% over 25 years one pound a month repays £171.06, so 30% of income supports a loan of 4.28 times income. Either way,</p>
+      <p class="eq eq-lines"><var>budget</var> = <var>loan</var> + <var>deposit</var></p>
+      <p>and a district is within budget when its price is no more than the budget. A price exactly equal to the budget counts as within it. The starting income is the national median and the starting deposit is a tenth of the national median price. Both are placeholders, and the starting share and interest rate are assumptions, not market figures.</p>
+
+      <h3>The map</h3>
+      <p>Each district is coloured by its price as a share of the budget, in six classes: up to 75%, 75% to 100%, 100% to 125%, 125% to 150%, 150% to 200%, and over 200%. A price exactly on an edge falls in the lower class. The ramp is one hue, light to dark, and darker means further out of reach. Colour is not the only signal: every district within budget carries a white dot, the tip that follows the pointer says "within budget" or "out of reach" in words, and the table gives the same figures for every district, twenty at a time or all at once. The boundaries are the ONS's generalised set for December 2025 in British National Grid coordinates, rounded to a 200 m grid, which is why small islands are missing and coasts are angular.</p>
+
+      <h3>Earlier years</h3>
+      <p>An income typed in today's pounds cannot be compared directly with prices from 1997. The default, "same place in the pay ladder", multiplies the income and the deposit by</p>
+      <p class="eq eq-lines"><var>median full-time earnings in that year</var> / <var>median full-time earnings in 2025</var></p>
+      <p>for England and Wales, so the buyer in each year is as well paid, relative to everyone else, as the visitor is now. For 1997 the factor is 16,885 / 39,059 = 0.432. Scaling the deposit by pay keeps it at the same number of months' pay, about nine. Because prices rose faster than pay, that is a larger share of the price in earlier years: £12,753 was 21% of the median price in England and Wales in 1997, where £29,500 is 10% of it in 2025. With a deposit of a tenth of the 1997 price (£6,000 then; type 13,879 as the deposit to get it), the count for 1997 is 267, not 285.</p>
+      <p>"Same pounds" applies no factor. It answers a different question, what today's cash would have bought, and makes the past look far cheaper than it felt: with the starting values, 317 of 318 districts are within budget in 1997.</p>
+
+      <h3>The district panel</h3>
+      <p>"Income needed" inverts the rule: it is the price minus the deposit, divided by the loan per pound of income (<var>m</var>, or the repayment factor above). The local ratio is the district's price divided by its own median earnings, the figure the ONS publishes. The ONS gives no earnings figure for 170 of the 9,222 district-years, and the panel says so where one is missing.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Whether a lender would lend to you.</strong> Lenders look at outgoings, debts and credit history, test repayments at a higher rate than the one charged, and want a minimum deposit as a share of the price. The rule here has none of that, and it ignores stamp duty and fees.</li>
+        <li><strong>What a home you would want costs.</strong> A median is the middle of whatever sold that year, flats and houses together. The mix changes from year to year, and prices inside a district can differ by more than prices between districts.</li>
+        <li><strong>The effect of interest rates.</strong> The multiple rule takes no account of them, though they changed a great deal between 1997 and 2025. The repayment rule uses one rate for every year, the one on the slider.</li>
+        <li><strong>How you would have been paid in 1997.</strong> "Same place in the pay ladder" follows the national median. Pay at the top and bottom, and in particular jobs and places, moved differently. The ONS also warns that its earnings figures for 1997 and 1998 are annualised weekly pay and not strictly comparable with later years.</li>
+        <li><strong>Anything about renting, or about Scotland and Northern Ireland.</strong> The release covers England and Wales and only homes that were bought and sold.</li>
+        <li><strong>Why.</strong> The map shows where prices have left pay behind. It cannot say how much of that is due to planning, to interest rates, to investors or to incomes at the top.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Add a minimum deposit as a share of the price, and stamp duty, so that the deposit can bind on its own.</li>
+        <li>Use the mortgage rate of each year in the repayment rule, to show how much cheaper borrowing offset dearer homes.</li>
+        <li>Offer other rungs of the pay ladder, starting with lower quartile earnings, which are in the same ONS release.</li>
+        <li>Use residence-based earnings, which the ONS publishes from 2002, for people who commute across a boundary.</li>
+        <li>Go below the district, to show the spread of prices inside a city: the ONS's House Price Statistics for Small Areas are the source of the district figures used here.</li>
+        <li>Add rents, so that the map can show where buying is out of reach but renting is not.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>Office for National Statistics (2026). <em>House price to workplace-based earnings ratio</em>. Dataset released 26 March 2026: tables 1a, 1b, 2a, 5a, 5b and 6a. Source: Office for National Statistics. The ONS adapted these statistics from data from the Land Registry licensed under the Open Government Licence v.3.0. Retrieved 11 October 2026.</li>
+        <li>Office for National Statistics (2026). <em>Local Authority Districts (December 2025) Boundaries UK BUC</em>. ONS Open Geography Portal. Source: Office for National Statistics licensed under the Open Government Licence v.3.0. Contains OS data © Crown copyright and database right 2026. Retrieved 11 October 2026.</li>
+        <li>Bank of England, Prudential Regulation Authority (2014). <em>Implementing the Financial Policy Committee's recommendation on loan to income ratios in mortgage lending</em>. Policy Statement PS9/14, 1 October 2014.</li>
+        <li>Bank of England, Prudential Regulation Authority (2025). <em>Prudential Regulation Authority announces review of the Loan to Income (LTI) flow limit rule and offers interim modification by consent</em>. Statement, 9 July 2025.</li>
+        <li>Bank of England, Prudential Regulation Authority (2026). <em>High loan to income lending</em>. Consultation Paper CP6/26, 1 April 2026.</li>
+        <li>Hilber, C. A. L., and Vermeulen, W. (2016). The impact of supply constraints on house prices in England. <em>The Economic Journal</em>, 126(591), 358-405.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
