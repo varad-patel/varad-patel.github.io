@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Phillips Curve Fitter · 365 projects</title>
+  <meta name="description" content="Choose a country and split its history into eras, and see how the link between unemployment and inflation has held, broken and flattened since 1960.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .d57-data { margin: 0; overflow-wrap: anywhere; }
+    .d57-country { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+    .d57-words { margin: 0; padding-left: 1.2em; font-size: 0.92rem; line-height: 1.5; display: grid; gap: 6px; }
+    .d57-tbl { font-size: 0.86rem; }
+    .d57-tbl th, .d57-tbl td { white-space: normal; padding: 6px 8px; }
+    /* The kit keeps numeric cells on one line. These headings are sentences and the last column is text: let them wrap. */
+    .d57-tbl thead th, .d57-tbl thead th.num, .d57-tbl td.d57-wrap { white-space: normal; }
+    .d57-tbl thead th { vertical-align: bottom; font-weight: 600; }
+    .d57-tbl tbody th { font-weight: 700; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+    .d57-tbl td.num, .d57-tbl th.num { text-align: right; }
+    /* Six columns need about 550 pixels. Where the results column is narrower than that, on a phone and in a desktop
+       window of 860 to 1,000 pixels alike, each era becomes a short list. Written twice: for the width of the results
+       column, and for the width of the screen in browsers without container queries. */
+    .d57-country { container-type: inline-size; }
+    @container (max-width: 560px) {
+      .d57-tbl thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+      .d57-tbl, .d57-tbl tbody, .d57-tbl tr, .d57-tbl th, .d57-tbl td { display: block; }
+      .d57-tbl caption { display: block; }
+      .d57-tbl tr { padding: 8px 0; border-bottom: 1.5px solid var(--ink); }
+      .d57-tbl tbody th { border: 0; padding: 0 0 4px; font-size: 0.95rem; }
+      .d57-tbl td, .d57-tbl td.num { display: flex; justify-content: space-between; gap: 14px; border: 0; padding: 2px 0; text-align: right; white-space: normal; overflow-wrap: anywhere; }
+      .d57-tbl td::before { content: attr(data-label); color: var(--slate); text-align: left; flex: 1 1 55%; white-space: normal; }
+    }
+    @media (max-width: 640px) {
+      .d57-tbl thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+      .d57-tbl, .d57-tbl tbody, .d57-tbl tr, .d57-tbl th, .d57-tbl td { display: block; }
+      .d57-tbl caption { display: block; }
+      .d57-tbl tr { padding: 8px 0; border-bottom: 1.5px solid var(--ink); }
+      .d57-tbl tbody th { border: 0; padding: 0 0 4px; font-size: 0.95rem; }
+      .d57-tbl td, .d57-tbl td.num { display: flex; justify-content: space-between; gap: 14px; border: 0; padding: 2px 0; text-align: right; white-space: normal; overflow-wrap: anywhere; }
+      .d57-tbl td::before { content: attr(data-label); color: var(--slate); text-align: left; flex: 1 1 55%; white-space: normal; }
+    }
+    .jump { display: none; flex-wrap: wrap; gap: 4px 18px; font-size: 0.9rem; margin-bottom: 12px; }
+    @media (max-width: 860px) { .jump { display: flex; } }
+    .p-sec .eq { white-space: normal; }
+  </style>
+</head>
+<body class="proj" data-day="57">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Phillips Curve Fitter</h1>
+      <p class="lede">Low unemployment is supposed to go with high inflation. Pick a country, split its history into eras and fit a line to each: the curve of the 1960s, its collapse in the 1970s, the version that replaced it and the flat line of recent decades are all in the data.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Inflation against unemployment by country and era">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>On load the tool fits the United States with new eras starting in 1970, 1985 and 2008. From 1960 to 1969 each extra point of unemployment went with 1.16 points less inflation (95% interval −1.78 to −0.55), and unemployment accounts for 71% of the variation in inflation. From 1970 to 1984 the slope is −0.21, with an interval from −1.43 to +1.02: no line at all. Now choose "The change in inflation". The 1970 to 1984 slope becomes −1.24 (−2.04 to −0.45), and the line puts steady inflation at an unemployment rate of 6.9% (5.6% to 8.0%). For 2008 to 2024 the same slope is −0.08 (−0.62 to +0.46), and the interval for the steady-inflation rate is unbounded. In the last chart, with its window of 15 years, the slope is −1.71 for the years to 1987 and −0.10 for the years to 2019 (point at the chart, or open the table under it, to read the figures).</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>In 1958 A. W. Phillips plotted nearly a century of British data, 1861 to 1957, and found that money wages rose faster in years when unemployment was low. Two years later Paul Samuelson and Robert Solow redrew the relationship for the United States with price inflation on the vertical axis and described it, for the short run, as a menu of combinations of unemployment and price rises that policy might choose between. A government that wanted less unemployment could, it seemed, buy it with a little more inflation.</p>
+      <p>Edmund Phelps (1967) and Milton Friedman (1968) argued that the menu was an illusion. Low unemployment raises inflation only while the inflation is a surprise. Once workers and firms come to expect it, they build it into wages and prices, and unemployment drifts back to what Friedman called its natural rate, with the higher inflation left behind. What unemployment can buy, on this view, is a change in inflation, not a level. The 1970s gave the argument its evidence: inflation and unemployment rose together, and the simple curve dissolved. Robert Lucas (1976) drew the general lesson, that a relationship estimated under one policy cannot be expected to survive a change of policy, because people's behaviour depends on the policy.</p>
+      <p>The expectations-augmented curve that followed relates unemployment to the change in inflation. It implies one unemployment rate at which inflation is steady, the NAIRU, and for a time that number was the centre of monetary policy debate. Staiger, Stock and Watson (1997) showed how imprecisely it can be estimated. Since the 1980s the curve has flattened: Olivier Blanchard (2016) found that the slope in the United States has declined substantially, and that expected inflation has become steadily more anchored, which is why his title asks whether the curve has gone back to the 1960s, when unemployment was related to the level of inflation and not to its change.</p>
+      <p>The tool lets you watch each of these episodes arrive and leave, in the United States and in 172 other countries. It also shows how much depends on where the eras are cut.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The data</h3>
+      <p>Everything is yearly. Inflation is the percentage change in consumer prices over the year before, from the World Bank's World Development Indicators. Unemployment is a percentage of the labour force, and each country uses one series for all its years: the OECD's long series from Economic Outlook No 119 for the 45 countries that have one, which reaches back to 1960 for the longest, and the International Labour Organization's modelled estimates, as published by the World Bank, for the rest. Those run from 1991 to 2024: the World Bank's series also carries the ILO's projection for 2025, which is left out. The two are never joined. Each chart and table names the series it uses, and the line under the controls says which years the chosen country covers and which are missing. A country is offered if it has at least 8 years with both figures.</p>
+      <h3>The simple curve</h3>
+      <p>For the years in an era, the tool fits by least squares</p>
+      <p class="eq"><var>π</var><sub><var>t</var></sub> = <var>a</var> + <var>b</var> × <var>u</var><sub><var>t</var></sub> + <var>e</var><sub><var>t</var></sub></p>
+      <p>where <var>π</var><sub><var>t</var></sub> is inflation in year <var>t</var> and <var>u</var><sub><var>t</var></sub> the unemployment rate. The slope <var>b</var> is in points of inflation per point of unemployment. Phillips fitted a curve, not a straight line, and used wages, not prices. Putting price inflation on the vertical axis follows Samuelson and Solow, whose diagram was also a curve; the straight line is this tool's simplification.</p>
+      <h3>The expectations-augmented curve</h3>
+      <p>Suppose inflation equals expected inflation plus an effect of unemployment, and that people expect this year's inflation to equal last year's. Then</p>
+      <p class="eq"><var>π</var><sub><var>t</var></sub> − <var>π</var><sub><var>t</var>−1</sub> = <var>a</var> + <var>b</var> × <var>u</var><sub><var>t</var></sub> + <var>e</var><sub><var>t</var></sub></p>
+      <p>and the fitted line says that inflation neither rises nor falls when unemployment is</p>
+      <p class="eq"><var>u</var>* = −<var>a</var> ⁄ <var>b</var></p>
+      <p>which is the tool's estimate of the steady-inflation rate of unemployment. It is reported only when the line slopes down. Each row needs the year before as well, so a year that follows a missing year drops out.</p>
+      <h3>Intervals</h3>
+      <p>With <var>n</var> years in the fit, mean unemployment <var>ū</var>, <var>S</var> = Σ(<var>u</var><sub><var>t</var></sub> − <var>ū</var>)² and residual variance <var>s</var>² = Σ<var>e</var><sub><var>t</var></sub>² ⁄ (<var>n</var> − 2), the standard error of the slope is <var>s</var> ⁄ √<var>S</var> and the 95% interval is</p>
+      <p class="eq"><var>b</var> ± <var>t</var><sub><var>n</var>−2</sub> × <var>s</var> ⁄ √<var>S</var></p>
+      <p>where <var>t</var><sub><var>n</var>−2</sub> is the 97.5th percentile of Student's t distribution with <var>n</var> − 2 degrees of freedom: 2.31 for a ten-year era, against 1.96 for a very long one. An era needs at least 8 years to be given a line.</p>
+      <p>The steady-inflation rate is a ratio of two estimates, and the usual plus-or-minus does not suit it. The tool uses Fieller's method: the interval is every unemployment rate <var>u</var> at which the fitted line's own 95% band includes zero,</p>
+      <p class="eq">(<var>a</var> + <var>b</var><var>u</var>)² ≤ <var>t</var>² × <var>s</var>² × [1 ⁄ <var>n</var> + (<var>u</var> − <var>ū</var>)² ⁄ <var>S</var>]</p>
+      <p>This is a quadratic inequality in <var>u</var>. When the slope's own interval excludes zero it gives an interval with two ends. When the slope cannot be told from zero the band never leaves zero in at least one direction, and the tool reports the interval as unbounded. Either the band includes zero everywhere, and those years cannot rule out any rate, or it misses zero over one stretch only, and the tool names that stretch as the only rates ruled out.</p>
+      <h3>Eras and the moving window</h3>
+      <p>The years you type are the first years of new eras. With 1970, 1985 and 2008 the United States is split into 1960 to 1969, 1970 to 1984, 1985 to 2007 and 2008 to 2024, and each gets its own line. A break outside a country's own years makes no era there and the tool says so.</p>
+      <p>The last chart is a rolling regression. For a window of <var>w</var> years it takes every run of <var>w</var> calendar years in a row that all have data, fits the same line to those years alone, and plots the slope against the last year of the run, with its 95% interval as a band. A run that would span a missing year is skipped. Neighbouring windows share all but one of their years, so the line moves smoothly and its wiggles are not independent pieces of evidence.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>What a government could choose.</strong> A fitted line records how two numbers moved together. It is not a menu. The lesson of the 1970s, and of Lucas's critique, is that the line moves when policy tries to use it.</li>
+        <li><strong>Much, from ten points.</strong> An era of a decade is ten observations. The intervals are wide, and they are still too narrow: they treat each year as independent, when inflation and unemployment both drift slowly from one year to the next.</li>
+        <li><strong>What people expected.</strong> "Last year's inflation" is the crudest possible stand-in for expected inflation. Where expectations are anchored by a credible central bank it is the wrong one, which is one reason the simple curve fits the United States since 2008 no worse than the augmented one.</li>
+        <li><strong>Why prices moved.</strong> Oil shocks, exchange rates, wars and taxes move inflation without any help from unemployment. Nothing here controls for them, and a single large shock can decide the slope of an era.</li>
+        <li><strong>Where the eras really begin.</strong> The breaks are yours. Move one by a few years and a slope can change sign. A result that appears only for one choice of break is not a result.</li>
+        <li><strong>How countries compare.</strong> National definitions of unemployment differ and have changed, the OECD links older figures backwards when a method changes, and the ILO's figures for countries with few surveys are imputed by a model. A slope in one country is not on the same footing as a slope in another.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Use quarterly data and core inflation, which is what the research literature fits, and allow several lags of inflation in place of one.</li>
+        <li>Replace last year's inflation with a survey measure of expected inflation where one exists.</li>
+        <li>Let the steady-inflation rate move over time, estimated with a Kalman filter, in place of one constant for each era.</li>
+        <li>Fit a curve that steepens at low unemployment, as Phillips's original did, and test it against the straight line.</li>
+        <li>Add import or oil prices as a control, to separate supply shocks from the effect of slack.</li>
+        <li>Go back to wages: fit the original wage curve where long wage series are open.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>World Bank, World Development Indicators: inflation, consumer prices, annual % (FP.CPI.TOTL.ZG) and unemployment, total, % of total labour force, modelled ILO estimate (SL.UEM.TOTL.ZS). Licence: CC BY 4.0. Database last updated 8 October 2026; retrieved 12 October 2026. The unemployment series is used to 2024, the last year of estimates in the ILO modelled estimates of November 2025; its 2025 figures are the ILO's projections.</li>
+        <li>OECD (2026), OECD Economic Outlook No 119 (Edition 2026/1): unemployment rate (UNR), historical data to 2025; the projections for 2026 and 2027 are left out. Licence: not Creative Commons. The data are reused under section 3, "Data", of the OECD Terms and Conditions (last updated 1 July 2024), which allow anyone to extract, copy, adapt and share OECD data for any purpose, commercial use included, with credit to the OECD by the citation given here. The CC BY 4.0 licence that the OECD adopted on 1 July 2024 covers its written content, not this database. Retrieved 12 October 2026.</li>
+        <li>Phillips, A. W. (1958). The relation between unemployment and the rate of change of money wage rates in the United Kingdom, 1861-1957. <em>Economica</em>, 25(100), 283-299.</li>
+        <li>Samuelson, P. A., and Solow, R. M. (1960). Analytical aspects of anti-inflation policy. <em>American Economic Review</em>, 50(2), 177-194.</li>
+        <li>Phelps, E. S. (1967). Phillips curves, expectations of inflation and optimal unemployment over time. <em>Economica</em>, 34(135), 254-281.</li>
+        <li>Friedman, M. (1968). The role of monetary policy. <em>American Economic Review</em>, 58(1), 1-17.</li>
+        <li>Lucas, R. E. (1976). Econometric policy evaluation: a critique. <em>Carnegie-Rochester Conference Series on Public Policy</em>, 1, 19-46.</li>
+        <li>Staiger, D., Stock, J. H., and Watson, M. W. (1997). The NAIRU, unemployment and monetary policy. <em>Journal of Economic Perspectives</em>, 11(1), 33-49.</li>
+        <li>Blanchard, O. (2016). The Phillips curve: back to the '60s? <em>American Economic Review</em>, 106(5), 31-34.</li>
+        <li>Fieller, E. C. (1954). Some problems in interval estimation. <em>Journal of the Royal Statistical Society, Series B</em>, 16(2), 175-185.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

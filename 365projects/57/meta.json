@@ -1,0 +1,10 @@
+{
+  "question": "Does higher unemployment go with lower inflation, and has that link held from one era to the next?",
+  "finding": "In the United States each extra point of unemployment went with 1.16 points less inflation in 1960 to 1969 (95% interval -1.78 to -0.55), but in 1970 to 1984 the slope was -0.21 with an interval from -1.43 to +1.02; against the change in inflation the 1970 to 1984 slope is -1.24 and the 2008 to 2024 slope is -0.08.",
+  "limit": "Each line is a correlation across ten or twenty yearly figures, not a menu of outcomes a government could choose from.",
+  "sources": [
+    "World Bank",
+    "OECD Economic Outlook No 119"
+  ],
+  "built": "2026-10-13"
+}
