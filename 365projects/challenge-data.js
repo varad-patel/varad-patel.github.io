@@ -587,7 +587,17 @@ window.CHALLENGE = {
    "concept": "Price stability",
    "skills": "Open-data pipeline, scheduled refresh, contribution decomposition",
    "section": 2,
-   "date": "2026-11-09"
+   "date": "2026-11-09",
+   "built": "2026-10-13",
+   "question": "Which categories of household spending pushed a country's inflation up or down over a chosen period?",
+   "finding": "Over the 12 months to October 2022, when euro-area inflation peaked at 10.6%, housing and household energy added 4.13 points and food 2.56: two of 13 categories, with 34.7% of the basket, account for 63% of the rise.",
+   "limit": "A contribution says in which part of the basket a price rise was recorded, not what caused it.",
+   "sources": [
+    "Eurostat HICP",
+    "ONS Consumer Prices Index"
+   ],
+   "img": "img/031.jpg",
+   "url": "31/"
   },
   {
    "id": 32,
@@ -596,7 +606,17 @@ window.CHALLENGE = {
    "concept": "Cost of living",
    "skills": "Weighted price indices",
    "section": 2,
-   "date": "2026-11-10"
+   "date": "2026-11-10",
+   "built": "2026-10-13",
+   "question": "How fast has the price of your own basket of spending risen, compared with the official inflation rate?",
+   "finding": "Over the 12 months to October 2022 the official euro-area rate was 10.6%, but the same category price changes give an invented city renter without a car 15.1% and an invented retired couple who own their home 10.4%.",
+   "limit": "The tool applies the national average price change of each category to your budget shares, so it knows how you divide your spending but not the prices you actually pay.",
+   "sources": [
+    "Eurostat HICP",
+    "ONS Consumer Prices Index"
+   ],
+   "img": "img/032.jpg",
+   "url": "32/"
   },
   {
    "id": 33,
@@ -605,7 +625,17 @@ window.CHALLENGE = {
    "concept": "Real wages, purchasing power",
    "skills": "PPP data, index numbers",
    "section": 2,
-   "date": "2026-11-11"
+   "date": "2026-11-11",
+   "built": "2026-10-13",
+   "question": "What does a salary actually buy in one place compared with another, and how much of the difference is rent?",
+   "finding": "In 2024 a salary of $100,000 in the San Francisco area, the dearest of 387 US metropolitan areas, bought what about $72,300 bought in Monroe, Louisiana, the cheapest, and housing cost 78.0% less there against 13.6% less for goods.",
+   "limit": "The page has city-level price data only for the United States, so every other country is one national average and its cities cannot be told apart.",
+   "sources": [
+    "U.S. Bureau of Economic Analysis",
+    "World Bank"
+   ],
+   "img": "img/033.jpg",
+   "url": "33/"
   },
   {
    "id": 34,
@@ -614,7 +644,16 @@ window.CHALLENGE = {
    "concept": "Purchasing-power parity",
    "skills": "PPP maths, regression",
    "section": 2,
-   "date": "2026-11-12"
+   "date": "2026-11-12",
+   "built": "2026-10-13",
+   "question": "Judged by the price of a Big Mac, does one currency look over- or undervalued against another, and how much of the gap is just a difference in income?",
+   "finding": "In July 2026 a Big Mac cost 236.25 rupees in India and 6.22 dollars in the United States, which makes the rupee look 60.5% undervalued at the market rate of 96.26, and 49.5% undervalued once the lower price that India's income predicts is allowed for.",
+   "limit": "A burger is mostly rent and wages that cannot be traded, so a gap on the index says more about how rich a country is than about whether its currency is mispriced, and it is not a forecast.",
+   "sources": [
+    "The Economist Big Mac index"
+   ],
+   "img": "img/034.jpg",
+   "url": "34/"
   },
   {
    "id": 35,
@@ -632,7 +671,16 @@ window.CHALLENGE = {
    "concept": "Hedonic pricing",
    "skills": "Hedonic regression",
    "section": 2,
-   "date": "2026-11-14"
+   "date": "2026-11-14",
+   "built": "2026-10-13",
+   "question": "What does each feature of a flat add to its price, and how close can a regression on recorded sales get to the price paid?",
+   "finding": "The same 42 m² two-room flat is estimated at €578,000 in the 6th arrondissement of Paris and €338,000 in the 19th, 71% more for the address alone, and on 28,445 held-out sales half of the model's estimates were within 12.8% of the price paid.",
+   "limit": "The model knows only flats sold in Paris from 2021 to 2025 and sees nothing of a flat's floor, condition or street, so it is not a valuation of any home.",
+   "sources": [
+    "DGFiP Demandes de valeurs foncières"
+   ],
+   "img": "img/036.jpg",
+   "url": "36/"
   },
   {
    "id": 37,
@@ -641,7 +689,16 @@ window.CHALLENGE = {
    "concept": "Housing and inequality",
    "skills": "Geospatial analysis",
    "section": 2,
-   "date": "2026-11-15"
+   "date": "2026-11-15",
+   "built": "2026-10-13",
+   "question": "On your income and deposit, in which districts of England and Wales is a home within your budget, and how has that changed since 1997?",
+   "finding": "On the median full-time salary of £39,059 with a £29,500 deposit and a loan of 4.5 times salary, the median home is within budget in 57 of the 318 districts of England and Wales in 2025 and in none in the south, against 285 in 1997 for someone at the same place in the pay ladder with the same share of a year's pay saved.",
+   "limit": "The budget rule is a simplification of how lenders decide, and a district's median price is the middle of whatever sold there, not the price of any particular home.",
+   "sources": [
+    "Office for National Statistics"
+   ],
+   "img": "img/037.jpg",
+   "url": "37/"
   },
   {
    "id": 38,
@@ -650,7 +707,14 @@ window.CHALLENGE = {
    "concept": "Demand and elasticity",
    "skills": "Log-log regression",
    "section": 2,
-   "date": "2026-11-16"
+   "date": "2026-11-16",
+   "built": "2026-10-13",
+   "question": "What do your sales records say about how buyers respond to price, and is there a price they support as the one that brings in most revenue?",
+   "finding": "On 120 simulated days with prices set by rota and a true elasticity of −1.8 the fit returns −1.80 (95% interval −1.92 to −1.69), but on 150 simulated days where the seller raises the price when demand is strong and the truth is −1.5 it returns −0.11.",
+   "limit": "The slope describes sales at prices somebody chose, so if prices followed demand it is not the buyers' response, and nothing in the table can show whether they did.",
+   "sources": [],
+   "img": "img/038.jpg",
+   "url": "38/"
   },
   {
    "id": 39,
@@ -659,7 +723,14 @@ window.CHALLENGE = {
    "concept": "Consumer theory",
    "skills": "Constrained optimisation",
    "section": 2,
-   "date": "2026-11-17"
+   "date": "2026-11-17",
+   "built": "2026-10-13",
+   "question": "How do a consumer's best basket and demand curve move when a price, income or preferences change, and how much of the move is substitution and how much is income?",
+   "finding": "When the price of a good doubles from 2 to 4, a Cobb-Douglas consumer's cut from 25 to 12.5 is 7.32 substitution and 5.18 income, a quasi-linear consumer's cut is all substitution and a perfect-complements consumer's is all income.",
+   "limit": "The five families of preferences are convenient shapes, not measurements of anyone's tastes, and none of them allows a good that people buy less of as they grow richer.",
+   "sources": [],
+   "img": "img/039.jpg",
+   "url": "39/"
   },
   {
    "id": 40,
@@ -668,7 +739,14 @@ window.CHALLENGE = {
    "concept": "Supply and demand",
    "skills": "Equilibrium solving",
    "section": 2,
-   "date": "2026-11-18"
+   "date": "2026-11-18",
+   "built": "2026-10-13",
+   "question": "When a drought, a strike, a tax or a trade barrier hits a market, how far do the price and quantity move, and who gains or loses?",
+   "finding": "With a demand elasticity of 0.3 and a supply elasticity of 0.5, a drought that takes a fifth of every harvest raises the price 52% and leaves sellers as a group 227 better off while buyers lose 486; with a demand elasticity of 1.5 the same drought costs sellers 54.",
+   "limit": "Every result follows from the two elasticities typed in, which for a real market are known only roughly, and the tool looks at one market on its own.",
+   "sources": [],
+   "img": "img/040.jpg",
+   "url": "40/"
   },
   {
    "id": 41,
@@ -677,7 +755,16 @@ window.CHALLENGE = {
    "concept": "Energy economics",
    "skills": "Leontief input-output matrices",
    "section": 2,
-   "date": "2026-11-19"
+   "date": "2026-11-19",
+   "built": "2026-10-13",
+   "question": "When the price of oil and gas jumps, which sectors' prices rise most, and how much of the rise arrives indirectly?",
+   "finding": "In the United States table for 2023 a 50% rise in the price of oil and gas raises petroleum and coal products by 26.70%, air transport by 3.77% (3.23 points of it inside the fuel airlines buy from refineries) and the household basket by 0.78%.",
+   "limit": "Input proportions are fixed and every cost rise is passed on in full, so the model shows where the pressure lands, not what firms and households do about it.",
+   "sources": [
+    "U.S. Bureau of Economic Analysis"
+   ],
+   "img": "img/041.jpg",
+   "url": "41/"
   },
   {
    "id": 42,
@@ -686,7 +773,14 @@ window.CHALLENGE = {
    "concept": "Labour economics",
    "skills": "Model comparison",
    "section": 2,
-   "date": "2026-11-20"
+   "date": "2026-11-20",
+   "built": "2026-10-13",
+   "question": "Does a minimum wage destroy jobs or create them, and how does the answer depend on who sets wages?",
+   "finding": "With the opening curves a floor of ₹160 an hour leaves 70,000 people in work under both models: 10,000 fewer than the competitive market had, and 10,000 more than the single employer had chosen to hire.",
+   "limit": "The tool assumes one model or the other with made-up straight-line curves, so it cannot say which model fits a real labour market or how large the effect of a real minimum wage would be.",
+   "sources": [],
+   "img": "img/042.jpg",
+   "url": "42/"
   },
   {
    "id": 43,
@@ -695,7 +789,14 @@ window.CHALLENGE = {
    "concept": "Welfare policy",
    "skills": "Microsimulation",
    "section": 2,
-   "date": "2026-11-21"
+   "date": "2026-11-21",
+   "built": "2026-10-13",
+   "question": "What would a basic income cost, who would gain and lose, and what tax rates would pay for it?",
+   "finding": "In a simulated population of 20,000 households, ₹6,000 a month for every adult and ₹3,000 for every child needs 16.6 points on both rates of income tax to pay for itself, halves poverty from 23.4% to 11.2%, and leaves 63.7% of people better off and 36.3% worse off.",
+   "limit": "The households are invented and nobody changes how much they work or earn, so the figures show how the arithmetic of a basic income works, not what one would do in a real country.",
+   "sources": [],
+   "img": "img/043.jpg",
+   "url": "43/"
   },
   {
    "id": 44,
@@ -704,7 +805,14 @@ window.CHALLENGE = {
    "concept": "Tax fairness",
    "skills": "Piecewise functions",
    "section": 2,
-   "date": "2026-11-22"
+   "date": "2026-11-22",
+   "built": "2026-10-13",
+   "question": "What does the same household pay under a flat tax, a progressive schedule and a consumption tax, and which of India's two income-tax regimes costs it less?",
+   "finding": "Under India's new regime for 2026-27 a salary of ₹12.75 lakh pays no income tax and one of ₹13 lakh pays ₹26,000, more than the ₹25,000 of extra pay: from ₹12,75,000 to ₹13,45,588 the marginal rate is 104%.",
+   "limit": "It is not a tax return: capital gains, the limits on each deduction and state taxes are left out, and the flat, custom and consumption taxes are not set to raise the same revenue.",
+   "sources": [],
+   "img": "img/044.jpg",
+   "url": "44/"
   },
   {
    "id": 45,
@@ -713,7 +821,14 @@ window.CHALLENGE = {
    "concept": "Tax policy",
    "skills": "Optimisation, sensitivity analysis",
    "section": 2,
-   "date": "2026-11-23"
+   "date": "2026-11-23",
+   "built": "2026-10-13",
+   "question": "At what tax rate does revenue peak, and how much does the answer depend on how strongly people are assumed to respond?",
+   "finding": "For a top-bracket tax with a Pareto parameter of 1.5, revenue peaks at 72.7% with an elasticity of taxable income of 0.25, but anywhere from 84.7% to 62.5% across the range of estimates (0.12 to 0.40) that the main review calls the best available.",
+   "limit": "The elasticities are inputs, not estimates for any country, and the rate that raises the most revenue is not the best rate for a government that gives any weight to the people taxed.",
+   "sources": [],
+   "img": "img/045.jpg",
+   "url": "45/"
   },
   {
    "id": 46,
@@ -722,7 +837,16 @@ window.CHALLENGE = {
    "concept": "Inequality",
    "skills": "Lorenz curve, Gini coefficient",
    "section": 2,
-   "date": "2026-11-24"
+   "date": "2026-11-24",
+   "built": "2026-10-13",
+   "question": "How unequal are incomes in the countries you pick, how has that changed, and how much depends on what the survey measured?",
+   "finding": "India's 2023 survey gives a Gini index of 23.0, the lowest latest figure of any country in the World Bank's data, but it measures consumption; in the 88 country-years where the Bank has both kinds of survey, the income index is the higher in 62, by 3.4 points on average.",
+   "limit": "Household surveys miss much of the income at the very top and measure income in some countries and consumption in others, so the figures understate inequality and are not all comparable.",
+   "sources": [
+    "World Bank Poverty and Inequality Platform"
+   ],
+   "img": "img/046.jpg",
+   "url": "46/"
   },
   {
    "id": 47,
@@ -731,7 +855,14 @@ window.CHALLENGE = {
    "concept": "Distributive justice",
    "skills": "Agent-based modelling",
    "section": 2,
-   "date": "2026-11-25"
+   "date": "2026-11-25",
+   "built": "2026-10-13",
+   "question": "If equal agents make nothing but fair bets with each other, where does the wealth end up, and what does a tax or a bias change?",
+   "finding": "With 500 equal agents making fair bets of 10% of the poorer party's wealth, the Gini index reaches 87.9 after 1,000 rounds and the poorest half hold 0.04% of everything; a 1% wealth tax a round, shared out equally, holds the index at 37.6.",
+   "limit": "Nothing is produced and the agents are identical, so the model isolates what chance alone does to wealth and says nothing about work, skill, inheritance or whether the outcome is just.",
+   "sources": [],
+   "img": "img/047.jpg",
+   "url": "47/"
   },
   {
    "id": 48,
@@ -740,7 +871,14 @@ window.CHALLENGE = {
    "concept": "Market power",
    "skills": "Marginal revenue optimisation",
    "section": 2,
-   "date": "2026-11-26"
+   "date": "2026-11-26",
+   "built": "2026-10-13",
+   "question": "What price does a single seller choose, and how much surplus is lost compared with a price equal to marginal cost?",
+   "finding": "With demand price = 100 - quantity and a marginal cost of 20, a monopolist sells 40 units at 60 instead of 80 at 20, earns 1,600 and destroys 800 of surplus, exactly a quarter of what the market could have produced.",
+   "limit": "The answer depends on the shape of the demand curve far from today's price, which is rarely known, and the model is static: no entry, no innovation, no price discrimination.",
+   "sources": [],
+   "img": "img/048.jpg",
+   "url": "48/"
   },
   {
    "id": 49,
