@@ -1,0 +1,7 @@
+{
+  "question": "What price does a single seller choose, and how much surplus is lost compared with a price equal to marginal cost?",
+  "finding": "With demand price = 100 - quantity and a marginal cost of 20, a monopolist sells 40 units at 60 instead of 80 at 20, earns 1,600 and destroys 800 of surplus, exactly a quarter of what the market could have produced.",
+  "limit": "The answer depends on the shape of the demand curve far from today's price, which is rarely known, and the model is static: no entry, no innovation, no price discrimination.",
+  "sources": [],
+  "built": "2026-10-13"
+}

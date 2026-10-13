@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Monopoly Pricing Simulator · 365 projects</title>
+  <meta name="description" content="Set a demand curve and a cost curve and see the price a monopolist charges, what it sells and earns, and the surplus lost compared with pricing at marginal cost.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .controls h2:not(:first-child) { margin-top: 8px; padding-top: 16px; border-top: 1px solid var(--grid); }
+    .eqn { font-family: var(--mono); font-size: 0.86rem; color: var(--slate); overflow-wrap: anywhere; }
+    .stat .v { font-size: 1.45rem; }
+    .tbl.res th { white-space: normal; }
+    .tbl.res th[scope="row"] { font-weight: 600; border-bottom: 1px solid var(--grid); }
+    .tbl.res td { white-space: normal; overflow-wrap: anywhere; }
+    @media (max-width: 520px) { .tbl.res { font-size: 0.82rem; } .tbl.res th, .tbl.res td { padding: 5px 5px; } }
+    /* On a narrow screen the controls come first and the results are a long way down: links to jump there. */
+    .jump { display: none; flex-wrap: wrap; gap: 4px 18px; font-size: 0.9rem; }
+    @media (max-width: 860px) { .jump { display: flex; } }
+    .p-sec .eq { white-space: normal; }
+    /* The kit draws the focus ring of the two-way switch in dark blue inside the option, where it has only 2 to 1
+       contrast with the dark fill of the chosen one. A pale line just inside the ring makes it plain. */
+    .seg input:checked:focus-visible + span { box-shadow: inset 0 0 0 5px var(--paper); }
+  </style>
+</head>
+<body class="proj" data-day="48">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Monopoly Pricing Simulator</h1>
+      <p class="lede">Set what buyers will pay and what the product costs to make. See the price a single seller would choose, how much it sells and earns, and how much is lost compared with a price equal to marginal cost.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Monopoly price, output and welfare loss">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>With the demand curve on load, price = 100 − quantity, and every unit costing 20 to make, a monopolist sells 40 units at 60 where pricing at marginal cost would sell 80 at 20. It earns 1,600, buyers' surplus falls from 3,200 to 800, and 800 is lost to everyone: a quarter of the surplus the market could have produced. With straight-line demand, a constant marginal cost and no fixed cost the loss is always exactly a quarter, whatever the numbers.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>A firm in a competitive market takes the price as given, and keeps producing until the last unit costs as much to make as it sells for. A firm with no rivals knows that its own output moves the price. To sell one more unit it must lower the price on every unit, so the extra revenue from that unit, the marginal revenue, is less than its price. Augustin Cournot set out the reasoning in 1838. In modern terms, the monopolist stops where marginal revenue equals marginal cost, which is short of the point where price equals marginal cost.</p>
+      <p>The result is a higher price, a smaller output, and a transfer from buyers to the seller. The transfer is not in itself a loss to society; someone still has the money. The loss is the units that are no longer made although buyers value them at more than they cost. That gap is the deadweight loss, a triangle between the demand curve and the marginal cost curve. It is often called a Harberger triangle after Arnold Harberger, whose papers from 1954 onwards made measuring such losses a routine exercise; before them economists rarely tried.</p>
+      <p>How much power a seller has depends on how readily its customers walk away. Abba Lerner proposed in 1934 to measure it by the mark-up as a share of the price, (price − marginal cost) ÷ price. At the monopolist's best price that share equals one over the elasticity of demand: if a 1% price rise loses 2% of sales the mark-up is half the price; if it loses 10%, a tenth. This is why arguments about market power turn on what substitutes buyers have, and why a patent on a drug with no substitute is worth far more than one on a drug with many.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The curves</h3>
+      <p>Demand is one of two shapes. A straight line,</p>
+      <p class="eq"><var>P</var> = <var>a</var> − <var>b</var><var>Q</var></p>
+      <p>where <var>a</var> is the price at which nobody buys and <var>b</var> is the fall in price needed to sell one more unit. Or a curve of constant elasticity <var>e</var>, pinned by the quantity <var>q</var><sub>0</sub> bought at a price of 10:</p>
+      <p class="eq"><var>Q</var> = <var>q</var><sub>0</sub> (<var>P</var> ÷ 10)<sup>−<var>e</var></sup> &nbsp; which is &nbsp; <var>P</var> = 10 (<var>Q</var> ÷ <var>q</var><sub>0</sub>)<sup>−1/<var>e</var></sup></p>
+      <p>Cost has a fixed part <var>F</var>, paid only if anything is produced, and a marginal cost that starts at <var>c</var> and rises by <var>d</var> with each unit:</p>
+      <p class="eq">cost = <var>F</var> + <var>c</var><var>Q</var> + ½ <var>d</var><var>Q</var>² &nbsp;&nbsp; marginal cost = <var>c</var> + <var>d</var><var>Q</var></p>
+      <h3>The two outcomes</h3>
+      <p>The benchmark is the output at which price equals marginal cost. It is what a competitive industry with these costs would supply, and it is the output that makes total surplus as large as it can be. The monopolist chooses the output at which marginal revenue equals marginal cost. For the straight line marginal revenue is <var>a</var> − 2<var>b</var><var>Q</var>, so</p>
+      <p class="eq"><var>Q</var><sub>m</sub> = (<var>a</var> − <var>c</var>) ÷ (2<var>b</var> + <var>d</var>) &nbsp;&nbsp; <var>Q</var><sub>c</sub> = (<var>a</var> − <var>c</var>) ÷ (<var>b</var> + <var>d</var>)</p>
+      <p>For constant elasticity, revenue is <var>P</var><var>Q</var> and marginal revenue is (1 − 1/<var>e</var>) <var>P</var>. When marginal cost is constant this gives the mark-up rule</p>
+      <p class="eq"><var>P</var><sub>m</sub> = <var>c</var> × <var>e</var> ÷ (<var>e</var> − 1) &nbsp;&nbsp; <var>P</var><sub>c</sub> = <var>c</var></p>
+      <p>and the quantities follow from the demand curve. When marginal cost rises there is no formula: the tool finds the output at which (1 − 1/<var>e</var>) <var>P</var>(<var>Q</var>) − <var>c</var> − <var>d</var><var>Q</var> is zero by bisection, halving the interval until the two ends are neighbouring floating-point numbers. That function falls steadily as <var>Q</var> grows, so there is exactly one such output.</p>
+      <h3>The surpluses</h3>
+      <p>Buyers' surplus (consumer surplus) is the area under the demand curve and above the price. Profit before the fixed cost is the area between the price and the marginal cost curve. The deadweight loss is the area between demand and marginal cost over the units the monopolist does not make:</p>
+      <p class="eq">buyers' surplus = ½ <var>b</var><var>Q</var>² (line) &nbsp; or &nbsp; <var>P</var><var>Q</var> ÷ (<var>e</var> − 1) (constant elasticity above 1)</p>
+      <p class="eq">deadweight loss = total surplus at <var>Q</var><sub>c</sub> − total surplus at <var>Q</var><sub>m</sub></p>
+      <p>where total surplus is buyers' surplus plus profit. The three areas shaded in the chart are buyers' surplus, profit before the fixed cost and the deadweight loss, and each is a row of the table. A constant-elasticity curve climbs without limit as output falls towards zero, so part of the buyers' surplus lies above the top of any chart; the line under the chart's title says how much of it is in view. When a monopoly figure and its benchmark differ but would look the same to two decimal places, both are printed to as many places as it takes to tell them apart. The tests check every one of these areas against Simpson's rule, and check the monopolist's output against a search that simply tries 400,000 outputs and keeps the most profitable, for 32 combinations of settings.</p>
+      <h3>The Lerner index</h3>
+      <p class="eq"><var>L</var> = (<var>P</var><sub>m</sub> − marginal cost) ÷ <var>P</var><sub>m</sub> = 1 ÷ |elasticity of demand at <var>P</var><sub>m</sub>|</p>
+      <p>The second equality holds wherever marginal revenue equals marginal cost. On a straight line the elasticity changes along the curve, and the table shows its value at the monopolist's price. With no marginal cost the monopolist simply maximises revenue, which happens where the elasticity is exactly −1, and the index is 1.</p>
+      <h3>When there is no answer</h3>
+      <p><strong>Elasticity at or below 1.</strong> Marginal revenue (1 − 1/<var>e</var>) <var>P</var> is then zero or negative at every output: selling less never lowers revenue and always lowers cost, so profit keeps rising as output shrinks and no output is the best. Below 1 it rises without limit. At exactly 1 buyers spend the same amount, 10 <var>q</var><sub>0</sub>, whatever the price, so profit creeps up towards that amount less the fixed cost and never reaches it; and if the fixed cost is that amount or more, no output can make a profit, and the tool says that the monopoly produces nothing. The mark-up rule divides by <var>e</var> − 1 and has no meaning. The fault is in the curve: no product has demand this inelastic at every price. The tool shows the benchmark, says that there is no monopoly outcome, and gives no welfare loss, because the area under such a curve is infinite.</p>
+      <p><strong>Constant elasticity with no marginal cost at all.</strong> Price never reaches zero on this curve, so there is no finite output at which price equals marginal cost, and no finite monopoly output either.</p>
+      <p><strong>Demand that never covers cost.</strong> If <var>a</var> is not above <var>c</var>, no buyer will pay for the first unit and nothing is sold under either regime.</p>
+      <p><strong>A fixed cost the monopoly cannot cover.</strong> If the best operating profit is below <var>F</var> the monopoly produces nothing and earns nothing. The loss is then everything pricing at marginal cost would have yielded after paying <var>F</var>, or nothing if even that would not cover <var>F</var>. When the two are equal to within one part in a billion the tool says the firm breaks even and stays open.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>What any real firm's demand curve looks like.</strong> The two shapes are chosen because they can be solved, and they disagree. On a straight line the monopolist passes on half of a rise in a constant marginal cost; with constant elasticity it passes on more than the whole rise. The shape of demand far from today's price is rarely known.</li>
+        <li><strong>The whole cost of monopoly.</strong> The triangle counts only the units not sold. The literature on rent-seeking that began with Gordon Tullock's 1967 paper argues that what firms spend to win and keep a monopoly is a further cost, and a firm with no rivals may also let its costs drift up.</li>
+        <li><strong>The benefits a monopoly may bring.</strong> The model is static. It has no research that the profit pays for, no patents, no economies of scale beyond the fixed cost, and no entry by rivals attracted by the profit.</li>
+        <li><strong>How a fixed cost should be paid for.</strong> With a fixed cost and constant marginal cost, pricing at marginal cost makes a loss, as the table shows. The benchmark is a yardstick, not a business plan: someone has to cover that cost, and how to do so at least harm is a separate problem.</li>
+        <li><strong>What a cleverer monopolist would do.</strong> This one charges every buyer the same price. A seller that can charge different buyers different prices earns more and may waste less.</li>
+        <li><strong>Markets with a few sellers.</strong> Most market power is held by firms that have rivals. Day 49 takes that up.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Add price discrimination: two groups of buyers with different demand curves, priced separately and together.</li>
+        <li>Add a price cap and show the price at which a regulator recovers the most surplus without driving the firm out.</li>
+        <li>Let the visitor draw a demand curve by hand and solve it numerically, to see how much the answer depends on its shape.</li>
+        <li>Show the pass-through of a tax or a rise in cost under each demand shape.</li>
+        <li>Add a second period in which profit attracts an entrant, so that today's price depends on tomorrow's competition.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Cournot, A. A. (1838). <em>Recherches sur les principes mathématiques de la théorie des richesses</em>. Paris: L. Hachette.</li>
+        <li>Lerner, A. P. (1934). The concept of monopoly and the measurement of monopoly power. <em>Review of Economic Studies</em>, 1(3), 157-175.</li>
+        <li>Harberger, A. C. (1954). Monopoly and resource allocation. <em>American Economic Review</em>, 44(2), 77-87.</li>
+        <li>Tullock, G. (1967). The welfare costs of tariffs, monopolies, and theft. <em>Western Economic Journal</em> (now <em>Economic Inquiry</em>), 5(3), 224-232.</li>
+        <li>Hines, J. R. (1999). Three sides of Harberger triangles. <em>Journal of Economic Perspectives</em>, 13(2), 167-188.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
