@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Personal Inflation Calculator · 365 projects</title>
+  <meta name="description" content="Enter what you spend in a month by category and see the rate at which the price of your own basket has risen, next to the official inflation rate, month by month.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .amts { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+    .amt { display: grid; grid-template-columns: minmax(0, 1fr) 7.5em; gap: 4px 12px; align-items: center; }
+    .amt label { font-weight: 600; font-size: 0.9rem; overflow-wrap: anywhere; }
+    .amt input { text-align: right; scroll-margin-top: 5rem; }
+    .amt .hint, .amt .amt-err { grid-column: 1 / -1; font-size: 0.8rem; line-height: 1.4; }
+    .amt .hint { color: var(--slate); }
+    .amt .amt-err { color: var(--bad); font-weight: 600; overflow-wrap: anywhere; }
+    .amt .amt-err:empty { display: none; }
+    .controls h2 { padding-top: 14px; border-top: 1px solid var(--grid); }
+    .steps { margin-top: -8px; }
+    .btn[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
+    .vintage { padding-top: 12px; border-top: 1px solid var(--grid); overflow-wrap: anywhere; }
+    .reading { font-size: 1rem; line-height: 1.55; }
+    .drivers { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+    .drv-top { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; }
+    .drv-name { font-weight: 600; font-size: 0.95rem; overflow-wrap: anywhere; }
+    .drv-pts { white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .drv-track { position: relative; height: 9px; margin: 4px 0; background: color-mix(in srgb, var(--ink) 6%, transparent); }
+    .drv-fill { position: absolute; top: 0; bottom: 0; min-width: 1px; }
+    .drv-track i { position: absolute; top: -2px; bottom: -2px; width: 1.5px; margin-left: -0.75px; background: var(--ink); }
+    .fine { display: grid; gap: 4px; }
+    .strip { grid-column: 1 / -1; position: sticky; top: 0; z-index: 4; padding: 8px 12px; background: var(--ink); color: var(--paper); font-weight: 600; font-size: 0.88rem; line-height: 1.35; }
+  </style>
+</head>
+<body class="proj" data-day="32">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Personal Inflation Calculator</h1>
+      <p class="lede">The official inflation rate is for an average basket that nobody buys. Enter what you spend in a month and see how fast the price of your own basket has been rising.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Personal inflation calculator">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>Leave the country on the euro area, press "City renter without a car" and then "Peak of the surge". Over the 12 months to October 2022 the official rate was 10.6%, but the price of that invented household's basket rose 15.1%: housing, water, electricity, gas and other fuels, whose prices rose 23.0%, take 45.8% of its budget against 18.1% of the official basket. Press "Retired couple who own their home" and the same prices give 10.4%. In that month the official basket priced the same way also comes to 10.6%, so none of either gap is a difference of method. Both figures assume that each household's costs rose as its categories did on average: a tenant whose rent did not move saw less than 15.1%.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>A cost-of-living index answers one question: how much more does it cost this year to buy what was bought last year? The answer depends on what was bought. The official rate prices a basket built from everybody's spending added together, so a country's rate is the experience of its total spending, not of any one household. A student who rents a room and owns no car, and a family with two cars and a paid-off house, live in the same country at the same prices and can face rates several points apart.</p>
+      <p>The average also leans towards those who spend most. Because the official weights are shares of total spending, a household that spends three times as much counts three times over. S. J. Prais pointed this out in 1959 and called such an index plutocratic. The alternative, in which every household's own rate counts equally, is known as a democratic index. The two can differ whenever the prices of necessities and of luxuries move apart, since food and energy take a larger share of small budgets. Hobijn and Lagakos re-weighted the American index household by household for 1987 to 2001, much as this page does, and found that households' rates differ noticeably. Jaravel's survey of later work reports that in the United States inflation has been lower for households with higher incomes.</p>
+      <p>That matters outside the classroom. Pensions, benefits and wage bargains are tied to the official rate, on the assumption that it measures the rise in everyone's cost of living. A household whose own rate runs above it is losing ground even when its income keeps up with the index. This page lets you work out your own rate from the official price changes, and see which part of your budget pulls it away from the official figure.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The data</h3>
+      <p>The prices are the same as on Day 31: Eurostat's Harmonised Index of Consumer Prices for 18 European countries, the euro area and the European Union, by the 13 divisions of spending in its classification, and the Consumer Prices Index of the Office for National Statistics for the United Kingdom, in 12 divisions. Each division has a monthly price index, and each country has an official basket whose weights are set once a year. The snapshot's date is printed under the form. Eurostat marks some of the figures as estimated or of low reliability, as Day 31 sets out, and the tool says so under the list when a result rests on one of them.</p>
+
+      <h3>Your rate</h3>
+      <p>The amounts in the form are turned into budget shares: <var>s</var><sub><var>c</var></sub> is the amount for category <var>c</var> divided by the total. Any currency will do, and so will weekly or yearly amounts, as long as every box uses the same one. A box left at 0 or empty gives that category a share of zero. Its prices then have no effect on your rate, though they still count in the official one.</p>
+      <p>Write <var>i</var><sub><var>c</var></sub>(<var>t</var>) for the country's price index of category <var>c</var> in month <var>t</var>. Your rate for the 12 months to <var>t</var> is</p>
+      <p class="eq"><var>rate</var>(<var>t</var>) = Σ<sub><var>c</var></sub> <var>s</var><sub><var>c</var></sub> · [<var>i</var><sub><var>c</var></sub>(<var>t</var>) / <var>i</var><sub><var>c</var></sub>(<var>t</var> − 12) − 1]</p>
+      <p>This is the change in the cost of a fixed basket, a Laspeyres index: if a household divided its spending in the proportions <var>s</var> twelve months ago and went on buying the same things, its bill would have changed by exactly this much. Each term of the sum is what one category adds to the rate, and the list under the chart shows them. The sentence about money uses the same figure: a basket that cost the total you entered at the start of the 12 months cost that total times (1 + <var>rate</var>) at the end.</p>
+      <p>The chart repeats the calculation for every month from December 2014, always with the same shares. It shows what your rate would have been had you always divided your spending as you do now.</p>
+
+      <h3>The official figures</h3>
+      <p>The official rate shown is the published one, to one decimal place. Your rate is rounded the same way, and the gap is the difference between the two rounded figures, so the numbers on the screen always agree with one another.</p>
+      <p>The two rates are not worked out the same way, and the fourth figure in the tool measures what that is worth. The official index is chain-linked: its basket is given new weights every December, and those weights are shares of spending at the prices of that December. Your rate prices one fixed basket over the whole 12 months. So the tool also prices the official basket your way, with the official weights for the year of the month chosen as the shares in the formula above. Call the result <var>B</var>. Then</p>
+      <p class="eq">gap = (your rate − <var>B</var>)<br>&nbsp; &nbsp; + (<var>B</var> − official rate)</p>
+      <p>The first part comes from how your budget is divided. The second is method alone and is the same for every basket. The tool gives both, draws <var>B</var> for every month as the grey line in the chart, and puts a warning above the result when the second part reaches 0.3 points.</p>
+      <p>The grey bars show how much each category adds to the official rate. Those figures cannot be had by multiplying the official weight by the price change, because the official index changes its weights every December and is chained together across the change. They are worked out with the same formula as on Day 31, the one Eurostat uses, and tests check them against the contributions Eurostat and the Office for National Statistics publish.</p>
+      <p>The sentence that names one category picks the one that does most to set your rate apart from <var>B</var>. Each category's part is the difference between its share of your budget and its share of the official basket, times its price change, and these parts add up to your rate minus <var>B</var> exactly. The sentence names the largest part in the direction of the difference, and only if it is at least 0.05 points and the two shares differ by at least one percentage point. Otherwise it says that no single category sets the basket apart.</p>
+
+      <h3>The United Kingdom</h3>
+      <p>The form always has 13 rows. The UK's index has 12 divisions, with insurance, financial services, personal care and social protection together in one called miscellaneous goods and services. For the UK the last two rows of the form are therefore added together and priced with that one index. The first eleven rows are matched one for one, in order, although the UK index counts computers and televisions under recreation and culture where the European one counts them under information and communication.</p>
+
+      <h3>How far the method alone can move the figure</h3>
+      <p>"Official basket" fills the form with the official weights for the year of the month chosen, scaled to add up to 2,000. If this page's method and the official one were the same, the two rates would then agree. Usually they nearly do. Across the 21 economies and every month from December 2014 to August 2026, 2,961 comparisons in all, the official basket priced this page's way is within 0.1 points of the rate the official index gives in 86.5%, and more than half a point away in 28. To one decimal place, as the tool shows them, the two differ by 0.3 points or more in 125 months and by a point or more in two. In the euro area they are within 0.1 points in 131 of 141 months and never more than 0.19 apart.</p>
+      <p>The large differences come when prices swing fast, for two reasons. First, an official weight is a share of spending at the prices of the previous December, so twelve months earlier or later it describes a different basket. In the Netherlands, housing and household energy has a weight of 16.9% for 2023. In September 2022, at the prices of that month, it took 23.7% of the basket then in force, and over the next twelve months its prices fell 25.5%. The fixed basket gives that fall too little weight. Second, the official rate for any month but December joins two baskets, last year's up to December and this year's after it, so no single set of shares can reproduce it. That Dutch month is the largest difference in the record: for September 2023 the official weights as one fixed basket give a rise of 0.9%, and the official rate was −0.3%. A gap between your rate and the official one can therefore be a difference of method and not of spending, which is why the tool reports the two parts separately.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>What happened to the prices you pay.</strong> The tool knows how you divide your budget, not what you buy. It applies the national average price change of each category. Your rent may not have moved while the average rent rose; you may shop where prices rose less. Differences inside a category are often as large as differences between categories.</li>
+        <li><strong>How you adapted.</strong> The basket is held fixed. Someone who switched to cheaper food or drove less when prices rose kept their bill down, at a cost in what they consume that no fixed-basket index counts. The amounts are also read as how the budget was divided at the start of each 12 months, so if you enter what you spend today, the latest result prices today's pattern of spending from a year ago.</li>
+        <li><strong>The cost of owning a home.</strong> Mortgage payments and the price of houses are in neither index. For an owner with a mortgage, the largest monthly payment is missing from both the official rate and this one.</li>
+        <li><strong>More than 13 categories can show.</strong> Electricity and rent sit in one category, petrol and train fares in another. Two households with the same 13 shares can still face different rates.</li>
+        <li><strong>A like-for-like match with the official rate.</strong> The official index is chain-linked and this page prices one fixed basket, so even a basket with exactly the official weights does not always reproduce the official rate: usually to within 0.1 points, but by 1.2 points in the worst month in the record. Judge your basket against the official basket priced the same way, which the tool shows for the month chosen, and read a difference of 0.1 or 0.2 points as no clear difference.</li>
+        <li><strong>Anything about real groups of people.</strong> The four example households are invented. They show how the arithmetic behaves, not how students or pensioners actually fared.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Go below the 13 divisions, so that energy can be separated from rent and fuel from fares, where most of the difference between households lies.</li>
+        <li>Let the visitor enter the price changes they have actually seen for a few large items, such as their own rent, in place of the national average.</li>
+        <li>Read a bank or card statement, sort the payments into categories and fill in the form.</li>
+        <li>Show the total over several years as well as the 12-month rate: what a basket bought in one month cost in another.</li>
+        <li>Add the official rates by income group that some statistical offices publish, to set the invented households against measured ones.</li>
+        <li>Offer a version with owner-occupiers' housing costs for the countries that publish an index of them.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>Eurostat. Harmonised index of consumer prices, ECOICOP ver. 2: indices and rates of change, monthly data (prc_hicp_minr, doi:10.2908/PRC_HICP_MINR) and item weights (prc_hicp_iw). Eurostat authorises reuse of its data for any purpose provided the source is acknowledged. The date retrieved is printed under the form.</li>
+        <li>Office for National Statistics. Consumer price inflation time series (MM23): CPI indices, weights and annual rate for all items and the 12 divisions. Contains public sector information licensed under the Open Government Licence v3.0. The date retrieved is printed under the form.</li>
+        <li>Prais, S. J. (1959). Whose cost of living? <em>Review of Economic Studies</em>, 26(2), 126-134.</li>
+        <li>Hobijn, B., and Lagakos, D. (2005). Inflation inequality in the United States. <em>Review of Income and Wealth</em>, 51(4), 581-606.</li>
+        <li>Jaravel, X. (2021). Inflation inequality: measurement, causes, and policy implications. <em>Annual Review of Economics</em>, 13, 599-629.</li>
+        <li>Eurostat (2024). <em>Harmonised Index of Consumer Prices (HICP) Methodological Manual, 2024 edition</em>. Luxembourg: Publications Office of the European Union. doi:10.2785/055028.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "question": "How fast has the price of your own basket of spending risen, compared with the official inflation rate?",
+  "finding": "Over the 12 months to October 2022 the official euro-area rate was 10.6%, but the same category price changes give an invented city renter without a car 15.1% and an invented retired couple who own their home 10.4%.",
+  "limit": "The tool applies the national average price change of each category to your budget shares, so it knows how you divide your spending but not the prices you actually pay.",
+  "sources": [
+    "Eurostat HICP",
+    "ONS Consumer Prices Index"
+  ],
+  "built": "2026-10-13"
+}
