@@ -274,7 +274,9 @@ treeSvg.addEventListener("click", (e) => {
   if (box) { box.focus({ preventScroll: true }); box.select(); box.scrollIntoView({ block: "center", behavior: reducedMotion() ? "auto" : "smooth" }); }
 });
 let lastWidth = 0;
-if (typeof ResizeObserver !== "undefined") new ResizeObserver(() => { if (treeBox.clientWidth !== lastWidth) refresh(); }).observe(treeBox);
+// Redrawing waits for the next frame: a redraw inside the observer's own callback can change the size again in the
+// same frame, which browsers report as an error.
+if (typeof ResizeObserver !== "undefined") new ResizeObserver(() => requestAnimationFrame(() => { if (treeBox.clientWidth !== lastWidth) refresh(); })).observe(treeBox);
 
 /* --------------------------------------------------------------------------- refresh */
 const describe = (row, lower = false) => `${row.kind === "p" ? (lower ? "chance of" : "Chance of") : lower ? "utility of" : "Utility of"} “${row.name.trim() || "unnamed"}”`;

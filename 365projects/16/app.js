@@ -501,4 +501,6 @@ render();
 // The node text is measured with the page font, so draw again once it has loaded, and when the width changes.
 document.fonts?.ready.then(() => { centre = true; drawMap(); });
 let lastWidth = mapBox.clientWidth;
-new ResizeObserver(() => { if (mapBox.clientWidth !== lastWidth) { lastWidth = mapBox.clientWidth; centre = true; drawMap(); } }).observe(mapBox);
+// Redrawing waits for the next frame: a redraw inside the observer's own callback can change the size again in the
+// same frame, which browsers report as an error.
+new ResizeObserver(() => requestAnimationFrame(() => { if (mapBox.clientWidth !== lastWidth) { lastWidth = mapBox.clientWidth; centre = true; drawMap(); } })).observe(mapBox);

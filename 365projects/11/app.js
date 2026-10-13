@@ -155,7 +155,9 @@ function connect() {
   }
   lines.replaceChildren(...paths.map((d) => svgEl("path", { d, fill: "none", stroke: "#b9c5bd", "stroke-width": 1.5 })));
 }
-if (typeof ResizeObserver !== "undefined") new ResizeObserver(() => connect()).observe(ego);
+// Redrawing waits for the next frame: a redraw inside the observer's own callback can change the size again in the
+// same frame, which browsers report as an error.
+if (typeof ResizeObserver !== "undefined") new ResizeObserver(() => requestAnimationFrame(() => connect())).observe(ego);
 
 function drawChain() {
   const text = targetInput.value.trim();

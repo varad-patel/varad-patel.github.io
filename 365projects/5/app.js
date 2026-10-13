@@ -459,7 +459,9 @@ function changed() {
 rebuild();
 render();
 say("start");
-if (typeof ResizeObserver !== "undefined") new ResizeObserver(() => { if (tableIsNarrow() !== narrowTable) { rebuild(); render(); } }).observe(tableBox);
+// Redrawing waits for the next frame: a redraw inside the observer's own callback can change the size again in the
+// same frame, which browsers report as an error.
+if (typeof ResizeObserver !== "undefined") new ResizeObserver(() => requestAnimationFrame(() => { if (tableIsNarrow() !== narrowTable) { rebuild(); render(); } })).observe(tableBox);
 // The chase starts by itself the first time the track is on screen (on a phone it sits below the controls),
 // unless the visitor has asked for reduced motion or has already started it.
 if (!reducedMotion()) {

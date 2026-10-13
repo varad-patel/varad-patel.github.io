@@ -18,7 +18,7 @@
     /* The code under each symbol is drawn from data-code, so the button's name stays "Insert <symbol>: <name>, code <n>". */
     .keys button::after { content: attr(data-code); font-size: 0.68rem; line-height: 1.1; color: var(--slate); }
     /* The boxes, the results, then the examples and the count. Wide screens: results in the right-hand column beside both other blocks. */
-    @media (min-width: 861px) { #app .tool-grid { grid-template-rows: auto 1fr; } #app .tool-grid > .out { grid-column: 2; grid-row: 1 / span 2; } }
+    @media (min-width: 1041px) { #app .tool-grid { grid-template-rows: auto 1fr; } #app .tool-grid > .out { grid-column: 2; grid-row: 1 / span 2; } }
     .panel > * + * { margin-top: 8px; }
     .factors > span, .tbl td > span { position: relative; } /* keeps the words written for screen readers inside their own box */
     #app input.mono { font-size: 1.12rem; }
