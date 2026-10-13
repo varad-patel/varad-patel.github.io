@@ -170,6 +170,7 @@ async function inPage() {
   click = null; fire(svg1, "keydown", { key: " " }); ok(click && click.point.label === "mid", "and so does Space");
   fire(svg1, "keydown", { key: "Escape" });
   const details = c1box.querySelector("details.chart-table");
+  ok(details.querySelector("summary").getAttribute("aria-label") === "Show the data as a table: Line and dots", "the table toggle says which chart it belongs to");
   details.open = true; fire(details, "toggle"); await frame();
   ok(details.querySelectorAll("tbody tr").length === 3 && details.querySelector("tbody").textContent.includes("origin"), "the data-table twin lists every point, and not the line that has hover off");
 

@@ -40,6 +40,16 @@ export const debounce = (fn, ms = 150) => {
   return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
 };
 export const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
+/**
+ * Run fn once in the next frame, however many times the returned function is called before then. A resize
+ * observer that redraws inside its own callback can change the size again in the same frame, which browsers
+ * report as an error ("ResizeObserver loop completed with undelivered notifications"): observe with
+ * new ResizeObserver(nextFrame(redraw)) instead.
+ */
+export const nextFrame = (fn) => {
+  let queued = false;
+  return () => { if (queued) return; queued = true; requestAnimationFrame(() => { queued = false; fn(); }); };
+};
 
 /* =============================================================== formatting */
 
@@ -468,7 +478,7 @@ export function canvas(target, { height = 320, draw }) {
     ctx.clearRect(0, 0, w, h);
     draw?.(ctx, w, h);
   };
-  if (typeof ResizeObserver !== "undefined") new ResizeObserver(() => { if (node.clientWidth !== w) redraw(); }).observe(node);
+  if (typeof ResizeObserver !== "undefined") new ResizeObserver(nextFrame(() => { if (node.clientWidth !== w) redraw(); })).observe(node);
   redraw();
   return { el: node, ctx, redraw, get width() { return w; }, get height() { return typeof height === "function" ? height(w) : height; } };
 }
@@ -596,7 +606,8 @@ export function chart(target, spec) {
   const tip = el("div", { class: "chart-tip", hidden: true });
   const plot = el("div", { class: "chart-plot" }, svg, tip);
   const tableBox = el("div", { class: "tbl-wrap" });
-  const details = el("details", { class: "chart-table" }, el("summary", { text: "Show the data as a table" }), tableBox);
+  const summary = el("summary", { text: "Show the data as a table" });
+  const details = el("details", { class: "chart-table" }, summary, tableBox);
   const root = el("div", { class: "chart" }, titleEl, subEl, legendEl, plot, details);
   const hoverLayer = svgEl("g", { class: "hover", "pointer-events": "none" });
   target.append(root);
@@ -615,6 +626,8 @@ export function chart(target, spec) {
     subEl.textContent = cur.subtitle || "";
     subEl.hidden = !cur.subtitle;
     svg.setAttribute("aria-label", cur.label || cur.title || "Chart");
+    // A page with several charts has several of these toggles: each says which chart it belongs to.
+    if (cur.title) summary.setAttribute("aria-label", `Show the data as a table: ${cur.title}`); else summary.removeAttribute("aria-label");
 
     // Legend: always for two or more named series.
     const named = series.filter((s) => s.name && s.legend !== false);
@@ -967,7 +980,7 @@ export function chart(target, spec) {
     e.preventDefault();
   });
   details.addEventListener("toggle", () => { if (details.open && layout) buildTable(); });
-  if (typeof ResizeObserver !== "undefined") new ResizeObserver(() => { if (plot.clientWidth !== lastWidth) render(); }).observe(plot);
+  if (typeof ResizeObserver !== "undefined") new ResizeObserver(nextFrame(() => { if (plot.clientWidth !== lastWidth) render(); })).observe(plot);
   render();
 
   return {
