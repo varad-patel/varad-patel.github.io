@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wealth Distribution Simulator · 365 projects</title>
+  <meta name="description" content="Set the rule by which simulated agents trade, add a wealth tax or a bias, and watch equal fortunes turn into a few large ones and many small ones.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .controls h2:not(:first-child) { margin-top: 8px; padding-top: 16px; border-top: 1px solid var(--grid); }
+    .buttons { align-items: flex-end; }
+    .buttons .field { flex: 0 1 13em; }
+    .seed { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: start; }
+    .seed .btn { margin-top: 27px; }
+    .theory { font-size: 0.88rem; }
+    .stat .v { font-size: 1.45rem; }
+    /* On a narrow screen the controls come first and the results are a long way down: links to jump there. */
+    .jump { display: none; flex-wrap: wrap; gap: 4px 18px; font-size: 0.9rem; }
+    @media (max-width: 860px) { .jump { display: flex; } }
+    .p-sec .eq { white-space: normal; }
+    /* The kit draws the focus ring of the two-way switch in dark blue inside the option, where it has only 2 to 1
+       contrast with the dark fill of the chosen one. A pale line just inside the ring makes it plain. */
+    .seg input:checked:focus-visible + span { box-shadow: inset 0 0 0 5px var(--paper); }
+  </style>
+</head>
+<body class="proj" data-day="47">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Wealth Distribution Simulator</h1>
+      <p class="lede">Five hundred simulated agents start with the same wealth and trade in pairs. Set the rule they trade by, add a tax or a bias, and watch where the wealth goes.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Simulated economy of trading agents">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>Start 500 agents with the same wealth and let them make fair bets of 10% of the poorer party's wealth, the setting on load. After 1,000 rounds, half a million trades, the Gini index is 87.9: the richest tenth of the agents hold 79.9% of everything and the poorest half hold 0.04%. With a wealth tax of 1% a round, shared out equally, the index after the same 1,000 rounds is 37.6 and the poorest half hold 23.5%. To see the first, press Reset and then Jump 1,000 rounds; for the second, set the tax to 1.0% before pressing Reset.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>What makes a distribution of wealth just? One family of answers looks at the pattern. John Rawls argued in 1971 that social and economic inequalities are just only if they attach to positions open to all under fair equality of opportunity and work to the greatest benefit of the least advantaged, so on his view one test of a society is how its worst-off members fare. Another family looks at the history. Robert Nozick replied in 1974 that a distribution is just if everyone came by what they hold through just acquisition and voluntary transfer, whatever pattern results: if the starting point was just and every step was fair, so is the outcome.</p>
+      <p>The model on this page is a small test of what "every step was fair" can lead to. It is a model of a rule of exchange and not of an economy: it has no production, no talent, no effort, no inheritance and no cheating. The agents are identical and start equal. They meet in pairs and make an even bet, limited to a share of what the poorer of the two has, so that nobody can be ruined in one trade. Models of this family go back to the sociologist John Angle, who in 1986 described a process of random encounters between pairs of people in which the loser hands the winner a share of what it has. Around 2000 physicists arrived at similar models: Adrian Drăgulescu and Victor Yakovenko treated money like the energy of gas molecules, and Anirban Chakraborti and Bikas Chakrabarti added saving. In 2002 Chakraborti described a version in which both parties stake the same amount, and found that in the long run the money collects in very few hands. Brian Hayes, writing in the same year, gave the rule the name it now goes by, the yard-sale model.</p>
+      <p>Run with no redistribution, the model ends close to one agent owning everything, although every trade in it is voluntary and even-handed. Bruce Boghosian showed in 2014 that the simplest redistribution, a flat tax on wealth handed back in equal parts, stops the collapse and gives a steady spread with the main features of Pareto's law: few agents with very little, and a tail of large fortunes that thins out roughly as a power law. With Merek Johnson and Jeremy Marcq he proved in 2015 that without it, in the equations that describe a large population trading this way, the Gini coefficient can only rise.</p>
+      <p>What this shows is narrow. Under this one rule, fair dealing between equals does not keep them roughly equal, and the largest fortune reflects nothing its owner did. That is a fact about a rule of exchange, not about any real economy, where fortunes also depend on work, skill, inheritance, institutions and much else that the model leaves out. Nor does it settle the argument between the two views. A follower of Nozick can say the concentrated outcome is just, because the start was equal and nothing unjust happened on the way. A follower of Rawls can say it is unjust, because the least advantaged are left with almost nothing when a rule that taxes and shares would leave them with far more. The model takes neither side. What it adds is an example: a procedure that is fair at every step and still ends in a very unequal pattern, with no cheating and no merit anywhere in it, so that such a pattern cannot by itself show that either was present.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The economy</h3>
+      <p>There are <var>N</var> agents (500 unless you change it), each starting with wealth 1, so total wealth is <var>N</var>. Nothing is produced or consumed. A round is <var>N</var> trades, and in each trade two different agents are picked uniformly at random, so an agent takes part in two trades a round on average. The random numbers come from a seeded generator: the same seed and the same rule always give the same run, whatever the speed.</p>
+      <h3>Yard sale</h3>
+      <p>Call the two agents' wealth <var>a</var> and <var>b</var>. The stake is a share <var>f</var> of the smaller:</p>
+      <p class="eq">stake = <var>f</var> × min(<var>a</var>, <var>b</var>)</p>
+      <p>The richer party wins the stake with probability <var>q</var> and the poorer with probability 1 − <var>q</var>; when the two are exactly level a fair coin decides. The loser pays the winner. With <var>q</var> = 50% the bet is fair: each side expects to gain nothing. A value above 50% stands for the advantages wealth brings, and a value below 50% for a rule that leans towards the poorer side. Cristian Moukarzel and colleagues studied exactly this bet in 2007: a share <var>f</var> of the poorer party's wealth, won by the poorer party with a set probability. Here the edge is fixed; in the model of Boghosian and colleagues of 2017 it grows with the gap in wealth.</p>
+      <p>Why does a fair bet concentrate wealth? Follow the poorer party. Its wealth is multiplied by 1 + <var>f</var> when it wins and by 1 − <var>f</var> when it loses. A win followed by a loss leaves it with (1 + <var>f</var>)(1 − <var>f</var>) = 1 − <var>f</var>² of what it had: less than it started with. The average of the two outcomes is unchanged, but the typical outcome over many trades is governed by the average of the logarithm,</p>
+      <p class="eq"><var>d</var> = (1 − <var>q</var>) ln(1 + <var>f</var>) + <var>q</var> ln(1 − <var>f</var>)</p>
+      <p>which with a fair coin is ½ ln(1 − <var>f</var>²), below zero for every stake. For the richer party the same stake is a smaller share of its wealth, so its typical loss is smaller. The sign of <var>d</var> decides the fate of this economy when there is no redistribution: below zero, one agent ends up with everything; above zero, the economy settles on a steady spread. Moukarzel and colleagues found the boundary between the two for this bet in 2007, and in 2011 Moukarzel showed that the same test, the sign of the average logarithm of the poorer party's gain, holds whatever the distribution of returns. The boundary is at</p>
+      <p class="eq"><var>q</var>* = ln(1 + <var>f</var>) ÷ [ln(1 + <var>f</var>) − ln(1 − <var>f</var>)]</p>
+      <p>which is 47.5% for a stake of 10%. A fair coin is on the wrong side of it. The panel beside the sliders works out <var>d</var> for the rule you set, shows it as a typical percentage change per trade, 100 × (e<sup><var>d</var></sup> − 1), and says which side of the boundary you are on.</p>
+      <h3>Pooled exchange</h3>
+      <p>Each party keeps a share <var>s</var> of its wealth and puts the rest into a pool, which is split at a uniformly random point <var>u</var> between 0 and 1:</p>
+      <p class="eq"><var>a</var>′ = <var>s</var><var>a</var> + <var>u</var> (1 − <var>s</var>)(<var>a</var> + <var>b</var>) &nbsp;&nbsp; <var>b</var>′ = <var>a</var> + <var>b</var> − <var>a</var>′</p>
+      <p>Here the richer party has more at risk than the poorer, the reverse of the yard sale, and the economy does not collapse. With <var>s</var> = 0 it settles on the exponential distribution, for which the Gini coefficient is exactly ½, the richest tenth hold (1 + ln 10) ÷ 10 = 33.0% and the poorest half hold (1 − ln 2) ÷ 2 = 15.3%. The more each party saves, the narrower the spread.</p>
+      <h3>The wealth tax</h3>
+      <p>At the end of every round each agent pays a share <var>t</var> of its wealth and the takings are divided equally, so with average wealth <var>m</var></p>
+      <p class="eq"><var>w</var> → <var>w</var> + <var>t</var> (<var>m</var> − <var>w</var>)</p>
+      <p>Everyone moves the same fraction of the way to the average. This is the redistribution rule Boghosian added to the yard-sale model in 2014, applied here once a round to every agent.</p>
+      <h3>What is measured</h3>
+      <p>After each round the agents are sorted by wealth <var>w</var><sub>1</sub> ≤ … ≤ <var>w</var><sub><var>N</var></sub>. The Gini coefficient is</p>
+      <p class="eq"><var>G</var> = [(2 × 1 − <var>N</var> − 1) <var>w</var><sub>1</sub> + (2 × 2 − <var>N</var> − 1) <var>w</var><sub>2</sub> + … + (2<var>N</var> − <var>N</var> − 1) <var>w</var><sub><var>N</var></sub>] ÷ (<var>N</var> × total wealth)</p>
+      <p>shown multiplied by 100. With <var>N</var> agents it cannot exceed 100 × (<var>N</var> − 1) ÷ <var>N</var>, which is 99.8 for 500. The richest 1% are the richest <var>N</var> ÷ 100 agents, the richest 10% the richest <var>N</var> ÷ 10, and the poorest half the poorest <var>N</var> ÷ 2. Total wealth is shown to six decimal places as a check: a trade adds to one agent exactly what it takes from the other, and the tax hands back exactly what it collects, so the total can move only by rounding in the sixteenth digit. A test runs every rule for hundreds of rounds and requires the total to stay within one part in a billion.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Whether any real distribution is just.</strong> That depends on the theory of justice you hold. The model shows what one kind of fair procedure leads to; it cannot say whether fair procedure is enough.</li>
+        <li><strong>How real fortunes are made.</strong> Nothing is produced here, nobody works, saves for a reason, invents anything, inherits or dies. Real trade usually leaves both sides better off, and this model's trades leave the pair exactly as rich as before. It isolates the effect of chance and leaves the rest out.</li>
+        <li><strong>How fast anything happens.</strong> A round is not a year. The stake and the tax are rates per round, and their ratio, not either number, shapes the outcome. A 1% tax here is not a 1% tax in a budget.</li>
+        <li><strong>What a tax would do to behaviour.</strong> The agents do not respond to the tax, hide wealth or work less. The redistribution is the simplest possible: no thresholds, no public services, no cost of collection.</li>
+        <li><strong>Who ends up rich.</strong> The agents are identical, so the winners are chosen by luck alone, and another seed crowns different agents. In real economies luck is mixed with differences between people, which this model has no way to represent.</li>
+        <li><strong>The exact numbers for another run.</strong> The figures in the finding are for seed 47. Other seeds give the same shape with different decimals, and a run with 100 agents is noisier than one with 2,000.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Make the richer party's edge grow with the gap in wealth, as in Boghosian's extended model, where a partial oligarchy appears once the edge outweighs the tax.</li>
+        <li>Allow debt, so that agents can go below zero, as the affine wealth model of Li, Boghosian and Li does; its authors fitted it to United States survey data on household wealth.</li>
+        <li>Let agents differ: in how much they stake, in how much they save, or in skill, and see how much of the final ranking is still luck.</li>
+        <li>Add production, so that total wealth grows and trades are positive-sum, and ask whether growth changes the pattern or only the scale.</li>
+        <li>Replace the flat tax with a threshold or a progressive schedule, and compare how much each must raise to hold the Gini index at a given level.</li>
+        <li>Fit the tax and bias to a real wealth distribution and show the Lorenz curves side by side.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Angle, J. (1986). The surplus theory of social stratification and the size distribution of personal wealth. <em>Social Forces</em>, 65(2), 293-326.</li>
+        <li>Drăgulescu, A., and Yakovenko, V. M. (2000). Statistical mechanics of money. <em>European Physical Journal B</em>, 17(4), 723-729.</li>
+        <li>Chakraborti, A., and Chakrabarti, B. K. (2000). Statistical mechanics of money: how saving propensity affects its distribution. <em>European Physical Journal B</em>, 17(1), 167-170.</li>
+        <li>Chakraborti, A. (2002). Distributions of money in model markets of economy. <em>International Journal of Modern Physics C</em>, 13(10), 1315-1321.</li>
+        <li>Hayes, B. (2002). Follow the money. <em>American Scientist</em>, 90(5), from page 400.</li>
+        <li>Moukarzel, C. F., Gonçalves, S., Iglesias, J. R., Rodríguez-Achach, M., and Huerta-Quintanilla, R. (2007). Wealth condensation in a multiplicative random asset exchange model. <em>European Physical Journal Special Topics</em>, 143(1), 75-79.</li>
+        <li>Moukarzel, C. F. (2011). Multiplicative asset exchange with arbitrary return distributions. <em>Journal of Statistical Mechanics: Theory and Experiment</em>, 2011(08), P08023.</li>
+        <li>Boghosian, B. M. (2014). Kinetics of wealth and the Pareto law. <em>Physical Review E</em>, 89(4), 042804.</li>
+        <li>Boghosian, B. M., Johnson, M., and Marcq, J. A. (2015). An H theorem for Boltzmann's equation for the yard-sale model of asset exchange. <em>Journal of Statistical Physics</em>, 161(6), 1339-1350.</li>
+        <li>Boghosian, B. M., Devitt-Lee, A., Johnson, M., Li, J., Marcq, J. A., and Wang, H. (2017). Oligarchy as a phase transition: the effect of wealth-attained advantage in a Fokker-Planck description of asset exchange. <em>Physica A</em>, 476, 15-37.</li>
+        <li>Li, J., Boghosian, B. M., and Li, C. (2019). The affine wealth model: an agent-based model of asset exchange that allows for negative-wealth agents and its empirical validation. <em>Physica A</em>, 516, 423-442.</li>
+        <li>Boghosian, B. M. (2019). The inescapable casino. <em>Scientific American</em>, 321(5), from page 70.</li>
+        <li>Rawls, J. (1971). <em>A Theory of Justice</em>. Harvard University Press.</li>
+        <li>Nozick, R. (1974). <em>Anarchy, State, and Utopia</em>. Basic Books.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

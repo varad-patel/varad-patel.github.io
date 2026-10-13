@@ -1,0 +1,7 @@
+{
+  "question": "If equal agents make nothing but fair bets with each other, where does the wealth end up, and what does a tax or a bias change?",
+  "finding": "With 500 equal agents making fair bets of 10% of the poorer party's wealth, the Gini index reaches 87.9 after 1,000 rounds and the poorest half hold 0.04% of everything; a 1% wealth tax a round, shared out equally, holds the index at 37.6.",
+  "limit": "Nothing is produced and the agents are identical, so the model isolates what chance alone does to wealth and says nothing about work, skill, inheritance or whether the outcome is just.",
+  "sources": [],
+  "built": "2026-10-13"
+}
