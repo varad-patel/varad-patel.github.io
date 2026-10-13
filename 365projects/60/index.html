@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stable Matching Marketplace · 365 projects</title>
+  <meta name="description" content="Type the preference lists of candidates and employers and get a stable matching by deferred acceptance, with every proposal, rejection and blocking pair explained.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+    .tool, .tool .note, .tool .tbl td, .tool li, .tool p { overflow-wrap: anywhere; }
+    .tool .tbl th { white-space: normal; overflow-wrap: break-word; }
+    .fixes, .plain { margin: 6px 0 0; padding-left: 1.2em; display: grid; gap: 4px; }
+    .plain { margin: 0; font-size: 0.93rem; }
+    .rounds { margin: 0; padding: 0 4px 0 0; list-style: none; display: grid; gap: 14px; font-size: 0.93rem; line-height: 1.5; }
+    .rounds-wrap { max-height: 34rem; overflow-y: auto; }
+    .rounds-wrap:focus-visible, details.pairs .tbl-wrap:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+    .rounds ul { margin: 4px 0; padding-left: 1.2em; }
+    .rounds .held { color: var(--slate); font-size: 0.86rem; }
+    .picks { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+    details.pairs summary { cursor: pointer; width: fit-content; font-size: 0.9rem; }
+    details.pairs .tbl-wrap { margin-top: 8px; max-height: 22rem; overflow: auto; }
+    .jump { display: none; }
+    @media (max-width: 860px) { .jump { display: block; } }
+    .p-sec .eq { white-space: normal; }
+    @media (max-width: 600px) { .tool .tbl th, .tool .tbl td { padding: 5px 7px; } }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body class="proj" data-day="60">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Stable Matching Marketplace</h1>
+      <p class="lede">Type who wants to work where and who each employer wants to hire. The page finds a matching that no candidate and employer would both walk away from, and shows every step of how it got there.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Stable matching of candidates and employers">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>The page opens on an invented market of six candidates and five positions. When candidates propose, three of them get their first choice; switch "Who proposes" to employers and only one does, while Cobalt becomes the one employer to get its first choice. Ben is left out either way. Switch back to candidates and look under "Does it pay to lie?": none of the 84 false lists a candidate could send does that candidate any good, but Acme, by leaving Chloe off its list, would get Farid and Asha instead of Asha and Chloe. With employers proposing the positions are reversed only in part: two candidates can now gain by a false list, and so can Acme, the proposer with two positions.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Some markets cannot clear by price. A hospital does not auction its training posts and a graduate cannot simply buy one: each side has to choose the other. Left alone, such markets can misbehave: offers come with strict deadlines, and people have to decide early without knowing what else will turn up. The question is whether there is a way of pairing people up that nobody has reason to undo.</p>
+      <p>In 1962 David Gale and Lloyd Shapley gave it a precise form. Call a matching <strong>stable</strong> if there is no candidate and employer who are not matched to each other but would both prefer to be. They proved that a stable matching always exists, whatever the preferences, by describing a procedure that finds one: one side proposes in order of preference, and the other side holds on to the best offer so far without committing until the proposals stop. Because acceptance is put off, the procedure is called deferred acceptance.</p>
+      <p>The idea turned out to describe something real. The clearing house that places new doctors in American hospitals was set up in the early 1950s, a decade before their paper. In 1984 Alvin Roth found that its rule was closely related to Gale and Shapley's, with the hospitals as the proposers, and put its success down to the stable matchings it produced. In 1995 he was asked to help redesign it, and the version adopted in 1997, worked out with Elliott Peranson, has the applicants propose. Roth and Shapley shared the 2012 prize in economic sciences "for the theory of stable allocations and the practice of market design".</p>
+      <p>Two facts make the choice of proposer a matter of politics and not only of mathematics, and the tool shows both. The side that proposes gets the best stable matching it could have and the other side the worst. And when candidates propose, no candidate has anything to gain by lying about its preferences, while employers sometimes do. The mirror image is true only in part: when employers propose, an employer with a single position cannot gain by lying, but one with several positions sometimes can, and so can candidates.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The market</h3>
+      <p>Each candidate ranks the employers it would work for, best first, and each employer ranks the candidates it would hire. In the two boxes a line is a name, a colon and a list separated by commas or semicolons; rows pasted from a spreadsheet, with tabs between the cells, are read too, and so is a numbered list. A side takes up to 20 names of up to 30 characters each. Anyone left off a list is unacceptable to its writer: a candidate would rather have no job than work for an unlisted employer, and an employer would rather leave a position empty than fill it with an unlisted candidate. An employer has one or more positions; a candidate fills one. A <strong>matching</strong> gives each candidate one employer or none. There can be more candidates than positions or fewer.</p>
+      <h3>Stability</h3>
+      <p>A matching is stable when three things hold. No one is matched to a partner they did not list. No employer has more candidates than positions. And there is no <strong>blocking pair</strong>: a candidate <var>c</var> and an employer <var>e</var> who list each other, are not matched together, and would both rather be, meaning that</p>
+      <p class="eq"><var>c</var> is unmatched or ranks <var>e</var> above its own employer, and <var>e</var> has a position free or ranks <var>c</var> above someone it has.</p>
+      <p>Such a pair would simply make its own arrangement and the matching would come apart. The tool tests every pair who list each other, says how many there are, and under "Show the reason" gives for each the reason it does not block.</p>
+      <h3>Deferred acceptance, candidates proposing</h3>
+      <ol>
+        <li>Every candidate who is not being held by an employer, and has not yet been through its whole list, proposes to the next employer on it.</li>
+        <li>Each employer looks at the candidates it is holding together with those who have just proposed. It rejects any it did not list. Of the rest it holds the best, up to its number of positions, and rejects the others, including any it was holding before.</li>
+        <li>Repeat until a round passes in which nobody proposes. Whoever is held is then hired.</li>
+      </ol>
+      <p>With employers proposing the roles are swapped: each employer proposes to as many of the next candidates on its list as it has open positions, and each candidate holds the best offer so far. In both versions all proposals of a round are made at once; making them one at a time gives the same result.</p>
+      <h3>Why it stops, and why the result is stable</h3>
+      <p>Nobody proposes twice to the same partner, so the number of proposals cannot exceed the total length of the proposers' lists. Take the version in which candidates propose and suppose <var>c</var> ranks <var>e</var> above the employer it ends with. Then <var>c</var> proposed to <var>e</var> on the way down its list and was turned away, either because <var>e</var> never listed <var>c</var>, in which case the two are not an acceptable pair at all, or because <var>e</var> was holding a full set of candidates it ranks higher. What an employer holds only ever improves, so at the end <var>e</var> is still full of candidates it ranks above <var>c</var>, and the pair cannot block.</p>
+      <h3>Best for the side that proposes</h3>
+      <p>Gale and Shapley also showed that when candidates propose, every candidate gets the best employer it has in any stable matching. When employers propose the same holds for them, place by place for an employer with several positions, provided its taste for groups follows its ranking of individuals (Roth 1985; Roth and Sotomayor 1990). What is best for one side is worst for the other. The tool shows the two matchings side by side; if they are the same, the market has only one stable matching. Whichever is used, the same candidates end up matched and each employer fills the same number of positions. An employer with a position left empty even gets exactly the same people, which is the subject of Roth (1986), the paper on rural hospitals. The page's tests check all of this against a list of every stable matching of 1,500 small random markets, found by trying every possible assignment.</p>
+      <h3>A matching of your own</h3>
+      <p>Choose an employer for each candidate and the tool applies the definition: it reports anyone matched to a partner they did not list, any employer over its number of positions, and every blocking pair with the reason each of the two would rather have the other.</p>
+      <h3>Lying</h3>
+      <p>For every agent in turn the tool submits each false list that agent could send, while everyone else stays truthful, and compares the result with the truthful one by the agent's true list. A false list is any selection of names from the other side in any order; with <var>n</var> names to choose from there are</p>
+      <p class="eq"><var>n</var> + <var>n</var>(<var>n</var> − 1) + … + <var>n</var>! lists, which is 15 for three names and 1,956 for six</p>
+      <p>so the check runs only when the other side has six or fewer. A candidate gains if it ends with an employer higher on its true list. An employer with several positions gains if its hires, sorted from best to worst with any empty position counted below every listed candidate, are at least as good place by place and better in at least one place. That is the only comparison of groups that a ranked list of individuals justifies.</p>
+      <p>The theory says what the search will find. Dubins and Freedman (1981) and Roth (1982) proved that with one position each, no agent on the proposing side can gain by misreporting, and Roth proved in the same paper that no procedure can both guarantee a stable matching and make honesty the best policy for everyone. Candidates who propose stay safe when employers have several positions. Employers who propose do not, unless each has a single position: Roth (1985) showed that the college admissions problem, in which one side has several places, is not equivalent to the one-position problem, and in the opening market Acme, with two positions, can gain by lying even when employers propose.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Whether the lists are true.</strong> The procedure works on what it is told. The tool shows when lying pays, but a real clearing house cannot see anyone's true preferences.</li>
+        <li><strong>Whether a stable matching is a good one.</strong> Stability means no pair wants to break away. It does not mean people are happy, that the outcome is fair between the two sides, or that the total satisfaction is as high as it could be. In the opening market the two stable matchings treat candidates very differently.</li>
+        <li><strong>Anything about ties, couples or groups.</strong> Every list here is a strict ranking of individuals. Real applicants are indifferent between some options, couples look for two jobs in one city, and an employer may want a mixed team more than its two top-ranked people. With couples a stable matching may not exist at all.</li>
+        <li><strong>How employers judge groups.</strong> The check for lying compares an employer's hires place by place. Two groups where one is better in one place and worse in another are left uncompared, so the count of lies that pay is a floor for employers with several positions.</li>
+        <li><strong>What happens outside the match.</strong> Offers made before the clearing house runs, side payments, and people who refuse to take part are all outside the model. So are wages: the lists are taken as fixed, with no bargaining over pay.</li>
+        <li><strong>Large markets.</strong> The tool takes 20 on each side and checks lying only for six or fewer. Results about how rarely lying pays in very large markets are beyond its reach.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Allow ties in the lists and show how the way they are broken changes who is matched.</li>
+        <li>Add couples who submit lists of pairs of jobs, and show a market with no stable matching.</li>
+        <li>List every stable matching of a larger market efficiently and draw them as a lattice from the candidates' best to the employers' best.</li>
+        <li>Add quotas by group, as school choice systems have, and see what stability means then.</li>
+        <li>Simulate large random markets to see how the share of agents who can gain by lying falls as the market grows.</li>
+        <li>Let the visitor play one agent against truthful others and look for a profitable lie by hand before the tool reveals it.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Gale, D., and Shapley, L. S. (1962). College admissions and the stability of marriage. <em>American Mathematical Monthly</em>, 69(1), 9-15.</li>
+        <li>Roth, A. E. (1984). The evolution of the labor market for medical interns and residents: a case study in game theory. <em>Journal of Political Economy</em>, 92(6), 991-1016.</li>
+        <li>Roth, A. E. (1982). The economics of matching: stability and incentives. <em>Mathematics of Operations Research</em>, 7(4), 617-628.</li>
+        <li>Dubins, L. E., and Freedman, D. A. (1981). Machiavelli and the Gale-Shapley algorithm. <em>American Mathematical Monthly</em>, 88(7), 485-494.</li>
+        <li>Roth, A. E. (1985). The college admissions problem is not equivalent to the marriage problem. <em>Journal of Economic Theory</em>, 36(2), 277-288.</li>
+        <li>Roth, A. E. (1986). On the allocation of residents to rural hospitals: a general property of two-sided matching markets. <em>Econometrica</em>, 54(2), 425-427.</li>
+        <li>Roth, A. E., and Sotomayor, M. A. O. (1990). <em>Two-Sided Matching: A Study in Game-Theoretic Modeling and Analysis</em>. Cambridge University Press.</li>
+        <li>The Royal Swedish Academy of Sciences (2012). The Prize in Economic Sciences 2012, information for the public: "Stable matching: theory, evidence, and practical design". nobelprize.org. The source for the history of the medical match given above and for the wording of the prize.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

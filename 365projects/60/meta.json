@@ -1,0 +1,7 @@
+{
+  "question": "How can candidates and employers be matched so that no candidate and employer would both rather have each other, and does it matter who proposes?",
+  "finding": "In the opening market of six candidates and five positions, three candidates get their first choice when candidates propose and one when employers do; with candidates proposing, none of the 84 false lists a candidate could send helps that candidate, while Acme gains by leaving Chloe off its list.",
+  "limit": "Stability says only that no pair wants to break away, on the lists as reported: it does not make the matching fair or the lists true, and it ignores ties, couples and pay.",
+  "sources": [],
+  "built": "2026-10-13"
+}
