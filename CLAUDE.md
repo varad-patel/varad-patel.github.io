@@ -91,8 +91,10 @@ python -m http.server 8000                # preview at http://localhost:8000/365
 * `challenge-data.js`, the project READMEs and the thumbnails are generated. Change the inputs, then regenerate.
 * The kit is shared by every project. Additive changes only; after touching it run `node scripts/kit-check.mjs
   --browser all` and then `node scripts/smoke.mjs --browser all` on everything.
-* `assets/site.css` already uses the class names `.tip`, `.num`, `.bar`, `.body`, `.cell`, `.shot`, `.plate`, `.rows`
-  and `.sec` for the gallery. Do not reuse them for something else inside a project page.
+* `assets/site.css` already styles these class names for the home page and the gallery: `.actions`, `.bar`, `.block`,
+  `.block-head`, `.body`, `.cell`, `.cells`, `.count`, `.detail`, `.empty`, `.hero`, `.key`, `.meta`, `.months`,
+  `.more`, `.num`, `.plate`, `.plates`, `.rows`, `.search`, `.sec`, `.sections`, `.shot`, `.status`, `.tip`,
+  `.weekdays`, `.year`. Do not reuse them for something else inside a project page: pick a more specific name.
 * Reuse the tokens in `assets/site.css`. The look is a ledger-paper theme with one hue per part. Light only.
 * Charts follow the rules in the guide: fixed palette in order, one y-axis, a legend for two or more series, labels
   in ink, never a number on every point. `chart()` in the kit does this for you.

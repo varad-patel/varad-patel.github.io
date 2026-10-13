@@ -37,6 +37,10 @@ function findChrome() {
 const problems = [];
 await mkdir(OUT, { recursive: true });
 
+// The full-page picture is for a person to look at, not a check. Firefox and WebKit cannot draw an image taller
+// than 32,767 device pixels, and the gallery grows with every project, so a long page falls back to its first screen.
+const picture = (page, path) => page.screenshot({ path, fullPage: true }).catch(() => page.screenshot({ path }));
+
 async function audit(page, where) {
   if (!existsSync(AXE)) return;
   await page.addScriptTag({ path: AXE });
@@ -59,7 +63,7 @@ for (const [size, width, height] of [["desktop", 1280, 900], ["phone", 390, 800]
 
   await page.goto(`${base}/`);
   await page.waitForLoadState("networkidle");
-  await page.screenshot({ path: join(OUT, `home-${shot}.png`), fullPage: true });
+  await picture(page, join(OUT, `home-${shot}.png`));
   if (engine === "chromium") await audit(page, `home page, ${size}`);
   const status = await page.locator("#home-status").textContent();
   if (!/\d+ of 365 built/.test(status || "")) problems.push(`${name}: home page status reads "${status}"`);
@@ -96,7 +100,7 @@ for (const [size, width, height] of [["desktop", 1280, 900], ["phone", 390, 800]
   if (broken) problems.push(`${name}: ${broken} thumbnails failed to load`);
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({ path: join(OUT, `gallery-${shot}-top.png`) });
-  await page.screenshot({ path: join(OUT, `gallery-${shot}.png`), fullPage: true });
+  await picture(page, join(OUT, `gallery-${shot}.png`));
   if (engine === "chromium") await audit(page, `gallery, ${size}`);
   await page.locator("#gallery").scrollIntoViewIfNeeded();
   await page.evaluate(() => document.querySelector("#gallery").scrollIntoView());
@@ -126,7 +130,9 @@ for (const [size, width, height] of [["desktop", 1280, 900], ["phone", 390, 800]
     await page.locator("#q").fill("");
     await page.locator(".sec").nth(1).click();
     await page.waitForTimeout(150);
-    if ((await page.locator(".plate").count()) !== 0) problems.push("filtering by part 2 still shows built cards");
+    const expected = await page.evaluate(() => window.CHALLENGE.projects.filter((p) => p.built && p.section === 2).length);
+    const shown = await page.locator(".plate").count();
+    if (shown !== expected) problems.push(`filtering by part 2 shows ${shown} cards, but ${expected} of its projects are built`);
     await page.locator(".sec").nth(1).click();
   }
   console.log(`${name}: ${facts.built} built, ${facts.cards} cards, status: ${facts.status.trim()}`);

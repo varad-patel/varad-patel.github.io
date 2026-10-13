@@ -107,7 +107,9 @@ async function open(page, url) {
 }
 
 async function settle(page) {
-  await page.waitForLoadState("networkidle");
+  // A generous limit: with several browsers running on one machine a page can take far longer to go quiet than it
+  // would for a visitor, and that is the machine's fault, not the page's.
+  await page.waitForLoadState("networkidle", { timeout: 120000 });
   await page.waitForTimeout(350);
 }
 
@@ -252,7 +254,8 @@ async function audit(page, problems, when) {
     const out = [];
     for (const t of document.querySelectorAll("main svg text")) {
       const cs = getComputedStyle(t);
-      if (!t.textContent.trim() || cs.visibility === "hidden" || t.closest("[aria-hidden='true']")) continue;
+      // Text hidden from screen readers (aria-hidden) is still read by eye, so it is measured like any other.
+      if (!t.textContent.trim() || cs.visibility === "hidden") continue;
       t.scrollIntoView({ block: "center", inline: "center" });
       const box = t.getBoundingClientRect();
       if (box.width < 1 || box.height < 1) continue;
@@ -351,6 +354,15 @@ async function checkProject(browser, origin, id, opts) {
   const junkAfter = await page.evaluate(() => (document.querySelector("#app")?.innerText.match(/\b(NaN|undefined|Infinity)\b/g) || []).slice(0, 3));
   if (junkAfter.length) problems.push(`after using every control the tool shows ${junkAfter.join(", ")}`);
   if (a11y) await audit(page, problems, "after use");
+  // Between a phone and a wide screen: tablets and small laptops. The kit's two-column layout starts at 860 px,
+  // where the results column is at its narrowest, so a table that fits at 1200 and at 390 can still push the page
+  // sideways somewhere in between.
+  for (const width of [1100, 1000, 920, 870, 768, 600]) {
+    await page.setViewportSize({ width, height: 793 });
+    await page.waitForTimeout(150);
+    const over = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    if (over > 1) problems.push(`page scrolls sideways at ${width}px by ${over}px`);
+  }
   await desktop.close();
 
   // Phone width. Chromium stands in for an Android phone and WebKit for an iPhone: touch screen, mobile layout rules

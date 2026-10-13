@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -23,10 +24,16 @@ META_KEYS = ("question", "finding", "limit", "sources", "built")
 
 
 def load_built(apps: Path = APPS) -> list[dict]:
-    """One entry per 365projects/<N>/meta.json, with the project number taken from the folder name."""
+    """One entry per 365projects/<N>/meta.json, with the project number taken from the folder name.
+
+    A page that is finished on this machine but not yet published (still under review, or held back) is left out
+    by naming it in the environment: CHALLENGE_SKIP="35,49,50". Unpublished folders are never committed, so the
+    variable is only ever needed locally.
+    """
+    skip = {int(n) for n in os.environ.get("CHALLENGE_SKIP", "").replace(" ", "").split(",") if n}
     built = []
     for meta in sorted(apps.glob("*/meta.json"), key=lambda p: int(p.parent.name) if p.parent.name.isdigit() else 0):
-        if not meta.parent.name.isdigit():
+        if not meta.parent.name.isdigit() or int(meta.parent.name) in skip:
             continue
         entry = json.loads(meta.read_text(encoding="utf-8"))
         missing = [k for k in META_KEYS if k not in entry]
