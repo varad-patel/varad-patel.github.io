@@ -887,7 +887,14 @@ window.CHALLENGE = {
    "concept": "Industrial organisation",
    "skills": "Nash equilibria",
    "section": 2,
-   "date": "2026-11-27"
+   "date": "2026-11-27",
+   "built": "2026-10-13",
+   "question": "How do price, output, profit and lost surplus change with the number of firms and with the way they compete?",
+   "finding": "With demand P = 100 - Q and a cost of 20, a monopoly charges 60, two Cournot firms 46.67 and ten 27.27, and the deadweight loss falls from 25% to 11.1% to 0.83% of the competitive surplus, exactly 1/(n + 1)^2; two Bertrand firms with identical goods reach the competitive price of 20 at once.",
+   "limit": "Each outcome is for one period of a game that the tool takes as given, so it cannot say which game a real industry plays or what repeated meeting would sustain.",
+   "sources": [],
+   "img": "img/049.jpg",
+   "url": "49/"
   },
   {
    "id": 50,
@@ -896,7 +903,14 @@ window.CHALLENGE = {
    "concept": "Competition policy",
    "skills": "Reinforcement learning",
    "section": 2,
-   "date": "2026-11-28"
+   "date": "2026-11-28",
+   "built": "2026-10-13",
+   "question": "Do pricing bots that learn by trial and error undercut each other down to the competitive price, or do they settle on high prices and punish a price cut?",
+   "finding": "In ten simulated runs of two Q-learning bots (seeds 1 to 10) prices settle at 1.80 on average, between the one-shot Nash price of 1.473 and the joint-monopoly price of 1.925, a profit gain of 87% (58% to 98% by seed); a forced one-period price cut loses money in all ten and is answered with a lower price in nine.",
+   "limit": "It is a simulation of two copies of one simple algorithm in an invented, unchanging market, taking about 1.8 million periods to learn, so it shows that collusion can be learned without being programmed, not that real pricing software does it or that it would be unlawful.",
+   "sources": [],
+   "img": "img/050.jpg",
+   "url": "50/"
   },
   {
    "id": 51,
@@ -905,7 +919,14 @@ window.CHALLENGE = {
    "concept": "Collusion, repeated games",
    "skills": "Folk theorem",
    "section": 2,
-   "date": "2026-11-29"
+   "date": "2026-11-29",
+   "built": "2026-10-13",
+   "question": "How patient must the members of a cartel be for the agreement to hold, given how many they are and how cheating is punished?",
+   "finding": "With permanent punishment and prompt detection, two firms need a discount factor of 0.500 if they would otherwise compete on price and 0.529 on quantity, and ten firms need 0.900 and 0.752; a two-period price war raises the two-firm figures to 0.618 and 0.673, and a one-period war holds no cartel together at any patience.",
+   "limit": "Cheating is always detected and the market never changes, so the model leaves out the imperfect monitoring, demand swings, entry and bargaining that break most real cartels.",
+   "sources": [],
+   "img": "img/051.jpg",
+   "url": "51/"
   },
   {
    "id": 52,
@@ -914,7 +935,14 @@ window.CHALLENGE = {
    "concept": "Mechanism design",
    "skills": "Game theory",
    "section": 2,
-   "date": "2026-11-30"
+   "date": "2026-11-30",
+   "built": "2026-10-13",
+   "question": "Does the format of an auction change what the seller earns, and what should a bidder do in each format?",
+   "finding": "With four equal bidders and values spread evenly from 0 to 100, 10,000 simulated auctions (seed 52) raise an average of 60.09 first-price, 59.96 second-price and 60.20 all-pay against 60 in theory for each, with standard deviations of 12.2, 20.1 and 40.1.",
+   "limit": "The bots play the equilibrium of a private-values model with evenly spread values, so nothing here says how real people bid or what happens when bidders value the item for the same reasons.",
+   "sources": [],
+   "img": "img/052.jpg",
+   "url": "52/"
   },
   {
    "id": 53,
@@ -923,7 +951,17 @@ window.CHALLENGE = {
    "concept": "Equality of opportunity",
    "skills": "Markov chains",
    "section": 2,
-   "date": "2026-12-01"
+   "date": "2026-12-01",
+   "built": "2026-10-13",
+   "question": "If children's incomes depend on their parents' as a published table says, how many generations does it take for a family's starting point to stop mattering?",
+   "finding": "In the United States table of Chetty and co-authors a child of the bottom fifth has a 7.5% chance of the top fifth; treated as a Markov chain, the table gives that family's great-grandchildren 18.4% against 21.5% for a family that started at the top, keeping 0.32 of a head start per generation.",
+   "limit": "Beyond one generation everything rests on the assumption that only the parents' position matters, and studies of three and four generations find more persistence than that.",
+   "sources": [
+    "Chetty, Hendren, Kline and Saez (2014)",
+    "Jäntti et al. (2006), IZA Discussion Paper 1938"
+   ],
+   "img": "img/053.jpg",
+   "url": "53/"
   },
   {
    "id": 54,
@@ -932,7 +970,17 @@ window.CHALLENGE = {
    "concept": "Human capital",
    "skills": "Mincer regression",
    "section": 2,
-   "date": "2026-12-02"
+   "date": "2026-12-02",
+   "built": "2026-10-13",
+   "question": "How much more are people with more education paid in the United States, and how much does that average say about one person?",
+   "finding": "For a woman of 35 working full time in the United States in 2024, the central estimate of pay is $40,900 with a high school diploma and $72,100 with a bachelor's degree, 76% more (95% interval 75% to 77%), yet 21% of the time a woman of 35 to 44 with only the diploma is paid more than one with the degree.",
+   "limit": "The gap compares different people, so it is not what a qualification would add for any one person, and it counts neither the cost of studying nor anyone who is not a full-time, year-round employee.",
+   "sources": [
+    "US Census Bureau, American Community Survey 2024 (Public Use Microdata Sample)",
+    "Montenegro and Patrinos (2014), World Bank"
+   ],
+   "img": "img/054.jpg",
+   "url": "54/"
   },
   {
    "id": 55,
@@ -941,7 +989,17 @@ window.CHALLENGE = {
    "concept": "Macroeconomics",
    "skills": "Panel regression",
    "section": 2,
-   "date": "2026-12-03"
+   "date": "2026-12-03",
+   "built": "2026-10-13",
+   "question": "How closely does unemployment follow output, and is the link the same in every country and every period?",
+   "finding": "From 1961 to 2025 a year with one more point of growth went with a change in unemployment 0.44 points lower in the United States (95% interval -0.52 to -0.35) and 0.02 points lower in Japan; one slope forced on all seven G7 countries gives -0.13, which describes none of them.",
+   "limit": "The slope records how output and unemployment have moved together in yearly data, not what a policy that added a point of growth would do to jobs.",
+   "sources": [
+    "World Bank",
+    "OECD Economic Outlook No 119"
+   ],
+   "img": "img/055.jpg",
+   "url": "55/"
   },
   {
    "id": 56,
@@ -950,7 +1008,14 @@ window.CHALLENGE = {
    "concept": "Price discrimination, welfare",
    "skills": "Optimisation, surplus calculation",
    "section": 2,
-   "date": "2026-12-04"
+   "date": "2026-12-04",
+   "built": "2026-10-13",
+   "question": "When a seller can charge different buyers different prices, who gains, who loses and what happens to total welfare?",
+   "finding": "With 100 students who would pay up to 10, 100 professionals who would pay up to 14 and a unit cost of 2, a price for each group sells the same 1,000 units as one price and lowers total welfare by 100; lower the students' top price to 6 and one price shuts them out, so group prices raise welfare from 5,400 to 6,000 and leave no buyer worse off.",
+   "limit": "Every demand curve is a straight line that the seller knows exactly, and the result that group prices leave output unchanged does not survive curved demand.",
+   "sources": [],
+   "img": "img/056.jpg",
+   "url": "56/"
   },
   {
    "id": 57,
@@ -959,7 +1024,17 @@ window.CHALLENGE = {
    "concept": "Macro trade-offs",
    "skills": "Rolling regression",
    "section": 2,
-   "date": "2026-12-05"
+   "date": "2026-12-05",
+   "built": "2026-10-13",
+   "question": "Does higher unemployment go with lower inflation, and has that link held from one era to the next?",
+   "finding": "In the United States each extra point of unemployment went with 1.16 points less inflation in 1960 to 1969 (95% interval -1.78 to -0.55), but in 1970 to 1984 the slope was -0.21 with an interval from -1.43 to +1.02; against the change in inflation the 1970 to 1984 slope is -1.24 and the 2008 to 2024 slope is -0.08.",
+   "limit": "Each line is a correlation across ten or twenty yearly figures, not a menu of outcomes a government could choose from.",
+   "sources": [
+    "World Bank",
+    "OECD Economic Outlook No 119"
+   ],
+   "img": "img/057.jpg",
+   "url": "57/"
   },
   {
    "id": 58,
@@ -968,7 +1043,17 @@ window.CHALLENGE = {
    "concept": "Commodity markets",
    "skills": "STL decomposition",
    "section": 2,
-   "date": "2026-12-06"
+   "date": "2026-12-06",
+   "built": "2026-10-13",
+   "question": "How much of a commodity's price is season, and does knowing the season help to forecast the year ahead?",
+   "finding": "India's retail onions run from 20% below trend in May to 35% above it in November, and on 840 overlapping held-out forecast months (81 different months) the decomposition forecast missed by 28.8% against 30.2% and 33.0% for two naive rules, a lead of 1.4 percentage points that is not tested for significance, while for US wheat the season is under 3% and the forecast (13.5%) did no better than repeating the latest price (13.4%).",
+   "limit": "What counts as season is a choice of how much to smooth, and the forecast knows nothing but past prices, so a small edge over a naive rule on a few dozen held-out dates is not proof of skill.",
+   "sources": [
+    "FAO Food Price Monitoring and Analysis Tool",
+    "World Bank Commodity Price Data (The Pink Sheet)"
+   ],
+   "img": "img/058.jpg",
+   "url": "58/"
   },
   {
    "id": 59,
@@ -977,7 +1062,14 @@ window.CHALLENGE = {
    "concept": "Opportunity cost, gains from trade",
    "skills": "Ricardian model, linear constraints",
    "section": 2,
-   "date": "2026-12-07"
+   "date": "2026-12-07",
+   "built": "2026-10-13",
+   "question": "If one country is better at making everything, can both still gain from trade, and at what prices?",
+   "finding": "With Ricardo's numbers Portugal needs fewer workers than England for both cloth and wine, yet both gain at any price strictly between 0.8333 and 1.125 wine per cloth, and at the market price of 0.9659 England is as well off as with 7.7% more of both goods and Portugal with 7.9% more.",
+   "limit": "The model has one kind of worker who can change jobs at no cost, so everyone gains in it, while in a real country some people lose even when the country as a whole gains.",
+   "sources": [],
+   "img": "img/059.jpg",
+   "url": "59/"
   },
   {
    "id": 60,
@@ -986,7 +1078,14 @@ window.CHALLENGE = {
    "concept": "Market design",
    "skills": "Gale-Shapley algorithm",
    "section": 2,
-   "date": "2026-12-08"
+   "date": "2026-12-08",
+   "built": "2026-10-13",
+   "question": "How can candidates and employers be matched so that no candidate and employer would both rather have each other, and does it matter who proposes?",
+   "finding": "In the opening market of six candidates and five positions, three candidates get their first choice when candidates propose and one when employers do; with candidates proposing, none of the 84 false lists a candidate could send helps that candidate, while Acme gains by leaving Chloe off its list.",
+   "limit": "Stability says only that no pair wants to break away, on the lists as reported: it does not make the matching fair or the lists true, and it ignores ties, couples and pay.",
+   "sources": [],
+   "img": "img/060.jpg",
+   "url": "60/"
   },
   {
    "id": 61,
