@@ -1,0 +1,9 @@
+{
+  "question": "When the price of oil and gas jumps, which sectors' prices rise most, and how much of the rise arrives indirectly?",
+  "finding": "In the United States table for 2023 a 50% rise in the price of oil and gas raises petroleum and coal products by 26.70%, air transport by 3.77% (3.23 points of it inside the fuel airlines buy from refineries) and the household basket by 0.78%.",
+  "limit": "Input proportions are fixed and every cost rise is passed on in full, so the model shows where the pressure lands, not what firms and households do about it.",
+  "sources": [
+    "U.S. Bureau of Economic Analysis"
+  ],
+  "built": "2026-10-13"
+}

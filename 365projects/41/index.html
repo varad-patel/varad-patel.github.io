@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Oil Price Shock Economy · 365 projects</title>
+  <meta name="description" content="Set a jump in the price of oil and gas and follow it through an input-output table of the United States: which sectors' prices rise most, how much arrives indirectly, and round by round how it spreads.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .out > h2 { margin-top: 6px; padding-top: 18px; border-top: 1px solid var(--grid); }
+    .inside-pick { max-width: 26em; }
+    .rank { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .rank-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+    .rank-list li { display: grid; grid-template-columns: minmax(0, 13.5em) minmax(60px, 1fr) minmax(0, 15.5em); gap: 4px 12px; align-items: center; font-size: 0.9rem; line-height: 1.3; }
+    .rank-name { overflow-wrap: anywhere; }
+    .rank-track { position: relative; display: flex; height: 14px; background: color-mix(in srgb, var(--ink) 7%, transparent); border-radius: 0 3px 3px 0; overflow: hidden; }
+    .rank-track span { display: block; height: 100%; }
+    .bar-direct { background: var(--c1); }
+    .bar-indirect { background: var(--c2); }
+    .rank-track .bar-cut { position: absolute; right: 14px; top: -3px; width: 7px; height: 20px; background: var(--sheet); transform: skewX(-20deg); }
+    .rank-val strong { font-weight: 700; }
+    .rank .chart-legend { margin: 0; }
+    @media (max-width: 720px) {
+      .rank-list { gap: 12px; }
+      .rank-list li { grid-template-columns: minmax(0, 1fr); gap: 3px; }
+      .rank-name { font-weight: 600; }
+    }
+    .tool .tbl th { white-space: normal; vertical-align: bottom; line-height: 1.25; }
+    @media (max-width: 480px) { .tool .tbl { font-size: 0.84rem; } .tool .tbl th, .tool .tbl td { padding: 6px 6px; } }
+    @media (max-width: 560px) { .p-sec .eq { white-space: normal; } }
+  </style>
+</head>
+<body class="proj" data-day="41">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Oil Price Shock Economy</h1>
+      <p class="lede">Oil is an input to fuel, and fuel is an input to nearly everything. Set a jump in the price of oil and gas and follow it through the United States economy, sector by sector and round by round.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Oil price pass-through through an input-output table">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>As the page loads, with a 50% rise in the price of oil and gas, the price of petroleum and coal products rises by 26.70% and the household basket by 0.78%, and 14 of the other 20 sectors move by less than 1%. Air transport is second, at 3.77%, although the Bureau of Economic Analysis records airlines buying no crude oil or natural gas at all. Choose "Air transport" under "Look inside": 3.23 points arrive inside the fuel bought from refineries, and 0.37 with the petroleum products that the table credits to the oil and gas industry itself. Set "Rounds counted" to 1 and the basket has made 58% of its final move; at 3 it has made 92%.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>In October 1973 Arab oil producers stopped selling to the United States and cut their output. By January 1974 the price of a barrel had nearly quadrupled, from $2.90 to $11.65. The first people to notice were drivers. But crude oil is hardly ever bought by a household. It is bought by refineries, whose fuel is bought by airlines, hauliers, farms and power stations, whose services are bought by everyone else. To say who is hit by an oil shock, and by how much, somebody has to follow the oil through the whole chain of who buys what from whom.</p>
+      <p>Wassily Leontief built the tool for that. Starting in the 1930s he compiled tables of the American economy in which each row is an industry's sales to every other industry and each column is an industry's purchases from every other. Divide a column by the industry's output and it becomes a recipe: the cents of steel, electricity, transport and oil that go into a dollar of cars. Leontief received the Nobel memorial prize in 1973, the year of the embargo, "for the development of the input-output method and for its application to important economic problems".</p>
+      <p>The table answers two questions with the same arithmetic. Read along the rows, it says how much every industry must produce for a given amount of final goods to be made. Read down the columns, it says what every product must cost if each industry covers the cost of its inputs. The second reading is the Leontief price model, and it is the natural one for a cost shock. If oil costs more, refineries' costs rise by the share of oil in their recipe. That raises the price of fuel, which raises the costs of airlines by the share of fuel in theirs, and so on round after round, each round smaller than the last. The sum of all the rounds can be worked out in one step, and the part that arrives after the first round, the <strong>indirect effect</strong>, is something no survey of oil purchases would show.</p>
+      <p>This matters outside the classroom because the first question asked in any energy crisis is how much of the rise will reach consumer prices and which industries will need help. The calculation on this page is the standard first answer. It is a mechanical one, and the section on limits says where it is likely to be too high and where too low.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The table</h3>
+      <p>The data are the input-output accounts of the U.S. Bureau of Economic Analysis (BEA) for 2023, at the "summary" level of 71 industries, in millions of dollars at producers' prices. BEA publishes two rectangular tables: the make table <var>V</var> (what each industry produces of each of 73 commodities) and the use table <var>U</var> (what each industry buys of each commodity). The data script turns them into one square table of flows from industry to industry with the market-share rule that BEA uses for its own requirements tables: each commodity's purchases are credited to the industries that make it, in proportion to their share of its output.</p>
+      <p class="eq"><var>D</var> = <var>V</var> ÷ commodity output &nbsp;&nbsp;&nbsp; <var>Z</var> = <var>D</var><var>U</var></p>
+      <p>As a check on the whole procedure, the script inverts the 71-industry table and compares every cell with BEA's published industry-by-industry total requirements. The largest gap is 0.000025.</p>
+      <p>Two rows of the use table are not the product of any American industry: scrap and second-hand goods, and imports with no American equivalent, such as what American airlines spend at airports abroad. For the check they are shared out as BEA shares them. For the table on this page they are taken out and treated like value added, as inputs whose price does not change. Left in, the market-share rule would credit every dollar of those imports to the federal government, the only entry in that column of the make table, and most of what airlines appeared to buy from government would in fact be imports of that kind.</p>
+      <p>The 71 industries are then added up into 21 sectors, listed with their BEA codes at the foot of the tool. Oil and gas extraction, petroleum and coal products, utilities, chemicals and air transport are kept as they are, because that is where the oil and gas go.</p>
+      <p>One consequence of the market-share rule needs saying. The shock on this page is to the price of everything the oil and gas extraction industry sells. In 2023 that was $404 billion of crude oil and natural gas and $43 billion of what BEA classes as petroleum and coal products, which is 5.6% of all such products. The rule therefore credits the industry with 5.6% of every buyer's petroleum products. That is why a sector such as air transport, which buys no crude oil or natural gas in the use table, still shows a small purchase from oil and gas extraction. The "Look inside" table says, for each sector, what the use table itself records.</p>
+
+      <h3>Recipes</h3>
+      <p>Let <var>z</var><sub><var>ij</var></sub> be what sector <var>j</var> bought from sector <var>i</var> and <var>x</var><sub><var>j</var></sub> sector <var>j</var>'s output. The input coefficient</p>
+      <p class="eq"><var>a</var><sub><var>ij</var></sub> = <var>z</var><sub><var>ij</var></sub> / <var>x</var><sub><var>j</var></sub></p>
+      <p>is the cost share of input <var>i</var> in product <var>j</var>. Refineries spend 52 cents of each dollar of output at the oil and gas industry; airlines spend 12 cents at refineries and 0.7 cents at the oil and gas industry. What is left of the dollar after all purchased inputs is value added, wages, profits and taxes on production, together with the scrap and unmatched imports described above. Write <var>v</var><sub><var>j</var></sub> for the two together: the part of the dollar whose price the model does not change.</p>
+
+      <h3>The price model</h3>
+      <p>Measure each product in units worth one dollar in 2023, so that every price starts at 1. A price that covers costs satisfies</p>
+      <p class="eq"><var>p</var><sub><var>j</var></sub> = Σ<sub><var>i</var></sub> <var>a</var><sub><var>ij</var></sub> <var>p</var><sub><var>i</var></sub> + <var>v</var><sub><var>j</var></sub></p>
+      <p>Now let the price of what the oil and gas industry sells, sector <var>k</var>, change by Δ<var>p</var><sub><var>k</var></sub>, set from outside by the world market and held there, and hold every <var>v</var><sub><var>j</var></sub> fixed. Each other sector's price must change by</p>
+      <p class="eq">Δ<var>p</var><sub><var>j</var></sub> = <var>a</var><sub><var>kj</var></sub> Δ<var>p</var><sub><var>k</var></sub> + Σ<sub><var>i</var> ≠ <var>k</var></sub> <var>a</var><sub><var>ij</var></sub> Δ<var>p</var><sub><var>i</var></sub></p>
+      <p>The first term is the <strong>direct</strong> effect: what the sector buys from the oil and gas industry itself. The second is the <strong>indirect</strong> effect: the higher prices of everything else it buys. This is twenty equations in twenty unknowns. Writing <var>A</var><sub>EE</sub> for the table without the oil and gas row and column and <var>a</var><sub><var>k</var></sub> for the oil and gas row of cost shares, the solution is</p>
+      <p class="eq">Δ<var>p</var> = (<var>I</var> − <var>A</var><sub>EE</sub>′)<sup>−1</sup> <var>a</var><sub><var>k</var></sub> Δ<var>p</var><sub><var>k</var></sub></p>
+      <p>Everything is proportional to the size of the jump, so a fall in the oil price gives the same picture with the signs reversed.</p>
+
+      <h3>Rounds</h3>
+      <p>The inverse is the sum of an endless series, and each term is one round of passing costs on:</p>
+      <p class="eq">(<var>I</var> − <var>A</var><sub>EE</sub>′)<sup>−1</sup> <var>a</var><sub><var>k</var></sub> = <var>a</var><sub><var>k</var></sub> + <var>A</var><sub>EE</sub>′<var>a</var><sub><var>k</var></sub> + (<var>A</var><sub>EE</sub>′)²<var>a</var><sub><var>k</var></sub> + …</p>
+      <p>Round 1 is <var>a</var><sub><var>k</var></sub>, the direct effect. Round 2 is what the first round's price rises add to the cost of everyone who buys those products, and so on. The "Rounds counted" slider stops the sum early. Because every sector keeps part of each dollar as value added, each round is smaller than the one before and the sum converges: a test adds up eighty rounds and gets the solved prices to twelve decimal places. A second test checks a known identity, that the answer equals the ratio <var>l</var><sub><var>kj</var></sub> / <var>l</var><sub><var>kk</var></sub> of two cells of the full Leontief inverse (<var>I</var> − <var>A</var>)<sup>−1</sup>.</p>
+
+      <h3>The household basket</h3>
+      <p>The use table also records personal consumption expenditures on each commodity. Spread over the sectors that make those commodities, they give each sector a weight <var>w</var><sub><var>i</var></sub> in household spending, and the change in the price of the basket is Σ <var>w</var><sub><var>i</var></sub> Δ<var>p</var><sub><var>i</var></sub>. The weights are at producers' prices: a litre of petrol counts partly under petroleum products and partly under the trade and transport sectors that carry and sell it. Household spending in the two rows that no industry produces, second-hand goods and the adjustment for spending abroad, is left out, which removes 0.3% of the total.</p>
+
+      <h3>Looking inside</h3>
+      <p>The equation for Δ<var>p</var><sub><var>j</var></sub> is also a breakdown. Each term <var>a</var><sub><var>ij</var></sub> Δ<var>p</var><sub><var>i</var></sub> is the number of percentage points that input <var>i</var> adds to the price of product <var>j</var>, and the terms add up exactly. The "Look inside" table lists the six largest for the chosen sector, or for the household basket, where the terms are <var>w</var><sub><var>i</var></sub> Δ<var>p</var><sub><var>i</var></sub>. Each figure is rounded before the row for everything else is worked out as the remainder, so both columns add up to the totals shown.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>What firms and households do about it.</strong> Recipes are fixed. Nobody switches fuel, insulates a building, flies less or drives less, and nobody absorbs part of a cost rise in their margins. Where they can, the true rise in prices is smaller than shown, more so the longer the shock lasts.</li>
+        <li><strong>What wages and profits do.</strong> Value added per unit is held fixed. If workers win pay rises to keep up with prices, or firms raise margins, prices rise further than shown. That is a wage and price spiral, and it is outside the model.</li>
+        <li><strong>Oil apart from gas.</strong> BEA's table has one industry for crude oil and natural gas, so the jump is applied to both, and to the tenth of the industry's output that is classed as petroleum products. Utilities and chemical plants buy natural gas from it as well as oil, and the price of gas need not move with the price of crude. For a shock to crude alone, their figures here are too high.</li>
+        <li><strong>How long it takes.</strong> A round is a step in the arithmetic, not a month. The model gives the destination and says nothing about the speed of travel.</li>
+        <li><strong>Anything finer than 21 sectors, or other places and years.</strong> Adding industries together blurs their recipes. With all 71 industries a doubling of the oil and gas price raises the basket by 1.63%; with 21 sectors the figure is 1.56%. The cost shares are those of the United States in 2023, a year with its own prices, and imported goods are assumed to rise in price exactly as the same goods made at home.</li>
+        <li><strong>Who ends up richer or poorer.</strong> The model follows prices, not incomes. The table records the American oil and gas extraction industry selling $448 billion of output in 2023, so much of what American buyers pay extra is paid to American producers, their workers and their landlords. Why the price moved matters too: a rise caused by booming world demand comes with other effects that a rise caused by a cut in supply does not.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Use BEA's benchmark table of about 400 industries, to separate fertiliser from pharmaceuticals inside chemicals and trucking from pipelines inside transport.</li>
+        <li>Separate imported from home-produced inputs with BEA's import matrix, and let the visitor decide whether import prices follow.</li>
+        <li>Add a pass-through dial, so that each sector hands on only part of a cost rise and the rest comes out of profits.</li>
+        <li>Follow the income side: who receives the extra spending on oil, and what that does to demand for everything else.</li>
+        <li>Let another sector's price be the one that jumps, such as electricity or semiconductors, and compare how far and how fast each spreads.</li>
+        <li>Repeat the exercise for India and other large importers of oil using their own supply and use tables, where the split between domestic and imported oil changes the story.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>U.S. Bureau of Economic Analysis. Input-Output Accounts: make and use tables after redefinitions, and industry-by-industry total requirements, summary level, 2023 (files dated August and September 2024). Public domain. Retrieved 11 October 2026 from apps.bea.gov. The 21-sector table on this page is built from them by <code>scripts/data/oil_io.py</code>.</li>
+        <li>Horowitz, K. J., and Planting, M. A. (2006, updated April 2009). <em>Concepts and Methods of the U.S. Input-Output Accounts</em>. U.S. Bureau of Economic Analysis.</li>
+        <li>Leontief, W. W. (1936). Quantitative input and output relations in the economic systems of the United States. <em>Review of Economics and Statistics</em> (then titled the <em>Review of Economic Statistics</em>), 18(3), 105-125.</li>
+        <li>Miller, R. E., and Blair, P. D. (2009). <em>Input-Output Analysis: Foundations and Extensions</em> (2nd ed.). Cambridge University Press.</li>
+        <li>Corbett, M. (2013). Oil shock of 1973-74. <em>Federal Reserve History</em> (federalreservehistory.org).</li>
+        <li>The Sveriges Riksbank Prize in Economic Sciences in Memory of Alfred Nobel 1973, awarded to Wassily Leontief. NobelPrize.org.</li>
+        <li>Hamilton, J. D. (1983). Oil and the macroeconomy since World War II. <em>Journal of Political Economy</em>, 91(2), 228-248.</li>
+        <li>Kilian, L. (2009). Not all oil price shocks are alike: disentangling demand and supply shocks in the crude oil market. <em>American Economic Review</em>, 99(3), 1053-1069.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
