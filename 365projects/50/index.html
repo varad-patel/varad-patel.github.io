@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Price War Simulator · 365 projects</title>
+  <meta name="description" content="Set up two pricing bots, let them learn by trial and error in a simulated market, and see whether they undercut each other down to the competitive price or settle on high prices that punish a price cut.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .out > h2 { margin-top: 6px; padding-top: 18px; border-top: 1px solid var(--rule); }
+    .jump { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 0.86rem; }
+    .jump span { color: var(--slate); }
+    .stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .sim-line { padding: 10px 14px; background: #fff; border: 1px solid var(--grid); }
+    .prog { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; }
+    .prog progress { width: 100%; height: 10px; accent-color: var(--ink); }
+    .prog p { min-height: 1.4em; }
+    .stat .v { font-size: 1.45rem; }
+    .cut-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 14px 20px; align-items: start; }
+    .cut-controls > .field:last-child { grid-column: 1 / -1; }
+    .btn[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+    .rt caption { font-weight: 600; font-size: 0.86rem; color: var(--slate); }
+    .rt th.num, .rt td.num { white-space: normal; }
+    .rt td { vertical-align: middle; }
+    .rt th[scope="row"] { font-weight: 600; white-space: nowrap; border-bottom: 1px solid var(--grid); vertical-align: middle; }
+    .rt tr.on { background: color-mix(in srgb, var(--ink) 5%, transparent); }
+    /* On a narrow screen each row becomes a short list of labelled lines, so nothing scrolls sideways. */
+    @media (max-width: 1040px) {
+      .rt, .rt tbody, .rt tr, .rt th, .rt td { display: block; }
+      .rt caption { display: block; }
+      .rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .rt tr { padding: 8px 6px; border-bottom: 1px solid var(--grid); }
+      .rt th[scope="row"], .rt td { border: 0; padding: 1px 0; }
+      .rt td { display: flex; justify-content: space-between; align-items: center; gap: 14px; text-align: right; }
+      .rt td::before { content: attr(data-label); color: var(--slate); text-align: left; }
+    }
+    /* The same when the column is narrow on a wider screen: the table of runs needs about 585px. */
+    .rt-box { container-type: inline-size; }
+    @container (max-width: 600px) {
+      .rt, .rt tbody, .rt tr, .rt th, .rt td { display: block; }
+      .rt caption { display: block; }
+      .rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .rt tr { padding: 8px 6px; border-bottom: 1px solid var(--grid); }
+      .rt th[scope="row"], .rt td { border: 0; padding: 1px 0; }
+      .rt td { display: flex; justify-content: space-between; align-items: center; gap: 14px; text-align: right; }
+      .rt td::before { content: attr(data-label); color: var(--slate); text-align: left; }
+    }
+    .p-sec .eq { white-space: normal; }
+  </style>
+</head>
+<body class="proj" data-day="50">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Price War Simulator</h1>
+      <p class="lede">Two pricing bots, one simulated market, no instructions. Choose how each bot behaves, let them learn, and see whether they undercut each other or settle on high prices that punish a price cut.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Pricing bot simulator">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>As the page loads it runs two Q-learning bots ten times, with seeds 1 to 10. In all ten the bots, which start by pricing at random, settle above the one-shot Nash price of 1.473: at 1.80 on average, a profit gain of 87% of the way to the joint-monopoly profit, and anywhere from 58% to 98% depending on the seed. Forcing bot 1 to undercut for one period loses it money in all ten runs, and bot 2 answers with a lower price in nine. Press "No memory" and prices end higher still, a gain of 97%, but there the same cut pays in all ten runs and is never answered. That last result is this page's and not the paper's, which tests learners with no memory only when they also have no patience.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Prices on large online marketplaces, at petrol stations and for hotel rooms and flights are increasingly set by software. The older kind follows rules a person wrote: match the cheapest rival, stay 1% below, never go under cost. The newer kind is given only a goal, such as profit, and learns what to do by trying prices and seeing what happens. That raises a question competition law was not written for. A cartel is illegal because its members agree to fix prices. What if two programs, each told only to make money, learn on their own that undercutting does not pay?</p>
+      <p>Emilio Calvano, Giacomo Calzolari, Vincenzo Denicolò and Sergio Pastorello put the question to an experiment published in 2020. They let pairs of Q-learning algorithms, a standard and simple method of reinforcement learning, set prices against each other in a textbook model of a market, for as many periods as it took their behaviour to settle. The algorithms consistently ended up charging prices above the competitive level, without communicating. Averaged over a thousand sessions, the profits in their main experiment were about 85% of the way from the competitive level to the monopoly level. And the high prices were defended. When the authors forced one algorithm to cut its price, the other cut too, prices stayed low for a few periods and then climbed back; in more than 95% of cases the cut lost money for the algorithm that made it.</p>
+      <p>That second finding is the important one, and it is why this page has a "test a price cut" panel. High prices alone do not show collusion. Bots can also end up with high prices because they have learned badly, each failing to notice that a lower price would earn more. Economists reserve the word collusion for high prices sustained by a scheme of reward and punishment: I keep my price up because I expect you to punish me if I do not. This is the logic of the repeated game on day 51, where the punishment was written down by hand. Here nobody writes it. The bots have a table of numbers and a rule for updating it, and the question is what they make of them.</p>
+      <p>The tool follows the paper's baseline market and learning rule, and its results come out close to the published ones. It also lets you break the conditions for collusion one at a time (no memory of past prices, no patience) and swap a learner for a plain undercutting rule, which gives the price war of the title: two undercutters starting anywhere are at the competitive price within a handful of periods.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The market</h3>
+      <p>Two firms sell similar but not identical goods, and buyers may also buy neither. When the firms charge <var>p</var><sub>1</sub> and <var>p</var><sub>2</sub>, firm <var>i</var> sells to a share of buyers given by the logit formula</p>
+      <p class="eq"><var>q</var><sub><var>i</var></sub> = e<sup>(<var>a</var> − <var>p</var><sub><var>i</var></sub>)/<var>μ</var></sup> / (e<sup>(<var>a</var> − <var>p</var><sub>1</sub>)/<var>μ</var></sup> + e<sup>(<var>a</var> − <var>p</var><sub>2</sub>)/<var>μ</var></sup> + e<sup><var>a</var><sub>0</sub>/<var>μ</var></sup>)</p>
+      <p>and earns (<var>p</var><sub><var>i</var></sub> − <var>c</var>) <var>q</var><sub><var>i</var></sub> each period. The numbers are the paper's baseline: quality <var>a</var> = 2, cost <var>c</var> = 1, outside option <var>a</var><sub>0</sub> = 0 and <var>μ</var> = 1/4, which measures how different the goods are. A lower price wins buyers from the rival and from the outside option, but never all of them.</p>
+      <h3>The two benchmarks</h3>
+      <p>If the firms met once, each would choose its best price given the other's. With both charging <var>p</var> and each selling <var>q</var>(<var>p</var>), that one-shot Nash price solves the first equation below. A single owner of both firms would choose the price that solves the second:</p>
+      <p class="eq"><var>p</var> − <var>c</var> = <var>μ</var> / (1 − <var>q</var>) &nbsp; (Nash) &nbsp;&nbsp; <var>p</var> − <var>c</var> = <var>μ</var> / (1 − 2<var>q</var>) &nbsp; (joint monopoly)</p>
+      <p>The tool solves both by repeated halving and gets 1.473 and 1.925, with profits of 0.223 and 0.337 a period for each firm. These match the paper, which reports a margin over cost of about 47% at the Nash price and about twice that under full collusion.</p>
+      <h3>The prices a bot may charge</h3>
+      <p>Q-learning needs a finite list of actions. As in the paper there are 15 prices, evenly spaced from a tenth of the gap below the Nash price to a tenth of the gap above the monopoly price: 1.43, 1.47, 1.51 and so on up to 1.97. Neither benchmark is exactly on the list. The game played on this grid has two one-shot equilibria, both bots at 1.47 or both at 1.51, either side of the exact value.</p>
+      <h3>A Q-learner</h3>
+      <p>A Q-learner knows nothing about demand, costs or its rival. It keeps a table <var>Q</var>(<var>s</var>, <var>p</var>): its current estimate of the discounted profit from charging <var>p</var> in state <var>s</var> and doing its best from then on. The state is last period's pair of prices, so there are 225 states and 3,375 entries. Each period <var>t</var> it does one of two things. With probability e<sup>−<var>β</var><var>t</var></sup> it explores: it charges one of the 15 prices at random. Otherwise it charges the price with the highest <var>Q</var> in the current state. It then observes its profit <var>π</var> and the new state <var>s</var>′, and updates the one entry it used:</p>
+      <p class="eq"><var>Q</var>(<var>s</var>, <var>p</var>) ← (1 − <var>α</var>) <var>Q</var>(<var>s</var>, <var>p</var>) + <var>α</var> [<var>π</var> + <var>δ</var> × the highest <var>Q</var>(<var>s</var>′, ·)]</p>
+      <p><var>α</var> is the learning rate, <var>δ</var> the discount factor and <var>β</var> sets how fast exploring fades. Every entry starts at the discounted profit that price would earn against a rival choosing at random, and the first state is drawn at random. Both bots choose at the same moment and each updates its own table. With "memory" switched off there is one state only, so a bot cannot react to what its rival just did. Watkins and Dayan (1992) proved that this rule finds the best policy for a single decision-maker in an unchanging environment, provided every price goes on being tried in every state. Nothing of the kind is known for two learners, each of which is a moving part of the other's environment.</p>
+      <h3>An undercutter</h3>
+      <p>The other kind of bot learns nothing. Each period it charges the price on the grid that would have earned most against the price its rival charged last period: the one-shot best reply. Against a high price that reply is a lower price, so two undercutters step down together. From the top of the grid, 1.97 each, they go to 1.66, 1.54 and 1.51, and stay there.</p>
+      <h3>When a run ends</h3>
+      <p>A run is one pair of bots and one seed. Following the paper, it ends when neither learner's preferred price in any of the 225 states has changed for 100,000 periods in a row. The tool gives up at 20/<var>β</var> + 200,000 periods (5.2 million at the main setting) and marks such a run "not settled". At the main setting a run takes about 1.8 million periods.</p>
+      <h3>Long-run prices and the profit gain</h3>
+      <p>When a run ends the tool switches exploring off and follows the two tables from the last state. Play is then deterministic and must fall into a single pair of prices or a repeating cycle of pairs. The long-run price of each bot is its average over that cycle. The profit gain is the paper's measure,</p>
+      <p class="eq"><var>Δ</var> = (<var>π</var> − <var>π</var><sub>N</sub>) / (<var>π</var><sub>M</sub> − <var>π</var><sub>N</sub>)</p>
+      <p>where <var>π</var> is the bots' average profit per period on the cycle and <var>π</var><sub>N</sub> and <var>π</var><sub>M</sub> are the Nash and monopoly profits above: 0% is the competitive outcome and 100% the monopoly one. It can be slightly negative, because the grid has a price just below the Nash price.</p>
+      <h3>The price-cut test</h3>
+      <p>Starting from the settled prices (in a cycle, from the point where the cutting bot's own price would be highest), one bot is made to charge a lower price for a single period. By default that is its one-shot best reply to the rival's price, the most tempting cut and the one the paper uses. Both bots then follow their tables again. The chart shows the next 20 periods with and without the cut. The tool reports whether the rival charged less in the following period than it otherwise would have, when the two paths come back together, and the sum of the differences in the cutter's profit, each multiplied by <var>δ</var> to the power of the number of periods since the cut. If that sum is negative the cut did not pay. For the run with seed 1: both bots sit at 1.74; bot 1 is cut to 1.58 and gains 0.024 that period; the next period bot 2 charges 1.51 and bot 1 itself 1.54, then 1.47 and 1.54, and in period 4 both are back at 1.74. Overall the cut costs bot 1 0.141.</p>
+      <h3>Why bots with no memory end at high prices</h3>
+      <p>With memory off a learner's table has 15 numbers, one for each price, and it cannot punish anything. Yet at <var>δ</var> = 0.95 the ten runs end at 1.88 on average, the two bots at one and the same price in every run, and a price cut pays every time. The cause is in the update rule, which changes only the entry for the price just charged. That entry is refreshed every period and, through the term <var>δ</var> × the highest <var>Q</var>, feeds on itself: it settles at the profit the price is earning divided by 1 − <var>δ</var>, twenty periods' worth. The other fourteen entries move only when the bot happens to explore them, 15% of the way each time, so as exploring fades they go stale.</p>
+      <p>The result is a ratchet. If the pair of prices moves somewhere that pays a bot less, the entry for its current price soon sinks below the stale ones and the bot jumps to another price. If the pair moves somewhere that pays both bots more, both entries rise clear of everything else in their tables and both bots stay. An undercut would earn more each period, but its entry is corrected only when it is explored, and that stops happening before it has caught up. At the end of the run with seed 1 both bots charge 1.78 and each values that price at 6.446, which is its profit of 0.3223 divided by 0.05. Charging 1.62 would earn 0.031 more a period, yet the two bots value it at 6.346 and 6.337. In all ten runs each bot values every one of the other 14 prices below the price it charges.</p>
+      <p>Two checks point to the learning rule and not the market. With no patience the self-feeding term vanishes, an entry is one period's profit, and learners with no memory end near the competitive price: that is "The paper's no-memory test". And a learner that refreshed all 15 entries every period, which it could do only if it knew its own demand, ends at 1.47, a one-shot equilibrium of the grid, at the same patience of 0.95; the page's tests run that variant. Asker, Fershtman and Pakes (2022) report the same contrast between learners that update only the price they charged and learners that also work out what other prices would have earned. The paper tests no memory only at <var>δ</var> = 0, on the ground that without memory nothing is lost by setting patience to zero. That is true of the best policy, which is the one-shot best reply at any patience. It is not true of this learning rule.</p>
+      <h3>Seeds, and how close this comes to the paper</h3>
+      <p>All randomness comes from a seeded generator, so a seed names a run exactly. The exponential function is computed from additions and multiplications only, because browsers are allowed to differ in its last digit, and over a million periods that would be enough to change a run. The learning loop is cut into slices of about a fortieth of a second so the page stays usable while it works.</p>
+      <p>At the paper's main setting (<var>α</var> = 0.15, <var>β</var> = 4 per million, <var>δ</var> = 0.95), seeds 1 to 20 give an average profit gain of 86% here, against the 85% the paper reports for 1,000 sessions. "The paper's no-memory test" repeats its check that learners price close to the competitive level when collusion is impossible (no memory, <var>δ</var> = 0, <var>α</var> = 0.25, <var>β</var> = 100 per million): 40 runs here average a gain of 0.19 against the 0.185 in its online appendix. And the patience above which a grim trigger (day 51) could hold the monopoly price in this market works out at 0.393, where the paper says "about 40%".</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>That pricing software in real markets colludes.</strong> This is two copies of one simple algorithm in a market that never changes, with no entry, no new products and no shifts in demand. It shows that collusion can be learned without being programmed, not that it is. The best field evidence so far is mixed in the same way: studying German petrol stations, Assad, Clark, Ershov and Xu (2024) found that margins rose after stations adopted pricing software, but only where stations faced competitors, and in two- and three-station markets only when every station had adopted.</li>
+        <li><strong>How long it would take outside a simulation.</strong> A run at the main setting takes about 1.8 million periods, most of them spent pricing more or less at random. At one price change a minute that is more than three years of mistakes. The paper's authors note that algorithms could be trained beforehand in a simulated market; this page says nothing about how well such training would carry over.</li>
+        <li><strong>Whether any of it is illegal.</strong> These bots never communicate and nobody tells them to collude. Competition law is aimed mainly at agreements between firms, and prices that are high without one are generally not unlawful in themselves. Harrington (2018) argues that collusion learned by software with no human hand in it would not breach the main United States law against cartels as it stands, and discusses what a law that covered it would have to look like. A simulation cannot settle that, and it cannot tell a court what the firm that deployed the software knew or intended.</li>
+        <li><strong>That high prices mean collusion.</strong> Press "No memory": bots that cannot see each other's prices, and so cannot punish anything, end at even higher prices than the colluding ones when they are patient. A price cut there pays and goes unanswered. The same learners with no patience price near the competitive level. So the level of prices depends heavily on details of the learning rule ("How it works" explains why), a point Asker, Fershtman and Pakes (2022) also make, and only the cut test separates collusion from a failure to learn.</li>
+        <li><strong>What ten runs cannot.</strong> Runs with the same settings end anywhere from 58% to 98% of the way to monopoly, some at steady prices and some in cycles. The tool shows every run and by default the middle one, but ten seeds is a small sample; the paper used a thousand for each setting. Raise "Number of runs" before leaning on a difference.</li>
+        <li><strong>Anything about smarter learners.</strong> Q-learning with a table is the simplest method there is. Commercial systems use function approximation, far more data and far fewer trials, and may behave differently in either direction.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Add a third and fourth bot. The paper reports that the average profit gain falls from 85% with two firms to 64% with three and 56% with four.</li>
+        <li>Give the firms different costs or qualities and see who gains from the high prices.</li>
+        <li>Let demand vary from period to period, or let a rival enter and leave, to test whether the learned punishments survive noise.</li>
+        <li>Let the bots move in turn and not together, the setting Klein (2021) studied, where learners often settle into price cycles above the competitive level.</li>
+        <li>Offer the audit a regulator might run: load a learned table, apply every possible price cut in every state, and report how often a cut is punished.</li>
+        <li>Record how prices move during learning, not only at the end, since a firm lives through the learning and not only the result.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Calvano, E., Calzolari, G., Denicolò, V., and Pastorello, S. (2020). Artificial intelligence, algorithmic pricing, and collusion. <em>American Economic Review</em>, 110(10), 3267-3297. The market, the learning rule, the stopping rule, the profit gain and the price-cut test follow this paper; the no-memory test is in its online appendix.</li>
+        <li>Watkins, C. J. C. H., and Dayan, P. (1992). Q-learning. <em>Machine Learning</em>, 8(3-4), 279-292.</li>
+        <li>Harrington, J. E. (2018). Developing competition law for collusion by autonomous artificial agents. <em>Journal of Competition Law &amp; Economics</em>, 14(3), 331-363.</li>
+        <li>Klein, T. (2021). Autonomous algorithmic collusion: Q-learning under sequential pricing. <em>RAND Journal of Economics</em>, 52(3), 538-558.</li>
+        <li>Asker, J., Fershtman, C., and Pakes, A. (2022). Artificial intelligence, algorithm design, and pricing. <em>AEA Papers and Proceedings</em>, 112, 452-456.</li>
+        <li>Assad, S., Clark, R., Ershov, D., and Xu, L. (2024). Algorithmic pricing and competition: empirical evidence from the German retail gasoline market. <em>Journal of Political Economy</em>, 132(3), 723-771.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

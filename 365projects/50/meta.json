@@ -1,0 +1,7 @@
+{
+  "question": "Do pricing bots that learn by trial and error undercut each other down to the competitive price, or do they settle on high prices and punish a price cut?",
+  "finding": "In ten simulated runs of two Q-learning bots (seeds 1 to 10) prices settle at 1.80 on average, between the one-shot Nash price of 1.473 and the joint-monopoly price of 1.925, a profit gain of 87% (58% to 98% by seed); a forced one-period price cut loses money in all ten and is answered with a lower price in nine.",
+  "limit": "It is a simulation of two copies of one simple algorithm in an invented, unchanging market, taking about 1.8 million periods to learn, so it shows that collusion can be learned without being programmed, not that real pricing software does it or that it would be unlawful.",
+  "sources": [],
+  "built": "2026-10-13"
+}
