@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Price Discrimination Lab · 365 projects</title>
+  <meta name="description" content="Split buyers into groups and compare one price, a price for each group, a menu of bundles and a price for each buyer on profit, buyers' surplus and total welfare.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .controls h2:not(:first-child) { margin-top: 8px; padding-top: 16px; border-top: 1px solid var(--grid); }
+    .d56-groups { display: grid; gap: 14px; }
+    .d56-group { display: grid; gap: 10px; margin: 0; padding: 10px 12px 12px; border: 1px solid var(--grid); background: #fff; min-width: 0; }
+    .d56-group legend { font-weight: 700; font-size: 0.9rem; padding: 0 6px; }
+    .d56-group .btn { justify-self: start; }
+    .d56-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 10px 14px; align-items: end; }
+    .d56-list { margin: 0; padding-left: 1.2em; font-size: 0.93rem; line-height: 1.5; overflow-wrap: anywhere; }
+    .d56-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 16px; }
+    .d56-card { display: grid; gap: 10px; align-content: start; overflow-wrap: anywhere; }
+    .d56-card h3 { margin: 0; }
+    .d56-card p { margin: 0; }
+    /* Fixed columns: a long group name wraps inside its own column and cannot squeeze or push out the figures. */
+    .d56-tbl { width: 100%; font-size: 0.86rem; table-layout: fixed; }
+    .d56-tbl th:first-child { width: 34%; }
+    .d56-tbl th, .d56-tbl td, .d56-tbl thead th.num { white-space: normal; padding: 5px 6px; }
+    /* A figure too long for its column (very large markets) breaks onto a second line instead of running into the next. */
+    .d56-tbl td.num { white-space: normal; overflow-wrap: anywhere; }
+    .d56-tbl th[scope="row"] { font-weight: 600; text-align: left; border-bottom: 1px solid var(--grid); }
+    /* A card narrower than about 420 pixels cannot hold four columns without breaking figures in two: each group
+       becomes a short list there. Written twice: for the width of the card, and for the width of the screen in browsers
+       without container queries. */
+    .d56-card { container-type: inline-size; }
+    @container (max-width: 420px) {
+      .d56-tbl thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+      .d56-tbl, .d56-tbl tbody, .d56-tbl tr, .d56-tbl th, .d56-tbl td { display: block; }
+      .d56-tbl th:first-child { width: auto; }
+      .d56-tbl tr { padding: 6px 0; border-bottom: 1px solid var(--grid); }
+      .d56-tbl th[scope="row"] { border: 0; padding: 0 0 2px; }
+      .d56-tbl td, .d56-tbl td.num { display: flex; justify-content: space-between; gap: 12px; border: 0; padding: 1px 0; text-align: right; }
+      .d56-tbl td::before { content: attr(data-label); color: var(--slate); text-align: left; }
+    }
+    @media (max-width: 480px) {
+      .d56-tbl thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+      .d56-tbl, .d56-tbl tbody, .d56-tbl tr, .d56-tbl th, .d56-tbl td { display: block; }
+      .d56-tbl th:first-child { width: auto; }
+      .d56-tbl tr { padding: 6px 0; border-bottom: 1px solid var(--grid); }
+      .d56-tbl th[scope="row"] { border: 0; padding: 0 0 2px; }
+      .d56-tbl td, .d56-tbl td.num { display: flex; justify-content: space-between; gap: 12px; border: 0; padding: 1px 0; text-align: right; }
+      .d56-tbl td::before { content: attr(data-label); color: var(--slate); text-align: left; }
+    }
+    .d56-tot { display: grid; grid-template-columns: 1fr auto; gap: 3px 12px; margin: 0; font-size: 0.9rem; border-top: 1px solid var(--grid); padding-top: 8px; }
+    .d56-tot dt { color: var(--slate); }
+    .d56-tot dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
+    .note { overflow-wrap: anywhere; }
+    /* On a narrow screen the controls come first and the results are a long way down: links to jump there. */
+    .jump { display: none; flex-wrap: wrap; gap: 4px 18px; font-size: 0.9rem; margin-bottom: 12px; }
+    /* With controls 420 pixels wide, a window under about 1,040 pixels leaves the results less room than a phone gives
+       them. Below that the controls go on top, as they do on a phone, and the jump links appear. */
+    @media (max-width: 1040px) { .jump { display: flex; } .tool-grid.wide-controls { grid-template-columns: minmax(0, 1fr); } }
+    .p-sec .eq { white-space: normal; }
+  </style>
+</head>
+<body class="proj" data-day="56">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Price Discrimination Lab</h1>
+      <p class="lede">A seller faces groups of buyers who will pay different amounts. Set the groups, then compare one price for all, a price for each group, a menu that buyers choose from and a price for each buyer: who gains, who loses and what happens to the total.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Four ways to price to groups of buyers, compared">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>On load there are 100 students who would pay up to 10 and 100 professionals who would pay up to 14, and a unit costs 2 to make. One price of 7 sells 1,000 units. A price for each group, 6 and 8, sells exactly 1,000 units as well: the seller's profit rises from 5,000 to 5,200, buyers lose 300 between them and total welfare falls by 100. Press "One price shuts students out", which lowers the students' top price to 6. Now the best single price is 8 and students buy nothing. Group prices of 4 and 8 bring them in: profit rises by 400, total welfare rises from 5,400 to 6,000 and no buyer is worse off. Whether charging groups different prices does harm turns on whether it opens a market.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>A seller with one price loses twice. Buyers who would have paid more keep the difference, and buyers who would have paid something above cost, but less than the price, go without. Price discrimination is any way of getting round that by charging different amounts for the same thing: student discounts, peak fares, bulk packs, "basic" and "pro" editions, a quote that depends on who is asking.</p>
+      <p>A. C. Pigou sorted the possibilities into three degrees in <em>The Economics of Welfare</em> (1920). In the first, every unit is sold at the most its buyer would pay, and buyers are left with no surplus at all. In the third, the seller can tell groups of customers apart "by some practicable mark" and charges each group its own monopoly price. His second degree lay between them: blocks of units sold at a few different prices. Today the second degree usually means a menu. Every buyer is offered the same list of options, such as bundle sizes or versions, and buyers sort themselves by what they pick. That is the sense used here; the analysis is the one Maskin and Riley set out in 1984, and Varian (1989) surveys the whole field.</p>
+      <p>Is it harmful? Discrimination moves surplus from buyers to the seller, which is why sellers do it. Its effect on the total is not obvious. Pigou showed that with straight-line demand curves and every group already buying, a move to group prices leaves total output unchanged. Since the same output is then shared out less well, welfare must fall. Joan Robinson (1933) showed that with curved demand output can rise. Schmalensee (1981) and Varian (1985) showed that a rise in output is necessary for welfare to rise, though not enough, and Aguirre, Cowan and Vickers (2010) gave sufficient conditions, comparing the curvature of demand in the different markets, for welfare and output to rise or to fall. The lab shows the two cases that need no curvature: every group served under one price, where Pigou's result holds exactly, and a group priced out by one price, where discrimination opens a market and can leave everyone better off.</p>
+      <p>The menu adds a different lesson. A seller who cannot tell buyers apart can still discriminate by designing options so that buyers reveal themselves. The price of that is distortion: the small bundle is made smaller than is efficient, not because it costs too much to supply, but to stop buyers with deeper pockets from choosing it.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The market</h3>
+      <p>Group <var>i</var> has <var>N</var><sub><var>i</var></sub> identical buyers. At a price of <var>p</var> a unit, each of them buys</p>
+      <p class="eq"><var>q</var> = <var>a</var><sub><var>i</var></sub> − <var>p</var> units if <var>p</var> &lt; <var>a</var><sub><var>i</var></sub>, and nothing otherwise</p>
+      <p>so <var>a</var><sub><var>i</var></sub> is the group's highest price. The unit of quantity is chosen so that one more unit of money on the price loses one unit of sales per buyer, in every group. A group with more buyers has a flatter demand curve in total, so the groups' total demand curves can be any straight lines; what the model fixes is that buyers differ only in how much they want the good. Reading the demand curve the other way, the <var>q</var>-th unit is worth <var>a</var><sub><var>i</var></sub> − <var>q</var> to the buyer, so <var>q</var> units are worth</p>
+      <p class="eq"><var>V</var><sub><var>i</var></sub>(<var>q</var>) = <var>a</var><sub><var>i</var></sub><var>q</var> − <var>q</var>² ⁄ 2</p>
+      <p>in total. A buyer's surplus is that worth less what they pay. Every unit costs the seller <var>c</var>, with no fixed cost. Total welfare is the seller's profit plus all buyers' surplus: what the units sold are worth to their buyers, less what they cost to make.</p>
+      <h3>One price for everyone</h3>
+      <p class="eq">profit(<var>p</var>) = (<var>p</var> − <var>c</var>) × Σ<sub><var>i</var></sub> <var>N</var><sub><var>i</var></sub> × max(0, <var>a</var><sub><var>i</var></sub> − <var>p</var>)</p>
+      <p>Between two neighbouring top prices the same groups are buying and profit is a downward parabola in <var>p</var>. At each top price a group drops out and the curve has a kink. Just past a kink the seller no longer loses that group's sales when it raises the price, so the curve is steeper upwards on the right of a kink than on the left: a kink is never a peak. The best price is therefore the top of one of the parabolas. For the <var>k</var> groups with the highest top prices that top is at</p>
+      <p class="eq"><var>p</var><sub><var>k</var></sub> = (<var>ā</var><sub><var>k</var></sub> + <var>c</var>) ⁄ 2, where <var>ā</var><sub><var>k</var></sub> is those groups' average top price, weighted by buyers</p>
+      <p>and it counts only if exactly those groups buy at that price. The tool works out every such price and keeps the one with the highest profit. If two earn the same it says so and uses the lower. The second chart draws the whole curve.</p>
+      <h3>A price for each group</h3>
+      <p>The seller knows which group each buyer belongs to, and buyers cannot resell. Each group is then a separate monopoly problem with the answer</p>
+      <p class="eq"><var>p</var><sub><var>i</var></sub> = (<var>a</var><sub><var>i</var></sub> + <var>c</var>) ⁄ 2</p>
+      <p>for every group with <var>a</var><sub><var>i</var></sub> above <var>c</var>. At any prices that every group buys at, welfare works out as</p>
+      <p class="eq"><var>W</var> = Σ<sub><var>i</var></sub> (<var>N</var><sub><var>i</var></sub> ⁄ 2) × [(<var>a</var><sub><var>i</var></sub> − <var>c</var>)² − (<var>p</var><sub><var>i</var></sub> − <var>c</var>)²]</p>
+      <p>If the single price serves every group, it equals the buyer-weighted average of the group prices, so total sales are the same under both schemes, and substituting into the formula gives</p>
+      <p class="eq"><var>W</var><sub>one price</sub> − <var>W</var><sub>group prices</sub> = (<var>N</var> ⁄ 2) × variance of the group prices across buyers</p>
+      <p>where <var>N</var> is the total number of buyers. With the groups on load the prices are 6 and 8, the variance is 1 and <var>N</var> is 200, which gives the loss of 100. The unchanged total is Pigou's result; the loss follows from it, because the same units now go to buyers who value them less. Both fail as soon as one price shuts a group out, because then group prices sell more.</p>
+      <h3>A menu of bundles</h3>
+      <p>Now the seller cannot tell buyers apart. It offers a menu of quantity tiers: bundles, each a quantity <var>q</var> for a total payment <var>T</var>, and every buyer takes the one that leaves them the most surplus, or nothing. Suppose bundle <var>j</var> is meant for group <var>j</var>, with the groups in order of top price. Two sets of constraints must hold: no group is left with negative surplus, and no group prefers another group's bundle. A buyer from the group above values bundle <var>j</var> by (<var>a</var><sub><var>j</var>+1</sub> − <var>a</var><sub><var>j</var></sub>) × <var>q</var><sub><var>j</var></sub> more than its intended buyers do, and that is the surplus the seller has to leave them to stop them switching down. Every unit added to a low bundle therefore costs the seller something on every buyer above it. Counting that in, the seller's profit is the same as if each group had the "virtual" top price</p>
+      <p class="eq"><var>v</var><sub><var>j</var></sub> = <var>a</var><sub><var>j</var></sub> − (<var>a</var><sub><var>j</var>+1</sub> − <var>a</var><sub><var>j</var></sub>) × (buyers in groups above <var>j</var>) ⁄ <var>N</var><sub><var>j</var></sub></p>
+      <p>and the seller simply sold each group its efficient quantity at that top price:</p>
+      <p class="eq"><var>q</var><sub><var>j</var></sub> = max(0, <var>v</var><sub><var>j</var></sub> − <var>c</var>)</p>
+      <p>The top group has nobody above it, so its bundle is the efficient size, <var>a</var> − <var>c</var>. Every bundle for a group with a lower top price is smaller than is efficient for its buyers, and a group whose virtual top price is at or below cost is offered nothing. Payments follow from the constraints that bind: the lowest group served pays all its bundle is worth, <var>T</var> = <var>V</var>(<var>q</var>), and each group above pays the worth of its own bundle less the surplus it could have had from the bundle below.</p>
+      <p>A buyer with a higher top price always gains more from a larger bundle, so bundles must not shrink as the top price rises. If the virtual top prices are out of order, the tool pools the offending groups with the pool-adjacent-violators algorithm, weighting each group by its number of buyers, and the pooled groups share one bundle. The menu assumes each buyer takes one bundle. When a larger bundle costs more per unit than a smaller one, which can happen, the tool says so, because buying several small bundles would then undo the menu.</p>
+      <p>The menu sells packages, not units at a price. A package can be priced at everything it is worth to its buyer, which a price per unit can never do. That is why the menu can earn more than a price for each group even though the seller knows less.</p>
+      <h3>A price for each buyer</h3>
+      <p>The seller knows every buyer's demand curve and charges for each unit exactly what it is worth to that buyer, selling every unit worth more than <var>c</var>. Each buyer in group <var>i</var> takes <var>a</var><sub><var>i</var></sub> − <var>c</var> units and pays <var>V</var><sub><var>i</var></sub>(<var>a</var><sub><var>i</var></sub> − <var>c</var>). Output is efficient, welfare is as large as it can be, and all of it is profit.</p>
+      <h3>How the answers are checked</h3>
+      <p>The tests compare the best single price with a search over 20,000 prices in 300 random markets, each group's price with a search of its own, every surplus figure with the area under the demand curve added up numerically, and the menu with an exhaustive search over a grid of bundles and payments that tests every constraint directly.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>What happens with curved demand.</strong> The result that group prices leave output unchanged belongs to straight lines. With curved demand curves output can rise or fall, and welfare with it. That is the subject of Robinson's work and of Aguirre, Cowan and Vickers, and this lab does not cover it.</li>
+        <li><strong>What a seller who is guessing would do.</strong> The seller here knows each group's demand curve exactly. Real sellers estimate them, and a personalised price built on a poor estimate loses sales.</li>
+        <li><strong>Whether the scheme can be enforced.</strong> Group prices need a way to check who is a student and to stop students reselling. The menu needs each buyer to take one bundle and not to share it. Where those fail, so does the scheme.</li>
+        <li><strong>Anything about competition.</strong> There is one seller and no entry. With rivals, each firm's discounts are aimed at the other's customers and the outcome can be very different.</li>
+        <li><strong>Who ought to get the surplus.</strong> Total welfare counts a unit of money the same in anyone's hands. A price for each buyer scores highest on it while leaving buyers nothing. Whether that is a good outcome is a question about distribution that the total cannot answer.</li>
+        <li><strong>Whether it is fair or lawful.</strong> Charging people different prices for the same thing, and collecting the data to do it, raise questions of fairness, privacy and law that a model of surplus has nothing to say about.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Add curved demand curves (constant elasticity, exponential) so that output can change under group prices, and show the curvature conditions of Aguirre, Cowan and Vickers at work.</li>
+        <li>Add a fixed cost. A product that cannot cover it at one price may be worth making under discrimination, which is the strongest case in its favour.</li>
+        <li>Let the visitor design the menu by hand and watch which constraint breaks: who switches bundle, who walks away.</li>
+        <li>Replace quantity with quality, as in Mussa and Rosen (1978), to model "basic" and "pro" versions of one product.</li>
+        <li>Add a second seller, to see when discrimination sharpens competition and when it softens it.</li>
+        <li>Let buyers within a group differ, so that a price for each group is no longer the same as knowing each buyer.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Pigou, A. C. (1920). <em>The Economics of Welfare</em>. London: Macmillan. The three degrees are defined in Part II, in the chapter "Discriminating monopoly" (chapter XVII of the fourth edition, 1932).</li>
+        <li>Robinson, J. (1933). <em>The Economics of Imperfect Competition</em>. London: Macmillan.</li>
+        <li>Schmalensee, R. (1981). Output and welfare implications of monopolistic third-degree price discrimination. <em>American Economic Review</em>, 71(1), 242-247.</li>
+        <li>Varian, H. R. (1985). Price discrimination and social welfare. <em>American Economic Review</em>, 75(4), 870-875.</li>
+        <li>Varian, H. R. (1989). Price discrimination. Chapter 10 in <em>Handbook of Industrial Organization</em>, Volume 1, 597-654. Elsevier.</li>
+        <li>Aguirre, I., Cowan, S., and Vickers, J. (2010). Monopoly price discrimination and demand curvature. <em>American Economic Review</em>, 100(4), 1601-1615.</li>
+        <li>Maskin, E., and Riley, J. (1984). Monopoly with incomplete information. <em>RAND Journal of Economics</em>, 15(2), 171-196.</li>
+        <li>Mussa, M., and Rosen, S. (1978). Monopoly and product quality. <em>Journal of Economic Theory</em>, 18(2), 301-317.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
