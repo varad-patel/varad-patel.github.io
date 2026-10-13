@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tax Systems Compared · 365 projects</title>
+  <meta name="description" content="Enter a household and compare what it pays under a flat tax, a progressive schedule and a consumption tax, with India's old and new income-tax regimes for 2026-27 worked out in full.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .controls h2:not(:first-child) { margin-top: 8px; padding-top: 16px; border-top: 1px solid var(--grid); }
+    .stack-s { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+    .tool input[type="text"], .tool textarea { overflow-wrap: anywhere; }
+    .stat .v { font-size: 1.4rem; }
+    .panel .note { margin-top: 10px; }
+    .rt caption { font-weight: 600; font-size: 0.86rem; color: var(--slate); }
+    .rt th { white-space: normal; vertical-align: bottom; }
+    .rt th[scope="row"] { font-weight: 600; border-bottom: 1px solid var(--grid); vertical-align: top; }
+    .rt th.num { white-space: normal; }
+    .rt-wrap, #app .out > div { min-width: 0; }
+    /* On a narrow screen each row becomes a short list of labelled lines, so nothing scrolls sideways. */
+    @media (max-width: 700px) {
+      .rt, .rt tbody, .rt tr, .rt th, .rt td { display: block; }
+      .rt caption { display: block; }
+      .rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .rt th[scope="row"], .rt td { border: 0; padding: 1px 0; }
+      .rt td { display: flex; justify-content: space-between; gap: 14px; text-align: right; }
+      .rt td::before { content: attr(data-label); color: var(--slate); text-align: left; }
+    }
+    /* The same whenever the table's own column is narrow, as it is beside the controls on a tablet or a small laptop. */
+    div:has(> table.rt) { container-type: inline-size; }
+    @container (max-width: 520px) {
+      .rt, .rt tbody, .rt tr, .rt th, .rt td, .rt caption { display: block; }
+      .rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .rt th[scope="row"], .rt td { border: 0; padding: 1px 0; white-space: normal; }
+      .rt td { display: flex; justify-content: space-between; gap: 14px; text-align: right; }
+      .rt td::before { content: attr(data-label); color: var(--slate); text-align: left; }
+    }
+    .jump { gap: 4px 16px; }
+    .jump a { padding: 4px 0; }
+    .p-sec .eq { white-space: normal; }
+    .p-sec table.law { border-collapse: collapse; margin-top: 14px; font: 400 0.98rem/1.5 var(--sans); }
+    .p-sec table.law th, .p-sec table.law td { padding: 5px 12px 5px 0; border-bottom: 1px solid var(--grid); text-align: left; vertical-align: top; }
+    .p-sec table.law caption { text-align: left; font-weight: 700; padding-bottom: 4px; }
+  </style>
+</head>
+<body class="proj" data-day="44">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Tax Systems Compared</h1>
+      <p class="lede">Enter a household and see what it pays under a flat tax, a progressive schedule and a consumption tax. India's old and new income-tax regimes for 2026-27 are worked out in full beside them.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Tax comparison for one household under five taxes">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>Press the ₹12.75 lakh example and then the ₹13 lakh one, leaving the salary box ticked. Under India's new regime for 2026-27 the first household pays no income tax and the second pays ₹26,000, more than its ₹25,000 of extra pay. For both, the table shows ₹1,040 of tax on the next ₹1,000: a marginal rate of 104%. It holds for every rupee of salary from ₹12,75,000 to ₹13,45,588, because the law's "marginal relief" takes each extra rupee and the 4% cess is charged on top.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Arguments about tax fairness are usually arguments about a curve: how the share of income taken in tax changes as income rises. Adam Smith's first maxim of taxation was that people should contribute "in proportion to their respective abilities", and almost every position since can be read as a view about what that proportion should be. A tax is <strong>proportional</strong> if everyone pays the same share of income, <strong>progressive</strong> if the share rises with income and <strong>regressive</strong> if it falls. Richard Musgrave and Tun Thin set out ways of measuring progression in 1948, and the simplest turns on the <em>average</em> rate, the tax bill divided by income. The <em>marginal</em> rate, the tax on the next rupee earned, is a different thing: it is what a person weighs when deciding whether more work or a pay rise is worth it. James Mirrlees built the modern theory of income taxation in 1971 on the tension between the two. Fairness pulls average rates up at the top, and each increase in an average rate has to be bought with marginal rates somewhere below.</p>
+      <p>The three families of tax in this tool sit at different points in that argument. A <strong>flat tax</strong> has one marginal rate. Its supporters value the simplicity and the equal treatment of every rupee, and with a tax-free allowance it is still progressive in Musgrave and Thin's sense, because the average rate climbs from zero towards the single rate without ever reaching it. A <strong>progressive schedule</strong> raises the marginal rate in steps, so that the average rate keeps rising across a much wider range of incomes, at the cost of more rules and more reason to rearrange income. A <strong>consumption tax</strong> such as a sales tax or GST taxes what a household spends and leaves what it saves alone. Because richer households save more of their income, a single-rate consumption tax takes a falling share of income as income rises: regressive in any one year, though closer to proportional over a lifetime in which savings are eventually spent. Whether saving should be exempt at all is one of the oldest disputes in public finance, and Atkinson and Stiglitz showed in 1976 how much the answer depends on what an income tax is already doing.</p>
+      <p>India's income tax makes the comparison concrete, because it offers two schedules at once. The <strong>old regime</strong> has higher rates and a long list of deductions for saving, insurance, rent and home loans. The <strong>new regime</strong>, the default, has lower rates over wider bands and almost no deductions. Which is cheaper for a household depends on one number, the deductions it can claim, and the tool works out where the two cross. It also shows what neither headline rate table reveals: the rebates that make low incomes tax-free are withdrawn in ways that push the marginal rate above 100% for a narrow band of incomes in the new regime, and bring back the entire tax with a single extra rupee in the old one.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The household</h3>
+      <p>The household is treated as a single resident taxpayer with income <var>Y</var> a year, all of it ordinary income (salary, business or interest). It spends a share <var>c</var> of that income and saves the rest. Under the old regime it claims deductions <var>D</var> that you add up yourself.</p>
+      <h3>Slabs</h3>
+      <p>A progressive schedule is a list of bands. Each rate applies only to the income inside its band, so for bands with lower edges <var>b</var><sub>0</sub> = 0 &lt; <var>b</var><sub>1</sub> &lt; … and rates <var>r</var><sub>0</sub>, <var>r</var><sub>1</sub>, …</p>
+      <p class="eq">tax on the slabs(<var>T</var>) = Σ<sub><var>k</var></sub> <var>r</var><sub><var>k</var></sub> × max(0, min(<var>T</var>, <var>b</var><sub><var>k</var>+1</sub>) − <var>b</var><sub><var>k</var></sub>)</p>
+      <p>"Your own slabs" is exactly this and nothing else. The two Indian regimes add four further steps.</p>
+      <h3>India's income tax, tax year 2026-27</h3>
+      <p>Tax year 2026-27 runs from 1 April 2026 to 31 March 2027 and is the first under the Income-tax Act, 2025. The figures below are enacted law, read on 12 October 2026 in two places. The new-regime slabs, the standard deduction and the rebate are sections 202, 19 and 156 of that Act, in the Income Tax Department's copy "as amended by Finance Act, 2026". The old-regime slabs, the surcharge with its marginal relief and the cess are in the Finance Act, 2026 (No. 4 of 2026), which received the President's assent on 30 March 2026: section 3 and Part I-B of its First Schedule. That Act left the slabs, the rebate and the standard deduction as they were.</p>
+      <table class="law">
+        <caption>New regime: Income-tax Act, 2025, section 202</caption>
+        <thead><tr><th scope="col">Taxable income</th><th scope="col">Rate on income inside the band</th></tr></thead>
+        <tbody>
+          <tr><td>Up to ₹4,00,000</td><td>nil</td></tr>
+          <tr><td>₹4,00,001 to ₹8,00,000</td><td>5%</td></tr>
+          <tr><td>₹8,00,001 to ₹12,00,000</td><td>10%</td></tr>
+          <tr><td>₹12,00,001 to ₹16,00,000</td><td>15%</td></tr>
+          <tr><td>₹16,00,001 to ₹20,00,000</td><td>20%</td></tr>
+          <tr><td>₹20,00,001 to ₹24,00,000</td><td>25%</td></tr>
+          <tr><td>Above ₹24,00,000</td><td>30%</td></tr>
+        </tbody>
+      </table>
+      <table class="law">
+        <caption>Old regime, under 60: Finance Act, 2026, First Schedule, Part I-B</caption>
+        <thead><tr><th scope="col">Taxable income</th><th scope="col">Rate on income inside the band</th></tr></thead>
+        <tbody>
+          <tr><td>Up to ₹2,50,000</td><td>nil</td></tr>
+          <tr><td>₹2,50,001 to ₹5,00,000</td><td>5%</td></tr>
+          <tr><td>₹5,00,001 to ₹10,00,000</td><td>20%</td></tr>
+          <tr><td>Above ₹10,00,000</td><td>30%</td></tr>
+        </tbody>
+      </table>
+      <p>For a resident aged 60 to 79 the old regime's nil band runs to ₹3,00,000. From 80 it runs to ₹5,00,000, so there is no 5% band.</p>
+      <ol>
+        <li><strong>Taxable income.</strong> <var>T</var> = <var>Y</var> − standard deduction − <var>D</var>, never below zero. The standard deduction applies to salary only: ₹75,000 in the new regime and ₹50,000 in the old (section 19). <var>D</var> counts only in the old regime.</li>
+        <li><strong>Rebate (section 156).</strong> Old regime: if <var>T</var> is at most ₹5,00,000 the tax on the slabs is cancelled, up to ₹12,500. New regime: if <var>T</var> is at most ₹12,00,000 it is cancelled, up to ₹60,000. Above ₹12,00,000 the new regime gives marginal relief: the tax may not exceed the income above ₹12,00,000.</li>
+      </ol>
+      <p class="eq">new-regime tax after rebate = min( tax on the slabs(<var>T</var>), <var>T</var> − 12,00,000 ) &nbsp; for <var>T</var> &gt; 12,00,000</p>
+      <p>The two sides are equal where 60,000 + 0.15<var>x</var> = <var>x</var>, that is at <var>x</var> = 60,000 / 0.85 = 70,588 above ₹12,00,000. Up to there the tax rises rupee for rupee with income. The old regime has no such relief.</p>
+      <ol start="3">
+        <li><strong>Surcharge (Finance Act, 2026).</strong> 10% of the tax when <var>T</var> is above ₹50 lakh, 15% above ₹1 crore and 25% above ₹2 crore; the old regime alone charges 37% above ₹5 crore. Just above a threshold <var>H</var> there is marginal relief: tax and surcharge together may not exceed what was payable at <var>H</var> by more than <var>T</var> − <var>H</var>.</li>
+        <li><strong>Cess (Finance Act, 2026, section 3(15)).</strong> A health and education cess of 4% is added to tax plus surcharge. No relief applies to the cess, as the memorandum to the Finance Bill says in terms, which is why the marginal rate inside a relief zone is 104% and not 100%.</li>
+      </ol>
+      <h3>Flat tax and consumption tax</h3>
+      <p class="eq">flat tax = <var>r</var> × max(0, <var>Y</var> − <var>A</var>)</p>
+      <p>with one rate <var>r</var> and a tax-free amount <var>A</var>. Its average rate is <var>r</var>(1 − <var>A</var>/<var>Y</var>), which rises towards <var>r</var>.</p>
+      <p class="eq">consumption tax = <var>t</var> / (1 + <var>t</var>) × max(0, <var>c</var> <var>Y</var> − <var>E</var>)</p>
+      <p>Here <var>t</var> is added to prices, as GST is, so of every rupee handed over for a taxed good <var>t</var>/(1 + <var>t</var>) is tax. <var>c</var> <var>Y</var> is what the household spends, tax included, and <var>E</var> is its yearly spending on goods the tax leaves out. The household is assumed to spend the same share of its income whichever tax applies.</p>
+      <h3>Rates across incomes</h3>
+      <p>The table gives, for the household's own income, the average rate (tax divided by income) and the tax on the next ₹1,000 of income, with that tax as a share of the ₹1,000 as the marginal rate. The chart repeats both for 160 incomes spaced evenly on a log scale from ₹2 lakh to ₹100 crore, with extra points placed just below and above every threshold in the two Indian regimes so that no step falls between two points. Deductions and the salary tick stay as entered. For the consumption tax the chart needs a share spent at every income, and uses</p>
+      <p class="eq"><var>c</var>(<var>y</var>) = <var>c</var> − <var>f</var> × log<sub>2</sub>(<var>y</var> / <var>Y</var>), kept between 20% and 100%</p>
+      <p>where <var>f</var> is the slider "fall in the share spent for each doubling of income". This is an assumption that you set, not an estimate from household surveys. At <var>f</var> = 0 the consumption tax is exactly proportional to income.</p>
+      <h3>Old regime or new</h3>
+      <p>The old regime's tax can only fall as deductions rise, so the tool finds by bisection the smallest <var>D</var>, to the rupee, at which the old regime costs no more than the new. For a ₹15,00,000 salary that is ₹5,43,750: the new regime charges ₹97,500, and the old regime's bill comes down to that only when its taxable income falls to ₹9,06,250.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Your actual tax bill.</strong> This is not a return. It leaves out capital gains and other income taxed at special rates, the limits on each deduction, the rules for house rent allowance and home loans, losses carried forward, the alternative minimum tax, non-residents, and the rounding of income and tax to the nearest ten rupees. State taxes such as profession tax are not included.</li>
+        <li><strong>Which system is fairest.</strong> The tool shows who pays what. Whether a rising average rate is fair, or how steep it should be, depends on values the tool does not hold, and on what the tax pays for, which is not modelled at all.</li>
+        <li><strong>What would happen if a country switched.</strong> The flat, custom and consumption taxes use whatever rates you type and are not set to raise the same revenue as India's income tax. People would also work, save and report income differently under each, and prices and wages would move; here income is fixed.</li>
+        <li><strong>How a real consumption tax falls across households.</strong> The share of income spent at other incomes is a slider, not data, and a year's income is a poor guide to a lifetime's. Students, retired people and those in a bad year spend more than they earn.</li>
+        <li><strong>A household with two earners.</strong> India taxes individuals. Two people earning ₹7.5 lakh each pay much less than one earning ₹15 lakh, and the tool only does the second.</li>
+        <li><strong>Next year.</strong> Slabs, rebates and surcharges are reset by each Finance Act. These are the rules for tax year 2026-27 as they stood on 12 October 2026.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Set the flat and consumption rates so that each system raises the same revenue from a realistic distribution of incomes, and then compare who gains and who loses.</li>
+        <li>Split the household into two earners, and add the specific deductions with their legal limits so that the old regime is computed and not typed in.</li>
+        <li>Replace the spending slider with spending shares by income group from a household consumption survey.</li>
+        <li>Add a summary measure of progressivity for each schedule, such as Kakwani's index, computed over an income distribution.</li>
+        <li>Show the lifetime view of a consumption tax beside the one-year view.</li>
+        <li>Add other countries' schedules, and a negative income tax, as further presets.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Income-tax Act, 2025 (No. 30 of 2025), as amended by the Finance Act, 2026: section 19 (deductions from salaries: the standard deduction is Sl. No. 2 of its table), section 156 (rebate of income-tax in case of certain individuals) and section 202 (new tax regime for individuals, Hindu undivided family and others). The Income Tax Department's copy at incometaxindia.gov.in, read 12 October 2026.</li>
+        <li>Finance Act, 2026 (No. 4 of 2026), assented 30 March 2026. <em>Gazette of India</em>, Extraordinary, Part II, Section 1, No. 9, 30 March 2026. Section 3 (income-tax for the tax year beginning 1 April 2026; sub-sections (4) and (5) for the surcharge on income taxed under section 202 and its marginal relief; sub-section (15) for the cess) and the First Schedule, Part I-B (Paragraph A: the old-regime rates for the three age bands; Paragraph F: surcharge and marginal relief). egazette.gov.in, read 12 October 2026.</li>
+        <li>Ministry of Finance, Government of India (2026). <em>Memorandum Explaining the Provisions in the Finance Bill, 2026</em>, "Rates of income-tax in respect of income liable to tax for the tax year 2026-27": the same rates set out in prose, the statement that no change was proposed, and "No marginal relief shall be available in respect of such cess". <a href="https://www.indiabudget.gov.in/doc/memo.pdf">indiabudget.gov.in</a>. Read 12 October 2026.</li>
+        <li>Ministry of Finance, Government of India (2025). <em>Budget 2025-2026: Speech of Nirmala Sitharaman, Minister of Finance</em>, 1 February 2025, paragraphs 156 to 159 and the annexure to Part B. The table of tax at incomes from ₹8 lakh to ₹50 lakh is held in this page's tests, as is the statement that salaried taxpayers pay nothing up to ₹12.75 lakh.</li>
+        <li>Income Tax Department, e-filing portal, "Salaried Individuals for AY 2026-27" (reviewed 9 July 2026): slab tables with cumulative amounts for both regimes and all three age bands, surcharge rates and the wording of marginal relief. It covers the year before this page's, with the same slabs.</li>
+        <li>Musgrave, R. A., and Thin, T. (1948). Income tax progression, 1929-48. <em>Journal of Political Economy</em>, 56(6), 498-514.</li>
+        <li>Mirrlees, J. A. (1971). An exploration in the theory of optimum income taxation. <em>Review of Economic Studies</em>, 38(2), 175-208.</li>
+        <li>Atkinson, A. B., and Stiglitz, J. E. (1976). The design of tax structure: direct versus indirect taxation. <em>Journal of Public Economics</em>, 6(1-2), 55-75.</li>
+        <li>Kakwani, N. C. (1977). Measurement of tax progressivity: an international comparison. <em>Economic Journal</em>, 87(345), 71-80.</li>
+        <li>Smith, A. (1776). <em>An Inquiry into the Nature and Causes of the Wealth of Nations</em>, Book V, Chapter II, Part II, "Of taxes".</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
