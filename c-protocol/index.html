@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CURVE PROTOCOL — Mathematical Ordnance System</title>
+<style>
+  :root{
+    --face:#d4d0c8; --face2:#c0c0c0; --hi:#ffffff; --lt:#dfdfdf;
+    --sh:#808080; --dk:#3a3a3a; --ink:#1a1a1a;
+    --tt1:#1c3f8f; --tt2:#7ea6e0;
+    --laser:#ff3b16; --amber:#ffb020;
+    --ui: Tahoma, "MS Sans Serif", Verdana, Geneva, sans-serif;
+    --code: "Lucida Console", "Courier New", monospace;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; padding:12px;
+    background:#20603f;                                   /* desktop green */
+    background-image:
+      radial-gradient(circle at 30% 20%, rgba(255,255,255,.08), transparent 60%),
+      repeating-linear-gradient(45deg, rgba(0,0,0,.05) 0 2px, transparent 2px 4px);
+    font-family:var(--ui); font-size:11px; color:var(--ink);
+    display:flex; justify-content:center; align-items:flex-start;
+  }
+
+  .raised{box-shadow:inset -1px -1px 0 var(--dk), inset 1px 1px 0 var(--hi),
+                     inset -2px -2px 0 var(--sh), inset 2px 2px 0 var(--lt)}
+  .sunken{box-shadow:inset 1px 1px 0 var(--dk), inset -1px -1px 0 var(--hi),
+                     inset 2px 2px 0 var(--sh), inset -2px -2px 0 var(--lt)}
+
+  #frame{width:100%; max-width:1320px; background:var(--face); padding:3px;
+         box-shadow:inset -1px -1px 0 var(--dk), inset 1px 1px 0 var(--hi),
+                    inset -2px -2px 0 var(--sh), inset 2px 2px 0 var(--lt),
+                    4px 4px 14px rgba(0,0,0,.45)}
+
+  #titlebar{
+    background:linear-gradient(90deg, var(--tt1), var(--tt2));
+    color:#fff; font-weight:bold; font-size:12px; padding:3px 4px 4px 6px;
+    display:flex; align-items:center; gap:7px; text-shadow:1px 1px 1px rgba(0,0,0,.45);
+    overflow:hidden; white-space:nowrap;
+  }
+  #titlebar .ico{
+    width:15px; height:15px; border-radius:50%; flex:none;
+    background:radial-gradient(circle at 33% 28%, #fff 4%, #cfd3d8 32%, #6e747c 74%, #2e3238 100%);
+    box-shadow:0 1px 2px rgba(0,0,0,.5);
+  }
+  #titlebar .t2{font-weight:normal; opacity:.85}
+  #titlebar .sp{flex:1}
+  #titlebar .wb{
+    width:17px; height:15px; background:var(--face); color:#000; font-size:9px;
+    display:flex; align-items:center; justify-content:center; font-family:var(--ui);
+    box-shadow:inset -1px -1px 0 var(--dk), inset 1px 1px 0 var(--hi),
+               inset -2px -2px 0 var(--sh), inset 2px 2px 0 var(--lt);
+  }
+
+  #body{display:flex; flex-wrap:wrap; gap:6px; padding:6px; align-items:flex-start}
+
+  #stage{position:relative; flex:1 1 560px; min-width:0; background:var(--face);
+         padding:5px; box-shadow:inset 1px 1px 0 var(--dk), inset -1px -1px 0 var(--hi),
+                    inset 2px 2px 0 var(--sh), inset -2px -2px 0 var(--lt)}
+  #viewport{overflow:hidden; line-height:0; display:flex; justify-content:center}
+  canvas{display:block; flex:none; width:960px; height:640px; background:#15171a;
+         cursor:crosshair; touch-action:none}
+
+  aside{flex:1 1 322px; max-width:100%; min-width:0}
+  fieldset{border:1px solid var(--sh); border-right-color:var(--hi); border-bottom-color:var(--hi);
+           margin:0 0 7px; padding:7px 8px 9px; background:var(--face)}
+  legend{font-weight:bold; font-size:11px; padding:0 4px; color:#000}
+
+  #secName{font-weight:bold; font-size:13px; letter-spacing:.05em; margin-bottom:3px}
+  #secBrief{line-height:1.5; color:#2b2b2b}
+  #secHint{line-height:1.45; color:#5a4a1a; background:#fdf6d8; border:1px solid #c9b978;
+           padding:4px 6px; margin-top:6px}
+
+  .eq{display:flex; align-items:center; gap:5px}
+  .eq .yl{font-family:var(--code); font-size:15px; font-weight:bold}
+  #expr{flex:1; font-family:var(--code); font-size:15px; padding:4px 5px; border:0;
+        background:#fff; color:#111; outline:none;
+        box-shadow:inset 1px 1px 0 var(--dk), inset -1px -1px 0 var(--hi),
+                   inset 2px 2px 0 var(--sh), inset -2px -2px 0 var(--lt)}
+  #err{min-height:26px; margin-top:5px; line-height:1.35; color:#8a1500}
+  #err.ok{color:#2c5c1c}
+
+  .exs{display:flex; flex-wrap:wrap; gap:3px}
+  .ex{display:flex; align-items:center; gap:3px;
+      font-family:var(--ui); font-size:10px; padding:2px 5px; background:var(--face); border:0; cursor:pointer;
+      box-shadow:inset -1px -1px 0 var(--dk), inset 1px 1px 0 var(--hi),
+                 inset -2px -2px 0 var(--sh), inset 2px 2px 0 var(--lt)}
+  .ex:active{box-shadow:inset 1px 1px 0 var(--dk), inset 2px 2px 0 var(--sh)}
+  .ex:disabled{color:var(--sh); text-shadow:1px 1px 0 var(--hi); cursor:default}
+  .ex svg{width:12px; height:12px; flex:none}
+  .ex:disabled svg{opacity:.35}
+
+  /* the character card for whatever is currently typed */
+  #famcard{display:flex; align-items:center; gap:8px; margin:6px 0; padding:5px 7px; min-height:44px;
+    background:#e9e6e0;
+    box-shadow:inset 1px 1px 0 var(--sh), inset -1px -1px 0 var(--hi)}
+  #famcard svg{width:26px; height:26px; flex:none}
+  #famcard .fn{font-weight:bold; font-size:11px; letter-spacing:.06em}
+  #famcard .fd{color:#3d3d3d; line-height:1.35; font-size:10px}
+  #famcard .ff{font-family:var(--code); font-size:11px; margin-top:2px; color:#1a1a1a}
+  #famcard.none{color:var(--sh); font-style:italic}
+
+  #used{display:none; margin-top:6px; padding:4px 6px; line-height:1.6;
+    background:#e9e6e0; box-shadow:inset 1px 1px 0 var(--sh), inset -1px -1px 0 var(--hi)}
+  #used .u{font-family:var(--code); font-size:10px}
+  #used .uh{font-weight:bold; font-size:10px; color:#3d3d3d}
+
+  .ab{display:block; padding:2px 0; cursor:pointer}
+  .ab input{margin:0 5px 0 1px; vertical-align:-1px}
+  .ab.off{color:var(--sh); text-shadow:1px 1px 0 var(--hi); cursor:default}
+  .ab b{font-weight:normal}
+  #slots{float:right; font-weight:normal; color:#333}
+
+  .kv{display:flex; justify-content:space-between; padding:1px 0}
+  .kv span{color:#3a3a3a}
+  .kv b{font-weight:bold; font-family:var(--code); font-size:11px}
+  .kv b.warn{color:#8a1500}
+
+  .btn{width:100%; padding:5px; margin-top:6px; background:var(--face); border:0; cursor:pointer;
+       font-family:var(--ui); font-size:11px; font-weight:bold;
+       box-shadow:inset -1px -1px 0 var(--dk), inset 1px 1px 0 var(--hi),
+                  inset -2px -2px 0 var(--sh), inset 2px 2px 0 var(--lt)}
+  .btn:active{box-shadow:inset 1px 1px 0 var(--dk), inset 2px 2px 0 var(--sh)}
+  .btn.sm{font-weight:normal; padding:4px}
+  .two{display:flex; gap:5px}
+
+  #statusbar{display:flex; flex-wrap:wrap; gap:3px; padding:2px 4px 4px}
+  #statusbar>div{padding:2px 7px; color:#2b2b2b;
+    box-shadow:inset 1px 1px 0 var(--sh), inset -1px -1px 0 var(--hi)}
+  #statusbar .grow{flex:1 1 200px; min-width:0}
+  #zoombox{display:flex; align-items:center; gap:3px; padding:1px 4px !important}
+  #zoombox button{font-family:var(--ui); font-size:10px; min-width:19px; padding:1px 5px;
+    background:var(--face); border:0; cursor:pointer;
+    box-shadow:inset -1px -1px 0 var(--dk), inset 1px 1px 0 var(--hi),
+               inset -2px -2px 0 var(--sh), inset 2px 2px 0 var(--lt)}
+  #zoombox button:active{box-shadow:inset 1px 1px 0 var(--dk), inset 2px 2px 0 var(--sh)}
+  #zLbl{min-width:38px; text-align:center; font-family:var(--code); font-size:10px}
+
+  #overlay{position:absolute; inset:0; display:none; align-items:center; justify-content:center;
+           background:rgba(20,22,26,.55)}
+  #overlay.show{display:flex}
+  #card{background:var(--face); padding:3px; width:430px; max-width:100%; min-width:0;
+        box-shadow:inset -1px -1px 0 var(--dk), inset 1px 1px 0 var(--hi),
+                   inset -2px -2px 0 var(--sh), inset 2px 2px 0 var(--lt),
+                   5px 5px 16px rgba(0,0,0,.5)}
+  #card .cbar{background:linear-gradient(90deg,var(--tt1),var(--tt2)); color:#fff;
+              font-weight:bold; padding:3px 6px; text-shadow:1px 1px 1px rgba(0,0,0,.45)}
+  #card .cin{padding:16px 20px; text-align:center}
+  .rank{font-family:var(--code); font-size:64px; font-weight:bold; line-height:1.05;
+        color:#b32800; text-shadow:2px 2px 0 var(--hi), 3px 3px 4px rgba(0,0,0,.3); margin:6px 0 10px}
+  .meta{line-height:1.8; color:#2b2b2b; margin-bottom:12px}
+  .meta b{font-family:var(--code)}
+  .ref{background:#fdf6d8; border:1px solid #c9b978; padding:5px 8px; margin-bottom:10px;
+       color:#5a4a1a; line-height:1.6}
+  .ref b{font-family:var(--code); font-size:12px; color:#3a2f0d}
+
+  #grid{display:grid; grid-template-columns:repeat(4,1fr); gap:4px; margin:8px 0 4px; text-align:left}
+  .cell{background:var(--face); border:0; padding:5px 6px; cursor:pointer; font-family:var(--ui); font-size:10px;
+        line-height:1.35;
+        box-shadow:inset -1px -1px 0 var(--dk), inset 1px 1px 0 var(--hi),
+                   inset -2px -2px 0 var(--sh), inset 2px 2px 0 var(--lt)}
+  .cell:active{box-shadow:inset 1px 1px 0 var(--dk), inset 2px 2px 0 var(--sh)}
+  .cell .n{color:#555}
+  .cell .r{float:right; font-weight:bold; color:#b32800; font-family:var(--code)}
+  .cell.locked{color:var(--sh); text-shadow:1px 1px 0 var(--hi); cursor:default}
+  kbd{font-family:var(--ui); font-weight:bold}
+</style>
+</head>
+<body>
+<div id="frame">
+  <div id="titlebar">
+    <div class="ico"></div>
+    CURVE PROTOCOL <span class="t2">— Mathematical Ordnance System</span>
+    <div class="sp"></div>
+    <div class="wb">_</div><div class="wb">□</div><div class="wb">×</div>
+  </div>
+
+  <div id="body">
+    <div id="stage">
+      <div id="viewport"><canvas id="c" width="960" height="640"></canvas></div>
+      <div id="overlay"><div id="card"></div></div>
+    </div>
+
+    <aside>
+      <fieldset>
+        <legend>Sector <span id="secNum"></span></legend>
+        <div id="secName"></div>
+        <div id="secBrief"></div>
+        <div id="secHint"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Trajectory</legend>
+        <div class="eq"><span class="yl">y =</span><input id="expr" spellcheck="false" autocomplete="off"></div>
+        <div id="err"></div>
+        <div id="famcard"></div>
+        <div id="used"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Function library</legend>
+        <div class="exs" id="examples"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Loadout <span id="slots"></span></legend>
+        <div id="abilities"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Ordnance</legend>
+        <div class="kv"><span>domain used</span><b id="mDom">—</b></div>
+        <div class="kv"><span>arc length</span><b id="mArc">—</b></div>
+        <div class="kv"><span>terminates at</span><b id="mStop">—</b></div>
+        <div class="kv"><span>projected kills</span><b id="mKill">—</b></div>
+        <button class="btn" id="fire">AUTHORIZE SHOT</button>
+        <div class="two">
+          <button class="btn sm" id="reset">Reset sector</button>
+          <button class="btn sm" id="select">Sectors…</button>
+        </div>
+      </fieldset>
+    </aside>
+  </div>
+
+  <div id="statusbar">
+    <div id="sbShots">Shots 0 / 0</div>
+    <div id="sbLeft">Hostiles 0</div>
+    <div id="sbInsight">Insight 0</div>
+    <div id="zoombox" title="scroll to zoom, drag to pan">
+      <button id="zOut" type="button">−</button>
+      <span id="zLbl">100%</span>
+      <button id="zIn" type="button">+</button>
+      <button id="zFit" type="button">Fit</button>
+    </div>
+    <div class="grow"><kbd>Enter</kbd> fire &nbsp; <kbd>R</kbd> reset &nbsp; <kbd>Esc</kbd> sectors &nbsp;
+      <kbd>Drag</kbd> pan &nbsp; <kbd>Scroll</kbd> zoom &nbsp; <kbd>Click</kbd> reposition</div>
+  </div>
+</div>
+
+<script src="curve.js"></script>
+<script src="families.js"></script>
+<script src="rigs.js"></script>
+<script src="sectors.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
