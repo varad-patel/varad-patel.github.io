@@ -1,0 +1,7 @@
+{
+  "question": "What do your sales records say about how buyers respond to price, and is there a price they support as the one that brings in most revenue?",
+  "finding": "On 120 simulated days with prices set by rota and a true elasticity of −1.8 the fit returns −1.80 (95% interval −1.92 to −1.69), but on 150 simulated days where the seller raises the price when demand is strong and the truth is −1.5 it returns −0.11.",
+  "limit": "The slope describes sales at prices somebody chose, so if prices followed demand it is not the buyers' response, and nothing in the table can show whether they did.",
+  "sources": [],
+  "built": "2026-10-13"
+}

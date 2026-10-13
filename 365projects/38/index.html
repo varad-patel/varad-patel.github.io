@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Price Elasticity Lab · 365 projects</title>
+  <meta name="description" content="Drop in sales data with a price and a quantity, and this page fits a demand curve, gives the price elasticity with its interval, and says what the data does and does not support about the price that brings in most revenue.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .drop { display: block; padding: 14px 16px; border: 2px dashed var(--rule); border-radius: 3px; background: #fff; font-size: 0.9rem; line-height: 1.45; cursor: pointer; }
+    .drop.over, .drop:focus-within { border-color: var(--ink); }
+    .drop.over { background: color-mix(in srgb, var(--ink) 6%, #fff); }
+    .drop input { display: block; width: 100%; margin-top: 10px; font: inherit; font-size: 0.85rem; }
+    .stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .stack:empty { display: none; }
+    /* Called .part because assets/site.css keeps the name "block" for the gallery, with up to 72px of padding above. */
+    .part { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-content: start; min-width: 0; }
+    .lower { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; min-width: 0; }
+    .advice p { font: 400 1.02rem/1.55 var(--serif); max-width: 80ch; overflow-wrap: anywhere; }
+    .advice p strong { font: 700 0.92rem/1.55 var(--sans); }
+    .btn[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+    .note, .stat .n, .tbl caption, .chart-title, .chart-sub { overflow-wrap: anywhere; }
+    .tool select:disabled, .check input:disabled + span { opacity: 0.55; }
+    .tbl th, .tbl th.num { white-space: normal; vertical-align: bottom; line-height: 1.25; }
+    .tbl td, .tbl td.num { white-space: normal; overflow-wrap: break-word; }
+    @media (max-width: 520px) { .lower .tbl th, .lower .tbl td { padding: 6px 6px; } .lower .tbl { font-size: 0.86rem; } }
+    .eq-lines { white-space: normal !important; }
+    /* On a phone the controls are taller than the screen, so the result rides along at the top while they are in view. */
+    .mini { display: none; }
+    @media (max-width: 860px) {
+      .mini { display: block; position: sticky; top: 0; z-index: 4; margin: -6px 0; padding: 8px 0; background: var(--sheet); border-bottom: 1px solid var(--rule); font-size: 0.9rem; font-weight: 650; line-height: 1.35; pointer-events: none; overflow-wrap: anywhere; }
+    }
+  </style>
+</head>
+<body class="proj" data-day="38">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Price Elasticity Lab</h1>
+      <p class="lede">Drop in sales data with a price and a quantity. The lab fits a demand curve, gives the price elasticity with its interval, and says what the data does and does not support about the price that brings in most revenue.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Price elasticity lab">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>The page opens on 120 simulated days of a café that sets its price from a rota, with a true elasticity of −1.8. The fit returns −1.80, with a 95% interval of −1.92 to −1.69. Press "Prices raised on busy days", 150 simulated days with a true elasticity of −1.5 in which the seller puts the price up when demand is strong, and the same method returns −0.11, with an interval of −0.25 to 0.03 that does not contain the truth.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>The price elasticity of demand is the percentage by which the quantity sold changes when the price rises by one per cent. At −2, a 1% rise in price loses 2% of sales. It is the number a seller most wants to know, because it settles what a price change does to revenue. If demand is <strong>elastic</strong> (below −1), sales fall faster than the price rises, and a higher price brings in less money. If demand is <strong>inelastic</strong> (between −1 and 0), a higher price brings in more. Governments use the same number when they tax tobacco or set bus fares: a tax on something with inelastic demand raises money without changing behaviour much, and a tax on something with elastic demand does the reverse.</p>
+      <p>The same number sets the profit-maximising price. In 1934 Abba Lerner measured a seller's power over price by the gap between price and marginal cost as a share of the price. For a seller who maximises profit that share equals one over the elasticity, so the less buyers respond to price, the bigger the mark-up. The rule only makes sense when demand is elastic. A seller facing inelastic demand at the current price is charging too little by this logic, whatever the cost.</p>
+      <p>Estimating the number from sales records looks easy: plot quantity against price and fit a line. E. J. Working explained in 1927 why it is not. Every recorded sale is a point where a demand curve and a supply curve cross. If only the seller's side moved, because costs changed or prices were tried at random, the points trace out demand. If demand itself moved, with the weather or the season or a rival's closing, and the seller responded by changing the price, the points trace something else, and it can even slope upward. The data alone cannot say which happened. That is the difference between the two examples in the finding, and it is the reason the lab's advice is hedged throughout.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>Reading the table</h3>
+      <p>A file is read as UTF-8 text unless its bytes say otherwise: UTF-16 is recognised, and a file that is not valid UTF-8 is read as Windows-1252, with a notice. Commas, tabs and semicolons are accepted as separators, and the one that occurs most often on the first line is used. The first line is taken as column names, unless it holds only numbers. Thousands separators, decimal commas and currency symbols are allowed in numbers. Files over 2 MB and pasted text over 2 million characters are refused before they are read, and only the first 20,000 rows of a table are used.</p>
+      <p>The price and quantity columns are guessed from their names and can be changed. A row is used if its price and its quantity are both above zero, since the method takes logarithms, and the page counts the rows it leaves out and says why. At least 8 usable rows and 3 different prices are needed.</p>
+
+      <h3>The constant-elasticity curve</h3>
+      <p>The main fit is ordinary least squares on logarithms:</p>
+      <p class="eq eq-lines">ln <var>Q</var><sub><var>i</var></sub> = <var>a</var> + <var>e</var> ln <var>P</var><sub><var>i</var></sub> + <var>u</var><sub><var>i</var></sub></p>
+      <p>which is the demand curve <var>Q</var> = <var>A</var> <var>P</var><sup><var>e</var></sup> with <var>A</var> = exp(<var>a</var>). The slope <var>e</var> is the elasticity itself, the same at every price, which is why this form is used. Its 95% interval is</p>
+      <p class="eq eq-lines"><var>e</var> ± <var>t</var><sub>0.975, <var>n</var> − <var>k</var></sub> × <var>se</var>(<var>e</var>)</p>
+      <p>with the 97.5% point of Student's <var>t</var> distribution on <var>n</var> − <var>k</var> degrees of freedom, where <var>n</var> is the number of rows and <var>k</var> the number of coefficients. The reading follows the interval and not the estimate: "elastic" only if the whole interval is below −1, "inelastic" only if all of it lies between −1 and 0, "unclear" if it includes −1, "no clear response" if it includes 0.</p>
+      <p>With a group column and "give each group its own level", every group gets its own <var>a</var> and all share one <var>e</var>, so prices are compared within a shop or product and never between them. With a date column and "allow for a steady trend", a term <var>g</var> × <var>time</var> is added, so demand may grow or shrink at a steady percentage rate. In both cases the curves on the charts are drawn at the average group and date.</p>
+
+      <h3>Why there is no revenue-maximising price on this curve</h3>
+      <p>Revenue is price times quantity:</p>
+      <p class="eq eq-lines"><var>R</var> = <var>P</var> <var>Q</var> = <var>A</var> <var>P</var><sup>1 + <var>e</var></sup></p>
+      <p>If <var>e</var> is below −1 the exponent is negative and revenue falls as the price rises, at every price. If <var>e</var> is above −1 it rises at every price. At exactly −1 it is flat. A constant-elasticity curve therefore never has a price at which revenue peaks, and a tool that printed one from this fit would be making it up. What the lab reports is the direction, and the end of the observed price range at which the curve's revenue is highest.</p>
+      <p>Profit is different. With a constant cost <var>c</var> for each unit, profit is (<var>P</var> − <var>c</var>) <var>A</var> <var>P</var><sup><var>e</var></sup>, and when <var>e</var> is below −1 it peaks at</p>
+      <p class="eq eq-lines"><var>P</var>* = <var>c</var> × <var>e</var> / (1 + <var>e</var>)</p>
+      <p>which is Lerner's rule, (<var>P</var> − <var>c</var>) / <var>P</var> = −1 / <var>e</var>, rearranged. At an elasticity of −1.8 the price is 2.25 times cost. The interval for <var>P</var>* comes from putting the two ends of the interval for <var>e</var> through the same formula. As <var>e</var> approaches −1 the formula runs off to infinity, so if the interval for <var>e</var> reaches −1 the lab gives only the lower limit of the price and says that it has no upper one.</p>
+
+      <h3>The straight line</h3>
+      <p>The second fit is a straight line through the same rows, <var>Q</var> = <var>a</var> + <var>b</var> <var>P</var>, with the same groups and trend if they are switched on. Along a straight line the elasticity changes from point to point, and revenue <var>a</var> <var>P</var> + <var>b</var> <var>P</var><sup>2</sup> does peak, where the elasticity passes −1:</p>
+      <p class="eq eq-lines"><var>P</var><sub>R</sub> = −<var>a</var> / (2<var>b</var>)   and, with a unit cost,   <var>P</var><sub>π</sub> = <var>P</var><sub>R</sub> + <var>c</var> / 2</p>
+      <p>This is the only revenue-maximising price the page ever reports, and only under three conditions: the 95% interval for the slope <var>b</var> must lie wholly below zero, the rows must show the bend described next, and the peak must fall inside the range of prices in the data. Outside that range the line is a guess about prices nobody tried, and the lab says so and gives the number as a direction only.</p>
+
+      <h3>When a revenue peak is believed</h3>
+      <p>A straight line has a revenue peak whatever the data. Fitted to the café example, whose true curve has a constant elasticity of −1.8 and so no peak at all, it reports one at 2.32 with a 95% interval of 2.25 to 2.39. That number is the straight line's assumption and not a finding. A real peak needs demand that grows more elastic as the price rises, so the lab tests for exactly that, with the logarithmic fit and one more term:</p>
+      <p class="eq eq-lines">ln <var>Q</var><sub><var>i</var></sub> = <var>a</var> + <var>e</var> ln <var>P</var><sub><var>i</var></sub> + <var>d</var> (ln <var>P</var><sub><var>i</var></sub> − <var>m</var>)<sup>2</sup> + <var>u</var><sub><var>i</var></sub></p>
+      <p>where <var>m</var> is the mean of ln <var>P</var>. On this curve the elasticity at price <var>P</var> is <var>e</var> + 2<var>d</var> (ln <var>P</var> − <var>m</var>), so a negative <var>d</var> means it falls as the price rises. If the 95% interval for <var>d</var> lies wholly below zero, the straight line's peak is offered, with its interval. If not, the lab says that no revenue-maximising price is supported, shows what the straight line would have said, and explains why it is not offered. In the café example <var>d</var> is −0.09 with an interval of −0.81 to 0.63, so nothing is offered. In "Straight-line demand", simulated from <var>Q</var> = 180 − 20<var>P</var>, it is −0.93 (−1.10 to −0.77), and the peak is put at 4.52 (4.41 to 4.64) against a true 4.5. The same condition governs the straight line's profit peak.</p>
+      <p>With a level for each group the straight line gives every group its own intercept and so its own peak. The single figure the lab reports is then the one price that would bring in most over all the rows together, and it says so.</p>
+      <p>The peak is a ratio of two estimates, so its interval is Fieller's. Writing <var>q̄</var> and <var>p̄</var> for the mean quantity and price, the peak is where <var>q̄</var> + <var>b</var>(2<var>P</var> − <var>p̄</var>) = 0. The interval is every price for which that expression is within <var>t</var> standard errors of zero, which comes to the two roots in <var>u</var> = 2<var>P</var> − <var>p̄</var> of</p>
+      <p class="eq eq-lines">(<var>b</var><sup>2</sup> − <var>t</var><sup>2</sup> <var>V</var><sub><var>b</var></sub>) <var>u</var><sup>2</sup> + 2 <var>q̄</var> <var>b</var> <var>u</var> + (<var>q̄</var><sup>2</sup> − <var>t</var><sup>2</sup> <var>s</var><sup>2</sup> / <var>n</var>) = 0</p>
+      <p>where <var>V</var><sub><var>b</var></sub> is the squared standard error of the slope and <var>s</var><sup>2</sup> the residual variance. Unlike the usual shortcut it is not forced to be symmetric, and it is exact when the errors are normal.</p>
+
+      <h3>Which curve to believe</h3>
+      <p>The table under the charts gives each curve's typical miss in units sold (the root mean squared error; for the logarithmic fit the predictions are first multiplied by Duan's smearing factor so that they are means, not geometric means). Over a narrow range of prices the two curves are hard to tell apart, and they can still disagree sharply about prices beyond it. When they do, neither is to be trusted there.</p>
+
+      <h3>The examples</h3>
+      <p>All six examples are simulated by the page with a fixed seed. Five come from <var>Q</var> = <var>A</var> <var>P</var><sup><var>e</var></sup> times random noise, so the true elasticity is known, and the lab says whether its interval contains it. None of those five curves has a revenue-maximising price, and the lab offers none for any of them. In two of them the true elasticity is recovered only with the right setting: a level for each shop, or a trend. In "Prices raised on busy days" no setting recovers it, because the price depends on the same unseen demand shock as the quantity. The sixth, "Straight-line demand", comes from a straight line plus noise and is the one example in which a revenue-maximising price exists to be found.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>What would happen if you changed the price.</strong> The slope describes sales at prices somebody chose, for reasons the data does not record. If prices followed demand, the slope is not the buyers' response, and nothing in the table reveals whether they did.</li>
+        <li><strong>Anything outside the prices you tried.</strong> Both curves are fitted where the data is. Beyond it the constant-elasticity curve and the straight line usually disagree, and the page treats any price out there as a direction, not a figure.</li>
+        <li><strong>Whether elasticity is constant.</strong> The headline number assumes one elasticity at every price. Real demand often becomes more elastic as the price rises, which the straight line allows and the main fit does not.</li>
+        <li><strong>The effect of everything else.</strong> Rivals' prices, promotions, seasons, stock running out and the weather all move sales. A level for each group and a straight trend remove only the simplest of these.</li>
+        <li><strong>Days with no sales.</strong> A logarithm cannot take a zero, so rows with no sales are dropped. If those were the days with the highest prices, the fit understates how much buyers respond.</li>
+        <li><strong>The long run.</strong> Buyers respond more to a price change after a year than after a week. A fit to short-run data says little about a permanent change.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Accept a column that shifts cost but not demand, and use it as an instrument for price, which is the standard answer to Working's problem.</li>
+        <li>Plan a price experiment: given a guess at the elasticity and the noise, work out how many days at how many prices pin the interval to a chosen width.</li>
+        <li>Add seasonal terms, such as day of the week or month, alongside the straight trend.</li>
+        <li>Fit a curve whose elasticity varies with price, and test it against the constant one.</li>
+        <li>Handle days with no sales with a count model in place of logarithms.</li>
+        <li>Estimate cross-price elasticities when the table has several products, to see which ones take sales from each other.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Working, E. J. (1927). What do statistical "demand curves" show? <em>The Quarterly Journal of Economics</em>, 41(2), 212-235.</li>
+        <li>Lerner, A. P. (1934). The concept of monopoly and the measurement of monopoly power. <em>The Review of Economic Studies</em>, 1(3), 157-175.</li>
+        <li>Fieller, E. C. (1954). Some problems in interval estimation. <em>Journal of the Royal Statistical Society: Series B</em>, 16(2), 175-185.</li>
+        <li>Duan, N. (1983). Smearing estimate: a nonparametric retransformation method. <em>Journal of the American Statistical Association</em>, 78(383), 605-610.</li>
+        <li>The example data is simulated by this page. No real sales data is bundled, and nothing you load leaves your browser.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
