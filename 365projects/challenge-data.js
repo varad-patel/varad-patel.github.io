@@ -662,7 +662,16 @@ window.CHALLENGE = {
    "concept": "Public finance",
    "skills": "Budget data parsing, treemaps",
    "section": 2,
-   "date": "2026-11-13"
+   "date": "2026-11-13",
+   "built": "2026-10-13",
+   "question": "If the tax you pay were spent like every other rupee in India's Union Budget, how much would each ministry get?",
+   "finding": "Of ₹1,00,000 of tax split like the 2026-27 budget, ₹26,256 goes on interest, more than Defence (₹14,674) and Road Transport and Highways (₹5,795) together; interest took 24.69% of spending in 2017-18 and takes 26.26% now, and borrowing pays for 31.7% of the 2026-27 budget.",
+   "limit": "Taxes are not earmarked and borrowing pays for close to a third of spending, so the split is an accounting convention and not a trace of where any rupee went.",
+   "sources": [
+    "Union Budget of India, Ministry of Finance"
+   ],
+   "img": "img/035.jpg",
+   "url": "35/"
   },
   {
    "id": 36,
