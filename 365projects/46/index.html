@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Income Inequality Explorer · 365 projects</title>
+  <meta name="description" content="Pick up to four countries and see their Lorenz curves and Gini index over time from World Bank household surveys, with each result written out in plain sentences.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    .stack > h2:not(:first-child) { margin-top: 10px; }
+    .tool .panel { display: grid; gap: 8px; }
+    .sw { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 8px; flex: none; }
+    .picks { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+    .picks li { display: flex; align-items: center; gap: 4px 6px; flex-wrap: wrap; font-size: 0.92rem; }
+    .picks .who { flex: 1 1 9em; min-width: 0; display: grid; }
+    .jump { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 0.88rem; }
+    .cmp { margin: 0; padding-left: 1.2em; display: grid; gap: 10px; font-size: 0.95rem; }
+    .tool h3 { display: flex; align-items: center; }
+    .tbl.d46-key th, .tbl.all th { white-space: normal; vertical-align: bottom; }
+    .tbl.d46-key th[scope="row"], .tbl.all th[scope="row"] { font-weight: 600; border-bottom: 1px solid var(--grid); white-space: nowrap; vertical-align: top; }
+    .tbl.all th, .tbl.all td { padding: 5px 7px; }
+    /* The same whenever the table's own column is narrow, as it is beside the controls on a tablet or a small laptop. */
+    div:has(> table.d46-key) { container-type: inline-size; }
+    @container (max-width: 600px) {
+      .tbl.d46-key, .tbl.d46-key tbody, .tbl.d46-key tr, .tbl.d46-key th, .tbl.d46-key td, .tbl.d46-key caption { display: block; }
+      .tbl.d46-key thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .tbl.d46-key tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .tbl.d46-key th[scope="row"], .tbl.d46-key td { border: 0; padding: 1px 0; white-space: normal; }
+      .tbl.d46-key td { display: flex; justify-content: space-between; gap: 14px; text-align: right; }
+      .tbl.d46-key td::before { content: attr(data-label); color: var(--slate); text-align: left; }
+    }
+    /* On a narrow screen each survey becomes a short list of labelled lines, so nothing scrolls sideways. */
+    @media (max-width: 700px) {
+      .tbl.d46-key, .tbl.d46-key tbody, .tbl.d46-key tr, .tbl.d46-key th, .tbl.d46-key td, .tbl.d46-key caption { display: block; }
+      .tbl.d46-key thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .tbl.d46-key tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .tbl.d46-key th[scope="row"], .tbl.d46-key td { border: 0; padding: 1px 0; white-space: normal; }
+      .tbl.d46-key td { display: flex; justify-content: space-between; gap: 14px; text-align: right; }
+      .tbl.d46-key td::before { content: attr(data-label); color: var(--slate); text-align: left; }
+      .tbl.all { font-size: 0.8rem; }
+      .tbl.all th, .tbl.all td { padding: 4px 3px; }
+    }
+    .p-sec .eq { white-space: normal; }
+  </style>
+</head>
+<body class="proj" data-day="46">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Income Inequality Explorer</h1>
+      <p class="lede">Pick up to four countries. See who holds how much in each, how the Gini index has moved from survey to survey, and what each number means in a plain sentence.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Lorenz curves and Gini index by country">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>On load the tool draws India, Brazil, the United States and Sweden. India's 2023 survey gives a Gini index of 23.0, the lowest latest figure of any country in the data and well below Sweden's 29.3. But India's survey measures consumption and the other three measure income. In the 88 country-years where the World Bank has both kinds of survey for the same country, the income index is the higher in 62, by 3.4 points on average over all 88.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Line up everyone in a country from poorest to richest and walk along the line, adding up what people have. In 1905 the American economist Max Lorenz proposed drawing exactly that: the share of the total held by the poorest 10%, 20% and so on, plotted against the share of people. If everyone had the same, the poorest 30% would hold 30% and the picture would be a straight diagonal. In any real country the curve sags below the diagonal, and the further it sags the less the bottom holds.</p>
+      <p>The Gini index, which Corrado Gini introduced in a book of 1912, turns the picture into one number: the area between the diagonal and the curve, as a share of the whole triangle under the diagonal. It runs from 0, when everyone has the same, to 100, when one person has everything. One number is easy to rank and easy to quote, which is why arguments about tax, wages and welfare lean on it so heavily.</p>
+      <p>It is also easy to misread, in two ways this page is built to show. First, a single number hides the shape. Two curves can cross: the poorest fifth may hold more in one country while the poorest four fifths hold more in the other. Anthony Atkinson showed in 1970 that when one curve lies above another everywhere, every reasonable measure agrees on which country is the more equal, and that when curves cross, the ranking depends on how much weight the measure puts on the bottom, so it is a judgement and not a fact. Second, the numbers do not all measure the same thing. Some countries survey income and others survey what households consume, and consumption is usually the more evenly spread of the two. Setting India beside Brazil compares two different quantities.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The data</h3>
+      <p>The figures come from the World Bank's Poverty and Inequality Platform, which collects household surveys from statistical offices and works out the same statistics from each. For every survey it publishes the share of the total held by each tenth of the population, from the poorest tenth to the richest, and a Gini index. The page holds 2,515 surveys in 205 series from 172 countries, 1963 to 2025. A series is one country and one kind of survey; 33 countries have two series, one of income and one of consumption. Only surveys are used: nothing is interpolated between survey years.</p>
+      <h3>What a survey measures</h3>
+      <p>Each household's total is divided equally among its members, so the unit is the person and a child counts the same as an adult. In an income survey the total is meant to be disposable income: earnings, pensions and transfers received, less taxes and contributions, though the Bank notes that the exact definition varies from source to source. In a consumption survey it is the value of what the household bought, grew for itself or was given, and used. Tax does not appear in consumption except through prices. The Bank treats the two kinds as different measures, and so does this page: they are never joined in one line, and a caution appears whenever both are on screen.</p>
+      <h3>The Lorenz curve</h3>
+      <p>Write <var>s</var><sub>1</sub>, …, <var>s</var><sub>10</sub> for the ten published shares, poorest tenth first. The curve passes through the points</p>
+      <p class="eq"><var>L</var><sub><var>k</var></sub> = (<var>s</var><sub>1</sub> + … + <var>s</var><sub><var>k</var></sub>) ÷ (<var>s</var><sub>1</sub> + … + <var>s</var><sub>10</sub>) &nbsp; at <var>p</var> = <var>k</var> ÷ 10, for <var>k</var> = 0, 1, …, 10</p>
+      <p>and the tool joins them with straight lines. The shares are published to a hundredth of a percentage point, so the ten add up to between 99.97% and 100.03%; dividing by their sum makes every curve end at exactly 100%.</p>
+      <h3>The Gini index from ten shares</h3>
+      <p>The area under the straight-line curve is a sum of ten trapeziums, each one tenth wide, so</p>
+      <p class="eq"><var>G</var><sub>ten</sub> = 1 − (1 ÷ 10) × [(<var>L</var><sub>0</sub> + <var>L</var><sub>1</sub>) + (<var>L</var><sub>1</sub> + <var>L</var><sub>2</sub>) + … + (<var>L</var><sub>9</sub> + <var>L</var><sub>10</sub>)]</p>
+      <p>and the page shows 100 × <var>G</var><sub>ten</sub>. Straight lines between the points amount to assuming that everyone inside a tenth has the same amount. They do not, and the true curve bows below each straight segment, so <var>G</var><sub>ten</sub> is always too low. When the groups are tenths ranked from poorest to richest the shortfall has an exact form:</p>
+      <p class="eq"><var>G</var> = <var>G</var><sub>ten</sub> + (1 ÷ 10) × (<var>s</var><sub>1</sub><var>G</var><sub>1</sub> + <var>s</var><sub>2</sub><var>G</var><sub>2</sub> + … + <var>s</var><sub>10</sub><var>G</var><sub>10</sub>)</p>
+      <p>where <var>G</var> is the true coefficient, <var>G</var><sub><var>k</var></sub> is the Gini coefficient among the people inside tenth <var>k</var> and <var>s</var><sub><var>k</var></sub> is that tenth's share of the total. A test on 20,000 simulated incomes confirms the identity to twelve decimal places; in that simulation 71% of the shortfall came from the richest tenth alone, which has both the largest share and the widest spread. The Bank's own index is worked out from the full distribution it holds, and in all 2,515 surveys it is the higher of the two: before rounding, by 0.94 points on average, by 0.37 at the least (Sweden, 1981) and by 4.74 at the most (Malawi, 1997). The table and the sentences give both indices to one decimal place. The ten-share index is rounded from whole-number arithmetic on the published shares, so a figure that is exactly 33.05 is shown as 33.1 and never as 33.0.</p>
+      <h3>Surveys that can and cannot be compared</h3>
+      <p>Countries change their questionnaires, and a change can move the index by itself. The Bank gives every survey a comparability code: surveys of one country with the same code are comparable with each other, and a new code marks a change in the survey or in how income or consumption was put together. The chart joins only surveys with the same code, so a gap in a line is a change of method, and the tables give each run of comparable surveys a letter. Runs can interleave when two surveys ran side by side. The sentence about change over time uses only the run that holds the survey on screen.</p>
+      <h3>Comparing two curves</h3>
+      <p>For each pair of countries the tool compares the two curves at the nine points the data hold, the poorest 10% up to the poorest 90%. The shares are stored as whole numbers of hundredths of a percentage point and compared by cross-multiplying, so no rounding enters. If one curve is higher at all nine points the tool says so, and adds that every measure of relative inequality that falls when money passes from a richer person to a poorer one must then rank that country as the more equal, provided the curves do not cross between the points, which ten shares cannot rule out. If the curves cross it says which groups hold more in which country.</p>
+      <h3>The sentences</h3>
+      <p>Shares are given to one decimal place and so is the Gini index. A change or a gap is worked out from the rounded figures, so a sentence never says that the index rose from 41.2 to 41.2, and its arithmetic can be checked from what it prints; for that reason a survey's own gap can differ by a tenth from the unrounded one (Malawi's 1997 survey reads 65.8, 61.0 and 4.8 points, where the unrounded gap is 4.74). When curves are compared, each survey is named with its kind and its year, because a country surveyed both ways can be on screen twice. The year slider shows each country by its most recent survey in or before the chosen year, and the heading above each set of sentences gives that survey's year, which differs from country to country.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>How a country surveyed for income compares with one surveyed for consumption.</strong> The average gap of 3.4 points comes from 19 countries, 14 of them in central and eastern Europe, that happen to have both kinds of survey. It is not a conversion rate, and in 26 of the 88 cases consumption was the more unequal.</li>
+        <li><strong>What the richest have.</strong> Household surveys miss much of the top. Korinek, Mistiaen and Ravallion found that in the United States the chance of a household answering falls steadily as its income rises, and that correcting for it raises measured inequality. Every index here is therefore likely to be too low, by an amount that differs between countries.</li>
+        <li><strong>Anything inside a tenth.</strong> Ten shares cannot show the top 1%, or the difference between the destitute and the merely poor. Curves that do not cross at nine points may still cross between them.</li>
+        <li><strong>Whether a small difference is real.</strong> These are sample surveys. The page shows no margins of error because the source does not publish them, and a gap of a point or less between two surveys may be noise.</li>
+        <li><strong>How people live inside a household.</strong> Dividing the total equally assumes that members share equally and that two people need twice what one needs. Neither is quite true, and the Bank says so.</li>
+        <li><strong>Wealth, or living standards.</strong> These are surveys of a year's income or consumption, not of what people own. And a Lorenz curve is about shares only: an equal poor country and an equal rich one draw the same curve.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Fit a smooth Lorenz curve through the ten points, as the Bank does for grouped data, to estimate the inequality inside each tenth and close most of the gap between the two indices.</li>
+        <li>Add other measures that weigh the bottom or the top differently, such as the Atkinson index or the ratio of the richest tenth's share to the poorest four tenths', and show where they disagree with the Gini index when curves cross.</li>
+        <li>Bring in top income shares from tax records, where they exist, beside the survey figures.</li>
+        <li>Show the generalised Lorenz curve, which multiplies each curve by average income, so that a rich unequal country can be compared with a poor equal one.</li>
+        <li>Let the visitor type in ten shares of their own, or paste a list of incomes, and draw the curve and both indices for them.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>World Bank (2026). <em>Poverty and Inequality Platform</em>, version 20260922_2021_01_02_PROD. pip.worldbank.org. Licence: CC BY 4.0. Retrieved 11 October 2026 through the platform's public API by <code>scripts/data/pip_inequality.py</code>. Each survey's ten shares and Gini index are kept as published. Rows for urban or rural areas alone are left out where a country also has national figures; Argentina's surveys cover urban areas only and are labelled so. Nine country names that the Bank writes in catalogue order ("Egypt, Arab Rep.") are given their ordinary short forms. One survey, Côte d'Ivoire 2002, has published shares that are not in ascending order; it is kept as published and flagged.</li>
+        <li>World Bank (2026). <em>Poverty and Inequality Platform Methodology Handbook</em>, edition 2026-09. datanalytics.worldbank.org/PIP-Methodology. Chapters 1, 2 and 4 (data sources and grouped data; income and consumption; per capita measures; comparability; how the Gini index and the shares are calculated), read 11 October 2026.</li>
+        <li>Lorenz, M. O. (1905). Methods of measuring the concentration of wealth. <em>Publications of the American Statistical Association</em>, 9(70), 209-219.</li>
+        <li>Ceriani, L., and Verme, P. (2012). The origins of the Gini index: extracts from <em>Variabilità e Mutabilità</em> (1912) by Corrado Gini. <em>Journal of Economic Inequality</em>, 10(3), 421-443.</li>
+        <li>Atkinson, A. B. (1970). On the measurement of inequality. <em>Journal of Economic Theory</em>, 2(3), 244-263.</li>
+        <li>Dasgupta, P., Sen, A., and Starrett, D. (1973). Notes on the measurement of inequality. <em>Journal of Economic Theory</em>, 6(2), 180-187.</li>
+        <li>Lambert, P. J., and Aronson, J. R. (1993). Inequality decomposition analysis and the Gini coefficient revisited. <em>Economic Journal</em>, 103(420), from page 1221.</li>
+        <li>Korinek, A., Mistiaen, J. A., and Ravallion, M. (2006). Survey nonresponse and the distribution of income. <em>Journal of Economic Inequality</em>, 4(1), 33-55.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "question": "How unequal are incomes in the countries you pick, how has that changed, and how much depends on what the survey measured?",
+  "finding": "India's 2023 survey gives a Gini index of 23.0, the lowest latest figure of any country in the World Bank's data, but it measures consumption; in the 88 country-years where the Bank has both kinds of survey, the income index is the higher in 62, by 3.4 points on average.",
+  "limit": "Household surveys miss much of the income at the very top and measure income in some countries and consumption in others, so the figures understate inequality and are not all comparable.",
+  "sources": [
+    "World Bank Poverty and Inequality Platform"
+  ],
+  "built": "2026-10-13"
+}
