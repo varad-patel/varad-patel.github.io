@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>What Is Driving Inflation? · 365 projects</title>
+  <meta name="description" content="Choose a country and a period and see how much each category of household spending added to, or took off, the rise in consumer prices, with each change read out in plain English.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .steps { margin-top: -8px; }
+    .btn[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
+    .vintage { padding-top: 12px; border-top: 1px solid var(--grid); overflow-wrap: anywhere; }
+    .reading { font-size: 1rem; line-height: 1.55; }
+    .drivers { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+    .drv-top { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; }
+    .drv-name { font-weight: 600; font-size: 0.95rem; overflow-wrap: anywhere; }
+    .drv-pts { white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .drv-track { position: relative; height: 12px; margin: 5px 0 4px; background: color-mix(in srgb, var(--ink) 6%, transparent); }
+    .drv-fill { position: absolute; top: 0; bottom: 0; min-width: 1px; }
+    .drv-track i { position: absolute; top: -3px; bottom: -3px; width: 1.5px; margin-left: -0.75px; background: var(--ink); }
+    .fine { display: grid; gap: 4px; }
+  </style>
+</head>
+<body class="proj" data-day="31">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>What Is Driving Inflation?</h1>
+      <p class="lede">An inflation rate is one number for thousands of prices. Choose a country and a period and see how much each kind of spending added to it, or took off it.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Inflation by category of spending">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>Leave the country on the euro area and press "Peak of the surge". Over the 12 months to October 2022 the official annual rate reached 10.6%. Housing, water, electricity, gas and other fuels added 4.13 of those points and food and non-alcoholic beverages 2.56. Those two of the 13 categories hold 34.7% of the basket and account for 63% of the rise. Only information and communication pulled the other way, by 0.03 points.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Price stability is the job most central banks are given, and they measure it with one number: the percentage change over a year in the price of a basket of everything households buy. Since July 2021 the European Central Bank has aimed for 2% over the medium term, measured by the Harmonised Index of Consumer Prices, and treats a miss in either direction as equally unwelcome. But one number for thousands of prices hides its own make-up. "Prices rose 10.6%" could mean that everything costs about a tenth more, or that a few things cost a great deal more and the rest have hardly moved.</p>
+      <p>The difference matters for what to do about it. A central bank's tool is the interest rate, which works by cooling spending across the whole economy. It cannot make gas cheaper. If a rise is concentrated in energy, it may pass once energy prices stop climbing, because the annual rate only compares prices with those of a year before. If it has spread to restaurants, rents and haircuts, which follow wages, it is likely to last longer. So the first question asked of any inflation figure is where it is coming from.</p>
+      <p>The answer is a contribution: each category's share of the total, in percentage points, so that the shares add up to the rate. A category contributes a lot when its prices move a lot, or when households spend a lot on it, and most when both are true. For a basket that never changed this would be one multiplication. Real indices change their basket every year, and a year-on-year comparison always straddles two baskets. In a 1999 paper for Eurostat's working party on consumer price indices, M. Ribe showed how to split the annual rate of such an index into parts that still add up. Eurostat uses that method for the euro area, and this page applies it to 18 European countries, to the euro area and the European Union as wholes and, with one adjustment, to the United Kingdom.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The data</h3>
+      <p>For 18 European countries, the euro area and the European Union the figures are Eurostat's Harmonised Index of Consumer Prices (HICP): a monthly price index for all items and for each of 13 divisions of spending, and the weight of each division in that country's basket, set once a year in parts per 1,000. The divisions are those of the European classification of consumption by purpose, version 2, which Eurostat adopted with the data for January 2026 together with a new reference period, 2025 = 100, and carried back over the earlier years. "Euro area" means the euro area as it was in each month. For the United Kingdom, which Eurostat's division tables do not cover, the figures are the Consumer Prices Index (CPI) of the Office for National Statistics, with the 12 divisions of the older classification and 2015 = 100. The reference period does not matter here, because only ratios of index values are used.</p>
+      <p>The record starts in December 2013 and ends at each country's latest month with every division published. Flash estimates, which give the headline before the divisions, are left out.</p>
+      <p>Eurostat marks some of these figures. France's indices up to December 2015 and five of Spain's divisions up to December 2016 are marked as estimated. A few division indices for the euro area, the European Union, Denmark, Germany and the Netherlands are marked as of low reliability in April and May 2020 and between November 2020 and May 2021. The marks are kept with the data, and the tool says so under the list whenever a period rests on a marked figure.</p>
+
+      <h3>A chain-linked index</h3>
+      <p>The HICP is an annually chain-linked index. Each December the basket is given new weights, and through the following year every index is carried forward from that December. Write <var>I</var> for the all-items index, <var>i</var><sub><var>c</var></sub> for the index of category <var>c</var>, <var>w</var><sub><var>c</var></sub><sup><var>y</var></sup> for the category's share of the basket in year <var>y</var>, and <var>D</var> for the December before month <var>t</var>. Then within year <var>y</var></p>
+      <p class="eq"><var>I</var>(<var>t</var>) / <var>I</var>(<var>D</var>) = Σ<sub><var>c</var></sub> <var>w</var><sub><var>c</var></sub><sup><var>y</var></sup> · <var>i</var><sub><var>c</var></sub>(<var>t</var>) / <var>i</var><sub><var>c</var></sub>(<var>D</var>)</p>
+      <p>The all-items index since December is the weighted average of the category indices since December. That one identity is all the tool needs.</p>
+
+      <h3>Contributions to the annual rate</h3>
+      <p>The annual rate in month <var>t</var> compares <var>I</var>(<var>t</var>) with <var>I</var>(<var>t</var> − 12), and between the two lies a December with a change of weights. So the year is cut in two at that December. Write <var>D</var>′ for the December a year before <var>D</var>. The part of the year that falls in the earlier calendar year uses that year's weights, and gives the last-year term:</p>
+      <p class="eq"><var>L</var><sub><var>c</var></sub> = <var>w</var><sub><var>c</var></sub><sup><var>y</var> − 1</sup> · [<var>i</var><sub><var>c</var></sub>(<var>D</var>) − <var>i</var><sub><var>c</var></sub>(<var>t</var> − 12)] / <var>i</var><sub><var>c</var></sub>(<var>D</var>′)<br>&nbsp; &nbsp; × <var>I</var>(<var>D</var>′) / <var>I</var>(<var>t</var> − 12)</p>
+      <p>The part since December uses the new weights, and gives the this-year term:</p>
+      <p class="eq"><var>T</var><sub><var>c</var></sub> = <var>w</var><sub><var>c</var></sub><sup><var>y</var></sup> · [<var>i</var><sub><var>c</var></sub>(<var>t</var>) − <var>i</var><sub><var>c</var></sub>(<var>D</var>)] / <var>i</var><sub><var>c</var></sub>(<var>D</var>)<br>&nbsp; &nbsp; × <var>I</var>(<var>D</var>) / <var>I</var>(<var>t</var> − 12)</p>
+      <p>The contribution of category <var>c</var> is <var>L</var><sub><var>c</var></sub> + <var>T</var><sub><var>c</var></sub>, and by the identity above the contributions add up to the annual rate:</p>
+      <p class="eq">Σ<sub><var>c</var></sub> (<var>L</var><sub><var>c</var></sub> + <var>T</var><sub><var>c</var></sub>) = <var>I</var>(<var>t</var>) / <var>I</var>(<var>t</var> − 12) − 1</p>
+      <p>This is the Ribe contribution as set out in section 8.6.3 of Eurostat's HICP manual. In each term the first factor is the weight, the second is how far the category's price moved, measured from the December that the weight refers to, and the last rescales from that December to the month the comparison starts from.</p>
+
+      <h3>Any other period</h3>
+      <p>Nothing in the argument needs the period to be a year. For a period from month <var>A</var> to month <var>B</var> the tool cuts it at every December inside it. Each piece runs from a start <var>s</var> to an end <var>e</var> with no change of weights between them, and adds to category <var>c</var></p>
+      <p class="eq"><var>w</var><sub><var>c</var></sub><sup><var>y</var>(<var>e</var>)</sup> · [<var>i</var><sub><var>c</var></sub>(<var>e</var>) − <var>i</var><sub><var>c</var></sub>(<var>s</var>)] / <var>i</var><sub><var>c</var></sub>(<var>b</var>)<br>&nbsp; &nbsp; × <var>I</var>(<var>b</var>) / <var>I</var>(<var>A</var>)</p>
+      <p>where <var>b</var> is the last December before <var>e</var> and <var>y</var>(<var>e</var>) is the year of <var>e</var>. Added over the pieces and the categories this gives <var>I</var>(<var>B</var>) / <var>I</var>(<var>A</var>) − 1, the whole change in prices over the period. A period inside one calendar year is a single piece, a 12-month period is the two terms above, and a period of several years has one piece for each calendar year it touches. For periods longer than a year the tool also gives the average yearly rate, (<var>I</var>(<var>B</var>) / <var>I</var>(<var>A</var>))<sup>12 / <var>n</var></sup> − 1 for <var>n</var> months. A 2026 Bundesbank paper by Schwind and Weinand derives contributions over arbitrary periods in full. For a monthly index their formulas (5) to (7) are this rule: a term for the rest of the first year, one for each whole year in between and one for the last year. Worked out separately from their formulas, the figures match the tool's.</p>
+
+      <h3>The United Kingdom's two links</h3>
+      <p>The UK's CPI changes its weights in two steps each year. December to January is one link, and January to the rest of the year is another, with every index then carried forward from January. The tool therefore cuts UK periods at both months. The Office for National Statistics publishes one set of division weights a year in its time-series dataset, and the tool uses that set for both steps.</p>
+
+      <h3>What is checked</h3>
+      <p>The script that builds the data and the page's tests run the same checks on every refresh, and the build stops if one fails.</p>
+      <ul>
+        <li>For the euro area, every contribution since January 2015 is compared with the one Eurostat itself publishes. In the snapshot of October 2026 the largest gap in 1,820 comparisons is 0.007 points.</li>
+        <li>For the UK, every contribution is compared with the one the Office for National Statistics publishes. The largest gap in 1,680 comparisons is 0.028 points.</li>
+        <li>For every country and every 12-month period, the contributions are added up and compared with the annual rate given by the published all-items index. Where indices are published to two decimal places the two agree to within 0.02 points. Italy's indices and the UK's are published to one decimal place, and there the sum can be out by as much as 0.12 points. Over longer periods the gap can be larger: across every possible period in the record, up to 0.16 points for Italy and 0.35 for the UK.</li>
+        <li>The official annual rate must equal the rate given by the published index, rounded to one decimal place. That holds for every Eurostat figure. It does not hold for the UK in 43 of the 140 months from January 2015 to August 2026, because the Office for National Statistics works out its rates from indices that have not been rounded. The tool then shows the official rate and says that the published index gives a slightly different one.</li>
+      </ul>
+      <p>Whatever the categories leave over is shown under the list as rounding, never spread across the categories.</p>
+
+      <h3>The sentences</h3>
+      <p>Each category gets a sentence built from three figures: the change in its own index over the period, its share of the basket in the final year, and its contribution. A contribution smaller than 0.005 points prints as 0.00, and the sentence says that the category did not move the total. A price change smaller than 0.05% is described as such and not as a rise or fall of 0.0%. When a period crosses a December, a category whose price ends lower can still have added to the total, because its rises and its falls carried different weights. The sentence then says so. The summary above the list names the three largest pushes upward and the largest downward, and for a 12-month period it quotes the official published rate.</p>
+
+      <h3>The chart</h3>
+      <p>The chart shows the official annual rate for every month from December 2014, with the contributions of the four categories that matter most in the period chosen, largest first by size in either direction, and a grey line for all the others together. The period is shaded.</p>
+
+      <h3>Keeping it current</h3>
+      <p>This page makes no network request. The figures are a snapshot written by <code>scripts/data/prices.py</code>, which downloads the tables again, runs the checks above and rewrites the data file. Nothing on the page names the latest month: the tool reads it from the data, so running the script is all that updating takes. A scheduled job in the site's repository runs it on the 20th and the 28th of each month, after the two statistics offices publish, and keeps the new figures only if the script's checks and every test on the site pass. If a run fails, the old snapshot stays, so the figures are always as old as the dates at the foot of the tool say.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Why prices rose.</strong> A contribution is arithmetic. It says in which part of the basket the rise was recorded and nothing about the cause. Dearer energy raises the cost of growing food and running a restaurant, and that shows up under food and restaurants.</li>
+        <li><strong>Anything finer than a division.</strong> "Housing, water, electricity, gas and other fuels" holds rents and energy bills together, and petrol sits under transport. The tool cannot separate energy from the rest, or give the "core" rate that leaves out energy and food.</li>
+        <li><strong>Why the rate changed from one month to the next.</strong> The annual rate compares each month with the same month a year earlier. It can fall because prices stopped rising now, or because a jump twelve months ago has dropped out of the comparison. A contribution to the level of the rate does not distinguish the two.</li>
+        <li><strong>Your own inflation.</strong> The weights describe average spending in a country. Nobody buys the average basket, and neither index counts the cost of owning a home: mortgage payments and imputed rents are outside the HICP and the CPI. Day 32 replaces the official weights with yours.</li>
+        <li><strong>Comparisons with the United Kingdom, category by category.</strong> The UK figures are a national index in an older classification with 12 divisions, so "communication" and "recreation" do not mean quite the same there as in the other countries.</li>
+        <li><strong>More than the published figures hold.</strong> Indices are rounded before publication, so the contributions are good to a hundredth of a point or two, and to about a tenth for Italy and the UK. The data are a snapshot and statistical offices revise the past.</li>
+        <li><strong>India.</strong> India is not included. With the figures for January 2026 its statistics ministry replaced the consumer price index on the base 2012 = 100 by a new series on 2024 = 100, with a new basket and 12 divisions in place of six groups. The ministry links the two series for the general index only. India therefore has no single run of category indices and weights across the years shown here, and this page does not splice two series together.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Add Eurostat's special aggregates (energy, food, non-energy industrial goods, services) so that the page can show the split central banks quote most.</li>
+        <li>Let the visitor open a division and see its classes: rents apart from electricity, fuel apart from fares.</li>
+        <li>Split the change in the annual rate between two months into what happened now and what dropped out from a year ago, the base effect.</li>
+        <li>Put two countries side by side for the same period.</li>
+        <li>Offer the breakdown as a file to download.</li>
+        <li>Add India once the new consumer price series has a long enough run, and once its terms of reuse have been confirmed.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>Eurostat. Harmonised index of consumer prices, ECOICOP ver. 2: indices and rates of change, monthly data (prc_hicp_minr, doi:10.2908/PRC_HICP_MINR); item weights (prc_hicp_iw); contributions to euro area annual inflation (prc_hicp_ctr), used as a check. Eurostat authorises reuse of its data for any purpose provided the source is acknowledged. The date retrieved is printed at the foot of the tool.</li>
+        <li>Office for National Statistics. Consumer price inflation time series (MM23): CPI indices, weights, annual rate and contributions to the annual rate for the 12 divisions. Contains public sector information licensed under the Open Government Licence v3.0. The date retrieved is printed at the foot of the tool.</li>
+        <li>Eurostat (2024). <em>Harmonised Index of Consumer Prices (HICP) Methodological Manual, 2024 edition</em>. Luxembourg: Publications Office of the European Union. doi:10.2785/055028. Section 8.6.3 gives the contribution formula.</li>
+        <li>Ribe, M. (1999). Effects of subcomponents on chained price indices like the HICPs and the MUICP. Paper for the Eurostat working party on consumer price indices, Luxembourg. Cited from the manual above; the paper itself was not seen.</li>
+        <li>Eurostat (January 2026). Information note on the HICP datasets, and the page "Information on data" of its HICP section. On the move to ECOICOP version 2 and the reference period 2025 = 100.</li>
+        <li>Schwind, P., and Weinand, S. (2026). Contributions to euro area inflation over arbitrary time periods. Deutsche Bundesbank Technical Paper 02/2026. doi:10.71734/TP-2026-2.</li>
+        <li>Office for National Statistics (2026). Consumer prices indices technical guidance.</li>
+        <li>European Central Bank (8 July 2021). ECB's Governing Council approves its new monetary policy strategy. Press release.</li>
+        <li>Ministry of Statistics and Programme Implementation, Government of India (12 February 2026). First press release of Consumer Price Index on base 2024 = 100. On why India is not included.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

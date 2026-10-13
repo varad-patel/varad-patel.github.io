@@ -1,0 +1,10 @@
+{
+  "question": "Which categories of household spending pushed a country's inflation up or down over a chosen period?",
+  "finding": "Over the 12 months to October 2022, when euro-area inflation peaked at 10.6%, housing and household energy added 4.13 points and food 2.56: two of 13 categories, with 34.7% of the basket, account for 63% of the rise.",
+  "limit": "A contribution says in which part of the basket a price rise was recorded, not what caused it.",
+  "sources": [
+    "Eurostat HICP",
+    "ONS Consumer Prices Index"
+  ],
+  "built": "2026-10-13"
+}
