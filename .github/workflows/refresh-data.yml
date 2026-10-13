@@ -1,0 +1,46 @@
+name: refresh data
+
+# Day 31 (What Is Driving Inflation?) and day 32 read consumer prices from a snapshot, 365projects/data/prices.js.
+# Eurostat publishes the full HICP around the 17th of each month and the ONS publishes the CPI around the third
+# Wednesday, so a run on the 20th and on the 28th catches both. The script writes the snapshot only if its own
+# checks pass, and nothing is committed unless every test in the repository passes afterwards.
+
+on:
+  schedule:
+    - cron: "17 6 20,28 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+jobs:
+  prices:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: python scripts/data/prices.py
+      - run: node --test "365projects/**/*.test.mjs"
+      - run: pip install pytest && python scripts/build_data.py && pytest -q
+      - name: Commit the new snapshot if it changed
+        id: commit
+        run: |
+          if git diff --quiet -- 365projects/data/prices.js; then echo "no change"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add 365projects/data/prices.js
+          git commit -m "Refresh consumer price data"
+          git push
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+      # A push made by a workflow does not start a Pages build by itself, so ask for one.
+      - name: Publish
+        if: steps.commit.outputs.changed == 'true'
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds"
+        env:
+          GH_TOKEN: ${{ github.token }}
