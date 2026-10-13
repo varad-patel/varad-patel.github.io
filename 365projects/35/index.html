@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Where Your Tax Rupee Goes · 365 projects</title>
+  <meta name="description" content="Enter the tax you pay and see it split across India's Union Budget, ministry by ministry and demand by demand, with ten years of change from 2017-18 to 2026-27.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .tm-box { background: #fff; border: 1px solid var(--grid); }
+    .tm { display: block; width: 100%; }
+    .tm-tile { cursor: pointer; outline: none; }
+    .tm-tile rect { fill: #dbe6f6; }
+    .tm-tile:hover rect { fill: #cbdcf3; }
+    .tm-tile.sel rect { fill: #b3cbee; stroke: var(--ink); stroke-width: 2; }
+    .tm-tile:focus-visible rect { stroke: var(--focus); stroke-width: 3.5; }
+    .tm text { font: 12px var(--sans); fill: var(--ink); pointer-events: none; }
+    .tm .tm-name { font-weight: 700; }
+    .stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    .stack h3 { margin-bottom: 8px; }
+    .panel .btn { margin-top: 12px; }
+    .tool input[type="text"] { overflow-wrap: anywhere; }
+    .stat .v { font-size: 1.35rem; }
+    .rt-wrap { margin-top: 8px; }
+    /* The same whenever the table's own column is narrow, as it is beside the controls on a tablet or a small laptop. */
+    div:has(> table.rt) { container-type: inline-size; }
+    @container (max-width: 600px) {
+      .rt, .rt tbody, .rt tr, .rt th, .rt td, .rt caption { display: block; }
+      .rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .rt th[scope="row"], .rt td { border: 0; padding: 1px 0; white-space: normal; }
+      .rt td { display: flex; justify-content: space-between; gap: 14px; text-align: right; }
+      .rt td::before { content: attr(data-label); color: var(--slate); text-align: left; }
+    }
+    .rt caption { font-weight: 600; font-size: 0.86rem; color: var(--slate); }
+    .rt th[scope="row"] { font-weight: 600; white-space: normal; border-bottom: 1px solid var(--grid); }
+    details.chart-table .rt-wrap { max-height: none; }
+    /* On a narrow screen each row becomes a short list of labelled lines, so nothing scrolls sideways. */
+    @media (max-width: 640px) {
+      .rt, .rt tbody, .rt tr, .rt th, .rt td { display: block; }
+      .rt caption { display: block; }
+      .rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .rt th[scope="row"], .rt td { border: 0; padding: 1px 0; }
+      .rt td { display: flex; justify-content: space-between; gap: 14px; text-align: right; white-space: normal; }
+      .rt td::before { content: attr(data-label); color: var(--slate); text-align: left; }
+    }
+    .jump { gap: 4px 16px; }
+    .jump a { padding: 4px 0; }
+    .p-sec .eq { white-space: normal; }
+  </style>
+</head>
+<body class="proj" data-day="35">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Where Your Tax Rupee Goes</h1>
+      <p class="lede">Enter the tax you pay in a year and see it split across India's Union Budget, ministry by ministry and demand by demand, with ten years of change from 2017-18 to 2026-27.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Union Budget tax split and treemap">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>Leave the amount on ₹1,00,000 and the year on 2026-27. ₹36,888 goes to the Ministry of Finance, and the table of its demands shows why: ₹26,256 is interest on past borrowing, the largest single demand in the budget and more than Defence (₹14,674) and Road Transport and Highways (₹5,795) put together. Interest took 24.69% of Union spending in 2017-18 (actual) and takes 26.26% in the 2026-27 budget estimate, a year in which borrowing pays for 31.7% of everything the Union spends.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>A tax bill arrives as one number, and a budget is published as several thousand pages. The simplest bridge between the two is a receipt: take what a household pays and divide it the way the government divides everything it spends. Thirty-seven paise of each rupee to one ministry, fifteen to another. The appeal is obvious: it turns "the budget" into amounts a person can hold in their head and argue about.</p>
+      <p>The receipt is a convention, and it is worth being exact about what kind. In India every rupee of central tax, non-tax revenue and borrowing goes into one account, the Consolidated Fund of India (Article 266 of the Constitution), and nothing leaves it except under an appropriation made by law (Article 114). Most of the spending is voted by the Lok Sabha as demands for grants; some, such as interest on the public debt, is charged on the Fund by the Constitution and is not put to a vote (Articles 112 and 113). No rupee carries a label. James Buchanan, writing in 1963, set out what is lost by this: when taxes are earmarked for a purpose, a voter can choose how much of that one service to buy, while general-fund financing bundles the services together and leaves the voter one choice, the size of the whole. What is gained is a budget that can move money to where it is needed. Either way, "your" share of the defence budget is your share of the whole, applied to defence.</p>
+      <p>Two facts make the picture less tidy, and the tool shows both. First, taxes do not cover the bill. In the 2026-27 estimates the Union's own net tax revenue pays for 53.6% of its spending and borrowing for 31.7%, and in 2020-21, the first year of the pandemic, borrowing paid for 51.8%. A taxpayer's receipt therefore describes spending that is partly charged to later taxpayers, which is exactly why interest is now the largest line on it. Second, part of every central tax never reaches the Union's spending at all. A share of the taxes the Union collects belongs to the States and is handed over before the Union's budget begins: 34.7% of gross tax revenue in the 2026-27 estimates. That is below the 41% of shareable taxes that the Sixteenth Finance Commission kept for the States, because cesses and surcharges are not shared. Tick the box and the tool sets the 34.7% aside first.</p>
+      <p>The split is by ministry because that is how Parliament votes the money: each ministry or department presents one or more <em>demands for grants</em>, 102 of them in 2026-27. A ministry is an organisation and not a purpose, so the same rupee can be read two ways. The Ministry of Finance is the largest spender because it holds the demands for interest, pensions and transfers to States, not because the finance ministry's own offices cost a third of the budget. The treemap lets you open any ministry and see which it is.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The figures</h3>
+      <p>Every year's Union Budget includes an Expenditure Profile whose Statement 3, "Expenditure of Ministries and Departments", lists each demand for grants with its revenue, capital and total expenditure, net of receipts and recoveries. Each budget gives four columns: actuals for the year two before, the budget estimate and the revised estimate for the year before, and the budget estimate for the year ahead. The data behind this page takes the total column from the eight budgets of 2019-20 to 2026-27 and uses, for each financial year, the best figure that has been published:</p>
+      <ul>
+        <li><strong>2017-18 to 2024-25: actuals</strong>, each read from the budget presented two years later.</li>
+        <li><strong>2025-26: the revised estimate</strong> in Budget 2026-27, made about ten months into the year.</li>
+        <li><strong>2026-27: the budget estimate</strong>, a plan made before the year began.</li>
+      </ul>
+      <p>The tool names the kind of figure wherever it shows a year, and the ten-year chart draws the two estimates as a separate dashed line. The budget site publishes each statement as a spreadsheet and as a PDF, and says that the PDF is final where the two differ. Statement 3 is read from the spreadsheets, and every figure taken from one was then found in the PDF; the receipts in Budget at a Glance are read from the PDFs, because there the two do differ (see the sources). All amounts are in rupees crore (one crore is ten million; one lakh crore is a million million) and are not adjusted for inflation, which is why the comparisons over time are made on shares.</p>
+      <p>Demands are grouped by the ministry that holds them in the 2026-27 Summary of Demands for Grants, in every year, so a department that moved between ministries stays in one place. Six demands that were renamed or merged are joined to their successors: the Union Territories of Dadra and Nagar Haveli and of Daman and Diu, Agriculture, AYUSH, Heavy Industry and Shipping. A demand that is absent from a year's document is shown as absent, not as zero.</p>
+      <h3>The split</h3>
+      <p>For a tax payment <var>T</var>, a year with total spending <var>E</var> and a ministry or demand that spends <var>E</var><sub><var>m</var></sub>,</p>
+      <p class="eq">your amount for <var>m</var> = <var>T</var> × (1 − <var>s</var>) × <var>E</var><sub><var>m</var></sub> / <var>E</var></p>
+      <p>where <var>s</var> is 0 unless the box for the States' share is ticked, and then</p>
+      <p class="eq"><var>s</var> = States' share of taxes / gross tax revenue</p>
+      <p>both taken from the "Receipts" statement of Budget at a Glance for the same year and of the same kind (actual, revised or budget). The amount <var>T</var> × <var>s</var> is reported separately as set aside for the States. One other deduction is made from gross tax revenue before the Union's own share is struck: a duty passed to the disaster response funds, 0.25% of gross tax revenue in the 2026-27 estimates. The tool leaves that with the Union. The share of spending paid for by borrowing is "borrowings and other liabilities" divided by total expenditure, from the same document. That figure is the fiscal deficit.</p>
+      <h3>The treemap</h3>
+      <p>The kit this site shares has no treemap, so this page lays one out itself with the squarified algorithm of Bruls, Huizing and van Wijk. Items are sorted from largest to smallest and scaled so their values add up to the area of the frame. The algorithm fills the frame in rows along its shorter side. It adds the next item to the current row for as long as that does not make the row's worst aspect ratio worse, where for a row of areas <var>r</var> with sum <var>S</var> laid along a side of length <var>w</var></p>
+      <p class="eq">worst = max( <var>w</var>² · max(<var>r</var>) / <var>S</var>² , <var>S</var>² / (<var>w</var>² · min(<var>r</var>)) )</p>
+      <p>and then closes the row, removes its strip from the frame and starts again in what is left. The result tiles the frame exactly, with each rectangle's area in proportion to its value and the large rectangles close to square, which is what makes areas comparable by eye. A rectangle cannot show nothing or less than nothing, so a demand that is nil in the budget's net figures (Repayment of Debt in every year, because repaying principal is not counted as expenditure) or negative (the Department of Economic Affairs in 2017-18, whose receipts and recoveries exceeded its spending by ₹23.1 crore) is named under the map instead, and appears in the table.</p>
+      <h3>Ten years of change</h3>
+      <p>For each ministry the tool compares its share of total spending in 2017-18 (actual) with its share in 2026-27 (budget estimate). The change is in percentage points of all Union spending, and the lists show the six largest gains and losses. Because one end is an actual and the other a plan, a gap between them can close or widen when the 2026-27 accounts are published in 2028.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Where your rupees actually went.</strong> Money in the Consolidated Fund is not labelled. The split says what your payment would buy if it were spent like the average rupee, and nothing more.</li>
+        <li><strong>Who pays for the rest.</strong> Borrowing covers close to a third of the 2026-27 budget. The receipt leaves out the debt taken on in your name in the same year, and the interest on it that later taxpayers will meet.</li>
+        <li><strong>What the money is for.</strong> A ministry is not a purpose. Food subsidy sits in Consumer Affairs, Food and Public Distribution, fertiliser subsidy in Chemicals and Fertilisers, military pensions in Defence, and interest, civil pensions and transfers to States in Finance. A split by function would look different.</li>
+        <li><strong>What government as a whole costs.</strong> This is the Union Budget only. State governments have their own budgets, which pay for most policing and public health, and the States' share of central taxes that the tick box sets aside is spent through those. Spending that public enterprises finance from their own resources is also outside the total.</li>
+        <li><strong>Whether the latest years will hold.</strong> 2025-26 is a revised estimate and 2026-27 a budget estimate. Estimates are plans; the accounts that replace them can differ, sometimes by a wide margin for a single ministry.</li>
+        <li><strong>The rate at which your own tax is shared.</strong> The States' share used here is an average over all central taxes. Cesses and surcharges are not shared with the States at all, and the State half of GST never enters the Union's revenue, so the share of any one tax can be well above or below it.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Add a second split by function (defence, interest, subsidies, education, health and so on) from the "Expenditure of Major Items" statement of Budget at a Glance, so that ministries and purposes can be set side by side.</li>
+        <li>Keep the budget estimate and the revised estimate for every year as well as the actual, and show how far each ministry's spending ended from its plan.</li>
+        <li>Put the ten years in constant prices and per person, and as a share of GDP, using a deflator and population series with their own sources.</li>
+        <li>Go one level further down, from demands to the schemes inside them, using each ministry's Statement of Budget Estimates.</li>
+        <li>Add State budgets, so that a household can see the States' share of its taxes spent as well.</li>
+        <li>Let the visitor enter income tax, GST and fuel duty separately and apply the sharing rule of each tax instead of one average.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>Ministry of Finance, Government of India. <em>Union Budget</em> documents for 2019-20, 2020-21, 2021-22, 2022-23, 2023-24, 2024-25 (July 2024), 2025-26 and 2026-27: Expenditure Profile, Statement 3 (3A before 2023-24), "Expenditure of Ministries and Departments"; Expenditure Budget 2026-27, "Summary of Demands for Grants"; and Budget at a Glance ("Budget at a Glance" and "Receipts" statements). <a href="https://www.indiabudget.gov.in/">indiabudget.gov.in</a>. Retrieved 12 October 2026. Built into this page by <code>scripts/data/union_budget.py</code>, which checks that every column adds up to the document's own grand total and that the grand total is the total expenditure in Budget at a Glance.</li>
+        <li><strong>These figures are not under an open licence, and no permission to reproduce them has been obtained.</strong> What this page holds is numbers copied out of the documents above: the total spending of each demand for grants in each of ten years, each year's grand total, seven figures a year from the receipts side, and the names of the ministries and demands. It does not hold or pass on the documents themselves. The site's copyright policy, as read on 12 October 2026, says in full: <span class="quote">"This contents of this website may not be reproduced partially or fully, without due permission from Ministry of Finance, Govt. of India. If referred to as a part of another publication, the source must be appropriately acknowledged. The contents of this website can not be used in any misleading or objectionable context."</span> The source is acknowledged here, as the second sentence of that policy asks.</li>
+        <li>No source was found that gives the same figures under an open licence. The Government's open data site, <a href="https://www.data.gov.in/catalog/union-budget-2023-24">data.gov.in</a>, has five Union Budget catalogues under the Government Open Data License - India: 2018-19, 2019-20 (Interim), 2021-22, 2022-23 and 2023-24. Going by the titles of their files, they hold Budget at a Glance and each budget year's provisions by demand, but not Statement 3, so they have no actual spending by demand, and there is nothing after 2023-24. Their files are downloaded through a form with a picture code to type in, which a script cannot do, and they were not opened for this page.</li>
+        <li>The budget site carries the note <span class="quote">"The Budget data in excel has been generated from System. In case of any inconsistency, pdf files will be treated as final."</span> The two do differ in places. For 2021-22, the spreadsheet of Budget at a Glance 2023-24 gives non-tax revenue as ₹36,51,132 crore in one statement and ₹3,65,113 crore in another, where the PDF prints ₹3,65,112 crore in both, and it gives the States' share as ₹8,98,393 crore where the PDF prints ₹8,98,392 crore. For 2019-20, the spreadsheet of Budget at a Glance 2021-22 gives non-tax revenue as ₹3,27,158 crore in its "Receipts" statement where the PDF prints ₹3,27,157 crore. This page uses the PDF's figure in each case, and reads all of Budget at a Glance from the PDFs. No figure taken from a Statement 3 spreadsheet was missing from the PDF of the statement.</li>
+        <li>Ministry of Finance, Government of India (2026). <em>Budget 2026-2027: Speech of Nirmala Sitharaman, Minister of Finance</em>, 1 February 2026, paragraph 91 (the States' share of 41% recommended by the Sixteenth Finance Commission).</li>
+        <li>Buchanan, J. M. (1963). The economics of earmarked taxes. <em>Journal of Political Economy</em>, 71(5), 457-469.</li>
+        <li>Bruls, M., Huizing, K., and van Wijk, J. J. (2000). Squarified treemaps. In W. de Leeuw and R. van Liere (eds.), <em>Data Visualization 2000</em>, 33-42. Springer.</li>
+        <li>Shneiderman, B. (1992). Tree visualization with tree-maps: 2-d space-filling approach. <em>ACM Transactions on Graphics</em>, 11(1), 92-99.</li>
+        <li>Constitution of India, Articles 112 to 114 (the annual financial statement, demands for grants and appropriation) and 266 (the Consolidated Fund of India).</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
