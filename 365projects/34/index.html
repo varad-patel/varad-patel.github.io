@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Coffee Index and Big Mac Economics · 365 projects</title>
+  <meta name="description" content="Pick two currencies and see whether one looks over- or undervalued against the other by the price of a Big Mac, before and after allowing for income, or price a good of your own.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .reading { display: grid; gap: 8px; font-size: 0.97rem; line-height: 1.5; overflow-wrap: anywhere; }
+    .own { border-top: 1px solid var(--rule); padding-top: 20px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+    .own-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 14px 20px; align-items: start; }
+    .own-out { display: grid; gap: 14px; }
+    .own-line { overflow-wrap: anywhere; line-height: 1.5; }
+    details.all summary { color: var(--ink); font-weight: 600; font-size: 0.9rem; }
+    #app .tbl th { white-space: normal; }
+    .p-sec .eq { white-space: normal; overflow-wrap: anywhere; }
+    .p-sec blockquote { margin: 14px 0 0; padding: 2px 0 2px 16px; border-left: 3px solid var(--rule); font: 400 1.02rem/1.6 var(--serif); }
+  </style>
+</head>
+<body class="proj" data-day="34">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Coffee Index and Big Mac Economics</h1>
+      <p class="lede">Pick two currencies and see whether one looks too dear or too cheap against the other, judged by what a Big Mac costs in each. Then price a coffee, or anything else, yourself.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Big Mac index for any two currencies, and an index from your own prices">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>The page opens on the rupee against the dollar in July 2026. A Big Mac cost 236.25 rupees in India and 6.22 dollars in the United States. At the market rate of 96.26 rupees to the dollar the Indian burger comes to 2.45 dollars, so on the raw index the rupee looks 60.5% undervalued; of the 54 currencies priced that month only Taiwan's and Indonesia's look cheaper. Allow for India's lower income, which by the line fitted across 70 economies predicts a burger at 4.87 dollars, and the figure falls to 49.5%.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>If the same thing costs less in one country than in another once the money is exchanged, someone could buy it where it is cheap and sell it where it is dear, and go on doing so until the gap closed. Followed through for everything people buy, that argument says exchange rates should settle where a basket of goods costs the same everywhere. This is purchasing-power parity. It is associated above all with the Swedish economist Gustav Cassel, who pressed it in the <em>Economic Journal</em> during and just after the First World War, when the old gold parities had broken down and nobody knew what a currency ought to be worth.</p>
+      <p>The Economist's Big Mac index shrinks the basket to one item that is sold in much the same form in many countries. If a burger costs 6.22 dollars in America and 236.25 rupees in India, the exchange rate that would make them equal is about 38 rupees to the dollar. The market rate in July 2026 was 96. So either the rupee is far too cheap, or something is wrong with the argument.</p>
+      <p>Something is. A burger cannot be shipped from Mumbai to New York, and most of its price is rent and wages, which are low where incomes are low. Béla Balassa and Paul Samuelson explained in 1964 why this is systematic: rich countries are rich because they are productive in goods that are traded, that pushes up wages everywhere in the economy, and so haircuts, restaurant meals and burgers cost more there. A poor country's currency will look undervalued on any such measure without being mispriced at all. The Economist's own notebook puts the objection this way:</p>
+      <blockquote>Given non-traded local inputs (rent and worker's wages) one would expect Big Macs to be cheaper in poorer countries and dearer in wealthier ones.</blockquote>
+      <p>Hence the second version of the index, which asks a narrower question: is the burger cheaper than a country's income would lead you to expect? Even that is a rough guide. Kenneth Rogoff's survey of the evidence is titled "The purchasing power parity puzzle" because exchange rates swing widely from month to month while gaps from parity close only slowly. Kenneth Clements, Yihui Lan and Shi Pei Seah, testing the Big Mac index itself, found the raw version biased but, once the bias is allowed for, a reasonable guide to where exchange rates go over the medium to longer term.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The data</h3>
+      <p>The Economist publishes the inputs to its index and the code that calculates it. For each round, from April 2000 to July 2026 (45 rounds: one or two a year until 2011, two a year since 2012), the files give the local price of a Big Mac in each country, the number of units of local currency that bought one US dollar, and GDP per person in local currency. The euro area appears as one entry whose price The Economist averages across member countries. Since July 2022 the American price has come from McDonald's; before that it was the average of four cities.</p>
+      <p>This page does not copy The Economist's index. It recalculates both versions from those inputs for whichever two currencies you choose, including pairs The Economist does not publish, which gives only five base currencies.</p>
+
+      <h3>The raw index</h3>
+      <p>Write <var>P</var> for the local price of the burger and <var>E</var> for local currency units per dollar. Each burger's price in dollars is <var>P</var> / <var>E</var>. For currency A judged against currency B:</p>
+      <p class="eq">burger rate = <var>P</var><sub>A</sub> / <var>P</var><sub>B</sub><br>market rate = <var>E</var><sub>A</sub> / <var>E</var><sub>B</sub><br>raw index = burger rate / market rate − 1</p>
+      <p>Both rates are in units of A's currency per unit of B's. The burger rate is the exchange rate at which the two burgers would cost the same. If it is above the market rate, the burger is dearer in A once the money is exchanged and A's currency is called overvalued; if below, undervalued. The same number can be written as the ratio of the two dollar prices less one, which is how The Economist computes it. Note that the index is not symmetric: if A is 40% undervalued against B, then B is 66.7% overvalued against A, because 1 / 0.6 = 1.667.</p>
+
+      <h3>The GDP-adjusted index</h3>
+      <p>First each country's GDP per person is put into dollars, not at the market rate but at the burger rate against the dollar:</p>
+      <p class="eq"><var>G</var><sub><var>i</var></sub> = GDP per person in local currency<sub><var>i</var></sub> ÷ (<var>P</var><sub><var>i</var></sub> / <var>P</var><sub>US</sub>)</p>
+      <p>Then, separately for each round, a straight line is fitted by ordinary least squares across a fixed list of countries:</p>
+      <p class="eq">dollar price<sub><var>i</var></sub> = <var>a</var> + <var>b</var> <var>G</var><sub><var>i</var></sub> + error<sub><var>i</var></sub></p>
+      <p>The line gives each country a predicted price, <var>a</var> + <var>b</var> <var>G</var><sub><var>i</var></sub>: what a burger "should" cost at that income. The adjusted index compares each burger with its own prediction:</p>
+      <p class="eq">adjusted index = (price<sub>A</sub> / predicted<sub>A</sub>) ÷ (price<sub>B</sub> / predicted<sub>B</sub>) − 1</p>
+      <p>The list of economies in the fit is The Economist's: 49 throughout, 22 more from January 2021 and Bulgaria from July 2026. It holds the euro area as a whole and, separately, a number of its member countries, so those members count twice. It is kept apart from the list of countries in the index, so that adding a country to the index does not move everyone else's figure. A country that is not on the list, or has no GDP figure in the files for a round, has no adjusted index that round. In July 2026 the line is fitted to 70 of the 72: Russia and Sri Lanka have no price that round. The second chart shows the fitted line and where the two chosen countries sit against it.</p>
+      <p>The burger-rate GDP dates from July 2022. The repository describes the change in these words: "Instead of using the IMF's calculation of purchasing-power parity, we adjust the GDP per person by the difference in each country's Big Mac prices." The whole history was recalculated on the new basis and is recalculated again whenever the IMF revises its GDP series, so the adjusted figures in the current files can differ from those printed in earlier years.</p>
+
+      <h3>The check</h3>
+      <p>The Economist's files also contain its own results against the dollar, rounded to five decimal places. The tests for this page recompute every one of them: all 2,056 raw figures and all 1,802 adjusted figures agree to the fifth place, and the adjusted index is missing here in exactly the 254 cases where it is missing there. Figures against the euro, pound, yen and yuan are checked for a sample of countries and dates.</p>
+
+      <h3>Your own index</h3>
+      <p>The lower half of the tool applies the raw formula to figures you type: the burger rate becomes your price in the first currency divided by your price in the second, and the market rate is the one you enter. It is there because the "coffee index" of the title has no open data behind it. The figures it starts with are invented, and the page says so until you change them.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Whether a currency is mispriced.</strong> A burger is rent, wages and tax as much as beef and bread, and none of those can be traded across borders. A large gap on the raw index mostly says that a country is poorer or richer than the other, which is why the adjusted index exists.</li>
+        <li><strong>Where the exchange rate will go.</strong> Neither index is a forecast. Gaps from parity persist for years, and they can close through prices rising in the cheap country as easily as through its currency rising.</li>
+        <li><strong>What a straight line misses.</strong> The adjustment assumes burger prices rise by the same number of cents for every extra dollar of income, from the poorest country to the richest. It is a loose fit: in July 2026 the line explains 8% of the variation in burger prices across the 70 economies, and in no round since 2000 has it explained more than 34%. Local taxes, competition and the firm's own pricing are all left in the gap and read as currency misvaluation.</li>
+        <li><strong>The cost of living.</strong> One product from one company is not a household's shopping. The index treats the burger as identical everywhere and the files do not record where the recipe, the size or its place on the menu differs. For a full basket see the purchasing-power parities used on Day 33.</li>
+        <li><strong>Countries that are not in the files.</strong> The index covers 54 currencies in the latest round and 56 over its history: Russia's prices stop in January 2022 and Sri Lanka's in January 2024. A country where The Economist records no price cannot be chosen, and Lebanon and Venezuela have no adjusted figure because they are not on its list for the income line.</li>
+        <li><strong>Anything from your own two prices.</strong> The lower half of the tool is arithmetic on whatever you type. Two cafés in two cities are not two national price levels, and a rate looked up today is not the rate on the day you paid.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Fit the adjustment in logarithms, or with a curve, and report an interval around each adjusted figure so that small gaps are not over-read.</li>
+        <li>Test the claim that matters: take each round's undervalued currencies and check whether they rose against the dollar over the following five years.</li>
+        <li>Let the visitor enter several goods at once and combine them with a geometric mean, turning the coffee half into a small basket.</li>
+        <li>Put the World Bank's full purchasing-power parities next to the burger rate for the same pair and date, to show how far one good departs from the whole basket.</li>
+        <li>Split each change in the index between movements in the exchange rate and movements in the two burger prices.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>The Economist. <em>The Big Mac index</em>: data and code, <a href="https://github.com/TheEconomist/big-mac-data">github.com/TheEconomist/big-mac-data</a>, July 2026 update (commit 0d97104). Retrieved 11 October 2026. The licence statement in the repository reads: "This software is published by The Economist under the MIT licence. The data generated by The Economist are available under the Creative Commons Attribution 4.0 International License. The licences include only the data and the software authored by The Economist, and do not cover any Economist content or third-party data or content made available using the software."</li>
+        <li>The same repository gives the origin of the inputs: "Big Mac prices are from McDonald's directly and from reporting around the world; exchange rates are from Thomson Reuters (until January 2022) and Refinitiv Datastream (July 2022 on); GDP and population data used to calculate the euro area averages are from Eurostat and GDP per person data are from the IMF World Economic Outlook reports."</li>
+        <li>What that means for the data bundled with this page. The Creative Commons licence covers "the data generated by The Economist". That certainly means the index figures it calculates, which this page keeps only to test its own arithmetic against, and on a natural reading the Big Mac prices its own reporting gathered. It does not cover third-party data. By The Economist's own account the exchange rates and the GDP per person figures are third-party data, and so are the Big Mac prices that McDonald's supplied, which the files do not mark apart from the others. The repository states no terms for reusing those inputs, and this page claims none: they appear here exactly as The Economist published them, credited to the sources it names, because neither index can be calculated without them.</li>
+        <li>Cassel, G. (1918). Abnormal deviations in international exchanges. <em>The Economic Journal</em>, 28(112), from page 413.</li>
+        <li>Balassa, B. (1964). The purchasing-power parity doctrine: a reappraisal. <em>Journal of Political Economy</em>, 72(6), 584-596.</li>
+        <li>Samuelson, P. A. (1964). Theoretical notes on trade problems. <em>The Review of Economics and Statistics</em>, 46(2), from page 145.</li>
+        <li>Rogoff, K. (1996). The purchasing power parity puzzle. <em>Journal of Economic Literature</em>, 34(2), 647-668.</li>
+        <li>Pakko, M. R., and Pollard, P. S. (2003). Burgernomics: a Big Mac guide to purchasing power parity. <em>Federal Reserve Bank of St. Louis Review</em>, 85(6), 9-28.</li>
+        <li>Taylor, A. M., and Taylor, M. P. (2004). The purchasing power parity debate. <em>Journal of Economic Perspectives</em>, 18(4), 135-158.</li>
+        <li>Clements, K. W., Lan, Y., and Seah, S. P. (2012). The Big Mac index two decades on: an evaluation of burgernomics. <em>International Journal of Finance and Economics</em>, 17(1), 31-60.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
