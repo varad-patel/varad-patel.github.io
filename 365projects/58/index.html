@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Commodity Seasonality Decomposer · 365 projects</title>
+  <meta name="description" content="Pick a commodity such as onions or wheat, split its monthly price into trend, season and remainder with STL, and test whether the season helps to forecast the year ahead.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    .source-note { padding-top: 12px; border-top: 1px solid var(--grid); }
+    .forecast-table .tbl th, .forecast-table .tbl td { padding: 5px 8px; }
+    @media (max-width: 480px) { .forecast-table .tbl { font-size: 0.82rem; } .forecast-table .tbl th { white-space: normal; } }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+    @media (max-width: 600px) { .p-sec .eq { white-space: normal; } }
+  </style>
+</head>
+<body class="proj" data-day="58">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Commodity Seasonality Decomposer</h1>
+      <p class="lede">Pick a commodity and split its monthly price into a trend, a season and what is left over. Then see whether knowing the season helps to forecast the year ahead.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Seasonal decomposition of commodity prices">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>The page opens on India's retail onions, January 2014 to September 2026. Their season runs from 20% below the trend in May to 35% above it in November. In the held-out test, 70 forecasts made a month apart gave 840 forecast months, which overlap and cover only 81 different months. On them the decomposition forecast missed by 28.8% on average, against 30.2% for repeating the same month of the year before and 33.0% for repeating the latest price: ahead by 1.4 percentage points, a gap the page does not test for significance and that could vanish with a few more years of prices. Choose wheat and the season is under 3% either way: the forecast missed by 13.5% and did no better than repeating the latest price, which missed by 13.4%.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>A monthly price is three things at once: a slow drift that lasts for years, a pattern that comes round with the calendar, and everything else. Pulling them apart answers a question that matters to anyone who buys, sells or regulates food. When onions are dear in November, is that the time of year or has something gone wrong? Statistical offices do the same to unemployment and output before they publish them, under the name of seasonal adjustment.</p>
+      <p>The method here is STL, published in 1990 by Robert Cleveland, William Cleveland, Jean McRae and Irma Terpenning. It builds the split out of one tool used over and over, a local regression smoother called loess, which lets the season change slowly from year to year and keeps a single wild month from bending everything around it. Its authors were plain about what it cannot settle: "there is an intrinsic ambiguity in the definition of seasonal variation", they wrote, and the analyst resolves it by choosing how much to smooth. The slider marked "Season" is that choice.</p>
+      <p>Why would a price have a season at all? A crop is harvested once or twice a year and eaten all year. If it stores cheaply, anyone can buy at harvest and sell later, so the price can only climb between harvests by about what it costs to keep the crop, and a larger predictable rise invites more storage until it shrinks. That is the logic of the economics of storage, set out at length by Williams and Wright (1991). A season should therefore survive where storing is costly or the product spoils. The ten series in the tool fit that reading without proving it: world wheat, rice and sugar show almost no season, while onions and potatoes in Indian shops and leaf tea at the Kolkata auctions show a strong one.</p>
+      <p>A decomposition describes the past. Whether it is useful is a separate question, and the tool answers it the only honest way: it hides the last years of each series, forecasts them from what came before, and compares the result with two rules that need no model at all.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The data</h3>
+      <p>Onions and potatoes are national average retail prices for India in rupees per kilogram, collected by the Department of Consumer Affairs and published by FAO's Food Price Monitoring and Analysis Tool, monthly from January 2014. The other eight are benchmark prices from the World Bank's Pink Sheet in US dollars: hard red winter wheat and yellow maize at US Gulf ports, Thai 5% broken rice at Bangkok, raw sugar at Caribbean ports, leaf tea at the Kolkata auctions, navel oranges delivered to Paris, bananas at US Gulf ports and natural gas at Henry Hub. The Pink Sheet has no onion price, which is why the Indian series come from elsewhere. The World Bank's series begin in 1960; this page bundles them from January 1980, because several earlier prices were fixed for years or rounded to two decimals of a small number, and a decomposition would read both as pattern. Some of that coarseness remains after 1980 and is listed under the limits below. Every series ends in September 2026, every price is a monthly average in the money of its day (nothing is adjusted for inflation), and no month is missing or filled in.</p>
+      <h3>Logs, so that the parts multiply</h3>
+      <p>Commodity prices swing in proportion to their level: a season that adds 5 rupees when onions cost 20 adds more when they cost 60. So the tool decomposes the natural logarithm of the price, <var>y</var><sub><var>t</var></sub> = ln <var>P</var><sub><var>t</var></sub>, into three parts that add up exactly:</p>
+      <p class="eq"><var>y</var><sub><var>t</var></sub> = <var>T</var><sub><var>t</var></sub> + <var>S</var><sub><var>t</var></sub> + <var>R</var><sub><var>t</var></sub> &nbsp;&nbsp; so &nbsp;&nbsp; <var>P</var><sub><var>t</var></sub> = e<sup><var>T</var><sub><var>t</var></sub></sup> × e<sup><var>S</var><sub><var>t</var></sub></sup> × e<sup><var>R</var><sub><var>t</var></sub></sup></p>
+      <p>The trend line in the first chart is e<sup><var>T</var></sup>. "35% above the trend" means e<sup><var>S</var></sup> = 1.35, and a remainder of +100% means the price was twice what trend and season together account for.</p>
+      <h3>Loess</h3>
+      <p>Loess estimates a smooth curve at a position <var>x</var> from the <var>q</var> data points nearest to it. Let <var>h</var> be the distance from <var>x</var> to the farthest of those <var>q</var> points. A point at distance <var>d</var> gets the tricube weight</p>
+      <p class="eq"><var>w</var> = (1 − (<var>d</var> / <var>h</var>)<sup>3</sup>)<sup>3</sup> &nbsp; for <var>d</var> &lt; <var>h</var>, and 0 otherwise</p>
+      <p>A straight line is fitted to the <var>q</var> points by weighted least squares and its height at <var>x</var> is the smoothed value. A larger <var>q</var> gives a smoother curve. When <var>q</var> is larger than the number of points <var>n</var>, the tool does what the authors' own program does and widens the window to the farthest point plus (<var>q</var> − <var>n</var>) / 2.</p>
+      <h3>The inner loop</h3>
+      <p>Start with a trend of zero and repeat six steps, with <var>n</var><sub>p</sub> = 12 months in a cycle.</p>
+      <ol>
+        <li>Detrend: subtract the current trend from <var>y</var>.</li>
+        <li>Smooth each cycle-subseries, that is all the Januaries, then all the Februaries and so on, by loess with <var>q</var> = <var>n</var><sub>s</sub>, and extend each by one year at both ends. Together they form a series <var>C</var> that is 24 months longer than the data.</li>
+        <li>Low-pass filter <var>C</var>: a moving average of 12, another of 12, one of 3, then loess with <var>q</var> = <var>n</var><sub>l</sub> = 13. The result <var>L</var> has the length of the data.</li>
+        <li>The season is <var>S</var> = <var>C</var> − <var>L</var>. Subtracting <var>L</var> stops slow movements from leaking into the season.</li>
+        <li>Deseasonalise: subtract <var>S</var> from <var>y</var>.</li>
+        <li>Smooth the result by loess with <var>q</var> = <var>n</var><sub>t</sub>. That is the new trend.</li>
+      </ol>
+      <h3>The outer loop: robustness</h3>
+      <p>After the inner loop the remainder is <var>R</var> = <var>y</var> − <var>T</var> − <var>S</var>. With the robust fit ticked, each month gets a robustness weight from the bisquare function of its remainder,</p>
+      <p class="eq"><var>ρ</var> = (1 − (|<var>R</var>| / <var>h</var>)<sup>2</sup>)<sup>2</sup> &nbsp; for |<var>R</var>| &lt; <var>h</var>, and 0 otherwise, &nbsp; with <var>h</var> = 6 × median |<var>R</var>|</p>
+      <p>and the inner loop runs again with every loess weight in steps 2 and 6 multiplied by <var>ρ</var>. A month that fits badly therefore counts for little, or for nothing, the next time round, and its spike stays in the remainder.</p>
+      <h3>The settings</h3>
+      <p>The seasonal span <var>n</var><sub>s</sub> is the slider: an odd number from 7 to 35, counted in years because each cycle-subseries has one value a year. The paper asks for at least 7. The trend span follows the paper's rule, the smallest odd whole number with</p>
+      <p class="eq"><var>n</var><sub>t</sub> ≥ 1.5 <var>n</var><sub>p</sub> / (1 − 1.5 / <var>n</var><sub>s</sub>)</p>
+      <p>which is 23 months for <var>n</var><sub>s</sub> = 7 and 19 for <var>n</var><sub>s</sub> = 35. The slider's last stop, "the same every year", fits one fixed pattern the way R's <code>stl</code> does for a periodic season: each cycle-subseries is smoothed with a constant over a span that takes in every year (<var>n</var><sub>s</sub> = 10<var>n</var> + 1, degree 0), and the seasonal values are then replaced by their average for each calendar month. With about twelve years of Indian data there are only twelve or thirteen Januaries to learn from, so a fixed season is the default.</p>
+      <p>With the robust fit on, the tool makes 15 robustness passes of 2 inner passes each; with it off, 5 inner passes. These are the defaults of the Python library statsmodels and are more than the paper recommends (2 inner passes without robustness; 1 inner pass and 5 or 10 robustness passes with it), so the fit has settled further.</p>
+      <h3>Checked against a reference</h3>
+      <p>The code on this page was written from the paper and its published program. Its trend, season, remainder and weights agree with statsmodels 0.15.0, itself a port of the authors' Fortran, to ten decimal places on all ten series at spans 7, 13 and 35, robust and not, and for the fixed season. The page's tests hold reference values from that run.</p>
+      <h3>Strength of the season</h3>
+      <p class="eq"><var>F</var><sub>S</sub> = max(0, 1 − Var(<var>R</var>) / Var(<var>S</var> + <var>R</var>))</p>
+      <p>This is the measure of Wang, Smith and Hyndman (2006). Near 1 the season dwarfs the remainder; near 0 it is lost in it. A robust fit leaves spikes in the remainder, which lowers the score.</p>
+      <h3>The forecast</h3>
+      <p>The forecast follows the textbook recipe for a decomposed series (Hyndman and Athanasopoulos 2021, section 5.7) with the simplest choices. The seasonally adjusted series <var>a</var><sub><var>t</var></sub> = <var>y</var><sub><var>t</var></sub> − <var>S</var><sub><var>t</var></sub> is carried forward unchanged from the last month <var>N</var>, and each future month gets back the seasonal value of the same month one year earlier:</p>
+      <p class="eq"><var>f</var><sub><var>h</var></sub> = <var>a</var><sub><var>N</var></sub> + <var>S</var><sub><var>N</var> − 12 + <var>h</var></sub> &nbsp;&nbsp; for <var>h</var> = 1 to 12 months ahead</p>
+      <p>The spread at <var>h</var> months is the root mean square of the <var>h</var>-month changes in <var>a</var> over the window, and the 80% range is</p>
+      <p class="eq"><var>f</var><sub><var>h</var></sub> ± 1.2816 <var>σ</var><sub><var>h</var></sub>, &nbsp;&nbsp; <var>σ</var><sub><var>h</var></sub><sup>2</sup> = mean of (<var>a</var><sub><var>t</var></sub> − <var>a</var><sub><var>t</var> − <var>h</var></sub>)<sup>2</sup></p>
+      <p>where 1.2816 is the 90th percentile of the normal distribution. Everything is turned back into prices with e<sup><var>x</var></sup>, which makes the centre a median rather than a mean, and the range wider above than below. Twelve months ahead the season has come full circle, so the central forecast is the latest price itself.</p>
+      <h3>The held-out test</h3>
+      <p>For each month-end that has at least six years of prices before it and twelve known months after it, up to the latest 120 such months, the tool decomposes only the prices up to that month, forecasts the next twelve, and scores the forecast against what happened. Two naive rules are scored on the same months: the price of the same month one year earlier, and the latest price repeated. A miss is |ln forecast − ln actual|. Measured this way, a forecast 25% too high and one 20% too low miss by the same amount. The average miss <var>m</var> is reported as the percentage e<sup><var>m</var></sup> − 1, the typical factor by which a forecast was off, and the gap between the forecast and the better naive rule is the difference between the two percentages as printed, in percentage points. The forecast is said to come out ahead of that rule only when <var>m</var> is lower than the rule's by at least one part in 2,000, so that a tie is never dressed up as a win, and a lead of less than one part in 20 is marked as one that could vanish or reverse with a few more years of prices. "Ahead" describes these months and nothing more. Forecasts made a month apart share eleven of their twelve months, so <var>k</var> forecasts cover only <var>k</var> + 11 different months, and the verdict says how many that is. Every forecast uses only the prices before its own date, and no number in the method is fitted to the test months. The settings are another matter: the page opens with a fixed season for the reason given above, but a visitor is free to try all of them, and the limits below say what that does to the test. The verdict also says how often the 80% range held the outcome, which is a check on the range itself.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>What the season "really" is.</strong> Move the slider and the season changes shape, because how much of the year-to-year wobble counts as season is a decision, not a measurement. With a short span and a robust fit on twelve years of onions the pattern swings wildly; that is the method chasing noise, and the held-out test shows it.</li>
+        <li><strong>Why prices moved.</strong> The remainder for onions is largest in December 2019 and the tool can only say that the month was far off trend and season. It knows nothing of rainfall, crop size, stocks, export rules or exchange rates.</li>
+        <li><strong>Real prices, or fine ones.</strong> Nothing is adjusted for inflation, so the trend in rupees or dollars includes the general rise in prices. The season, being a ratio, is not affected. Sugar, bananas and oranges are published to the nearest cent per kilogram. When sugar costs 20 cents, one cent is a step of 5%, and in 129 of the 560 month-to-month steps since January 1980 its published price does not move at all (70 for bananas, 41 for oranges). A season of two or three percent in those series is smaller than the rounding.</li>
+        <li><strong>How sure the forecast is.</strong> The 80% range assumes future changes will be the size of past ones and roughly normal in logs. On held-out months it held the outcome 91% of the time for onions and 71% for oranges with the opening settings. Treat it as a rough guide.</li>
+        <li><strong>Whether a small edge is real.</strong> Onions give 70 forecast dates, each sharing eleven of its twelve months with its neighbour, so the 840 forecast months are 81 different months seen up to twelve times each. An average miss a few percent lower than a naive rule's could vanish with another few years of data, and the page makes no significance test. The settings matter as much as the method: of the 32 combinations of slider and tick box, the onion forecast comes out ahead of the better naive rule in 11 and not in 21, and only the two with a fixed season are ahead by more than 3% of that rule's miss. Moving the slider until the verdict improves uses the held-out months to choose, and what is left is no longer a test.</li>
+        <li><strong>Any one market.</strong> A national average for India hides the difference between a producing district and a distant city, and a Pink Sheet benchmark is one grade at one port.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Use state and market level prices to see how the onion season differs between places that grow them and places that only eat them.</li>
+        <li>Deflate each series by a consumer price index and decompose real prices, so that the trend shows scarcity and not inflation.</li>
+        <li>Replace the carried-forward level with a model of the adjusted series, such as exponential smoothing or ARIMA, and score it on the same held-out months.</li>
+        <li>Test whether one forecast's errors are reliably smaller than another's, for example with the Diebold-Mariano test, instead of only reporting the gap.</li>
+        <li>Calibrate the range on the held-out errors themselves, so that an 80% range covers 80% by construction, and test that on a second held-out stretch.</li>
+        <li>Add arrivals at wholesale markets and stock figures as predictors, the information traders actually use.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>FAO. 2026. Food Price Monitoring and Analysis (FPMA) Tool: India, onions and potatoes, retail, national average. Accessed on 12 October 2026. https://fpma.fao.org/ Licence: CC-BY-4.0. FAO's Statistical Database Terms of Use (https://www.fao.org/contact-us/terms/db-terms-of-use/en/) place the datasets of its statistical databases, the FPMA Tool among them, under that licence unless a dataset's metadata or web page says otherwise, and the metadata of these two series states no other condition. The same terms warn that data supplied by third parties may carry the provider's own conditions and that FAO does not warrant that it controls all rights in its datasets. FAO names its source for these series as India's Ministry of Consumer Affairs: the prices are collected by the Price Monitoring Division of the Department of Consumer Affairs, whose own price website (https://fcainfoweb.nic.in/) asks for permission and acknowledgement before its material is reproduced. This page takes the monthly figures from FAO, as FAO publishes them and under FAO's licence, and acknowledges the Department as their origin.</li>
+        <li>World Bank. Commodity Price Data (The Pink Sheet), monthly prices, workbook dated 2 October 2026. Retrieved 12 October 2026 from https://www.worldbank.org/en/research/commodity-markets. Licence: CC BY 4.0, the licence that page points to under "Using this Data" (https://datacatalog.worldbank.org/public-licenses), where it is the default for datasets the World Bank produces itself. The Pink Sheet is the World Bank's compilation, and the workbook names the sources of each price, among them the US Department of Agriculture, the International Sugar Organization, Tea Board India and Bloomberg.</li>
+        <li>Cleveland, R. B., Cleveland, W. S., McRae, J. E., and Terpenning, I. (1990). STL: a seasonal-trend decomposition procedure based on loess. <em>Journal of Official Statistics</em>, 6(1), 3-73.</li>
+        <li>Cleveland, W. S. (1979). Robust locally weighted regression and smoothing scatterplots. <em>Journal of the American Statistical Association</em>, 74(368), 829-836.</li>
+        <li>Wang, X., Smith, K., and Hyndman, R. (2006). Characteristic-based clustering for time series data. <em>Data Mining and Knowledge Discovery</em>, 13(3), 335-364.</li>
+        <li>Hyndman, R. J., and Athanasopoulos, G. (2021). <em>Forecasting: principles and practice</em>, 3rd edition. OTexts: Melbourne. Sections 4.3 and 5.7.</li>
+        <li>Williams, J. C., and Wright, B. D. (1991). <em>Storage and Commodity Markets</em>. Cambridge University Press.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "question": "How much of a commodity's price is season, and does knowing the season help to forecast the year ahead?",
+  "finding": "India's retail onions run from 20% below trend in May to 35% above it in November, and on 840 overlapping held-out forecast months (81 different months) the decomposition forecast missed by 28.8% against 30.2% and 33.0% for two naive rules, a lead of 1.4 percentage points that is not tested for significance, while for US wheat the season is under 3% and the forecast (13.5%) did no better than repeating the latest price (13.4%).",
+  "limit": "What counts as season is a choice of how much to smooth, and the forecast knows nothing but past prices, so a small edge over a naive rule on a few dozen held-out dates is not proof of skill.",
+  "sources": [
+    "FAO Food Price Monitoring and Analysis Tool",
+    "World Bank Commodity Price Data (The Pink Sheet)"
+  ],
+  "built": "2026-10-13"
+}
