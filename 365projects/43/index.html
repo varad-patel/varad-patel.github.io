@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Basic Income Microsimulation · 365 projects</title>
+  <meta name="description" content="Set a basic income and the income tax that pays for it, and see the cost, the poverty rate, inequality, and who gains and who loses across 20,000 simulated households.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .out > h2 { margin-top: 6px; padding-top: 18px; border-top: 1px solid var(--grid); }
+    .more { border-top: 1px solid var(--grid); padding-top: 14px; }
+    .more summary { font-weight: 700; font-size: 0.95rem; cursor: pointer; width: fit-content; padding: 2px 0; }
+    .more > div { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; margin-top: 14px; }
+    .tool .tbl th { white-space: normal; vertical-align: bottom; line-height: 1.25; }
+    .tool .tbl td { overflow-wrap: anywhere; }
+    @media (max-width: 480px) { .tool .tbl { font-size: 0.82rem; } .tool .tbl th, .tool .tbl td { padding: 6px 5px; } }
+    @media (max-width: 560px) { .p-sec .eq { white-space: normal; } }
+  </style>
+</head>
+<body class="proj" data-day="43">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Basic Income Microsimulation</h1>
+      <p class="lede">Pay every adult the same sum each month, whatever they earn. Set the amount and the income tax that goes with it, and see what it costs, what it does to poverty, and who gains and who loses across 20,000 simulated households.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Basic income and income tax microsimulation">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>As the page loads, every adult in the simulated population is paid ₹6,000 a month and every child ₹3,000, the tax-free allowance is abolished, and both rates of income tax are raised until the scheme pays for itself. That takes 16.6 points on each rate, to 36.6% and 56.6%. The payments come to ₹4,920 a person a month, 21.1% of all market income. Poverty falls from 23.4% to 11.2% and the Gini coefficient from 0.431 to 0.329, and 63.7% of people gain while 36.3% lose: on average the poorest six tenths gain and the richest four lose. Press "₹6,000, taxes unchanged" and everybody gains, but the same 21.1% of market income is left unpaid.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>A basic income is a regular payment to every member of a society, paid to individuals, with no test of income and no requirement to work. The idea is old. Thomas Paine's pamphlet <em>Agrarian Justice</em>, written in 1795-96, proposed paying everyone £15 on reaching the age of twenty-one and an annual sum in old age, as a right and not as charity, on the ground that everyone has an equal claim on the earth and those who own land owe the rest a rent for it. Milton Friedman argued in <em>Capitalism and Freedom</em> (1962) for a negative income tax, under which people below a set income receive money from the tax system in place of paying into it. Philippe Van Parijs has made the fullest philosophical case: that an unconditional income is what would give everyone, and not only the well off, the real freedom to live as they choose. India's Economic Survey for 2016-17 gave the proposal a chapter of its own.</p>
+      <p>The standing objection is the cost, and here the idea is easy to misread in both directions. Paying ₹6,000 a month to every adult takes a sum that looks impossible when it is set against existing budgets. But most of that money comes straight back. Someone on a middling income who receives ₹6,000 and pays ₹6,000 more in tax is exactly where they started, and their share of the gross cost is not a cost to anyone. What matters is who is left better or worse off once the payment and the tax that funds it are counted together. A basic income with a single rate of tax and a negative income tax are, on this count, the same scheme described twice. Anthony Atkinson's 1995 book studies the combination under the name of the basic income/flat tax proposal.</p>
+      <p>That is a question about a whole distribution of households, and averages cannot answer it. The method built for it is microsimulation, which goes back to a paper by Guy Orcutt in 1957. Take a sample of individual households, apply the rules of the present system and the proposed one to each household in turn, and add up. Governments and research institutes cost tax and benefit reforms this way. This page does it for an invented population, so the workings can be seen whole.</p>
+      <p>What such models leave out matters as much as what they include. Writing about rich countries, Hilary Hoynes and Jesse Rothstein concluded that a basic income would direct much more of the money to middle-income households, and less of it to poor ones, than existing programmes in the United States do, and that one large enough to increase transfers to low-income families would be enormously expensive. The tool makes the same point from the other side. The opening scheme halves poverty, and to do it the basic rate of tax has to go from 20% to 36.6%.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The population</h3>
+      <p>The people are simulated. The tool draws 20,000 households from a seeded random number generator, so that a seed names a population exactly. Each household has one adult (40% of households) or two (60%), and no children (50%), one (20%), two (20%) or three (10%). Each adult has no market income with probability 15%. Otherwise their monthly income is drawn from a lognormal distribution,</p>
+      <p class="eq">income = 30,000 × e<sup><var>σ</var><var>z</var></sup>, &nbsp;&nbsp; <var>z</var> a standard normal draw,</p>
+      <p>rounded to a whole rupee. The median of this distribution is ₹30,000. Its Gini coefficient is erf(<var>σ</var>/2), where erf is the error function, so the tool finds the <var>σ</var> that gives the Gini on the slider: 0.845 for the opening value of 0.45. Tests check that the simulated incomes have the stated median and Gini to within sampling error. The numbers are chosen to give a population that is unequal and has a tail of people with nothing. They are not estimates for India or anywhere else.</p>
+      <p>To draw the same households elsewhere, three more details are needed. The generator is the one known as mulberry32, started from the seed, which gives numbers <var>u</var> spread evenly between 0 and 1. For each household in turn it is asked for the number of adults (one if <var>u</var> is below 0.4), then the number of children (none below 0.5, one below 0.7, two below 0.9), then for each adult whether they have no income (<var>u</var> below 0.15) and, if they have one, for <var>z</var>. A normal draw <var>z</var> uses two numbers: √(−2 ln <var>u</var><sub>1</sub>) × cos(2π<var>u</var><sub>2</sub>). With seed 43 the first household has two adults, on ₹191,442 and ₹212,454 a month, and the whole draw has 49,957 people.</p>
+
+      <h3>The two systems</h3>
+      <p>Income tax is charged on each adult separately. A schedule has a tax-free allowance <var>A</var>, a basic rate <var>t</var><sub>1</sub>, a threshold <var>H</var> and a higher rate <var>t</var><sub>2</sub>. On a monthly income <var>y</var> the tax is</p>
+      <p class="eq"><var>T</var>(<var>y</var>) = <var>t</var><sub>1</sub> × (income between <var>A</var> and <var>H</var>) + <var>t</var><sub>2</sub> × (income above <var>H</var>)</p>
+      <p>to the nearest rupee. If the allowance is set above the threshold, everything above the allowance is taxed at the higher rate. The present system, against which every reform is compared, has an allowance of ₹10,000 a month, a basic rate of 20% up to ₹80,000 and 40% above, and no payments of any kind. The reform pays <var>B</var> a month to each adult and nothing, half or all of <var>B</var> for each child, and may have any schedule. A household's net income is its adults' incomes less their tax, plus its basic income. Nobody's market income changes.</p>
+
+      <h3>Cost</h3>
+      <p>The gross cost is the basic income paid out. The net cost is what is left after the extra tax the reform raises:</p>
+      <p class="eq">net cost = Σ basic income − (Σ <var>T</var><sub>reform</sub> − Σ <var>T</var><sub>present</sub>)</p>
+      <p>Because every rupee paid out or taken in tax lands in some household's income, the net cost is also the sum of the changes in every household's net income. All amounts are whole rupees and rates are held as whole tenths of a percent, so the two sides agree exactly, and a test checks that they do for forty reforms drawn at random. The table headed "The accounts" shows both sides.</p>
+
+      <h3>Making it pay for itself</h3>
+      <p>The button looks for the smallest change <var>s</var>, in steps of a tenth of a percentage point, such that with rates <var>t</var><sub>1</sub> + <var>s</var> and <var>t</var><sub>2</sub> + <var>s</var> the net cost is zero or less. The net cost can only fall as <var>s</var> rises, so the tool halves the range of possible values until one step separates a shortfall from a surplus, about a dozen trials. A rate stops at 0% or 100%. If even 100% on both bands leaves a cost, the tool says so. Because rates move in tenths of a point, a balanced reform usually leaves a small surplus: ₹13 a person a month in the opening case.</p>
+
+      <h3>Poverty and inequality</h3>
+      <p>Living standards are compared using income per equivalent adult: household net income divided by the square root of the number of people in the household, so that a family of four needs twice the income of a single person, not four times, to count as equally well off. Every member of a household is given the household's figure. The poverty line is half the median of that figure under the present system, ₹12,011 a month in the opening population. Both choices, the square-root scale and a line at half the median, are the ones the OECD uses for its Income Distribution Database. Unlike the OECD's line, which moves with the median, this one stays where it is when the reform is applied, so the same rupee line is used before and after. The poverty rate is the share of people below it.</p>
+      <p>The Gini coefficient is computed over people, from the same figures sorted in rising order <var>x</var><sub>1</sub> ≤ … ≤ <var>x</var><sub><var>n</var></sub>:</p>
+      <p class="eq"><var>G</var> = 2 Σ<sub><var>i</var></sub> <var>i</var> <var>x</var><sub><var>i</var></sub> / (<var>n</var> Σ<sub><var>i</var></sub> <var>x</var><sub><var>i</var></sub>) − (<var>n</var> + 1) / <var>n</var></p>
+      <p>It is 0 when everyone has the same and approaches 1 when one person has everything. A test checks the formula against the definition, half the average gap between every pair of people divided by the mean.</p>
+
+      <h3>Winners and losers</h3>
+      <p>People are ranked by income per equivalent adult under the present system and cut into ten groups of equal size. A household goes in the tenth where its first member falls, so no household is split and people with exactly the same income are never put in different tenths; the groups therefore differ in size by a few people. For each tenth the tool reports the average change in net income per person and the share of people in households whose income rises or falls by at least a rupee. The last table applies both schedules to a single adult at five incomes, which is the quickest way to check the arithmetic by hand.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Anything about a real country.</strong> The households are drawn from a few stated distributions. A real population has pensioners, students, landlords, informal workers and people whose income changes from month to month, and none of them is here.</li>
+        <li><strong>What people do next.</strong> Nobody works more or less, hides income or moves in response to a payment or to a tax rate of 56.6%. Real costings add estimates of those responses, and the answer is sensitive to them. The figures here are the first-round, pen-and-paper effect only.</li>
+        <li><strong>How the reform compares with a real welfare system.</strong> The present system on this page has no benefits at all, which is why its poverty rate is so high. Set against existing pensions, food subsidies or income support, a basic income would lift fewer people out of poverty and would leave some of the poor worse off if it replaced them.</li>
+        <li><strong>The effect of other taxes.</strong> Income tax is the only tax. Where most revenue comes from taxes on spending, or most workers earn too little or too informally to pay income tax, a scheme financed this way is not on offer.</li>
+        <li><strong>Life inside the household.</strong> Everyone in a household is assumed to share its income. One argument for paying a basic income to individuals is that this is often untrue, and the tool cannot show it.</li>
+        <li><strong>Whether it is right.</strong> The tool counts rupees. It has nothing to say about whether income should depend on work, whether an unconditional payment respects or undermines the people who receive it, or how much the losses of the top tenths should weigh against the gains of the bottom ones.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Replace the invented households with a household survey, reweighted to match national totals, which is what a real tax-benefit model does.</li>
+        <li>Give the present system means-tested benefits, and let the visitor choose which of them the basic income replaces.</li>
+        <li>Add an explicit labour-supply response: a stated elasticity of earnings to the share of an extra rupee that a person keeps, with the cost shown with and without it.</li>
+        <li>Offer other ways to pay: a tax on spending, a wealth tax, a carbon charge returned as a dividend, or the withdrawal of existing subsidies.</li>
+        <li>Draw each schedule as a budget line, net income against market income, so that the equivalence with a negative income tax can be seen.</li>
+        <li>Report the poverty gap as well as the headcount, and let the equivalence scale and the poverty line be changed.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Philp, M. Thomas Paine. <em>Stanford Encyclopedia of Philosophy</em> (first published 2013, revised 2025), for <em>Agrarian Justice</em>.</li>
+        <li>Friedman, M., with the assistance of Friedman, R. D. (1962). <em>Capitalism and Freedom</em>. University of Chicago Press.</li>
+        <li>Van Parijs, P. (1995). <em>Real Freedom for All: What (if Anything) Can Justify Capitalism?</em> Clarendon Press.</li>
+        <li>Van Parijs, P., and Vanderborght, Y. (2017). <em>Basic Income: A Radical Proposal for a Free Society and a Sane Economy</em>. Harvard University Press.</li>
+        <li>Atkinson, A. B. (1995). <em>Public Economics in Action: The Basic Income/Flat Tax Proposal</em>. Oxford University Press.</li>
+        <li>Orcutt, G. H. (1957). A new type of socio-economic system. <em>Review of Economics and Statistics</em>, 39(2), 116-123.</li>
+        <li>Bourguignon, F., and Spadaro, A. (2006). Microsimulation as a tool for evaluating redistribution policies. <em>Journal of Economic Inequality</em>, 4(1), 77-106.</li>
+        <li>Hoynes, H., and Rothstein, J. (2019). Universal basic income in the United States and advanced countries. <em>Annual Review of Economics</em>, 11, 929-958.</li>
+        <li>Banerjee, A., Niehaus, P., and Suri, T. (2019). Universal basic income in the developing world. <em>Annual Review of Economics</em>, 11, 959-983.</li>
+        <li>Government of India, Ministry of Finance (2017). <em>Economic Survey 2016-17</em>, chapter 9: Universal basic income: a conversation with and within the Mahatma.</li>
+        <li>OECD. <em>Terms of Reference: OECD Project on the Distribution of Household Incomes</em>. OECD Income Distribution Database (oe.cd/idd), for the equivalence scale and the poverty line.</li>
+        <li>All data on this page are simulated in the browser.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
