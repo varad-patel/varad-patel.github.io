@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Social Mobility Markov Chain · 365 projects</title>
+  <meta name="description" content="Pick a published table of how children's incomes depend on their parents', follow one family through the generations, and see how fast a Markov chain says origins are forgotten.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    #app .jump { display: flex; flex-wrap: wrap; gap: 6px 22px; font-weight: 600; font-size: 0.92rem; }
+    #app [id] { scroll-margin-top: 12px; }
+    #app h2 { font-size: 1.02rem; }
+    #app .source { display: grid; gap: 8px; }
+    #app .source p, #app .note, #app .stat .n, #app .chart-sub { overflow-wrap: anywhere; }
+    .editor { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    .grid-wrap { overflow-x: auto; }
+    .grid { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+    .grid caption { text-align: left; font-weight: 700; padding-bottom: 8px; }
+    .grid th { font-weight: 700; text-align: left; padding: 4px 6px 4px 0; white-space: nowrap; font-size: 0.84rem; }
+    .grid thead th { text-align: center; padding: 4px 3px; }
+    .grid thead th:first-child { text-align: left; font-weight: 400; color: var(--slate); }
+    .grid td { padding: 3px; }
+    #app .grid input { width: 100%; min-width: 3.1em; padding: 7px 4px; text-align: center; font-variant-numeric: tabular-nums; }
+    .grid .total { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--slate); padding-left: 8px; }
+    .stack-notes { display: grid; gap: 8px; }
+    .plain { margin: 0; padding-left: 1.1em; }
+    .family { display: grid; gap: 10px; }
+    .path { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+    .path li { display: grid; gap: 1px; min-width: 4.1em; padding: 5px 8px; border: 1.5px solid var(--ink); border-radius: 3px; background: #fff; text-align: center; }
+    .path .g { font-size: 0.72rem; color: var(--slate); }
+    .path b { font-size: 0.9rem; }
+    .path li.q0 { border-bottom-width: 5px; } .path li.q1 { border-bottom-width: 4px; } .path li.q2 { border-bottom-width: 3px; } .path li.q3 { border-bottom-width: 2px; }
+    .path li.q4 { border-top-width: 5px; }
+    .compare { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .compare .tbl th { white-space: normal; vertical-align: bottom; }
+    .compare tr.on td { background: color-mix(in srgb, var(--ink) 6%, transparent); font-weight: 600; }
+    @media (max-width: 620px) {
+      .grid th { font-size: 0.74rem; padding-right: 3px; }
+      .grid thead th:first-child span[aria-hidden] { display: none; }
+      #app .grid input { padding: 7px 1px; font-size: 0.86rem; min-width: 2.6em; }
+      .grid .total { font-size: 0.74rem; padding-left: 3px; }
+      .stack .tbl thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+      .stack .tbl, .stack .tbl tbody, .stack .tbl tr { display: block; width: 100%; }
+      .stack .tbl caption { display: block; }
+      .stack .tbl tr { padding: 8px 0; border-bottom: 1.5px solid var(--ink); }
+      .stack .tbl td { display: flex; justify-content: space-between; align-items: center; gap: 16px; border: 0; padding: 2px 4px; text-align: right; white-space: normal; }
+      .stack .tbl td::before { content: attr(data-label); font-weight: 600; text-align: left; }
+    }
+  </style>
+</head>
+<body class="proj" data-day="53">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Social Mobility Markov Chain</h1>
+      <p class="lede">Pick a published table of where children end up, given where their parents were. Follow one family down the generations, and see how quickly a Markov chain says its starting point stops mattering.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Social mobility Markov chain">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>The page opens on the United States table of Chetty and co-authors, with a family in the bottom fifth followed for three generations. A child of the bottom fifth has a 7.5% chance of reaching the top fifth and a 33.7% chance of staying at the bottom. Run the chain on, and the great-grandchildren of that family have an 18.4% chance of the top fifth, against 21.5% for the great-grandchildren of a family that started at the top. The chain keeps 0.32 of a head start per generation, and after three generations no family has more than 2.2% of its probability in a different fifth from where equal chances would put it. Families do not forget that fast, and the reason is the assumption the chain is built on.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Equality of opportunity is a claim about what should not matter: a child's prospects should not depend on the family it was born into. A transition matrix is the plainest way to see how far a society is from that. Rank parents by income and cut them into fifths; do the same for their grown-up children; then count. If origins did not matter, every cell of the five-by-five table would be 20%. In the table of Chetty, Hendren, Kline and Saez for Americans born in 1980 to 1982, a third of the children of the bottom fifth are still there as adults and one in thirteen has reached the top.</p>
+      <p>Tables like this invite a question about the long run. If the children's chances depend on the parents' position in this way, what about the grandchildren? The simplest answer treats the table as a <strong>Markov chain</strong>: each generation moves according to the same table, and only the parents' position matters, not the grandparents' or anything else about the family. Under that assumption the chances of the grandchildren are the table multiplied by itself, and everything about the long run can be worked out exactly.</p>
+      <p>What comes out is striking. In every published table on this page, a family's starting point is mostly forgotten within two or three generations. That is a statement about the assumption as much as about the world. Studies that follow real families for three or four generations find more persistence than this. Lindahl and co-authors, with Swedish records covering four generations, found that estimates from two generations "severely underestimate" long-run persistence; Braun and Stuhler found the same for occupation and education in Germany. The likeliest reason is that an income fifth in one year is a rough measure of what families actually pass on, such as wealth, education, connections and health. The rough measure reshuffles quickly. The things behind it do not.</p>
+      <p>So the tool should be read two ways. Its one-generation numbers are measurements, and they differ between countries in ways that matter: in the tables of Jäntti and co-authors, 42% of American sons of the poorest fifth of fathers stayed in the poorest fifth, against 25% in Denmark and 26% in Sweden. Its many-generation numbers are what those measurements would imply if position were all that was inherited, which is a lower bound on how long advantage lasts.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The tables</h3>
+      <p>Every table is read by a script from the paper that published it, and none is edited. Each has parents in rows and children in columns, lowest fifth first. Chetty and co-authors print theirs the other way round, so it is turned over. The two studies measure different things. Chetty and co-authors use the tax records of nearly ten million children, sons and daughters together, and compare family income at about age 30 with the parents' family income. Jäntti and co-authors compare a child's own earnings in mid-career with the father's earnings (for the United States, the family's income, and for the United Kingdom, the parents' net pay recorded in bands) for one birth cohort in each of six countries, sons and daughters separately, adjust both generations' earnings to what they would have been at age 40, and leave out pairs in which either earned nothing. The panel above the table says exactly what the chosen one measures.</p>
+      <p>The printed rows add up to between 99.9% and 100.1% because of rounding, so each row is divided by its own total. The columns of a table of true fifths add up to 100% as well. In the tables of Jäntti and co-authors they do not quite: they run from 96.1% to 104.3%. The tool says so where it matters.</p>
+      <h3>The chain</h3>
+      <p>Write <var>P</var> for the table as probabilities, with <var>p</var><sub><var>i</var><var>j</var></sub> the chance that a child of parents in fifth <var>i</var> ends in fifth <var>j</var>. If a family's chances of being in each fifth now are the row vector <var>d</var>, its children's chances are <var>d</var><var>P</var>. A family that starts in fifth <var>i</var> for certain therefore has, after <var>k</var> generations, the chances in row <var>i</var> of the <var>k</var>-th power of the table:</p>
+      <p class="eq"><var>d</var><sub><var>k</var></sub> = <var>d</var><sub>0</sub> <var>P</var><sup><var>k</var></sup></p>
+      <p>The chart and the table of chances are computed this way. The arithmetic is exact; the assumption behind it, that the same table applies in every generation and that nothing but the parents' fifth is passed on, is not a fact about families, and the tool says so beside every figure for a later generation. The simulated family is one random walk through the same table: at each generation a random number from the seed picks the child's fifth with the probabilities in the parents' row. Ten thousand such families are run as a check, and their shares should land within about one percentage point of the exact chances.</p>
+      <h3>The long run</h3>
+      <p>The long-run shares are the distribution <var>π</var> that the table reproduces, found by solving</p>
+      <p class="eq"><var>π</var> <var>P</var> = <var>π</var>, &nbsp; <var>π</var><sub>1</sub> + … + <var>π</var><sub>5</sub> = 1</p>
+      <p>They exist and are unique when the fifths form one group that every family eventually stays inside. The tool checks this from the pattern of zeros in the table, which is exact. If the fifths fall into two or more groups that cannot reach each other, the starting point matters for ever. If families rotate through the fifths in a fixed rhythm, the chances swing and never converge. When every column adds up to 100%, the long-run shares are exactly 20% each: a table of fifths can say who is where, but never how unequal the places are.</p>
+      <h3>How fast origins are forgotten</h3>
+      <p>The distance between two sets of chances is the total variation distance, half the sum of the absolute differences: the share of probability that would have to move to turn one into the other. The tool takes the worst case over the five starting fifths,</p>
+      <p class="eq"><var>d</var>(<var>k</var>) = max<sub><var>i</var></sub> ½ Σ<sub><var>j</var></sub> | (<var>P</var><sup><var>k</var></sup>)<sub><var>i</var><var>j</var></sub> − <var>π</var><sub><var>j</var></sub> |</p>
+      <p>and reports the first generation at which it is 5% or less ("mostly forgotten") and 1% or less. Both thresholds are choices; the chart shows the whole curve. The curve's long-run slope is set by the second-largest eigenvalue of the table in absolute size, <var>λ</var><sub>2</sub>: each generation multiplies what is left by about <var>λ</var><sub>2</sub>, so it halves every ln 2 / (−ln <var>λ</var><sub>2</sub>) generations. For every published table here that is less than one generation, so the tool says instead how much survives one generation and two. Jäntti and co-authors use 1 − |<var>λ</var><sub>2</sub>| as one of their mobility indices. The eigenvalues are found by the QR algorithm with shifts, in complex arithmetic because a table that is not symmetric can have complex ones.</p>
+      <h3>The other measures</h3>
+      <p>"Children who end in their parents' fifth" is the average of the five diagonal cells. The trace index beside it, also used by Jäntti and co-authors, is</p>
+      <p class="eq"><var>M</var> = (5 − (<var>p</var><sub>11</sub> + … + <var>p</var><sub>55</sub>)) / 4</p>
+      <p>which is 0 when nobody moves and 1 when the diagonal is what it would be if origins did not matter. It goes above 1 when children are less likely than chance to end in their parents' fifth.</p>
+      <h3>Your own table</h3>
+      <p>Any cell can be changed. A cell must be a percentage from 0 to 100, and each row must add up to 100% to within half a point, after which it is divided by its total like a published row. While the table is invalid the results stay on the last valid one. Choosing "Your own matrix" from the list keeps the numbers on show as a starting point.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>What happens after the first generation.</strong> Everything beyond one generation rests on the Markov assumption: that only the parents' fifth matters. The evidence from three and four generations is that persistence is higher than that. Treat the many-generation figures as what the table implies, not as a forecast.</li>
+        <li><strong>Which country is more mobile, across studies.</strong> The tables differ in whose income is measured, at what age, for which birth years and for sons, daughters or both. Only the six countries within one of Jäntti and co-authors' tables were built to be compared, and even there the measure of parents' income differs for the United Kingdom and the United States.</li>
+        <li><strong>How far a move is.</strong> Fifths are ranks. Moving up a fifth means overtaking a fifth of the population, whatever that takes in money, and it takes far more where incomes are far apart. The tables say nothing about how unequal the fifths are, or whether children are better off than their parents in absolute terms.</li>
+        <li><strong>How sure the figures are.</strong> The tables for the United Kingdom and the United States in Jäntti and co-authors rest on about two thousand pairs each, and the paper prints wide intervals round each cell that this page does not carry.</li>
+        <li><strong>Why.</strong> A transition table records where children ended up. It cannot separate schools from neighbourhoods, inheritance, discrimination or luck.</li>
+        <li><strong>Today.</strong> The children in these tables were born between 1957 and 1982. Nothing here measures the prospects of a child born now.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Give the chain a memory: make the child's fifth depend on the grandparents' as well, or on an unseen family status that is inherited more strongly than income, and see how much slower origins fade.</li>
+        <li>Carry the published intervals through, so that every figure comes with a range.</li>
+        <li>Use tables of a hundred income ranks instead of five, which Chetty and co-authors publish for the United States.</li>
+        <li>Add absolute mobility: the share of children who earn more than their parents did, which depends on growth and inequality as well as on the table.</li>
+        <li>Add matrices by region within a country, where the same method shows large differences between places.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <p>The selection is limited to tables that could be read directly from the source. Both were retrieved on 12 October 2026 by <code>scripts/data/mobility_matrices.py</code>, which reads the numbers out of the PDFs. They are published research results, quoted with their source.</p>
+      <ul class="refs">
+        <li>Chetty, R., Hendren, N., Kline, P., and Saez, E. (2014). Where is the land of opportunity? The geography of intergenerational mobility in the United States. <em>Quarterly Journal of Economics</em>, 129(4), 1553-1623. Table II, read from the authors' final version of June 2014 hosted by Opportunity Insights (page 70 of that file).</li>
+        <li>Jäntti, M., Bratsberg, B., Røed, K., Raaum, O., Naylor, R., Österbacka, E., Björklund, A., and Eriksson, T. (2006). American exceptionalism in a new light: a comparison of intergenerational earnings mobility in the Nordic countries, the United Kingdom and the United States. IZA Discussion Paper 1938. Table 12 (page 33) for fathers and sons, Table 13 (page 34) for fathers and daughters; the indices are equations 1 and 2.</li>
+        <li>Lindahl, M., Palme, M., Sandgren Massih, S., and Sjögren, A. (2015). Long-term intergenerational persistence of human capital: an empirical analysis of four generations. <em>Journal of Human Resources</em>, 50(1), 1-33.</li>
+        <li>Braun, S. T., and Stuhler, J. (2018). The transmission of inequality across multiple generations: testing recent theories with evidence from Germany. <em>Economic Journal</em>, 128(609), 576-611.</li>
+        <li>Solon, G. (2018). What do we know so far about multigenerational mobility? <em>Economic Journal</em>, 128(612), F340-F352.</li>
+        <li>Mare, R. D. (2011). A multigenerational view of inequality. <em>Demography</em>, 48(1), 1-23.</li>
+        <li>Levin, D. A., and Peres, Y. (2017). <em>Markov Chains and Mixing Times</em>, second edition. American Mathematical Society. For total variation distance and the second eigenvalue.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "question": "If children's incomes depend on their parents' as a published table says, how many generations does it take for a family's starting point to stop mattering?",
+  "finding": "In the United States table of Chetty and co-authors a child of the bottom fifth has a 7.5% chance of the top fifth; treated as a Markov chain, the table gives that family's great-grandchildren 18.4% against 21.5% for a family that started at the top, keeping 0.32 of a head start per generation.",
+  "limit": "Beyond one generation everything rests on the assumption that only the parents' position matters, and studies of three and four generations find more persistence than that.",
+  "sources": [
+    "Chetty, Hendren, Kline and Saez (2014)",
+    "Jäntti et al. (2006), IZA Discussion Paper 1938"
+  ],
+  "built": "2026-10-13"
+}
