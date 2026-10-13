@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Supply Shock Simulator · 365 projects</title>
+  <meta name="description" content="Choose a drought, a strike, a tax, a subsidy, a price control or an import ban, and see the price and quantity move and the gains and losses split between buyers, sellers and the government.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .jump { display: none; width: fit-content; font-size: 0.9rem; font-weight: 600; }
+    @media (max-width: 860px) { .jump { display: inline-block; } }
+    .pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+    .reading { display: grid; gap: 8px; font-size: 0.97rem; line-height: 1.5; overflow-wrap: anywhere; }
+    .curves { overflow-wrap: anywhere; }
+    .swatch-name { display: inline-flex; gap: 8px; align-items: baseline; }
+    .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 2px; flex: none; opacity: 0.75; }
+    #app .tbl th, #app .tbl .num { white-space: normal; }
+    #app .tbl td.num { white-space: nowrap; }
+    .p-sec .eq { white-space: normal; overflow-wrap: anywhere; }
+  </style>
+</head>
+<body class="proj" data-day="40">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Supply Shock Simulator</h1>
+      <p class="lede">Hit a market with a drought, a strike, a tax, a subsidy, a price control or an import ban. See the price and the quantity move, and who ends up better or worse off.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Supply and demand shock simulator">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>As the page loads, a drought takes a fifth of every harvest in a market where buyers hardly cut back when the price rises (demand elasticity 0.3, supply elasticity 0.5, constant-elasticity curves). The price rises 52%, from 10.00 to 15.20, and the quantity sold falls only 11.8%. Buyers lose 486, yet sellers as a group gain 227: the bad harvest leaves them better off. Press "Drought, buyers who can switch", which changes only the demand elasticity, to 1.5, and the same drought costs sellers 54.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>A price is the place where two sets of plans meet: how much buyers want at each price and how much sellers will offer. A shock changes one of those plans or gets between them. A drought or a strike means less is offered at every price. A tax means the buyer pays more than the seller keeps. A legal maximum or minimum price stops the price doing its job at all. The picture of two crossing curves that carries this argument was drawn by several economists before him, but it was Alfred Marshall's <em>Principles of Economics</em>, first published in 1890, that made it the standard tool, and it is still the first thing an economist draws when something happens to a market.</p>
+      <p>The useful part is not that the price moves. It is who pays. The law may say that sellers hand over a tax, but if buyers have no alternative the price rises by nearly the whole tax and the buyers carry it. The side that can respond least, the one with the smaller elasticity, bears the most. The same logic produces the result under "One finding": when buyers barely respond to price, losing part of the crop raises the price by more than it cuts the quantity, so the sellers' takings go up.</p>
+      <p>To add up who gains and loses, the tool uses surplus. A buyer who would have paid 14 and pays 10 has a surplus of 4; a seller who would have accepted 6 and receives 10 has a surplus of 4. Jules Dupuit proposed measuring the usefulness of public works this way in 1844. Summed over everyone, surplus is an area on the diagram, and a shock moves areas around: some surplus passes from one group to another, and some is simply gone. The part that disappears because a policy stops trades that both sides wanted is the deadweight loss. Its triangle on the diagram carries the name of Arnold Harberger; before his papers, James Hines notes, economists very rarely put a number on such losses.</p>
+      <p>That split is the point of most arguments about policy. Press "Tax on a necessity": the tax raises 284 while costing buyers and sellers 292, so its real cost is 8, not 292. A price ceiling can hand buyers a gain and still shrink the total, as "Rent ceiling" shows. The tool draws each of these areas and prints its size.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The two curves</h3>
+      <p>The market before the shock is described by four numbers: the price <var>P</var><sub>0</sub>, the quantity <var>Q</var><sub>0</sub>, and the elasticities of demand and supply at that point, <var>e</var><sub>d</sub> and <var>e</var><sub>s</sub>, both entered as positive numbers. Straight lines through that point with those elasticities are</p>
+      <p class="eq"><var>D</var>(<var>P</var>) = <var>Q</var><sub>0</sub>(1 + <var>e</var><sub>d</sub>) − (<var>e</var><sub>d</sub><var>Q</var><sub>0</sub> / <var>P</var><sub>0</sub>) <var>P</var><br><var>S</var>(<var>P</var>) = <var>Q</var><sub>0</sub>(1 − <var>e</var><sub>s</sub>) + (<var>e</var><sub>s</sub><var>Q</var><sub>0</sub> / <var>P</var><sub>0</sub>) <var>P</var></p>
+      <p>and neither is allowed below zero. Demand reaches zero at the choke price <var>P</var><sub>0</sub>(1 + <var>e</var><sub>d</sub>) / <var>e</var><sub>d</sub>. A supply line with <var>e</var><sub>s</sub> above 1 starts at a positive price, <var>P</var><sub>0</sub>(<var>e</var><sub>s</sub> − 1) / <var>e</var><sub>s</sub>. One with <var>e</var><sub>s</sub> below 1 meets the quantity axis instead, which says the first <var>Q</var><sub>0</sub>(1 − <var>e</var><sub>s</sub>) units cost nothing to supply. Constant-elasticity curves are</p>
+      <p class="eq"><var>D</var>(<var>P</var>) = <var>Q</var><sub>0</sub> (<var>P</var> / <var>P</var><sub>0</sub>)<sup>−<var>e</var><sub>d</sub></sup><br><var>S</var>(<var>P</var>) = <var>Q</var><sub>0</sub> (<var>P</var> / <var>P</var><sub>0</sub>)<sup><var>e</var><sub>s</sub></sup></p>
+      <p>An elasticity of 0 gives a vertical line at <var>Q</var><sub>0</sub> in either family. Ticking "perfectly elastic" gives a horizontal line at <var>P</var><sub>0</sub>. Two vertical lines or two horizontal ones leave the price or the quantity undetermined, so the tool refuses that pair.</p>
+
+      <h3>What each shock does</h3>
+      <ul>
+        <li><strong>Drought.</strong> Every producer spends as before but harvests a share <var>s</var> less. Effort that used to earn <var>P</var> a unit now earns (1 − <var>s</var>)<var>P</var>, so producers put in the effort they would have at that lower price and bring home (1 − <var>s</var>) of the result: <var>S</var><sub>1</sub>(<var>P</var>) = (1 − <var>s</var>) <var>S</var>((1 − <var>s</var>)<var>P</var>).</li>
+        <li><strong>Strike.</strong> A share <var>s</var> of producers stop and the rest carry on as before: <var>S</var><sub>1</sub>(<var>P</var>) = (1 − <var>s</var>) <var>S</var>(<var>P</var>).</li>
+        <li><strong>Dearer inputs.</strong> Every unit costs <var>u</var> more to make: <var>S</var><sub>1</sub>(<var>P</var>) = <var>S</var>(<var>P</var> − <var>u</var>).</li>
+        <li><strong>Tax or subsidy.</strong> With a tax of <var>t</var> a unit, buyers pay <var>P</var><sub>b</sub> and sellers keep <var>P</var><sub>s</sub> = <var>P</var><sub>b</sub> − <var>t</var>. A subsidy is a tax with a minus sign. The curves do not move; the two prices come apart.</li>
+        <li><strong>Price ceiling or floor.</strong> If the legal price is on the wrong side of <var>P</var><sub>0</sub> it does not bind and nothing changes. Otherwise the short side of the market decides the quantity: under a ceiling sellers offer <var>S</var>(ceiling) and no more, and under a floor buyers take <var>D</var>(floor) and no more.</li>
+        <li><strong>Import ban or tariff.</strong> The home market can buy any amount abroad at the world price <var>P</var><sub>w</sub>, which its own purchases are too small to move. With trade open the price is <var>P</var><sub>w</sub>, buyers take <var>D</var>(<var>P</var><sub>w</sub>), home producers make <var>S</var>(<var>P</var><sub>w</sub>) and the difference is imported. A tariff of <var>τ</var> lifts the price to <var>P</var><sub>w</sub> + <var>τ</var>, or to <var>P</var><sub>0</sub> if that is lower, at which point imports stop. A ban sends it straight to <var>P</var><sub>0</sub>, the price at which the home market clears alone.</li>
+      </ul>
+
+      <h3>Solving for the new price</h3>
+      <p>Write the supply after a drought, strike or cost rise as <var>S</var><sub>1</sub>(<var>P</var>) = <var>k</var><sub>q</sub> <var>S</var>(<var>k</var><sub>p</sub>(<var>P</var> − <var>u</var>)), where a strike sets <var>k</var><sub>q</sub> = 1 − <var>s</var>, a drought sets <var>k</var><sub>q</sub> = <var>k</var><sub>p</sub> = 1 − <var>s</var>, and anything not mentioned is 1 or 0. The market clears where <var>D</var>(<var>P</var><sub>b</sub>) = <var>S</var><sub>1</sub>(<var>P</var><sub>b</sub> − <var>t</var>). For straight lines <var>D</var> = <var>a</var> − <var>bP</var> and <var>S</var> = <var>c</var> + <var>dP</var> that is one linear equation:</p>
+      <p class="eq"><var>P</var><sub>b</sub> = [<var>a</var> − <var>k</var><sub>q</sub><var>c</var> + <var>k</var><sub>q</sub><var>k</var><sub>p</sub><var>d</var>(<var>u</var> + <var>t</var>)] / (<var>b</var> + <var>k</var><sub>q</sub><var>k</var><sub>p</sub><var>d</var>)</p>
+      <p>Two corners are checked first. If buyers want nothing at the lowest price at which any seller will sell, the market closes. If the supply line starts on the quantity axis and buyers want less than that starting quantity, the sellers' price is pinned at zero and buyers take what they want at a price equal to the tax or the extra cost.</p>
+      <p>For constant-elasticity curves with no tax and no cost rise there is also a closed form:</p>
+      <p class="eq"><var>P</var> = <var>P</var><sub>0</sub> (<var>k</var><sub>q</sub> <var>k</var><sub>p</sub><sup><var>e</var><sub>s</sub></sup>)<sup>−1 / (<var>e</var><sub>d</sub> + <var>e</var><sub>s</sub>)</sup></p>
+      <p>With a tax or a cost per unit the equation (<var>P</var><sub>b</sub> / <var>P</var><sub>0</sub>)<sup>−<var>e</var><sub>d</sub></sup> = ((<var>P</var><sub>b</sub> − <var>t</var>) / <var>P</var><sub>0</sub>)<sup><var>e</var><sub>s</sub></sup> has no solution in closed form. The tool solves it for the quantity instead of the price. For any quantity <var>Q</var>, buyers will pay <var>P</var><sub>0</sub>(<var>Q</var> / <var>Q</var><sub>0</sub>)<sup>−1 / <var>e</var><sub>d</sub></sup> and sellers need <var>P</var><sub>0</sub>(<var>Q</var> / <var>Q</var><sub>0</sub>)<sup>1 / <var>e</var><sub>s</sub></sup> plus the tax or cost. The first falls and the second rises as <var>Q</var> rises, so they cross exactly once, and the tool finds the crossing by bisection on the logarithm of <var>Q</var>: it halves an interval known to contain it until the two ends are neighbouring floating-point numbers. Each price is then read from its own curve. Solving for the price directly would give one of the two prices as the difference of two nearly equal numbers whenever the tax is far larger than what sellers keep, or a subsidy leaves buyers paying almost nothing, and that difference loses most of its digits. A test checks every solution by putting it back into both curves, and against the closed forms that exist when both elasticities are 1.</p>
+      <p>Two guards keep the tool inside what it can show. A shock smaller than a millionth of the starting price (or a millionth of one per cent of the harvest) is refused as too small to see, and a result that would move a price or the quantity to more than a million times, or less than a millionth of, where it started is refused as meaningless: no curve fitted near one point says anything that far from it.</p>
+
+      <h3>Surplus</h3>
+      <p>When the price buyers pay moves from <var>P</var><sub>0</sub> to <var>P</var><sub>b</sub> and every buyer can still buy what they want at the new price, their surplus changes by the area to the left of the demand curve between the two prices. Sellers' surplus is the area to the left of their supply curve below the price they keep:</p>
+      <p class="eq">Δ buyers = −∫ <var>D</var>(<var>P</var>) d<var>P</var>, from <var>P</var><sub>0</sub> to <var>P</var><sub>b</sub><br>Δ sellers = ∫ <var>S</var><sub>1</sub> d<var>P</var>, from 0 to <var>P</var><sub>s</sub> − ∫ <var>S</var> d<var>P</var>, from 0 to <var>P</var><sub>0</sub><br>Δ government = <var>t</var> × <var>Q</var></p>
+      <p>The integrals are done exactly: trapezoids for straight lines, and for constant-elasticity curves the antiderivatives <var>Q</var><sub>0</sub><var>P</var><sub>0</sub>(<var>P</var> / <var>P</var><sub>0</sub>)<sup>1 − <var>e</var><sub>d</sub></sup> / (1 − <var>e</var><sub>d</sub>), or <var>Q</var><sub>0</sub><var>P</var><sub>0</sub> ln <var>P</var> when <var>e</var><sub>d</sub> = 1, and <var>Q</var><sub>0</sub><var>P</var><sub>0</sub>(<var>P</var> / <var>P</var><sub>0</sub>)<sup>1 + <var>e</var><sub>s</sub></sup> / (1 + <var>e</var><sub>s</sub>). The three changes add up to a total, and the total with its sign reversed is the loss in the fourth tile. For a tax, a subsidy, a price control or a trade barrier that loss is the deadweight loss. For a drought, a strike or dearer inputs the page calls it a net loss, because resources have been destroyed or used up rather than trades discouraged.</p>
+      <p>Under a ceiling or a floor not everyone who wants to trade can, so it matters who gets to. The tool assumes the best case: under a ceiling the units go to the buyers who value them most, and under a floor the sales go to the sellers with the lowest costs, with nothing produced that is not sold. The loss is then the triangle between the curves over the trades that no longer happen. Any other way of sharing out the shortage makes the loss larger.</p>
+
+      <h3>The shaded areas</h3>
+      <p>Each change in surplus is cut into areas with one owner before and one after: tax taken from buyers, tax taken from sellers, the buyers' and sellers' parts of the deadweight triangle, and so on. The table under the diagram lists them, and each group's change is the sum of the areas it receives less the areas it gives up. The tests integrate the outline of every area numerically, for every shock and several hundred combinations of curve shape and size, and compare the result with the exact figure. They also recount buyers' and sellers' surplus one small unit at a time from each unit's value and cost.</p>
+      <p>Some losses have no finite size. With a vertical demand curve, or a constant elasticity of demand of 1 or less, the area under the curve grows without limit as the quantity falls to zero. The tool then says so and gives no number. Others are finite but too tall to draw: under a low ceiling the buyers' part of the loss rises to what the last unit sold was worth, which can be many times the price. The price axis stretches to four times the highest price in the result and no further, and when an area still runs off the top the diagram says so; the table always gives the whole of it.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>What the elasticities are.</strong> Every result follows from the two elasticities you type. They are inputs, not findings, and for most real markets they are known only roughly. The examples use made-up numbers. An elasticity also describes a market near where it started, and a large shock runs far along curves whose shape out there is a guess: with a constant demand elasticity of 0.3 the tool will tell you that losing 90% of every harvest multiplies the price 75 times.</li>
+        <li><strong>What happens in other markets.</strong> This is one market on its own. A drought in wheat raises the price of bread and feed, a tax on petrol moves people to trains, and a subsidy has to be paid for by a tax somewhere else whose own deadweight loss is not counted here.</li>
+        <li><strong>Who gets the goods under a price control.</strong> The loss shown assumes they reach the people who value them most. Edward Glaeser and Erzo Luttmer found that in rent-controlled New York a significant fraction of flats appeared to be in the wrong hands, a cost on top of the triangle. Queues, favours and black markets add more.</li>
+        <li><strong>Whether a gain to one person is worth a loss to another.</strong> Surplus counts a pound as a pound whoever holds it. A transfer from poor buyers to rich sellers shows up as no loss at all. Surplus is also only an approximation to the money that would exactly compensate someone for a price change. Robert Willig set out conditions under which the error is small; George McKenzie's comment on his paper argues that they hold only when the changes in price and income are fairly small, which a large shock here is not.</li>
+        <li><strong>Anything about firms with power over the price.</strong> The supply curve assumes many sellers who take the price as given. With one seller or a few, a tax can be passed on by more than its own size and the triangles are not the whole loss.</li>
+        <li><strong>The path from before to after.</strong> The tool jumps from one resting point to the next. Real prices overshoot, stocks are run down, and supply that is fixed this season can respond next year, so the elasticity itself depends on how long you wait.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Take the elasticities from data instead of typing them, for example from the estimates the Price Elasticity Lab on Day 38 produces.</li>
+        <li>Add a second, related market so that a shock to one good moves the demand for its substitute.</li>
+        <li>Let the visitor choose how a shortage is shared out, at random or by queue, and show how much the loss grows beyond the best case.</li>
+        <li>Add taxes charged as a percentage of the price, which have a closed form for constant-elasticity curves, and compare them with a tax per unit that raises the same revenue.</li>
+        <li>Give sellers power over the price and show how the incidence of a tax changes, following Weyl and Fabinger.</li>
+        <li>Make the import case two-sided, with a world supply curve that slopes up, so that a large country's tariff lowers the world price.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Marshall, A. (1890). <em>Principles of Economics</em>. London: Macmillan.</li>
+        <li>Humphrey, T. M. (1992). Marshallian cross diagrams and their uses before Alfred Marshall: the origins of supply and demand geometry. Federal Reserve Bank of Richmond <em>Economic Review</em>, March/April 1992.</li>
+        <li>Dupuit, J. (1844). De la mesure de l'utilité des travaux publics. <em>Annales des ponts et chaussées</em>. Reprinted in <em>Revue française d'économie</em>, 10(2), 55-94 (1995).</li>
+        <li>Harberger, A. C. (1971). Three basic postulates for applied welfare economics: an interpretive essay. <em>Journal of Economic Literature</em>, 9(3), 785-797.</li>
+        <li>Hines, J. R. (1999). Three sides of Harberger triangles. <em>Journal of Economic Perspectives</em>, 13(2), 167-188.</li>
+        <li>Willig, R. D. (1976). Consumer's surplus without apology. <em>American Economic Review</em>, 66(4), 589-597.</li>
+        <li>McKenzie, G. W. (1979). Consumer's surplus without apology: comment. <em>American Economic Review</em>, 69(3), 465-468.</li>
+        <li>Glaeser, E. L., and Luttmer, E. F. P. (2003). The misallocation of housing under rent control. <em>American Economic Review</em>, 93(4), 1027-1046.</li>
+        <li>Bulow, J., and Klemperer, P. (2012). Regulated prices, rent seeking, and consumer surplus. <em>Journal of Political Economy</em>, 120(1), 160-186.</li>
+        <li>Weyl, E. G., and Fabinger, M. (2013). Pass-through as an economic tool: principles of incidence under imperfect competition. <em>Journal of Political Economy</em>, 121(3), 528-583.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "question": "When a drought, a strike, a tax or a trade barrier hits a market, how far do the price and quantity move, and who gains or loses?",
+  "finding": "With a demand elasticity of 0.3 and a supply elasticity of 0.5, a drought that takes a fifth of every harvest raises the price 52% and leaves sellers as a group 227 better off while buyers lose 486; with a demand elasticity of 1.5 the same drought costs sellers 54.",
+  "limit": "Every result follows from the two elasticities typed in, which for a real market are known only roughly, and the tool looks at one market on its own.",
+  "sources": [],
+  "built": "2026-10-13"
+}
