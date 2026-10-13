@@ -1,0 +1,7 @@
+{
+  "question": "At what tax rate does revenue peak, and how much does the answer depend on how strongly people are assumed to respond?",
+  "finding": "For a top-bracket tax with a Pareto parameter of 1.5, revenue peaks at 72.7% with an elasticity of taxable income of 0.25, but anywhere from 84.7% to 62.5% across the range of estimates (0.12 to 0.40) that the main review calls the best available.",
+  "limit": "The elasticities are inputs, not estimates for any country, and the rate that raises the most revenue is not the best rate for a government that gives any weight to the people taxed.",
+  "sources": [],
+  "built": "2026-10-13"
+}

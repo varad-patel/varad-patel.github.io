@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Laffer Curve Explorer · 365 projects</title>
+  <meta name="description" content="Choose how people respond to a tax, and see the revenue curve, the revenue-maximising rate and how far that rate moves with each assumption.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .controls .controls { padding-top: 16px; border-top: 1px solid var(--grid); }
+    .stat .v { font-size: 1.45rem; }
+    .out > h2 { margin-top: 6px; padding-top: 18px; border-top: 1px solid var(--rule); }
+    .rt caption { font-weight: 600; font-size: 0.86rem; color: var(--slate); }
+    .rt th.num { white-space: normal; }
+    .rt td.num { white-space: normal; }
+    .rt th[scope="row"] { font-weight: 600; white-space: normal; border-bottom: 1px solid var(--grid); }
+    /* On a narrow screen each row becomes a short list of labelled lines, so nothing scrolls sideways. */
+    @media (max-width: 700px) {
+      .rt, .rt tbody, .rt tr, .rt th, .rt td { display: block; }
+      .rt caption { display: block; }
+      .rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .rt th[scope="row"], .rt td { border: 0; padding: 1px 0; }
+      .rt td { display: flex; justify-content: space-between; gap: 14px; text-align: right; }
+      .rt td::before { content: attr(data-label); color: var(--slate); text-align: left; }
+    }
+    .jump { gap: 4px 16px; }
+    .jump a { padding: 4px 0; }
+    .p-sec .eq { white-space: normal; }
+  </style>
+</head>
+<body class="proj" data-day="45">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Laffer Curve Explorer</h1>
+      <p class="lede">Raise a tax rate far enough and revenue falls. Choose how people respond to tax, and see the revenue curve, the rate at its peak and how far that peak moves with each assumption.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Laffer curve explorer">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>On load the tool shows a top-bracket tax with a Pareto parameter of 1.5 and an elasticity of taxable income of 0.25: revenue peaks at 72.7%, the 73% of Diamond and Saez. Press the two "2012 review" buttons and the peak moves from 84.7% at an elasticity of 0.12 to 62.5% at 0.40, so the range of estimates that review calls the best available puts the peak anywhere across 22 percentage points. Switch to "A household chooses its hours" and it is 66.7% when the revenue is handed back; press "Full income effect, nothing handed back" and there is no peak below 100% at all.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>A tax rate of zero raises nothing. A rate of 100% raises nothing either, if people stop doing whatever is taxed once they keep none of the reward. Somewhere between the two, revenue is at its highest, and beyond that point a lower rate would bring in more money. That is the whole of the Laffer curve, and as arithmetic it is not in dispute. It is named after the economist Arthur Laffer, who is said to have sketched it on a restaurant napkin in Washington in 1974; the journalist Jude Wanniski gave it the name in a 1978 article. Laffer's own account says that he did not invent the idea, and credits earlier writers including Ibn Khaldun and Keynes.</p>
+      <p>What is in dispute is where the peak is, and the answer depends on one thing: how strongly the taxed base responds to the rate. The most used measure is the <strong>elasticity of taxable income</strong>, the percentage by which reported income falls when the share of an extra rupee that a taxpayer keeps falls by one per cent. Martin Feldstein's study of the 1986 United States reform put it at "at least one", which would place the peak of a flat tax at 50% or below. Later work with more reforms and better controls found much less. The review by Saez, Slemrod and Giertz in 2012 concluded that there were no truly convincing estimates of the long-run elasticity and that the best available ranged from 0.12 to 0.40, and that even at the top of that range the top United States rate was far from the peak. Diamond and Saez combined the mid-range value of 0.25 with the shape of the top of the income distribution and obtained a revenue-maximising top rate of 73%, counting all taxes together, against 42.5% in the United States at the time.</p>
+      <p>Models of the whole economy give the same broad picture with a different emphasis. Trabandt and Uhlig calculated that the United States could raise 30% more revenue by raising taxes on labour and fourteen European Union countries taken together 8% more: both on the left of the peak, Europe much nearer to it. The same paper finds that in those European countries 54% of a cut in labour taxes and 79% of a cut in capital taxes would pay for itself, that Denmark and Sweden are beyond the peak for their taxes on capital, and that once the model lets workers' skills respond, the United States and Europe both sit close to the peak for taxes on labour. Mankiw and Weinzierl, in a standard growth model, found that half of a cut in capital taxes pays for itself, and 17% of a cut in labour taxes under their assumptions. When the IGM Forum asked leading economists in 2012 whether a cut in United States federal income tax rates would raise enough extra income to increase revenue within five years, none of the 33 who answered agreed and 28 disagreed. Asked whether the same cut would raise GDP, 14 agreed, 14 were uncertain and 3 disagreed.</p>
+      <p>So each of the two political uses of the curve claims more than the evidence gives it. "Tax cuts pay for themselves" is true to the right of the peak, and the studies above place most broad taxes on income in rich countries to the left of it, with the capital taxes of Denmark and Sweden as the exceptions they report. "Behavioural responses can be ignored" is not supported either: a large part of the cost of a tax cut does come back, more for taxes on capital than on labour, and a narrow tax that is easy to avoid can have its peak at a low rate. Two further points cut across the argument. The elasticity is not a constant of nature. It depends on how many ways the tax system offers to relabel or move income, so a government can shift its own Laffer curve by broadening the base: Diamond and Saez's formula gives 54% with the elasticity Gruber and Saez estimated for taxable income at the top, and 80% with their estimate for income before deductions. And the peak is not a target. It is the rate a government would choose only if it gave no weight at all to the people paying; with any weight, the best rate is lower, and with other aims, such as limiting the bargaining power of the highest paid, some economists argue it could be higher.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>Taxable income shrinks</h3>
+      <p>Each taxpayer would report income <var>z</var><sub>0</sub> at a zero rate and reports</p>
+      <p class="eq"><var>z</var>(<var>τ</var>) = <var>z</var><sub>0</sub> (1 − <var>τ</var>)<sup><var>e</var></sup></p>
+      <p>at rate <var>τ</var>. The exponent <var>e</var> is the elasticity of taxable income with respect to the net-of-tax rate 1 − <var>τ</var>, and here it is the same at every rate and for everyone. There are no income effects in this model. For one flat rate on all income, revenue per rupee of zero-rate income is</p>
+      <p class="eq"><var>R</var>(<var>τ</var>) = <var>τ</var> (1 − <var>τ</var>)<sup><var>e</var></sup>, &nbsp; highest at &nbsp; <var>τ</var>* = 1 / (1 + <var>e</var>)</p>
+      <p>which follows from setting d ln <var>R</var> / d<var>τ</var> = 1/<var>τ</var> − <var>e</var>/(1 − <var>τ</var>) to zero. For a rate that applies only above a high threshold, suppose incomes above it follow a Pareto distribution with parameter <var>a</var>, a shape that fits the top of the income distribution well in many countries and periods. Then mean income above the threshold is <var>a</var>/(<var>a</var> − 1) times the threshold however far incomes shrink, while the number of people above it shrinks as (1 − <var>τ</var>)<sup><var>a</var><var>e</var></sup>. Revenue from the bracket is therefore proportional to</p>
+      <p class="eq"><var>R</var>(<var>τ</var>) = <var>τ</var> (1 − <var>τ</var>)<sup><var>a</var><var>e</var></sup>, &nbsp; highest at &nbsp; <var>τ</var>* = 1 / (1 + <var>a</var> <var>e</var>)</p>
+      <p>which is the formula in Saez (2001) and Diamond and Saez (2011). The flat tax is the case <var>a</var> = 1. A test for this page draws 200,000 Pareto incomes, shrinks them, counts the tax above the threshold and recovers the same curve. If a rupee left with these taxpayers is worth <var>g</var> rupees of revenue to the government, the best rate is</p>
+      <p class="eq"><var>τ</var> = (1 − <var>g</var>) / (1 − <var>g</var> + <var>a</var> <var>e</var>)</p>
+      <p>which is below the peak for any <var>g</var> above zero. Saez's general formula also allows income effects, with separate uncompensated and compensated elasticities <var>ζ</var><sup>u</sup> and <var>ζ</var><sup>c</sup>:</p>
+      <p class="eq"><var>τ</var> = (1 − <var>g</var>) / (1 − <var>g</var> + <var>ζ</var><sup>u</sup> + <var>ζ</var><sup>c</sup> (<var>a</var> − 1))</p>
+      <h3>A household chooses its hours</h3>
+      <p>The second model builds the response from a household's choice, so that an income effect can appear. A household earning a wage of 1 an hour works <var>h</var> hours, pays tax <var>τ</var><var>h</var> and receives a lump sum <var>T</var>, which it treats as fixed. It chooses <var>h</var> to maximise</p>
+      <p class="eq"><var>c</var><sup>1−<var>γ</var></sup> / (1 − <var>γ</var>) − <var>h</var><sup>1+1/<var>φ</var></sup> / (1 + 1/<var>φ</var>), &nbsp; with <var>c</var> = (1 − <var>τ</var>) <var>h</var> + <var>T</var></p>
+      <p>(the first term is log <var>c</var> when <var>γ</var> = 1). <var>φ</var> is the Frisch elasticity of hours. <var>γ</var>, between 0 and 1, sets the income effect: at 0 the household's hours depend on the wage alone, and at 1 a fall in the wage that leaves it poorer makes it work exactly as much as before, the case consistent with hours that show no trend as wages grow over decades. The government returns a share <var>ρ</var> of the revenue as the lump sum, so <var>T</var> = <var>ρ</var> <var>τ</var> <var>h</var>, and spends the rest on things that do not change the choice of hours. The first-order condition (1 − <var>τ</var>) <var>c</var><sup>−<var>γ</var></sup> = <var>h</var><sup>1/<var>φ</var></sup> with <var>c</var> = <var>h</var> (1 − (1 − <var>ρ</var>) <var>τ</var>) gives hours relative to a zero rate,</p>
+      <p class="eq"><var>h</var>(<var>τ</var>) = [ (1 − <var>τ</var>) / (1 − (1 − <var>ρ</var>) <var>τ</var>)<sup><var>γ</var></sup> ]<sup><var>κ</var></sup>, &nbsp; <var>κ</var> = <var>φ</var> / (1 + <var>γ</var> <var>φ</var>)</p>
+      <p>and revenue <var>R</var>(<var>τ</var>) = <var>τ</var> <var>h</var>(<var>τ</var>). The peak is where</p>
+      <p class="eq">1/<var>τ</var> − <var>κ</var>/(1 − <var>τ</var>) + <var>κ</var> <var>γ</var> (1 − <var>ρ</var>) / (1 − (1 − <var>ρ</var>) <var>τ</var>) = 0</p>
+      <p>which the tool solves by bisection. At the two ends it has a closed form: 1 / (1 + <var>κ</var>) when everything is handed back, and 1 / (1 + (1 − <var>γ</var>) <var>κ</var>) when nothing is. With <var>γ</var> = 1 and nothing handed back the left-hand side is 1/<var>τ</var>, which is never zero: hours do not move and revenue rises all the way to 100%. What is done with the money matters as much as the tax, because handing it back removes the income effect that was holding hours up. A test solves the household's problem by direct search and checks it against the formula.</p>
+      <h3>What the tool reports</h3>
+      <p>Besides the peak, the tool compares any rate you choose with it. "Lost to behaviour from a small rise" is the share of the extra revenue a small increase would bring with no response that disappears because the base shrinks,</p>
+      <p class="eq">−<var>τ</var> <var>B</var>′(<var>τ</var>) / <var>B</var>(<var>τ</var>), &nbsp; which is &nbsp; <var>a</var> <var>e</var> <var>τ</var> / (1 − <var>τ</var>) &nbsp; in the first model</p>
+      <p>where <var>B</var> is the base. Read the other way, it is the share of a small rate cut that pays for itself. It is 100% at the peak, by definition. The sensitivity chart redraws the peak across the full range of one parameter with the others held, and the table under it gives the peak with each parameter halved and doubled, or at the two ends of its scale.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Where any country's peak is.</strong> The elasticities are sliders. The page shows what follows from a value, and the evidence on the values themselves is thin and contested: the same 2012 review that gives the range of 0.12 to 0.40 says none of the long-run estimates is truly convincing.</li>
+        <li><strong>What the best tax rate is.</strong> Maximum revenue is the aim of a government that cares nothing for the people taxed. Any weight on them lowers the best rate, and the model has nothing to say about what the revenue buys.</li>
+        <li><strong>What happens far from today's rates.</strong> A constant elasticity is assumed to hold from 0% to 100%. It has been estimated only from reforms inside the range of rates that countries have actually used, so both ends of each curve are extrapolation.</li>
+        <li><strong>How a real tax system adds up.</strong> There is one tax and one base here. Real taxpayers face income tax, payroll taxes and taxes on spending together, and income pushed out of one base often turns up in another, which makes the true revenue loss smaller than the response of any single base suggests.</li>
+        <li><strong>The long run.</strong> Nothing here saves, invests, trains, migrates or starts a business, and the responses that take decades are the hardest to measure. The household model has one type of worker with a fixed wage and no decision about whether to work at all.</li>
+        <li><strong>That the elasticity is fixed.</strong> It depends on the rules: how broad the base is, how easily income can be relabelled or moved, how well the tax is enforced. Changing those moves the curve itself.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Build the curve for a whole schedule of brackets from an income distribution, so that the top-bracket and flat-tax cases become two ends of one tool.</li>
+        <li>Add the decision whether to work at all, which matters most at low incomes, and let workers differ in their wages.</li>
+        <li>Add capital and a second tax, and show how much of a cut in each pays for itself in the long run, as Mankiw and Weinzierl and Trabandt and Uhlig do.</li>
+        <li>Let income shift between two tax bases, so that the response of one base overstates the loss of revenue.</li>
+        <li>Split the elasticity into real effort, avoidance and bargaining over pay, following Piketty, Saez and Stantcheva, each with its own slider.</li>
+        <li>Estimate an elasticity from published data around a real reform and place that country on its own curve, with the uncertainty shown.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Saez, E. (2001). Using elasticities to derive optimal income tax rates. <em>Review of Economic Studies</em>, 68(1), 205-229. Equation 9 is the top-rate formula with income effects.</li>
+        <li>Diamond, P., and Saez, E. (2011). The case for a progressive tax: from basic research to policy recommendations. <em>Journal of Economic Perspectives</em>, 25(4), 165-190.</li>
+        <li>Saez, E., Slemrod, J., and Giertz, S. H. (2012). The elasticity of taxable income with respect to marginal tax rates: a critical review. <em>Journal of Economic Literature</em>, 50(1), 3-50.</li>
+        <li>Feldstein, M. (1995). The effect of marginal tax rates on taxable income: a panel study of the 1986 Tax Reform Act. <em>Journal of Political Economy</em>, 103(3), 551-572.</li>
+        <li>Gruber, J., and Saez, E. (2002). The elasticity of taxable income: evidence and implications. <em>Journal of Public Economics</em>, 84(1), 1-32.</li>
+        <li>Trabandt, M., and Uhlig, H. (2011). The Laffer curve revisited. <em>Journal of Monetary Economics</em>, 58(4), 305-327. Figures quoted here are from the abstract of the working-paper version, NBER Working Paper 15343.</li>
+        <li>Mankiw, N. G., and Weinzierl, M. (2006). Dynamic scoring: a back-of-the-envelope guide. <em>Journal of Public Economics</em>, 90(8-9), 1415-1433.</li>
+        <li>Piketty, T., Saez, E., and Stantcheva, S. (2014). Optimal taxation of top labor incomes: a tale of three elasticities. <em>American Economic Journal: Economic Policy</em>, 6(1), 230-271.</li>
+        <li>IGM Forum (2012). "Laffer Curve", survey of the Economic Experts Panel, 26 June 2012. Kent A. Clark Center for Global Markets, University of Chicago Booth School of Business.</li>
+        <li>Laffer, A. B. (2004). <em>The Laffer Curve: Past, Present, and Future</em>. Heritage Foundation Backgrounder No. 1765, 1 June 2004. The account of the 1974 dinner, and of Ibn Khaldun and Keynes, is Laffer's own in this paper.</li>
+        <li>Wanniski, J. (1978). Taxes, revenues, and the "Laffer curve". <em>The Public Interest</em>, Winter 1978. Cited as Laffer (2004) gives it; the article itself was not opened for this page.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
