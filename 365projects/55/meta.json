@@ -1,0 +1,10 @@
+{
+  "question": "How closely does unemployment follow output, and is the link the same in every country and every period?",
+  "finding": "From 1961 to 2025 a year with one more point of growth went with a change in unemployment 0.44 points lower in the United States (95% interval -0.52 to -0.35) and 0.02 points lower in Japan; one slope forced on all seven G7 countries gives -0.13, which describes none of them.",
+  "limit": "The slope records how output and unemployment have moved together in yearly data, not what a policy that added a point of growth would do to jobs.",
+  "sources": [
+    "World Bank",
+    "OECD Economic Outlook No 119"
+  ],
+  "built": "2026-10-13"
+}

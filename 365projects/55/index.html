@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Unemployment and Okun's Law Explorer · 365 projects</title>
+  <meta name="description" content="Pick countries and years and see how closely unemployment follows output: Okun's coefficient for each country, for a panel of them and for each period, with the years that break the rule.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .d55-list { max-height: 210px; overflow-y: auto; border: 1px solid var(--grid); background: #fff; padding: 8px 10px; display: grid; gap: 4px; }
+    .d55-list .check, .d55-list p { overflow-wrap: anywhere; margin: 0; }
+    .d55-words { margin: 0; line-height: 1.5; overflow-wrap: anywhere; }
+    .d55-focus { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    .d55-miss { margin: 0; padding-left: 1.4em; font-size: 0.92rem; line-height: 1.5; display: grid; gap: 4px; }
+    .d55-scroll { max-height: min(640px, 70vh); overflow-y: auto; }
+    .d55-tbl { font-size: 0.86rem; }
+    .d55-tbl th, .d55-tbl td { padding: 6px 8px; }
+    /* The kit keeps numeric cells on one line. These headings are phrases and some cells are text: let them wrap. */
+    .d55-tbl thead th, .d55-tbl thead th.num, .d55-tbl td.d55-wrap, .d55-tbl caption { white-space: normal; }
+    .d55-tbl thead th { vertical-align: bottom; font-weight: 600; position: sticky; top: 0; background: var(--paper); }
+    .d55-tbl tbody th { font-weight: 700; border-bottom: 1px solid var(--grid); white-space: normal; overflow-wrap: break-word; min-width: 6.5em; }
+    .d55-tbl tbody th.d55-short { white-space: nowrap; }
+    .d55-bar { min-width: 72px; vertical-align: middle; }
+    .d55-whisk { position: relative; height: 14px; }
+    .d55-whisk i { position: absolute; display: block; }
+    .d55-whisk .zero { top: 0; bottom: 0; width: 1px; background: var(--slate); }
+    .d55-whisk .span { top: 6px; height: 2px; min-width: 2px; background: var(--ink); }
+    .d55-whisk .dot { top: 3px; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%; background: var(--ink); }
+    /* Seven columns need about 600 pixels. Where the results column is narrower than that, on a phone and on a
+       desktop window of middling width alike, each row becomes a short list. The rule is written twice: once for the
+       width of the results column, and once for the width of the screen in browsers without container queries. */
+    #d55-countries, #d55-periods { container-type: inline-size; }
+    @container (max-width: 600px) {
+      .d55-tbl thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+      .d55-tbl, .d55-tbl tbody, .d55-tbl tr, .d55-tbl th, .d55-tbl td, .d55-tbl caption { display: block; }
+      .d55-tbl tr { padding: 8px 0; border-bottom: 1.5px solid var(--ink); }
+      .d55-tbl tbody th { border: 0; padding: 0 0 4px; font-size: 0.95rem; }
+      .d55-tbl td, .d55-tbl td.num { display: flex; justify-content: space-between; gap: 14px; border: 0; padding: 2px 0; text-align: right; white-space: normal; overflow-wrap: anywhere; }
+      .d55-tbl td::before { content: attr(data-label); color: var(--slate); text-align: left; flex: 1 1 55%; white-space: normal; }
+      .d55-tbl td.d55-bar { display: block; padding: 4px 4px 2px; }
+      .d55-tbl td.d55-bar::before { content: none; }
+    }
+    @media (max-width: 720px) {
+      .d55-tbl thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+      .d55-tbl, .d55-tbl tbody, .d55-tbl tr, .d55-tbl th, .d55-tbl td, .d55-tbl caption { display: block; }
+      .d55-tbl tr { padding: 8px 0; border-bottom: 1.5px solid var(--ink); }
+      .d55-tbl tbody th { border: 0; padding: 0 0 4px; font-size: 0.95rem; }
+      .d55-tbl td, .d55-tbl td.num { display: flex; justify-content: space-between; gap: 14px; border: 0; padding: 2px 0; text-align: right; white-space: normal; overflow-wrap: anywhere; }
+      .d55-tbl td::before { content: attr(data-label); color: var(--slate); text-align: left; flex: 1 1 55%; white-space: normal; }
+      .d55-tbl td.d55-bar { display: block; padding: 4px 4px 2px; }
+      .d55-tbl td.d55-bar::before { content: none; }
+    }
+    .jump { display: none; flex-wrap: wrap; gap: 4px 18px; font-size: 0.9rem; margin-bottom: 12px; }
+    /* With controls 420 pixels wide, a window under about 1,040 pixels leaves the results less room than a phone gives
+       them. Below that the controls go on top, as they do on a phone, and the jump links appear. */
+    @media (max-width: 1040px) { .jump { display: flex; } .tool-grid.wide-controls { grid-template-columns: minmax(0, 1fr); } }
+    .p-sec .eq { white-space: normal; }
+  </style>
+</head>
+<body class="proj" data-day="55">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Unemployment and Okun's Law Explorer</h1>
+      <p class="lede">When an economy grows fast, unemployment falls; when it shrinks, unemployment rises. Pick countries and years and see how tight that link is, how much it differs from one country and one period to the next, and which years broke it.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Okun's law by country, panel and period">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>On load the tool fits the seven G7 countries from 1961 to 2025 with the OECD's unemployment series. In the United States a year with one more point of growth went with a change in unemployment 0.44 points lower (95% interval −0.52 to −0.35), growth accounts for 62% of the year-to-year variation, and unemployment held steady at growth of 3.0% a year (2.5% to 3.4%). Japan's coefficient over the same years is −0.02. Forcing one slope on all seven, with an intercept for each, gives −0.13 (−0.15 to −0.10) over 423 country-years: a number that describes none of them. The year furthest from that line is the United States in 2020, when unemployment rose by 4.39 points, 3.75 more than the line predicts.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>In 1962 Arthur Okun asked how much the United States could produce at full employment, which he took to be an unemployment rate of 4%. To answer he needed a rule for converting unemployment into output, and he found one in the data: quarter by quarter from 1947 to 1960, each extra percentage point of growth went with unemployment about 0.3 points lower. Turned round, that became the rule of thumb that a point of unemployment costs about three per cent of output. The regularity has carried his name ever since.</p>
+      <p>It is used constantly. A forecaster who has a view on growth uses it to get a view on unemployment. A finance ministry uses it backwards, to judge from unemployment how far output is below what the economy could produce. And each recession brings claims that the law has broken, that jobs no longer follow output: the "jobless recoveries" debate.</p>
+      <p>Two findings from the research frame what the tool shows. Ball, Leigh and Loungani (2017) tested the law on the United States since 1948 and on 20 advanced economies since 1980 and concluded that it is strong and stable in most countries, but that the coefficient varies a great deal between them: in the working-paper version, about −0.15 in Japan, −0.45 in the United States and −0.85 in Spain. Knotek (2007) stressed the other side: the relationship between changes in unemployment and growth has varied considerably over time and over the business cycle, so it is a statistical regularity to be used with its instability in mind, not a structural law.</p>
+      <p>Why would the coefficient be far below one, and why would it differ? Firms do not shed workers in step with output: they cut hours, hold on to trained staff and let productivity fall. People who lose jobs sometimes leave the labour force and are not counted as unemployed. How far each of these happens depends on a country's labour market, which is why the same fall in output moves unemployment very differently in Madrid and in Tokyo.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The data</h3>
+      <p>Real GDP growth is the World Bank's yearly figure. Unemployment is a percentage of the labour force and comes in two series, which the tool never joins. The OECD's series from Economic Outlook No 119 follows national definitions and reaches back to 1960 for the longest of its 45 countries; where a country changed its method, the OECD has linked the older figures backwards. The second is the International Labour Organization's modelled estimates as published by the World Bank: one method for 181 countries from 1991 to 2024, with gaps filled by the ILO's models. The World Bank's series also carries a figure for 2025. That figure is the ILO's projection, made before the year was over from forecasts of growth, and it is left out. A fit uses one of the two series for every country in it, and each chart, table and result in the tool names the one it used.</p>
+      <h3>The law in changes</h3>
+      <p>For country <var>i</var> and year <var>t</var>, with <var>u</var> the unemployment rate and <var>g</var> real GDP growth, the tool fits</p>
+      <p class="eq"><var>u</var><sub><var>it</var></sub> − <var>u</var><sub><var>i</var>,<var>t</var>−1</sub> = <var>a</var><sub><var>i</var></sub> + <var>b</var> × <var>g</var><sub><var>it</var></sub> + <var>e</var><sub><var>it</var></sub></p>
+      <p>The slope <var>b</var> is the Okun coefficient: points of unemployment per point of growth. The intercept is how much unemployment rises in a year of no growth, and the line crosses zero at</p>
+      <p class="eq"><var>g</var>* = −<var>a</var> ⁄ <var>b</var></p>
+      <p>the growth rate at which unemployment neither rises nor falls. It is above zero because the labour force and productivity both grow: output has to grow just to keep the same share of people in work.</p>
+      <h3>The law in gaps</h3>
+      <p>The second form compares levels with their trends:</p>
+      <p class="eq"><var>u</var><sub><var>it</var></sub> − <var>u</var>*<sub><var>it</var></sub> = <var>a</var><sub><var>i</var></sub> + <var>b</var> × 100 × (<var>y</var><sub><var>it</var></sub> − <var>y</var>*<sub><var>it</var></sub>) + <var>e</var><sub><var>it</var></sub></p>
+      <p>where <var>y</var> is the logarithm of real GDP, built up from the growth rates, and the starred values are trends. Nobody observes the trends. The tool follows Ball, Leigh and Loungani and estimates them with the Hodrick-Prescott filter, which picks the trend <var>τ</var> that minimises</p>
+      <p class="eq">Σ (<var>x</var><sub><var>t</var></sub> − <var>τ</var><sub><var>t</var></sub>)² + <var>λ</var> × Σ (<var>τ</var><sub><var>t</var>+1</sub> − 2<var>τ</var><sub><var>t</var></sub> + <var>τ</var><sub><var>t</var>−1</sub>)²</p>
+      <p>The first sum keeps the trend near the data and the second keeps it from bending. The minimum has an exact solution, <var>τ</var> = (<var>I</var> + <var>λ</var><var>K</var>ᵀ<var>K</var>)<sup>−1</sup><var>x</var>, where <var>K</var> takes second differences. The smoothing number <var>λ</var> is a choice: 100 and 1,000 are the common values for yearly data and the two that Ball, Leigh and Loungani use, and 6.25 is the value Ravn and Uhlig (2002) derive for yearly data. Each trend is computed once over the country's whole unbroken run of years, so a year's gap does not change when you move the year sliders. Their estimates fit the gap equation without an intercept; the tool keeps one, which is close to zero when a country's whole run of years is fitted.</p>
+      <h3>One country, and a panel</h3>
+      <p>For one country the fit is ordinary least squares. For several, the tool gives every country its own intercept <var>a</var><sub><var>i</var></sub> and all of them one slope. That slope is the "within" estimator: subtract from each observation its own country's averages, then</p>
+      <p class="eq"><var>b</var> = Σ (<var>g</var><sub><var>it</var></sub> − <var>ḡ</var><sub><var>i</var></sub>)(<var>d</var><sub><var>it</var></sub> − <var>d̄</var><sub><var>i</var></sub>) ⁄ Σ (<var>g</var><sub><var>it</var></sub> − <var>ḡ</var><sub><var>i</var></sub>)²</p>
+      <p>with <var>d</var> standing for the left-hand side of whichever equation is in use. It is the same number that a regression with a dummy variable for each country gives. The separate intercepts matter: countries with high average growth and a different average drift in unemployment would otherwise tilt the line. The tool also reports the slope with one intercept for all, for comparison, and the share of the variation within countries that the line accounts for.</p>
+      <h3>Intervals</h3>
+      <p>With <var>N</var> observations in <var>G</var> countries, residual variance <var>s</var>² = Σ<var>e</var>² ⁄ (<var>N</var> − <var>G</var> − 1) and <var>S</var> the denominator above, the 95% interval for the slope is</p>
+      <p class="eq"><var>b</var> ± <var>t</var> × <var>s</var> ⁄ √<var>S</var></p>
+      <p>where <var>t</var> is the 97.5th percentile of Student's t distribution with <var>N</var> − <var>G</var> − 1 degrees of freedom. The growth rate that holds unemployment steady is a ratio of two estimates, so its interval is found by Fieller's method: it is every growth rate <var>g</var> at which the fitted line's own 95% band includes zero,</p>
+      <p class="eq">(<var>d̄</var> + <var>b</var>(<var>g</var> − <var>ḡ</var>))² ≤ <var>t</var>² × <var>s</var>² × [1 ⁄ <var>N</var> + (<var>g</var> − <var>ḡ</var>)² ⁄ <var>S</var>]</p>
+      <p>using the averages over all observations, which for a panel means the line with the average intercept. When the slope cannot be told from zero that set has no end: it is either every growth rate, or every rate outside one range. The tool then says that the rate cannot be pinned down, and which of the two it is.</p>
+      <h3>What is shown</h3>
+      <p>A country needs at least 8 years in the window to be fitted. The first chart plots every country-year and names the five furthest from the line. The second follows one country through time, with what its own line predicts drawn dashed. The first table fits each country separately, and the second refits the panel on fixed periods: 1961 to 1979, 1980 to 1999 and 2000 to 2025 for the OECD series, 1992 to 2007 and 2008 to 2024 for the ILO series.</p>
+      <p>As a check, the gap version with <var>λ</var> = 100 over 1980 to 2011 gives −0.52 for the United States, −0.16 for Japan and −0.91 for Spain, against Ball, Leigh and Loungani's −0.45, −0.15 and −0.85 from an earlier vintage of the data.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>What growth does to jobs.</strong> Output and unemployment are two readings of the same business cycle. The slope says how they have moved together. It does not say that adding a point of growth by some policy would remove that much unemployment.</li>
+        <li><strong>The slope of any one country, from the panel.</strong> The panel forces one slope on countries whose own slopes run from near zero to several tenths. Its coefficient is an average weighted towards countries whose growth varies most, and its narrow interval measures how well that average is pinned down, not how well it describes anyone.</li>
+        <li><strong>How sure to be.</strong> The intervals assume each country-year is an independent draw with the same spread. Recessions hit many countries in the same year and unemployment adjusts over several years, so the true uncertainty is wider than shown.</li>
+        <li><strong>The timing.</strong> Unemployment follows output with a delay. Yearly data absorbs some of that; Ball, Leigh and Loungani show that in quarterly data leaving out lags makes the coefficient too small, which is one reason Okun's own 0.3 is below modern estimates.</li>
+        <li><strong>Where the trends are.</strong> In the gap version both trends are smoothed out of the data, and a different smoothing number gives a different answer. The Hodrick-Prescott filter is also weakest at the two ends of a series. In the middle it smooths across the years on both sides; at the end it has only the past to go on, so the trend for the latest years moves when later years arrive. With Spain's figures up to 2009 and a smoothing number of 100, output in 2009 is 5.7% below trend. With the years to 2025 added, the same year is 0.8% above trend. The gaps are least reliable in the most recent years, exactly where people most want to use them.</li>
+        <li><strong>Much about countries with few surveys.</strong> The ILO warns that its imputed figures are not based on national data, are highly uncertain and should not be used to compare or rank countries, and the models that produce them take economic variables among their inputs. Across all 181 countries from 1992 to 2024 the coefficient is −0.05. How much of that weakness is real, in economies where much work is informal, and how much is the data, this page cannot say.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Use quarterly data with lags of growth, which is how the law is usually estimated and what the timing calls for.</li>
+        <li>Split the law in two, output to employment and employment to unemployment, to see whether a low coefficient comes from firms keeping workers or from workers leaving the labour force.</li>
+        <li>Let the slope differ between recessions and expansions, the asymmetry Knotek examined.</li>
+        <li>Add year effects to the panel, so that a recession common to every country does not count as evidence many times over, and report standard errors that allow for it.</li>
+        <li>Estimate the coefficient over a moving window to date the changes that the three fixed periods only hint at.</li>
+        <li>Add hours worked, to show how much of a fall in output is absorbed without anyone losing a job.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>World Bank, World Development Indicators: GDP growth, annual % (NY.GDP.MKTP.KD.ZG) and unemployment, total, % of total labour force, modelled ILO estimate (SL.UEM.TOTL.ZS). Licence: CC BY 4.0. Database last updated 8 October 2026; retrieved 12 October 2026. The unemployment series is used to 2024, the last year of estimates in the ILO modelled estimates of November 2025.</li>
+        <li>OECD (2026), OECD Economic Outlook No 119 (Edition 2026/1): unemployment rate (UNR), historical data to 2025; the projections for 2026 and 2027 are left out. Licence: not Creative Commons. The data are reused under section 3, "Data", of the OECD Terms and Conditions (last updated 1 July 2024), which allow anyone to extract, copy, adapt and share OECD data for any purpose, commercial use included, with credit to the OECD by the citation given here. The CC BY 4.0 licence that the OECD adopted on 1 July 2024 covers its written content, not this database. Retrieved 12 October 2026.</li>
+        <li>Okun, A. M. (1962). Potential GNP: its measurement and significance. <em>Proceedings of the Business and Economic Statistics Section</em>, American Statistical Association. Reprinted as Cowles Foundation Paper 190.</li>
+        <li>Ball, L., Leigh, D., and Loungani, P. (2017). Okun's law: fit at 50? <em>Journal of Money, Credit and Banking</em>, 49(7), 1413-1441. The country estimates quoted are from the working-paper version: Okun's law: fit at fifty? NBER Working Paper 18668 (2013).</li>
+        <li>Knotek, E. S. (2007). How useful is Okun's law? <em>Economic Review</em>, Federal Reserve Bank of Kansas City, 92(4), 73-103.</li>
+        <li>Hodrick, R. J., and Prescott, E. C. (1997). Postwar U.S. business cycles: an empirical investigation. <em>Journal of Money, Credit and Banking</em>, 29(1), 1-16.</li>
+        <li>Ravn, M. O., and Uhlig, H. (2002). On adjusting the Hodrick-Prescott filter for the frequency of observations. <em>Review of Economics and Statistics</em>, 84(2), 371-376.</li>
+        <li>Fieller, E. C. (1954). Some problems in interval estimation. <em>Journal of the Royal Statistical Society, Series B</em>, 16(2), 175-185.</li>
+        <li>International Labour Organization, Department of Statistics (January 2026). <em>ILO modelled estimates: methodological overview</em>. ILOSTAT. On imputed figures, and on which years are estimates (to 2024) and which are projections (2025 to 2027).</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
