@@ -1,0 +1,10 @@
+{
+  "question": "How much more are people with more education paid in the United States, and how much does that average say about one person?",
+  "finding": "For a woman of 35 working full time in the United States in 2024, the central estimate of pay is $40,900 with a high school diploma and $72,100 with a bachelor's degree, 76% more (95% interval 75% to 77%), yet 21% of the time a woman of 35 to 44 with only the diploma is paid more than one with the degree.",
+  "limit": "The gap compares different people, so it is not what a qualification would add for any one person, and it counts neither the cost of studying nor anyone who is not a full-time, year-round employee.",
+  "sources": [
+    "US Census Bureau, American Community Survey 2024 (Public Use Microdata Sample)",
+    "Montenegro and Patrinos (2014), World Bank"
+  ],
+  "built": "2026-10-13"
+}

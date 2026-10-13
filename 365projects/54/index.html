@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Education Premium · 365 projects</title>
+  <meta name="description" content="Enter your education, age and sex and see what full-time workers like you are paid in the United States, how much more the next qualification goes with, and how wide the range is for one person.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    #app .jump { display: flex; flex-wrap: wrap; gap: 6px 22px; font-weight: 600; font-size: 0.92rem; }
+    #app [id] { scroll-margin-top: 12px; }
+    #app h2 { font-size: 1.05rem; }
+    #app .summary { font-size: 0.98rem; line-height: 1.55; padding: 12px 14px; background: #fff; border: 1px solid var(--grid); }
+    #app .flags { display: grid; gap: 8px; }
+    #app .flags:empty { display: none; }
+    #app .e-block { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding-top: 18px; border-top: 1.5px solid var(--ink); min-width: 0; }
+    #app .note, #app .stat .n, #app .stat .l, #app .chart-sub, #app .summary { overflow-wrap: anywhere; }
+    #app .stats { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+    #app .stack .tbl th { white-space: normal; vertical-align: bottom; }
+    #app .stack .tbl td { white-space: normal; }
+    #app .stack .tbl td.num { white-space: nowrap; }
+    @media (max-width: 620px) {
+      .stack .tbl thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+      .stack .tbl, .stack .tbl tbody, .stack .tbl tr { display: block; width: 100%; }
+      .stack .tbl caption { display: block; }
+      .stack .tbl tr { padding: 8px 0; border-bottom: 1.5px solid var(--ink); }
+      .stack .tbl td { display: flex; justify-content: space-between; gap: 16px; border: 0; padding: 2px 0; text-align: right; }
+      #app .stack .tbl td.num { white-space: normal; }
+      .stack .tbl td::before { content: attr(data-label); font-weight: 600; text-align: left; flex: 0 0 42%; }
+    }
+  </style>
+</head>
+<body class="proj" data-day="54">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>The Education Premium</h1>
+      <p class="lede">Enter your education, age and sex. See what full-time workers like you are paid in the United States, how much more goes with the next qualification, and how little that average says about any one person.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Education and pay calculator, United States 2024">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>The page opens on a woman of 35 in the United States in 2024, comparing a high school diploma with a bachelor's degree. The central estimate of full-time pay is $40,900 a year against $72,100: 76% more, and with 730,583 people behind the fitted model that average is pinned down to between 75% and 77%. One person is another matter. The middle 80% of such women with a diploma are paid $21,900 to $73,700 and with a degree $38,000 to $142,900, and 21% of the time a woman of 35 to 44 with only the diploma is paid more than one with the degree.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Economists treat schooling as an investment. A student gives up some years of pay, and often pays fees, in exchange for higher pay afterwards; the skills bought this way are called human capital. In 1974 Jacob Mincer turned that idea into an equation simple enough to fit to any survey with pay, schooling and age in it. The logarithm of pay rises in a straight line with years of schooling, and rises and then flattens with years of experience. The slope on schooling reads as a percentage: about ten per cent more pay for each extra year, in this page's data as in surveys of dozens of countries.</p>
+      <p>The equation has been fitted thousands of times, and its weak points are well mapped. Thomas Lemieux, looking back after thirty years, concluded that it still works as a benchmark if experience is given a more flexible curve, schooling is allowed to bend, and each birth cohort is allowed its own return. Heckman, Lochner and Todd tested the model itself and rejected it. This page fits two versions, Mincer's straight line and one with a separate step for each qualification, and shows one place where the straight line fails: a finished bachelor's degree goes with far more pay than four more years on the line would predict.</p>
+      <p>The harder question is what such a gap means. People who stay longer in education differ from those who leave in ways no survey records: in ability, in family money, in what they wanted. So a gap between graduates and non-graduates is not what a degree would add for someone who did not take one. David Card reviewed the studies that try to isolate the effect, using twins and changes in school-leaving laws, and concluded that the average return is "not much below" the simple estimate. Twin studies suggest that ability inflates it a little, and studies based on changes to the school system put it higher, perhaps because the people those changes pushed into more schooling gained more than most.</p>
+      <p>And an average is not a forecast for one person. A survey of this size measures the average gap to within a percentage point. It cannot say much about you, because people with the same education, age and sex are paid very differently. The tool keeps the two kinds of uncertainty apart on purpose.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>Who is in the sample</h3>
+      <p>The data are the United States Census Bureau's American Community Survey for 2024, the public file of individual answers. A script reads all 3,422,888 person records and keeps people who are aged 25 to 64; who work for an employer (a firm, a non-profit or a government) and not for themselves; who usually work 35 hours or more a week and worked at least 50 weeks in the past year, the Bureau's definition of a full-time, year-round worker; and who reported wage or salary income. It drops the 7,411 whose pay works out below $3.625 an hour, half the federal minimum wage, as reporting errors. That leaves 913,079 people, who stand for 97.8 million workers once the survey weights are applied. Pay is annual wage and salary income before tax, in 2024 dollars. Only fitted coefficients and summary tables are bundled with the page; no person's record is.</p>
+      <h3>Schooling and experience</h3>
+      <p>The survey records the highest level completed, in 24 steps, not years. Years of schooling <var>S</var> are assigned by the nominal length of each stage: a high school diploma is 12, an associate's degree 14, a bachelor's 16, a master's 18, a professional degree 19 and a doctorate 20. The page groups the 24 steps into eight levels. Six hold a single number of years. Two mix several: "no high school diploma" covers everything from no schooling (0 years) to a twelfth grade without the diploma (12), and "some college, no degree" is 13 or 14. Experience is not recorded either, so the usual stand-in is used, potential experience:</p>
+      <p class="eq"><var>X</var> = max(0, age − <var>S</var> − 6)</p>
+      <p>People of the same age in one of the two mixed levels therefore differ in experience. For those levels the page does not put an average number of years into the formula. It uses the group's own averages of each term of the model, taken over the people of that sex and age in the survey, which gives exactly the model's average fitted value for them.</p>
+      <h3>The two models</h3>
+      <p>Both are fitted separately for women and men by weighted least squares, with <var>w</var> the annual pay.</p>
+      <p class="eq">Mincer's equation: &nbsp; ln <var>w</var> = <var>a</var> + <var>r</var> <var>S</var> + <var>b</var><sub>1</sub> <var>X</var> + <var>b</var><sub>2</sub> <var>X</var>² + <var>e</var></p>
+      <p class="eq">By level: &nbsp; ln <var>w</var> = <var>a</var><sub>level</sub> + <var>g</var><sub>1</sub> <var>z</var> + <var>g</var><sub>2</sub> <var>z</var>² + <var>g</var><sub>3</sub> <var>z</var>³ + <var>g</var><sub>4</sub> <var>z</var>⁴ + <var>e</var>, &nbsp; <var>z</var> = (<var>X</var> − 20) / 10</p>
+      <p>The second gives each of the eight levels its own height and experience a quartic curve. Lemieux recommends a quartic in experience and a schooling term that is allowed to bend; separate heights go one step further. His third recommendation, letting each birth cohort differ, needs more than one year of data and is not attempted. The figures at the top of the tool come from it. The "central estimate" is the exponential of the fitted value, which is a geometric mean. It is usually close to the median, the pay of the person in the middle, and always below the ordinary average, which a few very high salaries pull up. For the women of the opening example the median is within 1% of the central estimate, and the average is 13% above it with a diploma and 20% above it with a degree. The gap between two levels at the same age is the exponential of the difference of their fitted values, minus one. At the same age the person with more schooling has fewer years of experience, and both models take that into account.</p>
+      <h3>How well the average is known</h3>
+      <p>The survey is a sample, so every coefficient has a sampling error. The Bureau supplies 80 alternative sets of weights for this purpose. The script refits each model with every set and measures how much the coefficients move:</p>
+      <p class="eq"><var>V</var> = (4 / 80) Σ<sub><var>k</var></sub> (<var>β</var><sub><var>k</var></sub> − <var>β</var>)(<var>β</var><sub><var>k</var></sub> − <var>β</var>)′</p>
+      <p>The 95% interval for a gap is the difference of the fitted values plus or minus 1.96 times its standard error from <var>V</var>, turned into a percentage. Where that interval includes zero, as it does for men in their late twenties with a master's degree and a doctorate, the tool says that the survey cannot tell which level is paid more. To check that the file and the weights are being read as the Bureau intends, the script recomputes four national totals that the Bureau publishes with their standard errors, and stops unless it matches them: for example 46,117,271 people aged 25 to 34, with a standard error of 33,769.</p>
+      <h3>The range for one person</h3>
+      <p>For every sex, ten-year age band and level, the script stores the 5th, 10th, 25th, 50th, 75th, 90th and 95th percentiles of the by-level model's errors <var>e</var>. The range for a person is the central estimate multiplied by the exponential of the 10th and 90th of these. For one exact age, each band's figures are taken to belong to the middle of the band and neighbouring bands are interpolated in a straight line, so that the range does not jump at 35, 45 and 55. The chart of "how pay is spread" and the chance that the lower-paid level wins use no model at all: they come from the survey's own weighted histograms of pay for the two groups, in bands of 5%, with two people in the same band counted as a coin toss.</p>
+      <h3>Testing it on people it has not seen</h3>
+      <p>One household in five, chosen by a hash of its serial number, is held out. The models are fitted on the rest, and their errors are measured on the held-out fifth. "Average miss" is the exponential of the mean absolute error in log pay; "variation explained" is one minus the ratio of the model's squared error to that of a single figure for everybody.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>What a qualification would do for you.</strong> The gap compares different people. Part of it would exist even if the better-qualified had left school early, and the evidence Card reviews suggests the causal effect is of the same order as the gap, not that it equals it for any one person.</li>
+        <li><strong>Whether study pays.</strong> Nothing here counts fees, debt, or the years of pay given up while studying. A percentage gap in pay is not a rate of return on the investment.</li>
+        <li><strong>Your own future.</strong> The curve by age is a snapshot of 2024. The 60-year-olds in it left school forty years before the 25-year-olds, into a different economy; they are not what today's graduates will become.</li>
+        <li><strong>Anything about people outside the sample.</strong> Only full-time, year-round employees are counted. Education also changes the chance of having such a job at all, and the self-employed, part-time workers and people without work are left out.</li>
+        <li><strong>What kind of education.</strong> A bachelor's degree in engineering and one in fine art are the same level here, as are all colleges. Years of schooling are assigned by convention, and "potential experience" overstates real experience for anyone who has spent time out of work.</li>
+        <li><strong>The top and the fine detail.</strong> The Bureau rounds reported pay and replaces the very highest values with an average to protect privacy, and it filled in the pay of 23% of this sample because they did not answer the question. The page is about the United States only.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Add field of degree, which the same survey records for graduates and which separates pay more than the level does for many pairs of subjects.</li>
+        <li>Turn the gap into a return on investment: add fees, years of forgone pay and a discount rate, and compute the net present value of each path over a working life.</li>
+        <li>Fit quantile regressions, so that the premium can be shown separately for low-paid and high-paid workers instead of assuming one shift for everybody.</li>
+        <li>Bring back the people left out, with a model of who works full time, to see how much selection into work changes the premium.</li>
+        <li>Fit the same model to earlier years of the survey and follow birth cohorts as they age, which separates the effect of age from the year someone was born.</li>
+        <li>Repeat the exercise for another country with open microdata.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>US Census Bureau. American Community Survey, 2024 1-Year Public Use Microdata Sample, person file for the United States (<code>csv_pus.zip</code>, www2.census.gov/programs-surveys/acs/data/pums/2024/1-Year/). Public domain, as a work of the US government. Retrieved 12 October 2026 and processed by <code>scripts/data/acs_mincer.py</code>.</li>
+        <li>US Census Bureau. PUMS estimates for user verification, 2024 (<code>pums_estimates_24.csv</code>), and <em>Public Use Microdata Sample: Accuracy of the Data (2024)</em>, for the replicate-weight method.</li>
+        <li>Montenegro, C. E., and Patrinos, H. A. (2014). Comparable estimates of returns to schooling around the world. World Bank Policy Research Working Paper 7020. Table 3a, page 11. Licence: CC BY 3.0 IGO, as stated on the paper's record in the World Bank's Open Knowledge Repository (hdl.handle.net/10986/20340). The only figures on the page that are not computed from the survey.</li>
+        <li>Mincer, J. (1974). <em>Schooling, Experience, and Earnings</em>. National Bureau of Economic Research.</li>
+        <li>Card, D. (1999). The causal effect of education on earnings. In O. Ashenfelter and D. Card (eds.), <em>Handbook of Labor Economics</em>, volume 3, chapter 30, 1801-1863. Elsevier.</li>
+        <li>Heckman, J. J., Lochner, L. J., and Todd, P. E. (2006). Earnings functions, rates of return and treatment effects: the Mincer equation and beyond. In <em>Handbook of the Economics of Education</em>, volume 1, 307-458. Elsevier.</li>
+        <li>Lemieux, T. (2006). The "Mincer equation" thirty years after <em>Schooling, Experience, and Earnings</em>. In S. Grossbard (ed.), <em>Jacob Mincer: A Pioneer of Modern Labor Economics</em>, 127-145. Springer.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
