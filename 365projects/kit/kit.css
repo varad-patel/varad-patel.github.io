@@ -66,6 +66,8 @@
 .seg span { display: block; padding: 7px 13px; font-weight: 600; font-size: 0.88rem; text-align: center; border-right: 1.5px solid var(--ink); border-bottom: 1.5px solid var(--ink); margin: 0 -1.5px -1.5px 0; }
 .seg input:checked + span { background: var(--ink); color: var(--paper); }
 .seg input:focus-visible + span { outline: 3px solid var(--focus); outline-offset: -3px; }
+/* On the chosen option the ring would sit dark blue on navy (2 to 1). A pale line inside it keeps it visible. */
+.seg input:checked:focus-visible + span { box-shadow: inset 0 0 0 5px var(--paper); }
 
 .btn.small { padding: 5px 10px; font-size: 0.82rem; }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
@@ -153,6 +155,8 @@ canvas.kit-canvas { display: block; width: 100%; background: #fff; border: 1px s
 .p-sec dt { font: 700 0.98rem/1.4 var(--sans); }
 .p-sec dd { margin: 2px 0 0; }
 .p-sec.finding p { padding-left: 16px; border-left: 4px solid var(--h, var(--ink)); font-size: clamp(1.15rem, 1.9vw, 1.35rem); line-height: 1.5; }
+/* A long web address in the write-up or the sources breaks across lines, so a narrow phone never scrolls sideways. */
+.p-sec { overflow-wrap: break-word; }
 .p-sec .refs li { font-size: 0.98rem; }
 
 /* ---------- prev / next ---------- */

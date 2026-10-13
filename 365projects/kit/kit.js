@@ -620,7 +620,7 @@ export function chart(target, spec) {
     const named = series.filter((s) => s.name && s.legend !== false);
     legendEl.hidden = cur.legend === false || (named.length < 2 && cur.legend !== true);
     legendEl.replaceChildren(...named.map((s) => el("span", {},
-      el("i", { class: s.type === "scatter" ? "dot" : ["line", "step"].includes(s.type) ? "line" : "", style: s.type === "scatter" || !["line", "step"].includes(s.type) ? { background: s._c } : { borderTopColor: s._c } }),
+      el("i", { class: s.type === "scatter" ? "dot" : ["line", "step"].includes(s.type) ? "line" : "", style: s.type === "scatter" || !["line", "step"].includes(s.type) ? { background: s._c } : { borderTopColor: s._c, borderTopStyle: s.dash ? "dashed" : "solid" } }),
       s.name)));
 
     // Domains.
@@ -779,7 +779,9 @@ export function chart(target, spec) {
     };
     const markOrder = { point: 0, vline: 1, hline: 1, text: 2 };
     for (const m of [...(cur.marks || [])].sort((a, b) => (markOrder[a.type] ?? 1) - (markOrder[b.type] ?? 1))) {
-      if (m.type === "vline" && (band ? cats.includes(m.x) : Number.isFinite(m.x))) {
+      const within = (v, lo, hi) => v >= Math.min(lo, hi) - 1e-9 * Math.abs(hi - lo) && v <= Math.max(lo, hi) + 1e-9 * Math.abs(hi - lo);
+      // A reference line beyond the ends of an axis has nothing to point at, so it is left out, label and all.
+      if (m.type === "vline" && (band ? cats.includes(m.x) : Number.isFinite(m.x) && within(m.x, x0, x1))) {
         const x = sx(m.x);
         nodes.push(svgEl("line", { x1: x, x2: x, y1: mTop, y2: mTop + ph, stroke: m.color || INK, "stroke-width": 1, "stroke-dasharray": "4 3", opacity: 0.7 }));
         if (m.text) {
@@ -789,7 +791,7 @@ export function chart(target, spec) {
           for (let tries = 0; tries < 4 && !fits(flip ? x - 5 : x + 5, ty, m.text, flip ? "end" : "start"); tries++) ty += 14;
           nodes.push(svgEl("text", { class: "mark-label", x: flip ? x - 5 : x + 5, y: ty, "text-anchor": flip ? "end" : "start" }, m.text));
         }
-      } else if (m.type === "hline" && Number.isFinite(m.y)) {
+      } else if (m.type === "hline" && Number.isFinite(m.y) && within(m.y, y0, y1)) {
         const y = sy(m.y);
         nodes.push(svgEl("line", { x1: mLeft, x2: mLeft + pw, y1: y, y2: y, stroke: m.color || INK, "stroke-width": 1, "stroke-dasharray": "4 3", opacity: 0.7 }));
         if (m.text) {
