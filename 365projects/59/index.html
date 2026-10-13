@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Comparative Advantage Trader · 365 projects</title>
+  <meta name="description" content="Set what two countries can produce, see who should make what and at which prices both gain, then negotiate a trade with a counterpart that only accepts what makes it better off.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+    .tool, .tool .note, .tool .tbl td, .offers li, .country legend { overflow-wrap: anywhere; }
+    .pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: end; }
+    fieldset.country { display: grid; gap: 12px; margin: 0; padding: 12px 14px 14px; border: 1px solid var(--rule); min-width: 0; }
+    fieldset.country legend { padding: 0 6px; font: 700 0.95rem/1.3 var(--sans); }
+    .offer { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; align-items: end; }
+    .offers { margin: 0; padding-left: 1.2em; display: grid; gap: 8px; font-size: 0.9rem; line-height: 1.5; }
+    .fixes { margin: 6px 0 0; padding-left: 1.2em; }
+    .tool .tbl th { white-space: normal; overflow-wrap: anywhere; }
+    .tool .tbl th:first-child { min-width: 5.5em; }
+    .jump { display: none; }
+    @media (max-width: 860px) { .jump { display: block; } }
+    @media (max-width: 600px) { .p-sec .eq { white-space: normal; } }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body class="proj" data-day="59">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Comparative Advantage Trader</h1>
+      <p class="lede">Set what two countries can produce. The page works out who should make what and at which prices both gain, then lets you bargain with the other side.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Two-country trade model and negotiation">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>The page opens on Ricardo's own numbers. Portugal needs fewer workers than England for both goods, 90 against 100 for cloth and 80 against 120 for wine, yet both countries gain at any price strictly between 0.8333 and 1.125 units of wine per unit of cloth. With spending split equally between the two goods the market settles at 0.9659, and England ends as well off as with 7.7% more of both goods, Portugal with 7.9% more. Press "One for one", the bargain Ricardo himself described, and the gains are 9.1% and 5.9%.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>In chapter 7 of his <em>Principles</em> of 1817, David Ricardo imagined that making a quantity of cloth took the labour of 100 men for a year in England and a quantity of wine took 120, while in Portugal the same cloth took 90 men and the same wine 80. Portugal is better at both. Common sense says England has nothing to sell. Ricardo's answer was that Portugal would still import cloth, because every Portuguese worker moved from vines to looms gives up more wine than the cloth is worth: "England would give the produce of the labour of 100 men, for the produce of the labour of 80", and both would have more than before.</p>
+      <p>What matters is not who is better at a thing, which is <strong>absolute advantage</strong>, but what each gives up to make it, its <strong>opportunity cost</strong>. A cloth costs England five sixths of a wine and Portugal nine eighths. England is the less bad at cloth, so it has the <strong>comparative advantage</strong> there, and Portugal has it in wine. A country cannot fail to have a comparative advantage in something unless its opportunity costs are exactly the same as its partner's, and then there is nothing to gain from trading at all.</p>
+      <p>The argument reaches well beyond wine. It is why a surgeon who types faster than her secretary still hires one, and why the claim that a rich country cannot compete with low-wage countries, or a poor country with productive ones, is a mistake about arithmetic rather than about politics. Paul Krugman's essay on why the idea is so hard to accept points to what the simple model takes for granted: one national labour market in which workers can move between industries, roughly constant employment, and a trade balance that rights itself. Where those fail, so may the conclusion, and the limits below say how.</p>
+      <p>The model says which prices allow both sides to gain. It does not say which of those prices they will agree on. That is the business of bargaining, and the second half of the tool lets you try it.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The model</h3>
+      <p>There are two countries, two goods and one input, labour. Country <var>i</var> has <var>L</var><sub><var>i</var></sub> workers, and one worker makes <var>a</var><sub><var>ix</var></sub> units of the first good or <var>a</var><sub><var>iy</var></sub> of the second. Ricardo wrote the same thing as the workers needed per unit, which is 1 / <var>a</var>; the switch at the top of the tool converts between the two. A converted box shows the reciprocal to six figures, and the sums keep the exact reciprocal behind it until that box is edited, so switching never changes the countries: 1 / 120 is not the same number as 0.00833333, and two countries with equal costs would otherwise stop having them. Putting everyone on one good makes <var>X</var><sub><var>i</var></sub> = <var>L</var><sub><var>i</var></sub> <var>a</var><sub><var>ix</var></sub> or <var>Y</var><sub><var>i</var></sub> = <var>L</var><sub><var>i</var></sub> <var>a</var><sub><var>iy</var></sub>, and every mix in between lies on a straight line, the production possibility frontier:</p>
+      <p class="eq"><var>y</var> = <var>Y</var><sub><var>i</var></sub> − <var>c</var><sub><var>i</var></sub> <var>x</var>, &nbsp;&nbsp; <var>c</var><sub><var>i</var></sub> = <var>a</var><sub><var>iy</var></sub> / <var>a</var><sub><var>ix</var></sub></p>
+      <p>The slope <var>c</var><sub><var>i</var></sub> is the opportunity cost of the first good: the units of the second that the same labour would have made. A country that cannot make the first good at all has no finite cost for it, and one that cannot make the second has a cost of zero.</p>
+      <h3>Who has which advantage</h3>
+      <p>Country 1 has the absolute advantage in a good if its <var>a</var> for that good is larger. It has the comparative advantage in the first good if <var>c</var><sub>1</sub> &lt; <var>c</var><sub>2</sub>, and then country 2 has it in the second good. These comparisons, and every other test on this page that ends in a word such as "same", "gains" or "nothing", are made in exact fractions: each number is read as the decimal that was typed and all the arithmetic is done on whole-number numerators and denominators, so 0.3 / 0.1 and 0.6 / 0.2 come out equal, which ordinary computer arithmetic does not guarantee.</p>
+      <h3>The prices at which both gain</h3>
+      <p>Write the price <var>p</var> as units of the second good per unit of the first. A country that sells the first good gets <var>p</var> for something that costs it <var>c</var>, so it gains only if <var>p</var> &gt; <var>c</var>; a country that buys it gains only if <var>p</var> &lt; <var>c</var>. If country A has the lower cost, both gain exactly when</p>
+      <p class="eq"><var>c</var><sub>A</sub> &lt; <var>p</var> &lt; <var>c</var><sub>B</sub></p>
+      <p>At <var>p</var> = <var>c</var><sub>A</sub> country A gains nothing and B takes everything; at <var>p</var> = <var>c</var><sub>B</sub> it is the other way round. A country that sells at price <var>p</var> after putting all its labour into its own good can reach any point on the line from its production point with slope −<var>p</var>. That line is the dashed one in the charts, the consumption possibilities with trade, and it lies outside the frontier wherever the price is inside the range.</p>
+      <h3>Tastes and the market price</h3>
+      <p>To say how much a country gains, and where a market would set the price, the model needs tastes. Ricardo's chapter gives none, and no size for either country, so everything in this part is the page's assumption and not his. Both countries are given the same simple tastes: they spend a fixed share <var>θ</var> of income on the first good, which is what maximising</p>
+      <p class="eq"><var>U</var> = <var>x</var><sup><var>θ</var></sup> <var>y</var><sup>1 − <var>θ</var></sup></p>
+      <p>implies. Without trade a country therefore puts the share <var>θ</var> of its labour into the first good and has (<var>θ</var> <var>X</var><sub><var>i</var></sub>, (1 − <var>θ</var>) <var>Y</var><sub><var>i</var></sub>). With trade, if each makes only its own good, the world spends <var>θ</var> of its income on A's output, which gives</p>
+      <p class="eq"><var>p</var>* = <var>θ</var> <var>Y</var><sub>B</sub> / ((1 − <var>θ</var>) <var>X</var><sub>A</sub>)</p>
+      <p>If that lies between the two costs it is the market price and both gain. If it falls at or below <var>c</var><sub>A</sub>, country B is too small to buy all the first good that A would make: A goes on making both goods, the price is A's own <var>c</var><sub>A</sub>, and A gains nothing. If it reaches <var>c</var><sub>B</sub> or more, the same happens to B. So a small country trading with a large one trades at the large country's prices and takes all the gain.</p>
+      <h3>Measuring a gain</h3>
+      <p>Doubling both goods doubles <var>U</var>, so a gain can be stated without any units of satisfaction: the tool reports the <var>g</var> for which the country is as well off as with (1 + <var>g</var>) times its no-trade bundle,</p>
+      <p class="eq">1 + <var>g</var> = (<var>x</var> / <var>x</var><sub>0</sub>)<sup><var>θ</var></sup> (<var>y</var> / <var>y</var><sub>0</sub>)<sup>1 − <var>θ</var></sup></p>
+      <p>The percentage is of both goods at once and is always measured against the bundle the country has with no trade. A country that cannot make one of the goods has none of it without trade, so <var>U</var> is zero and no percentage exists; the tool says so in words. A gain of more than ten times is given as a multiple instead of a percentage.</p>
+      <h3>Rounding on the screen</h3>
+      <p>Numbers are shown to four figures while the tests behind the words use the exact fractions. Where that could mislead, the tool says more: two costs that would print alike are shown to as many figures as it takes to tell them apart, and an offer whose price prints like one of the limits without being on it is told that it is just above or just below. Ricardo's lower limit is 5/6, so an offer of 1 cloth for 0.8333 wine is below it, and England loses by making it. The example "The market's terms" offers the market's exact amounts; the boxes show them to six figures.</p>
+      <h3>The counterpart's answer</h3>
+      <p>An offer says how much of one good you hand over and how much of the other you want. Suppose it adds Δ<var>x</var> to a country's first good and Δ<var>y</var> to its second, one of them negative. The country then chooses the share <var>s</var> of its labour that makes the first good so as to maximise <var>U</var> at (<var>s</var> <var>X</var> + Δ<var>x</var>, (1 − <var>s</var>) <var>Y</var> + Δ<var>y</var>). Setting the derivative to zero gives</p>
+      <p class="eq"><var>s</var> = <var>θ</var> + <var>θ</var> Δ<var>y</var> / <var>Y</var> − (1 − <var>θ</var>) Δ<var>x</var> / <var>X</var></p>
+      <p>kept within the limits that leave both amounts at zero or more. If there is no such <var>s</var> the country cannot deliver, and the offer fails for that reason. Otherwise the counterpart accepts only if its <var>U</var> is strictly higher than with no trade. The tool decides that without rounding: with <var>θ</var> a whole percentage, <var>U</var><sup>100</sup> = <var>x</var><sup>100<var>θ</var></sup> <var>y</var><sup>100 − 100<var>θ</var></sup> is a fraction, and two fractions can be compared exactly. A refusal comes with its reason: a price on the wrong side of the counterpart's own cost, a price exactly at its cost, or a fair price for more trade than it can use.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Who inside a country gains.</strong> There is one kind of worker, who moves from looms to vines at no cost. In the model everybody gains from trade. In a country with weavers who cannot become vintners, some people lose even when the country as a whole gains, and the model has no room for them.</li>
+        <li><strong>What the price will be.</strong> The range of prices is solid; the market price inside it depends on tastes that were chosen for convenience, the same in both countries and with fixed spending shares. Change the slider and the split of the gain moves.</li>
+        <li><strong>How real bargaining goes.</strong> The counterpart here says yes to anything that leaves it a little better off and never makes a counter-offer, threatens to walk away or thinks about the next round. Real negotiators do all three.</li>
+        <li><strong>Why productivities differ, or whether they stay put.</strong> The four numbers are given. Nothing here covers learning, investment, scale, or an industry that would become efficient if it were sheltered for a while.</li>
+        <li><strong>Trade with costs.</strong> There is no transport, no tariff, no money and no exchange rate, and trade is always balanced. A straight frontier also pushes countries to make one good only, which few do.</li>
+        <li><strong>Ricardo's England and Portugal.</strong> He gave four labour requirements and nothing else. The numbers of workers in the opening example are this page's addition, and the percentages in the finding depend on them and on the equal spending shares.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Add more goods, ordered by how much better one country is at each, as Dornbusch, Fischer and Samuelson did with a continuum, so that the wage ratio decides where the line between the two countries' industries falls.</li>
+        <li>Give the counterpart a strategy: a counter-offer, a deadline, and the Nash bargaining solution as a benchmark for a fair split.</li>
+        <li>Add a transport cost and watch the range of mutually useful prices shrink until trade stops.</li>
+        <li>Use two inputs, labour and land or capital, so that the page can show who inside each country gains and who loses.</li>
+        <li>Let each country have its own tastes, and let the visitor type them.</li>
+        <li>Fill the table with measured labour productivity for two real countries and two real industries.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Ricardo, D. (1817). <em>On the Principles of Political Economy and Taxation</em>. London: John Murray. Chapter 7, "On Foreign Trade". The passage was checked against the Library of Economics and Liberty's text of the third edition (1821).</li>
+        <li>Dornbusch, R., Fischer, S., and Samuelson, P. A. (1977). Comparative advantage, trade, and payments in a Ricardian model with a continuum of goods. <em>American Economic Review</em>, 67(5), 823-839.</li>
+        <li>Krugman, P. (1998). Ricardo's difficult idea. In G. Cook (ed.), <em>The Economics and Politics of International Trade</em> (Freedom and Trade, volume II), chapter 3. Routledge.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

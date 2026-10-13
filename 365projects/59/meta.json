@@ -1,0 +1,7 @@
+{
+  "question": "If one country is better at making everything, can both still gain from trade, and at what prices?",
+  "finding": "With Ricardo's numbers Portugal needs fewer workers than England for both cloth and wine, yet both gain at any price strictly between 0.8333 and 1.125 wine per cloth, and at the market price of 0.9659 England is as well off as with 7.7% more of both goods and Portugal with 7.9% more.",
+  "limit": "The model has one kind of worker who can change jobs at no cost, so everyone gains in it, while in a real country some people lose even when the country as a whole gains.",
+  "sources": [],
+  "built": "2026-10-13"
+}
