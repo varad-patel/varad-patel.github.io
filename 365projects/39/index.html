@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Demand Curve Simulator · 365 projects</title>
+  <meta name="description" content="Change a price, income and preferences and watch a consumer's best basket and demand curve move, with each price change split into its substitution and income effects.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .controls h2 { padding-top: 14px; border-top: 1px solid var(--grid); }
+    .about { display: grid; gap: 4px; margin-top: -8px; }
+    .about .formula { font: 400 1.02rem/1.6 var(--serif); overflow-wrap: anywhere; }
+    .about var { font-style: italic; }
+    .about sup { font-size: 0.72em; line-height: 0; }
+    .btn[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
+    .reading { font-size: 1rem; line-height: 1.55; }
+    .baskets { margin: 0; padding-left: 1.2em; display: grid; gap: 8px; font-size: 0.93rem; line-height: 1.5; }
+    .baskets li { overflow-wrap: anywhere; }
+    .stat .v { font-size: 1.35rem; }
+    .strip { display: none; grid-column: 1 / -1; position: sticky; top: 0; z-index: 4; padding: 8px 12px; background: var(--ink); color: var(--paper); font-weight: 600; font-size: 0.88rem; line-height: 1.35; }
+    @media (max-width: 860px) { .strip { display: block; } }
+  </style>
+</head>
+<body class="proj" data-day="39">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Demand Curve Simulator</h1>
+      <p class="lede">A consumer with an income, two goods and a taste for each. Change a price, the income or the preferences, and watch the best basket and the demand curve move.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Consumer choice and demand curve simulator">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>As the page loads, the price of x rises from 2 to 4 with an income of 100 and the price of y at 2. With Cobb-Douglas preferences the consumer cuts x from 25 to 12.5, and 7.32 of that fall is substitution and 5.18 is income. Choose "Quasi-linear" in the list of preferences and x falls from 9 to 2.25, all of it substitution. Choose "Perfect complements" and x falls from 25 to 16.67, all of it income. The same price rise, and three different reasons for buying less.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>The theory of the consumer starts from one sentence: people choose the best thing they can afford. "Afford" is the budget line, every basket of goods that costs exactly the income. "Best" is a ranking of baskets, drawn as indifference curves that each join baskets the person likes equally. The best affordable basket is the point where the budget line reaches the highest curve it can. Change a price and the budget line swings, the best basket moves, and plotting the quantity chosen against the price traces out the demand curve. A demand curve is therefore not an assumption. It is the record of a consumer doing the best they can at each price.</p>
+      <p>The harder question is why the quantity falls when the price rises. There are two reasons, and they are different in kind. The good has become dearer compared with other goods, so the consumer shifts towards the others. That is the substitution effect. And the consumer has become poorer, because the same income buys less than before. That is the income effect. Eugen Slutsky separated the two in 1915, in an article in Italian that passed almost unnoticed. John Hicks and Roy Allen worked the result out again, independently, in 1934 and made it the centre of the modern theory.</p>
+      <p>The split matters whenever a price is changed on purpose. A tax on petrol with the money handed back to households leaves them about as rich as before, so only the substitution effect is left to cut driving. A subsidy on bread makes its buyers better off through the income effect and changes what they buy through the substitution effect. Whether a wage rise makes people work more or less is the same question with leisure as the good. How large each effect is depends entirely on the shape of preferences, which is what the tool lets you change.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The problem</h3>
+      <p>There are two goods in quantities <var>x</var> and <var>y</var>, with prices <var>p</var><sub><var>x</var></sub> and <var>p</var><sub><var>y</var></sub>, and an income <var>m</var>. The consumer picks the basket that makes a utility function <var>u</var>(<var>x</var>, <var>y</var>) as large as possible subject to</p>
+      <p class="eq"><var>p</var><sub><var>x</var></sub><var>x</var> + <var>p</var><sub><var>y</var></sub><var>y</var> = <var>m</var>, &nbsp; <var>x</var> ≥ 0, &nbsp; <var>y</var> ≥ 0</p>
+      <p>Utility is only a way of writing down a ranking. A basket with a higher number is preferred, and the size of the difference means nothing. The tool offers five families of preferences and solves each one exactly, with a formula, not by searching.</p>
+
+      <h3>Five kinds of preferences</h3>
+      <p><strong>Cobb-Douglas</strong>, <var>u</var> = <var>x</var><sup><var>a</var></sup><var>y</var><sup>1 − <var>a</var></sup>. At the best basket the rate at which the consumer will swap <var>y</var> for <var>x</var> equals the price ratio, which gives a fixed share of income to each good:</p>
+      <p class="eq"><var>x</var> = <var>a</var><var>m</var> / <var>p</var><sub><var>x</var></sub>, &nbsp; <var>y</var> = (1 − <var>a</var>)<var>m</var> / <var>p</var><sub><var>y</var></sub></p>
+      <p><strong>Perfect substitutes</strong>, <var>u</var> = <var>a</var><var>x</var> + (1 − <var>a</var>)<var>y</var>. A unit of money buys <var>a</var> / <var>p</var><sub><var>x</var></sub> of utility from <var>x</var> and (1 − <var>a</var>) / <var>p</var><sub><var>y</var></sub> from <var>y</var>. The whole income goes on whichever is larger, a corner of the budget line. If the two are equal, every basket on the budget line is equally good and the tool says so instead of picking one.</p>
+      <p><strong>Perfect complements</strong>, <var>u</var> = min(<var>x</var> / <var>a</var>, <var>y</var> / (1 − <var>a</var>)). The goods are wanted in the proportion <var>a</var> to 1 − <var>a</var>, and the best basket is at the kink of the L-shaped curve:</p>
+      <p class="eq"><var>x</var> = <var>a</var><var>t</var>, &nbsp; <var>y</var> = (1 − <var>a</var>)<var>t</var><br><var>t</var> = <var>m</var> / (<var>a</var><var>p</var><sub><var>x</var></sub> + (1 − <var>a</var>)<var>p</var><sub><var>y</var></sub>)</p>
+      <p><strong>Quasi-linear</strong>, <var>u</var> = 2<var>b</var>√<var>x</var> + <var>y</var>. An extra unit of <var>x</var> is worth <var>b</var> / √<var>x</var> units of <var>y</var>, and the consumer buys <var>x</var> until that equals the price ratio:</p>
+      <p class="eq"><var>x</var> = (<var>b</var><var>p</var><sub><var>y</var></sub> / <var>p</var><sub><var>x</var></sub>)², &nbsp; <var>y</var> = (<var>m</var> − <var>p</var><sub><var>x</var></sub><var>x</var>) / <var>p</var><sub><var>y</var></sub></p>
+      <p>Income does not appear in the amount of <var>x</var>. If that amount would cost more than the whole income, the consumer is at a corner instead, with <var>x</var> = <var>m</var> / <var>p</var><sub><var>x</var></sub> and no <var>y</var>.</p>
+      <p><strong>CES</strong>, <var>u</var> = (<var>a</var><var>x</var><sup><var>r</var></sup> + (1 − <var>a</var>)<var>y</var><sup><var>r</var></sup>)<sup>1/<var>r</var></sup> with <var>r</var> = 1 − 1/<var>s</var>. Here <var>s</var> is the elasticity of substitution: a 1% rise in the relative price of <var>x</var> cuts <var>x</var> / <var>y</var> by <var>s</var>%. The form is best known from a 1961 paper on production by Arrow, Chenery, Minhas and Solow.</p>
+      <p class="eq"><var>x</var> = <var>m</var> (<var>a</var> / <var>p</var><sub><var>x</var></sub>)<sup><var>s</var></sup> / <var>D</var><br><var>y</var> = <var>m</var> ((1 − <var>a</var>) / <var>p</var><sub><var>y</var></sub>)<sup><var>s</var></sup> / <var>D</var></p>
+      <p class="eq"><var>D</var> = <var>a</var><sup><var>s</var></sup><var>p</var><sub><var>x</var></sub><sup>1 − <var>s</var></sup> + (1 − <var>a</var>)<sup><var>s</var></sup><var>p</var><sub><var>y</var></sub><sup>1 − <var>s</var></sup></p>
+      <p>At <var>s</var> = 1 the formula for <var>u</var> divides by zero, and its limit is Cobb-Douglas, which the tool then uses. As <var>s</var> grows the family approaches perfect substitutes, and as <var>s</var> falls towards zero it approaches goods used in fixed proportions.</p>
+
+      <h3>The demand curve</h3>
+      <p>The demand curve is the quantity of <var>x</var> in the best basket for every price of <var>x</var> from 1 to 10, with income and the price of <var>y</var> held where the sliders put them. With perfect substitutes it has a flat stretch at the one price where the consumer does not mind, and the tool draws it. "Hold this demand curve" keeps a grey copy, so that a change in income or preferences shows as a gap between the two curves. The axes are fixed at 0 to 100 and double only when a best basket would otherwise be off the chart, so a curve that moves is really moving.</p>
+
+      <h3>Splitting a price change</h3>
+      <p>Call the best basket before the change A and the best basket after it C. The split needs a third basket, B: what the consumer would buy at the new prices if given just enough income to be as well off as before. Then</p>
+      <p class="eq">substitution effect = <var>x</var><sub>B</sub> − <var>x</var><sub>A</sub></p>
+      <p class="eq">income effect = <var>x</var><sub>C</sub> − <var>x</var><sub>B</sub></p>
+      <p>and the two add up to the whole change, <var>x</var><sub>C</sub> − <var>x</var><sub>A</sub>. There are two readings of "as well off as before", and the tool offers both. Hicks's is the same utility: the least income that reaches the old indifference curve at the new prices. Slutsky's is the same basket: enough income to buy A again, which is <var>m</var> + (<var>p</var>′<sub><var>x</var></sub> − <var>p</var><sub><var>x</var></sub>)<var>x</var><sub>A</sub> for a new price <var>p</var>′<sub><var>x</var></sub>. For a small price change the two agree. For a large one Slutsky's gives more income than is needed, because a consumer who can afford the old basket can usually do better than it.</p>
+      <p>The least income that reaches a utility level <var>u</var> has a formula in each family. For Cobb-Douglas, substitutes, complements and CES the best basket simply scales with income, so utility is proportional to income and the answer is <var>u</var> divided by the utility that one unit of income buys. For quasi-linear preferences it is</p>
+      <p class="eq"><var>p</var><sub><var>y</var></sub><var>u</var> − (<var>b</var><var>p</var><sub><var>y</var></sub>)² / <var>p</var><sub><var>x</var></sub> &nbsp; if <var>u</var> ≥ 2<var>b</var>²<var>p</var><sub><var>y</var></sub> / <var>p</var><sub><var>x</var></sub></p>
+      <p class="eq"><var>p</var><sub><var>x</var></sub>(<var>u</var> / 2<var>b</var>)² &nbsp; otherwise</p>
+      <p>The dashed line in the demand chart is the compensated demand curve through A: the quantity of <var>x</var> the consumer would buy at each price if income were adjusted in the chosen way. The horizontal gap between it and the ordinary curve at the new price is the income effect. When A or C is a tie, the quantity of <var>x</var> is not pinned down and the tool does not attempt a split.</p>
+
+      <h3>How the formulas are checked</h3>
+      <p>Every formula is tested against a search that uses no calculus. For each family, 300 random combinations of preferences, prices and income are drawn from the ranges of the sliders. For each one the utility of 20,001 baskets spaced evenly along the budget line is worked out, and the formula's basket must be at least as good as all of them and sit beside the best. The compensated basket is checked in the same way on 120 combinations per family: among 40,001 baskets on the old indifference curve, none may cost less than the formula says. Perfect substitutes are checked at every setting the sliders can reach, 157,339 in all, against a comparison in whole numbers that involves no rounding: 287 of those settings are exact ties, and the formula calls each of them a tie and none of the others. The tests also confirm what theory requires: the substitution effect never moves the same way as the price, quasi-linear preferences have an income effect of exactly zero while some of both goods is bought, and perfect complements have no substitution effect.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>What anyone's preferences are.</strong> The five families are shapes chosen because they can be solved. Real preferences have to be estimated from what people buy, and need not look like any of them.</li>
+        <li><strong>How people actually choose.</strong> The consumer here knows every price, compares every basket and never errs. People use habits and rules of thumb, and respond to how a price is presented as well as to what it is.</li>
+        <li><strong>Anything about goods people buy less of as they grow richer.</strong> In all five families a higher income never reduces the amount of a good bought, so the income effect never works against the substitution effect. Demand curves that slope upwards, the Giffen case, cannot appear.</li>
+        <li><strong>A market.</strong> This is one consumer facing prices set elsewhere. A market demand curve adds up many consumers with different incomes and tastes, and a price comes from demand meeting supply.</li>
+        <li><strong>More than two goods.</strong> With two goods one must be a substitute for the other. With three or more, goods can be complements, and a price change in one market shifts demand in the others.</li>
+        <li><strong>A unique split.</strong> The Hicks and Slutsky answers differ for large price changes, and each is a convention about what "as well off" means. The total change is a fact about the consumer, and its division is a way of describing it.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Add preferences with a subsistence amount of one good, so that the income effect can be negative and a Giffen good can be drawn.</li>
+        <li>Report elasticities at the chosen point: how the quantity responds, in percentage terms, to its own price, to the other price and to income.</li>
+        <li>Measure the cost of a price rise in money: the compensating and equivalent variations, and the area under the demand curve that approximates them.</li>
+        <li>Let the visitor change the price of y and income in the "before and after" as well, to split the effect of a tax with the revenue handed back.</li>
+        <li>Add many consumers with different incomes and sum their curves into a market demand curve.</li>
+        <li>Fit one of the families to a visitor's own stated choices between baskets.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Slutsky, E. (1915). Sulla teoria del bilancio del consumatore. <em>Giornale degli Economisti</em>, 51 (July), 1-26.</li>
+        <li>Chipman, J. S., and Lenfant, J.-S. (2002). Slutsky's 1915 article: how it came to be found and interpreted. <em>History of Political Economy</em>, 34(3), 553-597. On how the article was overlooked and found again.</li>
+        <li>Hicks, J. R., and Allen, R. G. D. (1934). A reconsideration of the theory of value. Parts I and II. <em>Economica</em>, 1(1) and 1(2).</li>
+        <li>Hicks, J. R. (1939). <em>Value and Capital</em>. Oxford: Clarendon Press.</li>
+        <li>Arrow, K. J., Chenery, H. B., Minhas, B. S., and Solow, R. M. (1961). Capital-labor substitution and economic efficiency. <em>Review of Economics and Statistics</em>, 43(3), from page 225.</li>
+        <li>Varian, H. R. (2014). <em>Intermediate Microeconomics: A Modern Approach</em>, 9th edition. New York: W. W. Norton. The chapters on choice, demand and the Slutsky equation.</li>
+        <li>This page uses no data. Every figure is computed in the browser from the settings.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
