@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Minimum Wage Simulator · 365 projects</title>
+  <meta name="description" content="Set a wage floor and choose who sets pay, many competing employers or one, and see what happens to jobs, wages, total pay and who gains or loses.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .more { border-top: 1px solid var(--grid); padding-top: 14px; }
+    .more summary { font-weight: 700; font-size: 0.95rem; cursor: pointer; width: fit-content; padding: 2px 0; }
+    .more > div { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; margin-top: 14px; }
+    .out > h2 { margin-top: 6px; padding-top: 18px; border-top: 1px solid var(--grid); }
+    .btn[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+    .who ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; font-size: 0.95rem; line-height: 1.5; }
+    .who strong { font-weight: 700; }
+    .tool .tbl th { white-space: normal; vertical-align: bottom; line-height: 1.25; }
+    .tool .tbl td:first-child { min-width: 7.5em; }
+    @media (max-width: 480px) { .tool .tbl { font-size: 0.82rem; } .tool .tbl th, .tool .tbl td { padding: 6px 5px; } }
+    @media (max-width: 560px) { .p-sec .eq { white-space: normal; } }
+  </style>
+</head>
+<body class="proj" data-day="42">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Minimum Wage Simulator</h1>
+      <p class="lede">A wage floor costs jobs when employers compete for workers, and can create them when one employer sets the pay. Set a floor, choose the model, and see what happens to jobs, wages and who comes out ahead.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Wage floor simulator for two models of the labour market">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>With the opening curves, a floor of ₹160 an hour leaves 70,000 people in work whichever model is chosen. In the competitive market that is 10,000 fewer than before, and total pay stays at ₹11.20 million an hour. Under a single employer it is 10,000 more than before, and total pay rises from ₹7.20 million to ₹11.20 million. The two models agree about the market the floor produces and disagree about the one it replaced. To see it, leave the floor at ₹160 and switch between the two choices under "Who sets the wage".</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>The oldest argument against a minimum wage takes one line. If a worker adds ₹140 an hour to what a firm can sell and the law says she must be paid ₹160, the firm is better off without her. George Stigler set the argument out in 1946, in an article whose main question was whether a legal minimum is a good way to reduce poverty. In a market where many employers bid for workers, the wage already equals what the last worker hired is worth, so any floor above it must price some workers out. How many depends on how steeply employers' demand for labour falls as the wage rises.</p>
+      <p>Stigler noted an exception in the same article, and it had been worked out thirteen years earlier. In <em>The Economics of Imperfect Competition</em> (1933) Joan Robinson analysed a market with a single buyer and gave it the name monopsony, a word she credited to the Cambridge classicist B. L. Hallward. An employer that is the only one in town does not take the wage as given. To hire one more person it must offer more, and it must then pay that higher wage to everyone it already employs. So an extra worker costs more than her own wage, and the employer stops hiring while workers are still worth more than they are paid. Both employment and pay end up below the competitive level. A wage floor changes the sum. Up to the floor, an extra worker costs just the floor, the reason for holding back is gone, and the employer takes on everyone willing to work at that wage. A floor set between the monopsony wage and the competitive wage therefore raises pay and employment together. Set it above the competitive wage and the first argument takes over again.</p>
+      <p>Which model describes real labour markets is an empirical question, and economists have argued over it for three decades. In a study published in 1994, David Card and Alan Krueger surveyed 410 fast-food restaurants in New Jersey and eastern Pennsylvania before and after New Jersey raised its minimum wage from $4.25 to $5.05 on 1 April 1992, and found no indication that the rise had reduced employment. David Neumark and William Wascher replied in 2000 with payroll records from restaurants in the same two states, which pointed the other way, to a fall in employment in New Jersey relative to Pennsylvania. Card and Krueger answered in the same issue with employers' returns to the Bureau of Labor Statistics, which showed similar or slightly faster employment growth in New Jersey. Later work widened the comparison. Arindrajit Dube, William Lester and Michael Reich compared every pair of neighbouring counties on opposite sides of a state border between 1990 and 2006 and found no adverse employment effects. Doruk Cengiz and colleagues followed 138 state-level increases between 1979 and 2016 and found that the number of low-wage jobs was essentially unchanged five years later. On the other side, a study of Seattle's move to a minimum of up to $13 found that hours worked in low-wage jobs fell, although workers already in those jobs were no less likely to stay employed, and a 2022 survey of the published American studies by Neumark and Peter Shirley found a clear preponderance of negative estimates, strongest for teenagers, young adults and the less educated. A review of the international evidence for the British government by Dube in 2019 read it as showing a very muted effect on employment alongside a significant rise in the earnings of the low paid.</p>
+      <p>The disagreement is partly about method and partly about which model fits. Alan Manning has argued that the employment effect is elusive partly because a higher minimum raises labour costs by less than might be expected and partly because imperfect competition, which gives employers some power over wages, is pervasive in labour markets. A study of American retail jobs by José Azar and colleagues found that minimum wages reduced employment where many employers competed for workers and had more positive effects where few did. The tool does not settle any of this. It shows what each model implies when it is taken at its word, and that the same floor can be a job destroyer in one and a job creator in the other.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The curves</h3>
+      <p>There is one kind of labour, measured as <var>L</var> thousand workers, and one hourly wage <var>w</var>. Two straight lines describe the market:</p>
+      <p class="eq">demand: <var>w</var> = <var>a</var> − <var>b</var><var>L</var> &nbsp;&nbsp;&nbsp; supply: <var>w</var> = <var>c</var> + <var>d</var><var>L</var></p>
+      <p>The demand line is what one more worker is worth to employers when <var>L</var> thousand are already at work: <var>a</var> is the most anyone would pay for the first worker, and each extra thousand is worth <var>b</var> less. The supply line is the wage needed to bring the <var>L</var>-th thousand into work: <var>c</var> is the least anyone would work for, and each extra thousand needs <var>d</var> more. The opening curves are <var>a</var> = 300, <var>b</var> = 2, <var>c</var> = 60 and <var>d</var> = 1, in rupees an hour. They are chosen so that the answers are round numbers, and they are not estimates of any real market.</p>
+
+      <h3>Many employers</h3>
+      <p>Competing employers hire until the last worker is worth exactly the wage, so the market sits where the two lines cross:</p>
+      <p class="eq"><var>L</var>* = (<var>a</var> − <var>c</var>) / (<var>b</var> + <var>d</var>) &nbsp;&nbsp;&nbsp; <var>w</var>* = <var>c</var> + <var>d</var><var>L</var>*</p>
+      <p>With the opening curves that is 80 thousand workers at ₹140. A floor <var>m</var> at or below <var>w</var>* changes nothing. Above it, employers move back up their demand line, and the people willing to work at the floor are read off the supply line:</p>
+      <p class="eq">employed = (<var>a</var> − <var>m</var>) / <var>b</var> &nbsp;&nbsp;&nbsp; willing = (<var>m</var> − <var>c</var>) / <var>d</var></p>
+      <p>The gap between the two is the number who want a job at the floor and cannot get one. Part of it is jobs that have gone and part is people the higher wage has drawn into looking for work. At <var>m</var> = <var>a</var> or above nobody is employed.</p>
+
+      <h3>One employer</h3>
+      <p>A single employer that hires <var>L</var> thousand workers must pay all of them <var>c</var> + <var>d</var><var>L</var>, so its wage bill is (<var>c</var> + <var>d</var><var>L</var>)<var>L</var> and one more worker adds <var>c</var> + 2<var>d</var><var>L</var> to it: her own wage plus the rise for everyone else. It hires until that cost equals what the worker is worth:</p>
+      <p class="eq"><var>a</var> − <var>b</var><var>L</var> = <var>c</var> + 2<var>d</var><var>L</var> &nbsp;&nbsp; so &nbsp;&nbsp; <var>L</var><sub>m</sub> = (<var>a</var> − <var>c</var>) / (<var>b</var> + 2<var>d</var>), &nbsp;&nbsp; <var>w</var><sub>m</sub> = <var>c</var> + <var>d</var><var>L</var><sub>m</sub></p>
+      <p>With the opening curves that is 60 thousand workers at ₹120, although the last of them is worth <var>a</var> − <var>b</var><var>L</var><sub>m</sub> = ₹180. A floor <var>m</var> above <var>w</var><sub>m</sub> flattens the cost of an extra worker to <var>m</var> for as long as people are willing to work at that wage. The employer then hires the smaller of the number willing and the number it wants:</p>
+      <p class="eq">employed = the smaller of (<var>m</var> − <var>c</var>) / <var>d</var> and (<var>a</var> − <var>m</var>) / <var>b</var></p>
+      <p>The first is smaller up to the competitive wage <var>w</var>*, so employment climbs along the supply line and nobody willing is left out. The second is smaller beyond it, so employment falls back along the demand line exactly as in the competitive market. Employment is highest when the floor equals <var>w</var>*, and it returns to its starting level <var>L</var><sub>m</sub> when the floor reaches what the monopsonist's last worker was worth, ₹180 here. A test checks the rule against a direct search for the employer's most profitable level of employment at eight different floors.</p>
+
+      <h3>Surpluses</h3>
+      <p>The table reports who gets the gains from employment. Employers' surplus is what the workers are worth less what they are paid, and workers' surplus is their pay less the least each would have accepted. With employment <var>L</var> at wage <var>w</var>:</p>
+      <p class="eq">employers = <var>a</var><var>L</var> − <var>b</var><var>L</var>²/2 − <var>w</var><var>L</var> &nbsp;&nbsp;&nbsp; workers = <var>w</var><var>L</var> − <var>c</var><var>L</var> − <var>d</var><var>L</var>²/2</p>
+      <p>Since <var>w</var> is in rupees an hour and <var>L</var> in thousands, these are thousands of rupees an hour; the tool shows millions. The sum of the two, (<var>a</var> − <var>c</var>)<var>L</var> − (<var>b</var> + <var>d</var>)<var>L</var>²/2, does not depend on the wage and is largest at <var>L</var>*. That is why a floor always lowers the total in the competitive market and raises it under monopsony for as long as it raises employment.</p>
+      <p>The workers' formula assumes that when jobs are short they go to the people who would work for least. The other choice in the tool gives them to a random draw of everyone willing. The average job-holder would then have worked for (<var>c</var> + <var>m</var>)/2, so workers' surplus is <var>L</var>(<var>m</var> − <var>c</var>)/2, which is smaller, and each earlier worker keeps a job only with probability employed / willing. With a floor of ₹160 in the opening competitive market, 56,000 of the 80,000 earlier workers stay, 24,000 lose their jobs and 14,000 people who were not working are hired.</p>
+
+      <h3>What is drawn</h3>
+      <p>The first chart is the market itself, with the outcome marked with and without the floor. The two lower charts run the floor from zero to <var>a</var> under both models at once. The jobs chart shows the competitive line flat and then falling, and the monopsony line rising to a peak at <var>w</var>* before joining it. Total pay, the wage times employment, is drawn the same way. Every figure in the tables is rounded before differences are taken, so the "Change" column is always the difference of the two figures beside it, and the row for both surpluses together is the sum of the two rows above it as shown. Whether each side gains or loses is decided from the unrounded figures, and a change too small to show is described as less than ₹0.01 million.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Which model is true.</strong> The tool assumes one or the other. Most real labour markets are neither a perfect auction nor a company town. Several employers with some power each, workers who find it costly to move, and the time it takes to find a job all sit between the two cases.</li>
+        <li><strong>How big the effects are.</strong> The curves are straight lines with made-up slopes. The opening demand curve has an elasticity of −0.88 at the competitive point, so a floor 10% above the going wage removes about 9% of jobs. Whether real markets respond anything like that strongly is the very thing the studies above disagree about.</li>
+        <li><strong>The other ways employers adjust.</strong> Here the only choice is how many people to employ. Real employers also change hours, prices, training, perks, the pace of work and who they hire, and higher pay can lower turnover. None of that is in two straight lines.</li>
+        <li><strong>Who the workers are.</strong> Every worker is the same and earns the one wage. A real floor binds for some jobs and not others, pushes up wages just above it, and reaches households that are not all poor. Nothing here says what happens to poverty.</li>
+        <li><strong>What happens outside the covered market.</strong> Where much work is informal or the law is weakly enforced, a floor may move people between covered and uncovered jobs. The model has no second sector for them to go to.</li>
+        <li><strong>Whether surplus is the right yardstick.</strong> Adding rupees of surplus counts a rupee to an employer the same as a rupee to a low-paid worker. A reader who weighs them differently will rank the outcomes differently.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Put a dial between the two models: with <var>n</var> identical employers competing for the same workers, each has a share of the single employer's power, and the two cases here are <var>n</var> = 1 and <var>n</var> very large.</li>
+        <li>Replace the straight lines with constant-elasticity curves, so that the visitor can enter the demand and supply elasticities reported in the empirical studies.</li>
+        <li>Add a second, uncovered sector that absorbs displaced workers at a lower wage, which matters most in economies with large informal employment.</li>
+        <li>Give workers different productivities and draw the wage distribution before and after, to show the spike at the floor and who is priced out.</li>
+        <li>Let employers adjust hours and prices as well as headcount, and compare the predicted change in hours with the change in jobs.</li>
+        <li>Model job search explicitly, so that employer power comes from the time it takes to find another job, as in Manning's account.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Stigler, G. J. (1946). The economics of minimum wage legislation. <em>American Economic Review</em>, 36(3), 358-365.</li>
+        <li>Robinson, J. (1933). <em>The Economics of Imperfect Competition</em>. Macmillan.</li>
+        <li>Thornton, R. J. (2004). Retrospectives: how Joan Robinson and B. L. Hallward named monopsony. <em>Journal of Economic Perspectives</em>, 18(2), 257-261.</li>
+        <li>Card, D., and Krueger, A. B. (1994). Minimum wages and employment: a case study of the fast-food industry in New Jersey and Pennsylvania. <em>American Economic Review</em>, 84(4), 772-793.</li>
+        <li>Neumark, D., and Wascher, W. (2000). Minimum wages and employment: a case study of the fast-food industry in New Jersey and Pennsylvania: comment. <em>American Economic Review</em>, 90(5), 1362-1396.</li>
+        <li>Card, D., and Krueger, A. B. (2000). Minimum wages and employment: a case study of the fast-food industry in New Jersey and Pennsylvania: reply. <em>American Economic Review</em>, 90(5), 1397-1420.</li>
+        <li>Manning, A. (2003). <em>Monopsony in Motion: Imperfect Competition in Labor Markets</em>. Princeton University Press.</li>
+        <li>Dube, A., Lester, T. W., and Reich, M. (2010). Minimum wage effects across state borders: estimates using contiguous counties. <em>Review of Economics and Statistics</em>, 92(4), 945-964.</li>
+        <li>Cengiz, D., Dube, A., Lindner, A., and Zipperer, B. (2019). The effect of minimum wages on low-wage jobs. <em>Quarterly Journal of Economics</em>, 134(3), 1405-1454.</li>
+        <li>Dube, A. (2019). <em>Impacts of Minimum Wages: Review of the International Evidence</em>. HM Treasury and Department for Business, Energy and Industrial Strategy.</li>
+        <li>Manning, A. (2021). The elusive employment effect of the minimum wage. <em>Journal of Economic Perspectives</em>, 35(1), 3-26.</li>
+        <li>Jardim, E., Long, M. C., Plotnick, R., van Inwegen, E., Vigdor, J., and Wething, H. (2022). Minimum-wage increases and low-wage employment: evidence from Seattle. <em>American Economic Journal: Economic Policy</em>, 14(2), 263-314.</li>
+        <li>Neumark, D., and Shirley, P. (2022). Myth or measurement: what does the new minimum wage research say about minimum wages and job loss in the United States? <em>Industrial Relations</em>, 61(4), 384-417.</li>
+        <li>Azar, J., Huet-Vaughn, E., Marinescu, I., Taska, B., and von Wachter, T. (2024). Minimum wage employment effects and labour market concentration. <em>Review of Economic Studies</em>, 91(4), 1843-1883.</li>
+        <li>The curves on this page are illustrative. No data are used.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
