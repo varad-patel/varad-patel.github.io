@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Black-Scholes Playground · 365 projects</title>
+  <meta name="description" content="Set an option's share price, strike, time, volatility, interest rate and dividend yield, and see its Black-Scholes-Merton price, all its Greeks and its payoff diagram update as you move them.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .f66-pair input[type="range"] { margin-top: 2px; }
+    .f66-readout { font-weight: 600; color: var(--slate); }
+    .f66-msg { font-size: 0.82rem; color: var(--bad); line-height: 1.4; }
+    .f66-msg:empty { display: none; }
+    .f66-presets .btn { white-space: normal; text-align: left; }
+    .f66-jump { gap: 2px 16px; }
+    .f66-jump a { padding: 6px 0; }
+    @media (min-width: 861px) { .f66-jump { display: none; } }
+    #f66-results, #f66-payoff, #f66-greeks, #f66-ivbox { scroll-margin-top: 12px; }
+    .f66-stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .f66-stack p { overflow-wrap: anywhere; }
+    .stat .v { font-size: 1.4rem; }
+    /* The Greeks table: three columns when there is room. When its own box is narrower than the table's natural
+       width (about 560px), each Greek becomes two lines: its name and value, then what it means. */
+    .tbl.f66-rt th, .tbl.f66-rt td { white-space: normal; }
+    .tbl.f66-rt td.num { white-space: nowrap; } /* a value such as -$0.0176 never splits at its minus sign */
+    .f66-rt td:last-child { min-width: 15em; }
+    .f66-rt-box { container-type: inline-size; }
+    @container (max-width: 580px) {
+      .f66-rt, .f66-rt tbody, .f66-rt caption { display: block; }
+      .f66-rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .f66-rt tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 14px; padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .f66-rt th[scope="row"], .f66-rt td { border: 0; padding: 0; }
+      .f66-rt td:last-child { grid-column: 1 / -1; min-width: 0; color: var(--slate); overflow-wrap: anywhere; }
+    }
+    /* The same for browsers without container queries. */
+    @media (max-width: 560px) {
+      .f66-rt, .f66-rt tbody, .f66-rt caption { display: block; }
+      .f66-rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .f66-rt tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 14px; padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .f66-rt th[scope="row"], .f66-rt td { border: 0; padding: 0; }
+      .f66-rt td:last-child { grid-column: 1 / -1; min-width: 0; color: var(--slate); overflow-wrap: anywhere; }
+    }
+    .f66-rt th[scope="row"] { font-weight: 600; }
+    .p-sec .eq { white-space: normal; }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+    .p-sec table.f66-greeks { margin-top: 14px; font: 400 0.98rem/1.5 var(--serif); }
+    .p-sec table.f66-greeks th, .p-sec table.f66-greeks td { white-space: normal; overflow-wrap: anywhere; }
+    /* On a narrow screen each Greek's row becomes three short lines. */
+    @media (max-width: 600px) {
+      .p-sec table.f66-greeks, .p-sec table.f66-greeks tbody, .p-sec table.f66-greeks tr, .p-sec table.f66-greeks th, .p-sec table.f66-greeks td, .p-sec table.f66-greeks caption { display: block; }
+      .p-sec table.f66-greeks thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .p-sec table.f66-greeks tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .p-sec table.f66-greeks th, .p-sec table.f66-greeks td { border: 0; padding: 1px 0; }
+    }
+  </style>
+</head>
+<body class="proj" data-day="66">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Black-Scholes Playground</h1>
+      <p class="lede">Set an option's inputs and watch its price, every one of its Greeks and its payoff diagram move with them, under the model that turned option pricing into a formula.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Black-Scholes option pricer with Greeks and payoff diagram">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>The page opens on an at-the-money call: share and strike at $100, a year to run, 20% volatility, 5% interest. It is worth $10.45 and loses 1.8 cents a day. Set the days to expiry to 7 and it is worth $1.15 and loses 8.6 cents a day, nearly five times as fast; set them to 1 and it loses 21.6 cents a day. Over the same span its gamma, how fast the hedge has to change, rises twentyfold, from 0.019 to 0.38.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>An option is a right without an obligation. A call lets its holder buy a share at a fixed price, the strike, on a fixed date; a put lets the holder sell. If the share ends above the strike, the call pays the difference; if not, it expires worthless. The puzzle that occupied economists for most of the twentieth century was what such a right is worth today, when nobody knows where the share will be.</p>
+      <p>Earlier attempts needed two things no one could measure: how fast the share is expected to grow, and how much the buyer dislikes risk. Fischer Black and Myron Scholes, and separately Robert Merton, all published in 1973, found a way round both. Hold the right number of shares against the option, change that number continuously as the price moves, and the combined position carries no risk at all over the next instant. A riskless position must earn the riskless interest rate, or there would be money for nothing. That one condition pins down the option's price, and the expected growth of the share drops out of it. What remains is the share price, the strike, the time left, the interest rate, the dividends and the volatility. Merton and Scholes received the 1997 Nobel memorial prize in economics for the method; Black had died in 1995.</p>
+      <p>Five of those six inputs can be read off a screen. Volatility cannot: it is the uncertainty about the future, and the model needs it as a single known number. So in practice the formula is run backwards. Traders quote the volatility a price implies rather than the price itself, and the way implied volatility varies across strikes and dates is the market's record of where the model's assumptions fail. The "Greeks" are the formula's derivatives: how much the price moves with each input. They are how anyone who sells options manages the risk, because they say how many shares to hold, how fast that number must change, and what each day, each point of volatility and each point of interest costs.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The assumptions</h3>
+      <p>The share price follows geometric Brownian motion: its log return over any interval is normal, with a variance that grows in proportion to the length of the interval and is set by a constant volatility <var>σ</var>. The interest rate <var>r</var> and the dividend yield <var>q</var> are constant and continuously compounded. Trading is continuous, costs nothing, and shares can be sold short; anyone can borrow and lend at <var>r</var>. The option is European: it can be used only at expiry.</p>
+      <h3>The formula</h3>
+      <p>With share price <var>S</var>, strike <var>K</var> and <var>T</var> years to expiry (the days entered, divided by 365):</p>
+      <p class="eq"><var>d</var><sub>1</sub> = [ ln(<var>S</var>/<var>K</var>) + (<var>r</var> − <var>q</var> + <var>σ</var><sup>2</sup>/2) <var>T</var> ] / (<var>σ</var>√<var>T</var>), &nbsp;&nbsp; <var>d</var><sub>2</sub> = <var>d</var><sub>1</sub> − <var>σ</var>√<var>T</var></p>
+      <p class="eq">call <var>C</var> = <var>S</var>e<sup>−<var>qT</var></sup> N(<var>d</var><sub>1</sub>) − <var>K</var>e<sup>−<var>rT</var></sup> N(<var>d</var><sub>2</sub>)</p>
+      <p class="eq">put <var>P</var> = <var>K</var>e<sup>−<var>rT</var></sup> N(−<var>d</var><sub>2</sub>) − <var>S</var>e<sup>−<var>qT</var></sup> N(−<var>d</var><sub>1</sub>)</p>
+      <p>N is the standard normal distribution function and n, below, its density. With <var>q</var> = 0 these are Black and Scholes' formulas; the dividend yield is Merton's extension, and with <var>q</var> set to a foreign interest rate the same formula prices currency options (Garman and Kohlhagen 1983). N(<var>d</var><sub>2</sub>) is the probability that the call ends in the money in a world where the share is expected to return the riskless rate, its price growing at <var>r</var> − <var>q</var> and its dividends making up the rest. That world is a calculating device, so N(<var>d</var><sub>2</sub>) is not a forecast.</p>
+      <h3>Put-call parity</h3>
+      <p class="eq"><var>C</var> − <var>P</var> = <var>S</var>e<sup>−<var>qT</var></sup> − <var>K</var>e<sup>−<var>rT</var></sup></p>
+      <p>A call bought and a put sold at the same strike pay exactly what a share bought with borrowed money pays at expiry, so the two must cost the same today whatever the model. The tool prints both sides.</p>
+      <h3>The Greeks</h3>
+      <p>Each is a partial derivative of the price, with every other input held fixed. Call and put share gamma, vega, vanna and vomma.</p>
+      <table class="tbl f66-greeks">
+        <caption>The formulas the tool uses (call first, then put where they differ)</caption>
+        <thead><tr><th scope="col">Greek</th><th scope="col">Derivative</th><th scope="col">Formula</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Delta</th><td>∂<var>V</var>/∂<var>S</var></td><td>e<sup>−<var>qT</var></sup>N(<var>d</var><sub>1</sub>); put −e<sup>−<var>qT</var></sup>N(−<var>d</var><sub>1</sub>)</td></tr>
+          <tr><th scope="row">Gamma</th><td>∂<sup>2</sup><var>V</var>/∂<var>S</var><sup>2</sup></td><td>e<sup>−<var>qT</var></sup>n(<var>d</var><sub>1</sub>) / (<var>Sσ</var>√<var>T</var>)</td></tr>
+          <tr><th scope="row">Vega</th><td>∂<var>V</var>/∂<var>σ</var></td><td><var>S</var>e<sup>−<var>qT</var></sup>n(<var>d</var><sub>1</sub>)√<var>T</var></td></tr>
+          <tr><th scope="row">Theta</th><td>∂<var>V</var>/∂<var>t</var> = −∂<var>V</var>/∂<var>T</var></td><td>−<var>S</var>e<sup>−<var>qT</var></sup>n(<var>d</var><sub>1</sub>)<var>σ</var>/(2√<var>T</var>) − <var>rK</var>e<sup>−<var>rT</var></sup>N(<var>d</var><sub>2</sub>) + <var>qS</var>e<sup>−<var>qT</var></sup>N(<var>d</var><sub>1</sub>); put: the same first term + <var>rK</var>e<sup>−<var>rT</var></sup>N(−<var>d</var><sub>2</sub>) − <var>qS</var>e<sup>−<var>qT</var></sup>N(−<var>d</var><sub>1</sub>)</td></tr>
+          <tr><th scope="row">Rho</th><td>∂<var>V</var>/∂<var>r</var></td><td><var>KT</var>e<sup>−<var>rT</var></sup>N(<var>d</var><sub>2</sub>); put −<var>KT</var>e<sup>−<var>rT</var></sup>N(−<var>d</var><sub>2</sub>)</td></tr>
+          <tr><th scope="row">Epsilon</th><td>∂<var>V</var>/∂<var>q</var></td><td>−<var>ST</var>e<sup>−<var>qT</var></sup>N(<var>d</var><sub>1</sub>); put <var>ST</var>e<sup>−<var>qT</var></sup>N(−<var>d</var><sub>1</sub>)</td></tr>
+          <tr><th scope="row">Vanna</th><td>∂<sup>2</sup><var>V</var>/∂<var>S</var>∂<var>σ</var></td><td>−e<sup>−<var>qT</var></sup>n(<var>d</var><sub>1</sub>)<var>d</var><sub>2</sub>/<var>σ</var></td></tr>
+          <tr><th scope="row">Vomma</th><td>∂<sup>2</sup><var>V</var>/∂<var>σ</var><sup>2</sup></td><td>vega × <var>d</var><sub>1</sub><var>d</var><sub>2</sub>/<var>σ</var></td></tr>
+          <tr><th scope="row">Charm</th><td>∂Δ/∂<var>t</var> = −∂Δ/∂<var>T</var></td><td><var>q</var>e<sup>−<var>qT</var></sup>N(<var>d</var><sub>1</sub>) − e<sup>−<var>qT</var></sup>n(<var>d</var><sub>1</sub>)[2(<var>r</var> − <var>q</var>)<var>T</var> − <var>d</var><sub>2</sub><var>σ</var>√<var>T</var>] / (2<var>Tσ</var>√<var>T</var>); put: −<var>q</var>e<sup>−<var>qT</var></sup>N(−<var>d</var><sub>1</sub>) and the same second term</td></tr>
+        </tbody>
+      </table>
+      <p>The model's own units are per year and per 1.00 of volatility or rate. The tool quotes them as traders do: theta and charm per calendar day (divided by 365), vega, rho, epsilon and vanna per percentage point (divided by 100), and vomma per percentage point of volatility squared (divided by 10,000). Theta is negative for most options because time value drains away; a deep in-the-money European put can have positive theta, since its value is mostly a strike received later, and later is worth less.</p>
+      <h3>The two charts</h3>
+      <p>The payoff diagram shows the profit per share from buying one option at today's model price, against the share price: at expiry (the payoff minus the premium), halfway to expiry and today (the model price at each share price, minus the premium). It ignores the interest the premium could have earned, as textbook profit diagrams do. Break-even is the strike plus the premium for a call, the strike minus the premium for a put. The second chart plots one Greek against the share price at the time left, a quarter of it and a sixteenth of it, which shows gamma and theta gathering around the strike as expiry approaches.</p>
+      <h3>Implied volatility</h3>
+      <p>The price rises steadily with volatility, so for a price between the option's no-arbitrage bounds there is exactly one volatility that reproduces it. The tool finds it by bisection between 0.01% and 500% a year, halving the interval until it is narrower than 10<sup>−15</sup>. A call price must lie above <var>S</var>e<sup>−<var>qT</var></sup> − <var>K</var>e<sup>−<var>rT</var></sup> (and zero) and below <var>S</var>e<sup>−<var>qT</var></sup>; a put above <var>K</var>e<sup>−<var>rT</var></sup> − <var>S</var>e<sup>−<var>qT</var></sup> (and zero) and below <var>K</var>e<sup>−<var>rT</var></sup>. A price outside these bounds is refused with the bound it broke. Close to expiry, or far in or out of the money, the price hardly moves with volatility, so a quote rounded to the cent fixes the volatility only loosely; when prices half a cent either side imply volatilities more than a point apart, the tool gives that range too.</p>
+      <h3>Numbers at the edges</h3>
+      <p>Deep out of the money the price is all tail probability, so the normal distribution function is computed to within 10<sup>−15</sup>: Hart's rational approximation as published by West (2005) inside four standard deviations, and Laplace's continued fraction beyond, which keeps twelve significant figures of even the smallest tails. Where rounding could leave a price a hair under its no-arbitrage floor, the floor is used. At zero volatility or zero time the Greeks at the strike are not defined (delta jumps from 0 to 1 and gamma is infinite), so the inputs stop at 0.01 days and 0.01% a year: close enough to watch the limit form, far enough that every number stays finite. The "At expiry" line shows the limit itself.</p>
+      <h3>Checked against</h3>
+      <p>The tests hold Hull's worked example, a six-month call on a $42 share with a $40 strike at 10% interest and 20% volatility, worth $4.76 with the put at $0.81, and his chapter on the Greek letters, where a 20-week call on a $49 share with a $50 strike at 5% and 20% is worth $2.40 with a delta of 0.522. Prices, delta, gamma, vega, theta and rho agree with a separate implementation written in Python to within 10<sup>−9</sup>, every one of the nine Greeks agrees with a finite difference of the price (or of delta or vega), put-call parity holds across the whole range of inputs, and implied volatility gives back the volatility that made a price.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>The volatility to use.</strong> The model takes it as known and constant; it is neither. Options on one share at different strikes trade at prices that imply different volatilities, a pattern called the smile or skew, which the model says cannot exist. For S&amp;P 500 index options, Jackwerth and Rubinstein (1996) found that since the 1987 crash the market has priced a fall of three standard deviations in a year as about ten times more likely than the model's lognormal distribution allows, and a fall of four as about a hundred times.</li>
+        <li><strong>What jumps do.</strong> Real prices gap on news, overnight and in crashes. Brownian motion moves only by small steps, so the model underprices insurance against sudden falls. Merton (1976) added jumps, and Heston (1993) let volatility itself wander; both give prices the simple formula cannot.</li>
+        <li><strong>The value of early exercise.</strong> The formula is for European options. Many options on single shares are American and can be exercised early, which can matter for puts and for calls just before a dividend. Real dividends are also paid in lumps on known dates, not as a smooth yield.</li>
+        <li><strong>The cost of hedging.</strong> The argument needs a hedge rebalanced continuously and for free. Real hedges are adjusted now and then and pay a spread each time, so the seller is left with risk the formula says away; the larger gamma is, the larger that risk.</li>
+        <li><strong>What the option will be worth.</strong> The price is what the option costs to replicate under the assumptions, not a forecast of its payoff, and N(<var>d</var><sub>2</sub>) is not the chance of profit. This page illustrates the model; it is not investment advice.</li>
+        <li><strong>Rates and borrowing.</strong> One constant rate stands in for the whole curve, and it is assumed that anyone can borrow at it and sell shares short without cost, which few can.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Price American options with a binomial tree (Cox, Ross and Rubinstein 1979) and show the extra value of early exercise next to the European price.</li>
+        <li>Build strategies of several options, such as spreads, straddles and collars, and draw their combined payoff and Greeks.</li>
+        <li>Simulate a delta hedge rebalanced daily or weekly along random share paths, and show how the hedging error grows with gamma and with the gaps between rebalances.</li>
+        <li>Let dividends be paid as cash amounts on dates before expiry instead of as a smooth yield.</li>
+        <li>Fit an implied volatility smile to a set of quoted prices for one expiry and compare it with what a jump or stochastic volatility model produces.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Black, F., and Scholes, M. (1973). The pricing of options and corporate liabilities. <em>Journal of Political Economy</em>, 81(3), 637-654.</li>
+        <li>Merton, R. C. (1973). Theory of rational option pricing. <em>Bell Journal of Economics and Management Science</em>, 4(1), 141-183.</li>
+        <li>Hull, J. C. (2014). <em>Options, Futures, and Other Derivatives</em>, 9th edition. Pearson. Example 15.6 and the chapter on the Greek letters. The 11th edition (2022) is current.</li>
+        <li>Merton, R. C. (1976). Option pricing when underlying stock returns are discontinuous. <em>Journal of Financial Economics</em>, 3(1-2), 125-144.</li>
+        <li>Heston, S. L. (1993). A closed-form solution for options with stochastic volatility with applications to bond and currency options. <em>Review of Financial Studies</em>, 6(2), 327-343.</li>
+        <li>Jackwerth, J. C., and Rubinstein, M. (1996). Recovering probability distributions from option prices. <em>Journal of Finance</em>, 51(5), 1611-1631.</li>
+        <li>Garman, M. B., and Kohlhagen, S. W. (1983). Foreign currency option values. <em>Journal of International Money and Finance</em>, 2(3), 231-237.</li>
+        <li>Cox, J. C., Ross, S. A., and Rubinstein, M. (1979). Option pricing: a simplified approach. <em>Journal of Financial Economics</em>, 7(3), 229-263.</li>
+        <li>West, G. (2005). Better approximations to cumulative normal functions. <em>Wilmott Magazine</em>, May, 70-76. The approximation is from Hart, J. F., and others (1968), <em>Computer Approximations</em>, Wiley.</li>
+        <li>The Royal Swedish Academy of Sciences, press release for the Sveriges Riksbank Prize in Economic Sciences in Memory of Alfred Nobel 1997, nobelprize.org.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

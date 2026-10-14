@@ -1,0 +1,7 @@
+{
+  "question": "What is an option worth under the Black-Scholes-Merton model, and how do its price and Greeks move as the share price, time, volatility and interest change?",
+  "finding": "An at-the-money one-year call on a $100 share (20% volatility, 5% interest) is worth $10.45 and loses 1.8 cents a day; with a week left it is worth $1.15 and loses 8.6 cents a day, and with a day left 21.6 cents, while its gamma rises twentyfold from 0.019 to 0.38.",
+  "limit": "The model takes volatility as known and constant and prices move without jumps, so real option prices, which imply different volatilities at different strikes, depart from it most for large moves.",
+  "sources": [],
+  "built": "2026-10-14"
+}
