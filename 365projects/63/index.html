@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Momentum versus Mean Reversion · 365 projects</title>
+  <meta name="description" content="Choose assets and a rule that follows recent winners or bets on a turn, and see how it did in years it was not tuned on, against buying and holding, with a measure of how much of its record could be luck.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .mm-group { margin: 2px 0 6px; }
+    .mm-sub { margin: 4px 0 2px; font-size: 0.82rem; color: var(--slate); }
+    .mm-presets { gap: 6px; margin-top: 6px; }
+    .mm-about { padding-top: 12px; border-top: 1px solid var(--grid); }
+    .mm-off { display: none; }
+    .mm-stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .mm-stack h2 { margin: 0; }
+    .mm-stack h3 { margin: 6px 0 0; font-size: 1rem; }
+    .mm-luck p { margin: 0 0 8px; }
+    .tool p, .tool li, .note { overflow-wrap: anywhere; }
+    .tbl.rt th, .tbl.rt td { white-space: normal; }
+    .rt caption { font-weight: 600; font-size: 0.86rem; color: var(--slate); text-align: left; }
+    /* The table turns into a short list of labelled lines whenever its own box is narrower than the table (about
+       600px at its widest), as it is on a phone and beside the controls on a tablet. */
+    div:has(> table.rt) { container-type: inline-size; }
+    @container (max-width: 620px) {
+      .rt, .rt tbody, .rt tr, .rt th, .rt td, .rt caption { display: block; }
+      .rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .rt th[scope="row"], .rt td { border: 0; padding: 1px 0; }
+      .rt th[scope="row"] { text-align: left; }
+      .rt td { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; }
+      .rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+    }
+    @media (max-width: 640px) {
+      .rt, .rt tbody, .rt tr, .rt th, .rt td, .rt caption { display: block; }
+      .rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .rt th[scope="row"], .rt td { border: 0; padding: 1px 0; }
+      .rt th[scope="row"] { text-align: left; }
+      .rt td { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; }
+      .rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+    }
+    .jump { gap: 4px 16px; margin-bottom: 10px; }
+    .jump a { padding: 4px 0; }
+    .p-sec .eq { white-space: normal; }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body class="proj" data-day="63">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Momentum versus Mean Reversion</h1>
+      <p class="lede">Choose assets and a rule that either follows recent winners or bets that they will turn. See how the rule did in years it was not tuned on, against simply buying and holding, and how much of its record could come from trying many rules.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Momentum and mean-reversion backtester">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>The page opens on all ten assets, a trading cost of 0.1% and a held-out test from January 2013. Of the 480 rules the tool tries, the best in the training months, March 2000 to December 2012, was cross-sectional momentum with a 3-month look-back holding six assets, with a Sharpe ratio of 0.78. From January 2013 to September 2026 it scored −0.51, number 426 of the 480. The probability of backtest overfitting comes out at 81%, and on twenty reshuffled versions of the training months, which keep what each month paid but have no pattern over time, the best rule scored 0.79 on average and matched or beat the real winner in 9 of the 20. A search this wide finds a record that good where there is nothing to find.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>If markets use the information in past prices, past prices should not tell anyone where prices go next. Eugene Fama called this the weak form of market efficiency in his 1970 review, and it is the claim this page puts to work. Two well-known findings cut against it in opposite directions. Narasimhan Jegadeesh and Sheridan Titman found in 1993 that American shares that had done well over the previous three to twelve months went on doing better than those that had done badly: momentum. Werner De Bondt and Richard Thaler had found in 1985 that the biggest losers over three to five years then beat the biggest winners: reversal, or mean reversion. Later work found momentum outside shares, in each asset's own past return across futures on bonds, currencies, commodities and share indices (Moskowitz, Ooi and Pedersen, 2012) and in ranking currencies against each other (Menkhoff, Sarno, Schmeling and Schrimpf, 2012).</p>
+      <p>Both kinds of rule are easy to state, which is why they are easy to test badly. A rule has settings: how far back to look, whether to skip the latest month, how many assets to hold. Try enough settings on one history and some will look excellent by chance. Halbert White set out in 2000 a test that allows for this data snooping, and David Bailey, Jonathan Borwein, Marcos López de Prado and Qiji Jim Zhu turned it into a number, the probability that the best backtest is overfitted. The question is not academic: backtests are how strategies are sold to savers and how research results get published.</p>
+      <p>So the tool does three things. It runs the rule you choose on months it never saw while you were choosing, and compares it with buying the same assets and holding them. It runs every rule in its grid the same way, so you can see whether being best in the training years said anything about the years after. And it measures how good the best rule would look if the past held no pattern at all.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The data, and what it is not</h3>
+      <p>Pages 63, 64 and 65 share one set of monthly returns, February 1999 to September 2026, for someone who counts in US dollars. All are nominal (not adjusted for inflation), before tax, and computed by a script from published figures; none is the return of a fund or an index anyone sells. There are no shares or commodities. Share indices are the property of the firms that calculate them, and official sites that republish them pass on the owners' restrictions: the St Louis Fed's FRED, for example, says the S&amp;P 500 may not be reproduced in any form without the permission of S&amp;P Dow Jones Indices. The open commodity prices, such as the World Bank's, are monthly averages, and returns between monthly averages are smoothed in a way that fakes momentum, which would defeat this page.</p>
+      <p>The four US Treasuries are bonds held at a constant maturity of 2, 5, 10 and 20 years. At each month-end a bond with a coupon <var>c</var> equal to that month's yield is bought at par, and a month later it is priced at the new yield <var>y</var> for the same maturity, with <var>n</var> = <var>m</var> − 1/12 years left:</p>
+      <p class="eq"><var>P</var> = (<var>c</var> / <var>y</var>) (1 − (1 + <var>y</var>/2)<sup>−2<var>n</var></sup>) + (1 + <var>y</var>/2)<sup>−2<var>n</var></sup>, &nbsp;&nbsp; <var>r</var> = <var>P</var> − 1 + <var>c</var>/12</p>
+      <p>Swinkels (2019) turns the 10-year constant-maturity yield into returns with the same par bond, approximating its price change by the bond's duration and convexity, and finds the result close to commercial Treasury return series (CRSP, Global Financial Data, Ibbotson and Bloomberg Barclays); this page reprices the bond in full instead. Both ignore the small gap between the yields at <var>m</var> and at <var>m</var> − 1/12 years and the exact dates of coupons, so the result is close to the return of a Treasury index but not equal to it. Treasury bills earn a twelfth of the 3-month yield at the end of the month before. The yields are the Treasury's constant-maturity yields as published in the Federal Reserve's H.15 release.</p>
+      <p>The six currencies are cash deposits: the change in the dollar price of the currency at month-end (the Federal Reserve's H.10 noon buying rates in New York), plus a month of interest at the central bank's policy rate at the end of the month before, as compiled by the Bank for International Settlements:</p>
+      <p class="eq"><var>r</var><sub><var>t</var></sub> = (<var>S</var><sub><var>t</var></sub> / <var>S</var><sub><var>t</var>−1</sub>) (1 + <var>i</var><sub><var>t</var>−1</sub> / 1200) − 1</p>
+      <p>where <var>S</var> is dollars per unit of the currency and <var>i</var> the policy rate in per cent a year. For the euro the BIS series is the European Central Bank's main refinancing rate until 17 September 2024 and its deposit facility rate from the next day. The deposit facility rate, the lower of the two, was below zero from June 2014 to July 2022 and 0.25 to 0.5 points below the main refinancing rate until September 2024 (ECB key interest rates), so in those years the euro deposit here earns more than money left at the ECB did. In three spells the BIS series has no Japanese rate, because the Bank of Japan set no numerical rate target: from March 1999 to July 2000 its guideline was for the overnight rate to move "as low as possible", from April 2001 to February 2006 it targeted banks' current accounts and expected the rate to "stay close to zero percent", and from May 2013 to August 2016 it targeted the monetary base. The yen earns 0% in the month after each of those month-ends, an approximation.</p>
+      <h3>The rules</h3>
+      <p>At the end of each month the rule looks at the <var>L</var> months that end <var>s</var> months ago (<var>s</var> is 1 with "skip the latest month" ticked, else 0), compounds each chosen asset's return over them, and sets its holdings for the next month. Nothing from that next month or later is used.</p>
+      <ul>
+        <li><strong>Time-series momentum</strong> gives each of the <var>n</var> chosen assets a slot of 1/<var>n</var>. The slot holds the asset if its compounded return beat Treasury bills' over the same months, and bills otherwise.</li>
+        <li><strong>Time-series mean reversion</strong> does the opposite: the slot holds the asset if it did worse than bills. A tie holds bills under both.</li>
+        <li><strong>Cross-sectional momentum</strong> ranks the chosen assets by their compounded return and holds the best <var>k</var>, 1/<var>k</var> each, always fully invested. Ties go to the asset listed first.</li>
+        <li><strong>Cross-sectional reversal</strong> holds the worst <var>k</var>.</li>
+      </ul>
+      <h3>Costs</h3>
+      <p>Before each month's returns the holdings have drifted from last month's targets. The amount traded is the sum over assets of |target weight − drifted weight| (bills trade free), and the cost is charged before the money is invested:</p>
+      <p class="eq">1 + <var>r</var><sup>net</sup> = (1 − cost × amount traded) (1 + <var>r</var><sup>gross</sup>)</p>
+      <p>Buy-and-hold puts equal amounts into every chosen asset at the start and never trades again, paying the cost once to buy in. Both start from cash, in the training months and again in the held-out months.</p>
+      <h3>The measures</h3>
+      <p>From the <var>T</var> monthly returns <var>r</var> and the bills' returns <var>r</var><sub>f</sub> over the same months:</p>
+      <p class="eq">Sharpe ratio = √12 × mean(<var>r</var> − <var>r</var><sub>f</sub>) / sd(<var>r</var> − <var>r</var><sub>f</sub>) &nbsp;&nbsp; return a year = (∏ (1 + <var>r</var>))<sup>12/<var>T</var></sup> − 1 &nbsp;&nbsp; volatility = √12 × sd(<var>r</var>)</p>
+      <p>The standard deviation divides by <var>T</var> − 1. The worst fall is the largest drop of the value of $1 from a peak to a later low, counted from the starting dollar. A negative Sharpe ratio means the portfolio earned less than Treasury bills.</p>
+      <h3>Training and held-out months</h3>
+      <p>Every rule starts trading in March 2000, the first month in which a 12-month look-back that skips a month has its 13 months of history, so all rules are scored on the same training months. The held-out months run from the January you choose to September 2026. Your rule's settings are yours; the tool's own choice of rule uses the training months only.</p>
+      <h3>Measuring the luck in a search</h3>
+      <p>The tool tries every rule in its grid: the four rules, look-backs of 1 to 12 months, with and without the skipped month, and for the cross-sectional rules every <var>k</var> from 1 to <var>n</var> − 1. That is 48 rules for each chosen asset, 480 for all ten. It picks the one with the best Sharpe ratio in the training months and reports four things.</p>
+      <ul>
+        <li><strong>Its held-out rank</strong> among all the rules. A rule that was best because it was good stays near the top.</li>
+        <li><strong>The probability of backtest overfitting</strong> (Bailey, Borwein, López de Prado and Zhu). The training months are cut into ten blocks of equal length (any months left over are dropped from the start). For each of the 252 ways of choosing five blocks, the rule with the best Sharpe ratio on those five is ranked among all rules on the other five. With rank <var>ω</var> divided by <var>N</var> + 1, the logit is ln(<var>ω</var> / (1 − <var>ω</var>)); the probability is the share of splits with a logit of zero or less, that is, splits in which the winner finished in the bottom half. Near 0.5 the search picks winners no better than chance would.</li>
+        <li><strong>A reshuffling test.</strong> The training months are put in a random order, the same order for every asset and for bills, so each month's returns stay together but any pattern over time is gone. The whole grid is run again and the best Sharpe ratio kept. This is done twenty times with a fixed seed, so the result is the same on every visit. If reshuffled months often produce a winner as good as the real one, the real winner's record says nothing about patterns. This is a permutation version of White's idea of judging the best rule against the best that chance would deliver.</li>
+        <li><strong>A formula for scale.</strong> For <var>N</var> unrelated rules with no skill, each Sharpe estimate having variance <var>V</var>, the expected best is about √<var>V</var> ((1 − <var>γ</var>) Φ<sup>−1</sup>(1 − 1/<var>N</var>) + <var>γ</var> Φ<sup>−1</sup>(1 − 1/(<var>N</var> e))), with <var>γ</var> ≈ 0.5772 (Bailey and López de Prado, 2014). The tool uses <var>V</var> = 1/<var>T</var> per month. The grid's rules share assets and look-backs, so they are far from unrelated and the formula overstates the luck; the reshuffling test does not have that problem.</li>
+      </ul>
+      <p>The tool also counts the settings you look at. Choosing among them by their held-out results turns the held-out months into a second training set, and the same formula gives the Sharpe ratio the best of that many unrelated no-skill tries would show on the held-out months by luck.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Whether momentum works in shares or commodities.</strong> These are Treasuries and currency deposits, chosen because their data may be republished. Most of the studies above are about shares or futures, which this data cannot test.</li>
+        <li><strong>Whether a gap between two Sharpe ratios is real.</strong> With <var>T</var> months the standard error of an annualised Sharpe ratio is roughly √(12/<var>T</var>) (Lo, 2002), about 0.27 for the 165 held-out months from January 2013. Differences smaller than that, such as the opening rule's −0.32 against buy-and-hold's −0.38, are well within chance. The page makes no formal significance test.</li>
+        <li><strong>Anything beyond one history.</strong> The held-out years from 2013 include long spells of a strong dollar and the sharp rise in yields of 2022, which hurt both bonds and foreign cash for a dollar investor. Another split gives other answers, and the twenty reshufflings only resolve probabilities to the nearest 5%.</li>
+        <li><strong>What trading really costs.</strong> One cost per unit traded stands in for spreads, commissions and market impact. The bonds are modelled rather than traded, the deposits earn policy rates rather than what a bank would pay, and taxes are ignored.</li>
+        <li><strong>How wide the real search was.</strong> The grid has 48 rules per asset. Researchers and fund managers also try other weightings, other assets and other periods, often without recording them, so the true search behind a published rule is usually wider than any correction can see. Reshuffled months also lose any clustering of calm and turbulent months, which the real data have.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Scale each position by its recent volatility, as Moskowitz, Ooi and Pedersen do, so that bonds and currencies carry similar risk.</li>
+        <li>Re-select the rule each year on the data available at the time (walk-forward) instead of once at a single split.</li>
+        <li>Test the difference between the rule's and buy-and-hold's Sharpe ratios formally, with a block bootstrap that keeps neighbouring months together.</li>
+        <li>Replace reshuffling with White's reality check or Hansen's test of superior predictive ability, which allow for the correlation between rules directly.</li>
+        <li>Extend the history to the 1970s with the German mark before the euro, and add any share or commodity series whose terms allow republishing.</li>
+        <li>Use deposit and bill rates for each currency instead of central bank policy rates.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>Board of Governors of the Federal Reserve System. H.15 Selected Interest Rates: market yields on US Treasury securities at 3-month, 2, 5, 10 and 20-year constant maturity, quoted on investment basis (from the US Department of the Treasury), daily. Retrieved 14 October 2026 from https://www.federalreserve.gov/releases/h15/. Public domain: "Unless otherwise indicated, information on Board's website is in the public domain" (Federal Reserve Board website policy).</li>
+        <li>Board of Governors of the Federal Reserve System. H.10 Foreign Exchange Rates: noon buying rates in New York for the euro, yen, pound sterling, Swiss franc, Canadian dollar and Australian dollar, daily. Retrieved 14 October 2026 from https://www.federalreserve.gov/releases/h10/. Public domain, as above.</li>
+        <li>Bank for International Settlements. Central bank policy rates (WS_CBPOL), monthly, end of period, for the euro area, Japan, the United Kingdom, Switzerland, Canada and Australia. Retrieved 14 October 2026 from https://data.bis.org/topics/CBPOL. Used under the BIS terms of permitted use of statistics, which allow reproduction with the BIS cited as the source; not a Creative Commons licence.</li>
+        <li>European Central Bank. Key ECB interest rates (deposit facility and main refinancing operations), read 14 October 2026 at https://www.ecb.europa.eu/stats/policy_and_exchange_rates/key_ecb_interest_rates/.</li>
+        <li>Fama, E. F. (1970). Efficient capital markets: a review of theory and empirical work. <em>Journal of Finance</em>, 25(2), 383-417.</li>
+        <li>De Bondt, W. F. M., and Thaler, R. (1985). Does the stock market overreact? <em>Journal of Finance</em>, 40(3), 793-805.</li>
+        <li>Jegadeesh, N., and Titman, S. (1993). Returns to buying winners and selling losers: implications for stock market efficiency. <em>Journal of Finance</em>, 48(1), 65-91.</li>
+        <li>Moskowitz, T. J., Ooi, Y. H., and Pedersen, L. H. (2012). Time series momentum. <em>Journal of Financial Economics</em>, 104(2), 228-250.</li>
+        <li>Menkhoff, L., Sarno, L., Schmeling, M., and Schrimpf, A. (2012). Currency momentum strategies. <em>Journal of Financial Economics</em>, 106(3), 660-684.</li>
+        <li>White, H. (2000). A reality check for data snooping. <em>Econometrica</em>, 68(5), 1097-1126.</li>
+        <li>Lo, A. W. (2002). The statistics of Sharpe ratios. <em>Financial Analysts Journal</em>, 58(4), 36-52.</li>
+        <li>Bailey, D. H., and López de Prado, M. (2014). The deflated Sharpe ratio: correcting for selection bias, backtest overfitting, and non-normality. <em>Journal of Portfolio Management</em>, 40(5), 94-107.</li>
+        <li>Bailey, D. H., Borwein, J. M., López de Prado, M., and Zhu, Q. J. (2017). The probability of backtest overfitting. <em>Journal of Computational Finance</em>, 20(4), 39-69.</li>
+        <li>Swinkels, L. (2019). Treasury bond return data starting in 1962. <em>Data</em>, 4(3), 91.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

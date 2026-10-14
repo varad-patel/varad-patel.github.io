@@ -1,0 +1,7 @@
+{
+  "question": "Does a rule that follows recent winners, or bets on a turn, still work in years it was not tuned on, and how much of the best rule's record is luck?",
+  "finding": "With all ten assets and a held-out test from January 2013, the best of 480 rules in 2000 to 2012 (cross-sectional momentum, 3-month look-back, holding six) had a Sharpe ratio of 0.78 but scored -0.51 afterwards, number 426 of 480, with a probability of backtest overfitting of 81%, and reshuffled training months produced a best of 0.79 on average.",
+  "limit": "The assets are Treasuries and currency deposits for a dollar investor over one 27-year history, so a gap between two Sharpe ratios smaller than about 0.27 held out is within chance.",
+  "sources": ["Federal Reserve Board H.15 and H.10", "Bank for International Settlements"],
+  "built": "2026-10-14"
+}
