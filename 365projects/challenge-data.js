@@ -1148,7 +1148,14 @@ window.CHALLENGE = {
    "concept": "Pricing uncertainty",
    "skills": "Closed-form pricing",
    "section": 3,
-   "date": "2026-12-14"
+   "date": "2026-12-14",
+   "built": "2026-10-14",
+   "question": "What is an option worth under the Black-Scholes-Merton model, and how do its price and Greeks move as the share price, time, volatility and interest change?",
+   "finding": "An at-the-money one-year call on a $100 share (20% volatility, 5% interest) is worth $10.45 and loses 1.8 cents a day; with a week left it is worth $1.15 and loses 8.6 cents a day, and with a day left 21.6 cents, while its gamma rises twentyfold from 0.019 to 0.38.",
+   "limit": "The model takes volatility as known and constant and prices move without jumps, so real option prices, which imply different volatilities at different strikes, depart from it most for large moves.",
+   "sources": [],
+   "img": "img/066.jpg",
+   "url": "66/"
   },
   {
    "id": 67,
@@ -1157,7 +1164,14 @@ window.CHALLENGE = {
    "concept": "Risk and uncertainty",
    "skills": "Monte Carlo, Brownian motion",
    "section": 3,
-   "date": "2026-12-15"
+   "date": "2026-12-15",
+   "built": "2026-10-14",
+   "question": "How much could a portfolio lose over a given horizon, how likely is a given loss, and how sure can a simulation of thousands of futures be about either?",
+   "finding": "For a made-up $100,000 portfolio with normal returns, 10,000 simulated futures from seed 1 put the 10-day 99% value at risk at $5,127 (Monte Carlo interval $4,964 to $5,341) against a closed form of $5,077, and the interval narrows from $1,026 wide with 1,000 futures to $101 with 100,000.",
+   "limit": "Every number follows from the returns, volatilities and correlations typed in, and both models have thinner tails and steadier correlations than real markets, which the Monte Carlo interval does not measure.",
+   "sources": [],
+   "img": "img/067.jpg",
+   "url": "67/"
   },
   {
    "id": 68,
@@ -1319,7 +1333,14 @@ window.CHALLENGE = {
    "concept": "Risk and decision theory",
    "skills": "Log utility, Monte Carlo",
    "section": 3,
-   "date": "2027-01-02"
+   "date": "2027-01-02",
+   "built": "2026-10-14",
+   "question": "How much of a bankroll should be staked on a favourable bet, and what do half, full and twice the Kelly stake do to growth and to the chance of ruin?",
+   "finding": "On a 10% edge at even money over 1,000 bets, Kelly's 10% stake ends with a median 150 times the start but a 47% chance of halving at some point; half Kelly ends at 43 times with an 11.5% chance; twice Kelly's median bettor ends with 0.87 of the start and 90% halve, while the average bankroll is 398 million times the start.",
+   "limit": "Kelly needs the true chance of winning, which no bettor knows, and staking it on an overestimated edge is staking more than Kelly.",
+   "sources": [],
+   "img": "img/085.jpg",
+   "url": "85/"
   },
   {
    "id": 86,
