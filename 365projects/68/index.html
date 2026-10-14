@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Crypto Volatility Lab · 365 projects</title>
+  <meta name="description" content="Pick a cryptocurrency, fit a GARCH(1,1) model to its daily returns, and see its volatility regimes, a risk forecast with its uncertainty, and a backtest of that forecast.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    .source-note { padding-top: 12px; border-top: 1px solid var(--grid); }
+    .stat .v { font-size: 1.35rem; }
+    .rt-wrap { margin-top: 4px; }
+    .tbl.rt th, .tbl.rt td { white-space: normal; }
+    .rt caption { font-weight: 600; font-size: 0.86rem; color: var(--slate); }
+    /* Each row becomes a short list of labelled lines whenever the table's own box is narrower than the widest
+       table (the estimates, about 720 px), beside the controls on a tablet as well as on a phone. */
+    div:has(> table.rt) { container-type: inline-size; }
+    @container (max-width: 740px) {
+      .rt, .rt tbody, .rt tr, .rt th, .rt td, .rt caption { display: block; }
+      .rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .rt th[scope="row"], .rt td { border: 0; padding: 1px 0; }
+      .rt td { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; overflow-wrap: anywhere; }
+      .rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+      .rt td:empty { display: none; }
+    }
+    @media (max-width: 640px) {
+      .rt, .rt tbody, .rt tr, .rt th, .rt td, .rt caption { display: block; }
+      .rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .rt th[scope="row"], .rt td { border: 0; padding: 1px 0; }
+      .rt td { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; overflow-wrap: anywhere; }
+      .rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+      .rt td:empty { display: none; }
+    }
+    .rt th[scope="row"] { font-weight: 600; border-bottom: 1px solid var(--grid); }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+    @media (max-width: 600px) { .p-sec .eq { white-space: normal; } }
+  </style>
+</head>
+<body class="proj" data-day="68">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Crypto Volatility Lab</h1>
+      <p class="lede">Pick a coin and fit the standard model of changing volatility to its daily prices. See when it was calm and when it was stormy, what the model expects next, how unsure that forecast is, and whether its warnings would have held up.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="GARCH volatility model for cryptocurrency prices">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>The page opens on Bitcoin, fitted to its daily prices from 1 January 2018 to 23 May 2026. Its volatility is persistent but not permanent: α + β = 0.961, so a jump in volatility halves in about 17.5 days. On the last day the model put volatility at 45% a year, lower than on 90% of days in the window, a calm regime. In a backtest over 2,064 days that used only earlier prices, the model's 99% value at risk was exceeded on 23 days (1.11%, consistent with 1% by Kupiec's test, p = 0.61), while the RiskMetrics rule was exceeded on 46 (2.23%, rejected).</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Prices of speculative assets do not move by the same amount every day. Calm weeks follow calm weeks and wild days come in clusters. Benoit Mandelbrot pointed this out for cotton prices in 1963: large changes tend to be followed by large changes, of either sign, and small changes by small ones. Robert Engle turned the observation into a model in 1982 (ARCH, autoregressive conditional heteroscedasticity, for which he later shared the Nobel prize), and Tim Bollerslev generalised it in 1986 into GARCH, which is still the workhorse of financial risk measurement.</p>
+      <p>Cryptocurrencies are a clear case. There is no dividend or cash flow to anchor a price, so it rests largely on what buyers expect other buyers to pay, the situation Keynes compared to a beauty contest. Volatility is several times that of a stock index and it comes in regimes: a crash or a rally is followed by weeks of large moves, then the market settles. A model that tracks this is useful even to someone with no view about where the price is going, because it says how much a position could plausibly lose tomorrow. That number, value at risk, has been part of bank supervision since 1996, when the Basel Committee let banks measure market risk with their own models and checked those models by counting the days on which losses exceeded the value at risk, as the backtest here does.</p>
+      <p>The tool also asks the question that matters for any risk model: would its warnings have held up? It replays years of history, forecasting each day using only the days before, and counts how often the loss was worse than the model said it would be.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The data</h3>
+      <p>Daily prices in US dollars at the end of each UTC day for six coins, from Coin Metrics' free community data archive, which is published under the Creative Commons Attribution-NonCommercial 4.0 licence. Coin Metrics computes the price from its reference rates, which pool trades on several exchanges. Each series starts on the first day the archive has a price for that coin and ends on 23 May 2026, the last full day before Coin Metrics stopped updating the free archive. No day is missing or filled in. Many popular price feeds forbid republishing their data, which is why the page uses this one.</p>
+      <h3>Returns</h3>
+      <p>The tool works with daily log returns in percent, <var>r</var><sub><var>t</var></sub> = 100 ln(<var>P</var><sub><var>t</var></sub> / <var>P</var><sub><var>t</var>−1</sub>). Crypto trades every day, so a year has 365 trading days and annual volatility is daily volatility times √365.</p>
+      <h3>The model</h3>
+      <p>GARCH(1,1) with a constant mean says that each day's return is the mean plus a surprise whose variance depends on yesterday:</p>
+      <p class="eq"><var>r</var><sub><var>t</var></sub> = <var>μ</var> + <var>e</var><sub><var>t</var></sub>, &nbsp;&nbsp; <var>e</var><sub><var>t</var></sub> = √<var>h</var><sub><var>t</var></sub> · <var>z</var><sub><var>t</var></sub>, &nbsp;&nbsp; <var>h</var><sub><var>t</var></sub> = <var>ω</var> + <var>α</var> <var>e</var><sub><var>t</var>−1</sub><sup>2</sup> + <var>β</var> <var>h</var><sub><var>t</var>−1</sub></p>
+      <p>where <var>z</var><sub><var>t</var></sub> has mean 0 and variance 1. A large surprise yesterday raises today's variance through <var>α</var>; <var>β</var> carries the variance itself forward. With <var>ω</var> &gt; 0, <var>α</var>, <var>β</var> ≥ 0 and <var>α</var> + <var>β</var> &lt; 1, the variance is pulled back towards a long-run level</p>
+      <p class="eq"><var>σ̄</var><sup>2</sup> = <var>ω</var> / (1 − <var>α</var> − <var>β</var>)</p>
+      <p>and the sum <var>α</var> + <var>β</var>, the persistence, sets how fast: a shock to the variance shrinks by that factor every day, so it halves in ln 0.5 / ln(<var>α</var> + <var>β</var>) days. Before the first day the tool sets <var>e</var><sub>0</sub><sup>2</sup> = <var>h</var><sub>0</sub> = the mean of <var>e</var><sub><var>t</var></sub><sup>2</sup> over the sample, the convention of the published benchmark below.</p>
+      <h3>Estimation</h3>
+      <p>The four parameters maximise the Gaussian log-likelihood</p>
+      <p class="eq">ln <var>L</var> = −½ Σ<sub><var>t</var></sub> [ ln 2π + ln <var>h</var><sub><var>t</var></sub> + <var>e</var><sub><var>t</var></sub><sup>2</sup> / <var>h</var><sub><var>t</var></sub> ]</p>
+      <p>The optimiser is BFGS on transformed parameters that keep <var>ω</var> positive and <var>α</var> + <var>β</var> below 1, using the exact gradient (the derivatives of <var>h</var><sub><var>t</var></sub> follow the same recursion as <var>h</var><sub><var>t</var></sub>), from three starting points, followed by Newton steps. Daily crypto returns are not normal, so this is quasi-maximum likelihood: the estimates are still consistent, but the usual standard errors are not right. The table therefore shows the robust standard errors of Bollerslev and Wooldridge (1992), <var>A</var><sup>−1</sup><var>G</var><var>A</var><sup>−1</sup>, where <var>G</var> sums the outer products of each day's score and <var>A</var> is the information matrix, next to the standard errors from the Hessian.</p>
+      <h3>Checked against a published benchmark</h3>
+      <p>The estimator was run on the benchmark data set for GARCH software, the daily Deutschmark to sterling returns of Bollerslev and Ghysels (1996), 1,974 days, used by McCullough and Renfro (1998) and Brooks, Burke and Persand (2001). It reproduces the benchmark estimates (<var>μ</var> = −0.00619041, <var>ω</var> = 0.0107613, <var>α</var> = 0.153134, <var>β</var> = 0.805974) to five significant figures or better (it gets <var>ω</var> = 0.0107614, the others to all six figures), and all eight of the benchmark's standard errors, from the Hessian and robust, to the six figures published. The page's own tests also hold the estimates for Bitcoin from a second implementation written separately in Python, with a different optimiser (Nelder-Mead); the two agree to five significant figures.</p>
+      <h3>Regimes</h3>
+      <p>Each day's fitted volatility √<var>h</var><sub><var>t</var></sub> is ranked against all the days in the window. A day is stormy if it is in the top quarter, calm if it is in the bottom quarter, ordinary otherwise. The tile ranks the volatility forecast for the next day the same way. The labels are a description of the fitted path, not a separate model of regimes; day 72 fits one of those.</p>
+      <h3>The risk forecast</h3>
+      <p>The variance for <var>k</var> days ahead follows from the recursion:</p>
+      <p class="eq"><var>h</var><sub><var>T</var>+<var>k</var></sub> = <var>σ̄</var><sup>2</sup> + (<var>α</var> + <var>β</var>)<sup><var>k</var>−1</sup> (<var>h</var><sub><var>T</var>+1</sub> − <var>σ̄</var><sup>2</sup>)</p>
+      <p>The one-day value at risk at level <var>c</var> is the loss that the next day's return should exceed with probability 1 − <var>c</var>: <var>VaR</var> = −(<var>μ</var> + √<var>h</var><sub><var>T</var>+1</sub> <var>q</var>), where <var>q</var> is the (1 − <var>c</var>) quantile of the shocks: −2.326 for 99% if they are normal, or the empirical quantile of the model's own standardised surprises <var>e</var><sub><var>t</var></sub> / √<var>h</var><sub><var>t</var></sub> ("drawn from the past", filtered historical simulation in the sense of Barone-Adesi, Giannopoulos and Vosper 1999). The tile turns this log return into a percentage change in price.</p>
+      <h3>Its uncertainty</h3>
+      <p>The estimates are themselves uncertain. The tool draws 200 parameter sets from a normal distribution centred on the estimates with the robust covariance, keeps those that satisfy the constraints, runs each through the data to get its own <var>h</var><sub><var>T</var>+1</sub>, and reports the middle 90% of the resulting volatilities and values at risk. The fan chart simulates 4,000 paths of the model forward, each with one of those parameter sets and with shocks that are normal or resampled from the past, and plots quantiles of the cumulative change in price. The seed is fixed, so the same settings always give the same picture.</p>
+      <h3>The backtest</h3>
+      <p>For every day after the first 1,000 of the window the tool forecasts a one-day value at risk from data before that day only. The model is re-estimated every 250 days on all earlier returns, and between re-estimates the variance is updated day by day with the new returns. Two common rules are scored on the same days: RiskMetrics (J.P. Morgan and Reuters, 1996), whose variance is <var>σ</var><sup>2</sup><sub><var>t</var></sub> = 0.94 <var>σ</var><sup>2</sup><sub><var>t</var>−1</sub> + 0.06 <var>r</var><sup>2</sup><sub><var>t</var>−1</sub> with normal shocks, and historical simulation, the empirical quantile of the previous 250 returns. An exceedance is a day whose return falls below −<var>VaR</var>. Kupiec's (1995) test compares the number of exceedances <var>x</var> in <var>n</var> days with the rate <var>p</var> = 1 − <var>c</var>:</p>
+      <p class="eq"><var>LR</var> = −2 [ (<var>n</var> − <var>x</var>) ln(1 − <var>p</var>) + <var>x</var> ln <var>p</var> − (<var>n</var> − <var>x</var>) ln(1 − <var>x</var>/<var>n</var>) − <var>x</var> ln(<var>x</var>/<var>n</var>) ]</p>
+      <p>which is compared with a chi-squared distribution with one degree of freedom. "Rejected" means a p-value below 0.05. The table also gives the average quantile loss, (<var>p</var> − 1[<var>r</var> &lt; −<var>VaR</var>]) (<var>r</var> + <var>VaR</var>), the scoring rule for quantile forecasts that goes back to Koenker and Bassett (1978): lower is better, and unlike a count of exceedances it rewards a forecast for being tight when it can be.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Where the price is going.</strong> GARCH models the size of moves, not their direction. The fan chart's median drifts at <var>μ</var>, the window's average daily return, which says what happened, not what will. Nothing here is investment advice.</li>
+        <li><strong>Tail risk beyond the window.</strong> The model learns from the window it is given. A start date after a crash produces a calmer model, and no window contains the crash that has not happened yet. Normal shocks understate how often extreme days happen; resampled shocks cannot produce a day worse than the worst one in the window.</li>
+        <li><strong>Whether the model is the right one.</strong> GARCH(1,1) treats falls and rises alike, while many markets get more volatile after falls; it assumes the parameters never change, while a coin's market in 2014 was a different thing from its market in 2024. When <var>α</var> + <var>β</var> comes out close to 1, as it does for Dogecoin over its whole history, the model is telling you that something is not stationary.</li>
+        <li><strong>Exact uncertainty.</strong> The intervals assume the estimates are roughly normally distributed around the truth, which is an approximation for a few thousand days, and they ignore the error of choosing this model at all.</li>
+        <li><strong>Whether exceedances bunch.</strong> Kupiec's test counts misses. A model can get the count right and still miss on ten days in a row in a crash; tests of independence such as Christoffersen's are not run here.</li>
+        <li><strong>The price on any one exchange.</strong> A reference rate pools many venues and is taken at midnight UTC. Prices on one exchange, at another hour, or for a thinly traded coin in its first years can differ.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Fit Student's t or skewed shocks by maximum likelihood, so that the fat tails are part of the model rather than added afterwards.</li>
+        <li>Add asymmetric models (GJR-GARCH, EGARCH) and compare them with GARCH(1,1) by likelihood and by the same backtest.</li>
+        <li>Test the clustering of exceedances (Christoffersen's conditional coverage test) and compare forecasts formally with a Diebold-Mariano test on the quantile loss.</li>
+        <li>Use intraday data to build realised volatility, a much sharper measure of what each day's variance actually was, and score the forecasts against it.</li>
+        <li>Model several coins together (a multivariate GARCH or a dynamic conditional correlation model) to see how much their risks move together in a crash.</li>
+        <li>Let the parameters change over time, with a rolling window or a regime-switching GARCH.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>Coin Metrics, Inc. Free Coin Metrics data archives (community data), daily PriceUSD for BTC, ETH, LTC, XRP, DOGE and ADA. https://github.com/coinmetrics/data. Licence: Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0), https://creativecommons.org/licenses/by-nc/4.0/. Coin Metrics publishes the data without any warranty. Changed here: prices rounded to six significant figures; nothing else. Retrieved 14 October 2026; the archive's last update was on 24 May 2026. This page is non-commercial and carries no advertising.</li>
+        <li>Engle, R. F. (1982). Autoregressive conditional heteroscedasticity with estimates of the variance of United Kingdom inflation. <em>Econometrica</em>, 50(4), 987-1007.</li>
+        <li>Bollerslev, T. (1986). Generalized autoregressive conditional heteroskedasticity. <em>Journal of Econometrics</em>, 31(3), 307-327.</li>
+        <li>Bollerslev, T., and Wooldridge, J. M. (1992). Quasi-maximum likelihood estimation and inference in dynamic models with time-varying covariances. <em>Econometric Reviews</em>, 11(2), 143-172.</li>
+        <li>Bollerslev, T., and Ghysels, E. (1996). Periodic autoregressive conditional heteroscedasticity. <em>Journal of Business and Economic Statistics</em>, 14(2), 139-151.</li>
+        <li>McCullough, B. D., and Renfro, C. G. (1998). Benchmarks and software standards: a case study of GARCH procedures. <em>Journal of Economic and Social Measurement</em>, 25(2), 59-71.</li>
+        <li>Brooks, C., Burke, S. P., and Persand, G. (2001). Benchmarks and the accuracy of GARCH model estimation. <em>International Journal of Forecasting</em>, 17(1), 45-56.</li>
+        <li>Mandelbrot, B. (1963). The variation of certain speculative prices. <em>Journal of Business</em>, 36(4), 394-419.</li>
+        <li>Barone-Adesi, G., Giannopoulos, K., and Vosper, L. (1999). VaR without correlations for portfolios of derivative securities. <em>Journal of Futures Markets</em>, 19(5), 583-602.</li>
+        <li>Kupiec, P. H. (1995). Techniques for verifying the accuracy of risk measurement models. <em>Journal of Derivatives</em>, 3(2), 73-84.</li>
+        <li>Koenker, R., and Bassett, G. (1978). Regression quantiles. <em>Econometrica</em>, 46(1), 33-50.</li>
+        <li>J.P. Morgan and Reuters (1996). <em>RiskMetrics Technical Document</em>, fourth edition. New York.</li>
+        <li>Basle Committee on Banking Supervision (January 1996). Supervisory framework for the use of "backtesting" in conjunction with the internal models approach to market risk capital requirements. Bank for International Settlements. https://www.bis.org/publ/bcbs22.htm.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

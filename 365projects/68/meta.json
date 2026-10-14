@@ -1,0 +1,7 @@
+{
+  "question": "How volatile is a cryptocurrency now, how long do its storms last, and would a standard risk model's warnings have held up?",
+  "finding": "Fitted to Bitcoin's daily prices from 2018 to May 2026, GARCH(1,1) has a persistence of 0.961 (a volatility shock halves in about 17.5 days), and its 99% value at risk was exceeded on 23 of 2,064 backtest days (1.11%), against 46 days for the RiskMetrics rule.",
+  "limit": "The model describes the size of price moves in the window it was fitted to, not their direction, and no window contains the crash that has not happened yet.",
+  "sources": ["Coin Metrics"],
+  "built": "2026-10-14"
+}
