@@ -39,6 +39,13 @@ await mkdir(OUT, { recursive: true });
 
 // The full-page picture is for a person to look at, not a check. Firefox and WebKit cannot draw an image taller
 // than 32,767 device pixels, and the gallery grows with every project, so a long page falls back to its first screen.
+// A page load that times out is tried once more and reported, as in smoke.mjs: on a busy machine, or just after a
+// deploy, the first load of the gallery and its thumbnails can be slow without anything being wrong.
+let retries = 0;
+async function go(page, url) {
+  try { await page.goto(url); } catch (e) { if (!/Timeout/.test(e.message)) throw e; retries++; await page.goto(url); }
+}
+
 const picture = (page, path) => page.screenshot({ path, fullPage: true }).catch(() => page.screenshot({ path }));
 
 async function audit(page, where) {
@@ -61,14 +68,14 @@ for (const [size, width, height] of [["desktop", 1280, 900], ["phone", 390, 800]
   page.on("pageerror", (e) => problems.push(`${name}: uncaught: ${e.message}`));
   page.on("response", (r) => { if (r.status() >= 400) problems.push(`${name}: HTTP ${r.status()} ${r.url()}`); });
 
-  await page.goto(`${base}/`);
+  await go(page, `${base}/`);
   await page.waitForLoadState("networkidle");
   await picture(page, join(OUT, `home-${shot}.png`));
   if (engine === "chromium") await audit(page, `home page, ${size}`);
   const status = await page.locator("#home-status").textContent();
   if (!/\d+ of 365 built/.test(status || "")) problems.push(`${name}: home page status reads "${status}"`);
 
-  await page.goto(`${base}/365projects/`);
+  await go(page, `${base}/365projects/`);
   await page.waitForLoadState("networkidle");
   await page.waitForTimeout(600);
   const facts = await page.evaluate(() => {
@@ -141,4 +148,4 @@ for (const [size, width, height] of [["desktop", 1280, 900], ["phone", 390, 800]
 await browser.close();
 }
 if (problems.length) { console.log("FAIL\n  " + [...new Set(problems)].join("\n  ")); process.exit(1); }
-console.log("ok   gallery and home page");
+console.log(`ok   gallery and home page${retries ? ` (${retries} page load(s) needed a second try)` : ""}`);
