@@ -205,6 +205,11 @@ you call a page built.
 
 * A table wider than 390 px becomes a list or is turned on its side. Results sit near the control that
   changes them; a long tool gets jump links.
+* A table that turns into a list must do so whenever its own box is narrower than the table, not only on a
+  phone: beside the controls on a tablet or a small laptop the box is 600 to 700 px. Stack it with a container
+  query whose width is at least the table's widest natural width, measured with the largest input. The kit keeps
+  `th` and `.num` cells on one line (`.tbl .num` outranks a plain `.rt td`), so say `.tbl.rt td` to let them wrap.
+  Check by opening every disclosure and sweeping the width (day 35's ten-year table overflowed at 701 to 808 px).
 * Equations are broken into lines that fit. A canvas is capped to part of the screen height, or a finger
   cannot scroll past it.
 * The smoke test taps every control with a real touch at phone width. A control it cannot reach is a failure.
