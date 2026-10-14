@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Portfolio Optimiser · 365 projects</title>
+  <meta name="description" content="Choose assets, limits on the weights and the volatility you accept, get the portfolio on the efficient frontier, and see how much it moves when one uncertain expected return moves.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .po-group { margin: 2px 0 6px; }
+    .po-sub { margin: 4px 0 2px; font-size: 0.82rem; color: var(--slate); }
+    .po-presets { gap: 6px; margin-top: 6px; }
+    .po-about { padding-top: 12px; border-top: 1px solid var(--grid); }
+    .po-own summary { cursor: pointer; font-weight: 600; padding: 4px 0; }
+    .po-own .btn { margin: 4px 0 8px; }
+    .po-stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .po-stack h2 { margin: 0; }
+    .tool p, .tool li, .note { overflow-wrap: anywhere; }
+    .tbl.rt th, .tbl.rt td { white-space: normal; }
+    .rt caption { font-weight: 600; font-size: 0.86rem; color: var(--slate); text-align: left; }
+    /* Tables become short lists of labelled lines whenever their own box is narrower than the widest of them
+       (about 620px), on a phone and beside the controls on a tablet. */
+    div:has(> table.rt) { container-type: inline-size; }
+    @container (max-width: 640px) {
+      .rt, .rt tbody, .rt tr, .rt th, .rt td, .rt caption { display: block; }
+      .rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .rt th[scope="row"], .rt td { border: 0; padding: 1px 0; }
+      .rt th[scope="row"] { text-align: left; }
+      .rt td { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; }
+      .rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+    }
+    @media (max-width: 640px) {
+      .rt, .rt tbody, .rt tr, .rt th, .rt td, .rt caption { display: block; }
+      .rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .rt th[scope="row"], .rt td { border: 0; padding: 1px 0; }
+      .rt th[scope="row"] { text-align: left; }
+      .rt td { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; }
+      .rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+    }
+    .jump { gap: 4px 16px; margin-bottom: 10px; }
+    .jump a { padding: 4px 0; }
+    .p-sec .eq { white-space: normal; }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body class="proj" data-day="64">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Portfolio Optimiser</h1>
+      <p class="lede">Choose assets, limits on the weights and how much volatility you accept, and get the portfolio on the efficient frontier drawn from past returns. Then see how far it moves when one expected return, which nobody knows, moves by as much as its own uncertainty.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Mean-variance portfolio optimiser">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>The page opens on all eleven assets, estimated from February 1999 to September 2026, with no short positions and 4% volatility a year. On those past averages, volatilities and correlations the efficient portfolio is 59.2% in 2-year Treasuries, 25.5% in Australian dollar deposits and 15.3% in 20-year Treasuries, and its average return over those months was 3.25% a year. The 5-year Treasury's estimated return of 2.86% a year is uncertain by 0.82 percentage points, one standard error. Raise it by that much, at the same volatility, and the 5-year goes from none of the portfolio to 79.1% of it: 84.1% of the money would have to move.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Harry Markowitz argued in 1952 that an investor should judge a portfolio by two numbers, its expected return and its variance, and should not simply buy whatever promises the most. Because assets do not move together perfectly, a mix can be less volatile than its parts, and among all mixes some give the highest expected return for their volatility. Those form the efficient frontier. Choosing a point on it is a matter of taste for risk; the frontier itself is arithmetic.</p>
+      <p>The arithmetic needs inputs nobody has: the true expected returns, volatilities and correlations. In practice they are estimated from the past, and the optimiser treats the estimates as facts. Richard Michaud called mean-variance optimisers "estimation-error maximizers" in 1989, because they pile into whatever looks best, which is often whatever was luckiest. Michael Best and Robert Grauer worked out in 1991 how sharply the optimal weights respond to a small change in a single asset's mean: with no short positions, a surprisingly small rise in one mean pushed half the assets out of the portfolio while its expected return and volatility barely moved. Vijay Chopra and William Ziemba compared in 1993 the cost of errors in the means with that of errors in the variances and covariances.</p>
+      <p>This matters beyond finance classrooms because pension funds, endowments and robo-advisers use versions of this calculation. The tool solves the problem exactly and then asks the question that the exactness hides: how much would the answer change if one expected return were off by its own standard error?</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The data, and what it is not</h3>
+      <p>The eleven assets are shared with pages 63 and 65: monthly returns in US dollars, February 1999 to September 2026, nominal and before tax and costs. Treasury bills earn a twelfth of the 3-month yield each month. The 2, 5, 10 and 20-year Treasuries are bonds held at a constant maturity, modelled from the Treasury yields in the Federal Reserve's H.15 release (bought at par each month and priced in full a month later at the new yield, the par-bond idea of Swinkels, 2019), not a fund that anyone sells. The six currencies are cash deposits: the change in the currency's dollar price at month-end (Federal Reserve H.10) plus a month of interest at its central bank's policy rate (Bank for International Settlements). There are no shares or commodities: share indices belong to the firms that compute them, which do not allow them to be republished freely, and the open commodity prices are monthly averages, which smooth returns. Page 63 gives the formulas in full.</p>
+      <h3>Estimates</h3>
+      <p>Over the chosen months, with <var>T</var> monthly returns per asset:</p>
+      <p class="eq"><var>μ</var><sub><var>i</var></sub> = 12 × mean(<var>r</var><sub><var>i</var></sub>) &nbsp;&nbsp; <var>Σ</var><sub><var>ij</var></sub> = 12 × cov(<var>r</var><sub><var>i</var></sub>, <var>r</var><sub><var>j</var></sub>) &nbsp;&nbsp; <var>σ</var><sub><var>i</var></sub> = √<var>Σ</var><sub><var>ii</var></sub> &nbsp;&nbsp; se(<var>μ</var><sub><var>i</var></sub>) = <var>σ</var><sub><var>i</var></sub> / √(<var>T</var>/12)</p>
+      <p>The covariance divides by <var>T</var> − 1. Multiplying by 12 turns monthly figures into yearly ones on the assumption that months are independent. The standard error is how far an average of <var>T</var>/12 years typically lands from the true mean.</p>
+      <h3>The optimisation</h3>
+      <p>For a risk tolerance <var>τ</var> ≥ 0 the tool solves the quadratic programme</p>
+      <p class="eq">minimise ½ <var>w</var>′<var>Σw</var> − <var>τ</var> <var>μ</var>′<var>w</var> &nbsp;&nbsp; subject to &nbsp;&nbsp; <var>w</var><sub>1</sub> + … + <var>w</var><sub><var>n</var></sub> = 1, &nbsp; <var>l</var> ≤ <var>w</var><sub><var>i</var></sub> ≤ <var>u</var></p>
+      <p>where <var>l</var> and <var>u</var> are the lowest and highest weights you set. At <var>τ</var> = 0 the answer is the least volatile portfolio; as <var>τ</var> grows the solution moves along the frontier to the highest-return portfolio the limits allow. Because <var>Σ</var> is positive definite the problem has exactly one solution, characterised by the Karush-Kuhn-Tucker conditions: for a weight strictly between its limits, (<var>Σw</var>)<sub><var>i</var></sub> − <var>τμ</var><sub><var>i</var></sub> equals a common value <var>ν</var>; for a weight held at <var>l</var> it is at least <var>ν</var>, and at <var>u</var> at most <var>ν</var>.</p>
+      <p>The solver is the primal active-set method (Nocedal and Wright, chapter 16). It starts from a feasible portfolio, solves the equations above for the weights not held at a limit, steps towards that solution and stops at the first limit in the way, holding that weight there; when no step is needed it releases any held weight whose multiplier has the wrong sign. It ends after finitely many steps at the exact solution, up to rounding in the last digits.</p>
+      <p>Your risk tolerance is given as a volatility: the tool finds the <var>τ</var> whose portfolio has that volatility by bisection, which works because volatility rises with <var>τ</var>, and stops when the two agree to 10<sup>−12</sup>. The frontier in the chart is the set of solutions over a range of <var>τ</var>.</p>
+      <h3>How it was checked</h3>
+      <p>With the limits far away the solution must equal the closed form <var>w</var> = <var>τΣ</var><sup>−1</sup><var>μ</var> + ((1 − <var>τ</var>1′<var>Σ</var><sup>−1</sup><var>μ</var>) / (1′<var>Σ</var><sup>−1</sup>1)) <var>Σ</var><sup>−1</sup>1, and for two assets with no short positions the clamped two-asset formula. The page's tests check both, and check the solver against a separate one that tries every way of holding each weight at its lower limit, its upper limit or neither, solves the equations for each, and keeps the one that satisfies all the conditions. On thirty random problems and on the real data the two agree to 10<sup>−10</sup>, far below the 0.1% to which weights are printed. A further test draws 20,000 random portfolios and finds none that beats the frontier at the same volatility.</p>
+      <h3>Sensitivity to the means</h3>
+      <p>For each asset in turn the tool moves its expected return down and then up by one standard error, keeps everything else, and solves again at the same volatility. The share of the portfolio that changes is half the sum of the absolute changes in all the weights, so 100% means a completely different portfolio. The chart re-solves twenty-one times as one chosen asset's mean moves from two standard errors below to two above.</p>
+      <p>The Sharpe ratio shown is (expected return − bills' average return) / volatility, with both returns averaged over the same months.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>What to expect next.</strong> A past average is an estimate with a wide margin, as the standard errors show. From 1999 to 2020 yields mostly fell, which raised bond returns; a period of rising yields, like 2022, does the opposite. None of these averages is a forecast.</li>
+        <li><strong>The right risk measure.</strong> Variance treats a gain like a loss and assumes returns are roughly normal. Currency crashes and bond sell-offs are lumpier than that; page 65 looks at the worst falls directly.</li>
+        <li><strong>How the portfolio would have done.</strong> The weights are fitted to the same months that judge them, so the frontier looks better than any real investor could have done. Choose an earlier window and compare its portfolio with what came after to see the gap.</li>
+        <li><strong>Anything about shares, property or commodities.</strong> The data are limited to assets whose figures may be republished.</li>
+        <li><strong>Costs, taxes and rebalancing.</strong> The calculation is for one period with free trading. The bonds are modelled, the deposits earn policy rates, and a real investor pays spreads and taxes.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Shrink the means towards a common value and the covariance matrix towards a simpler target (Ledoit and Wolf, 2004), and see how much steadier the weights become.</li>
+        <li>Combine market-implied returns with the visitor's views, as Black and Litterman (1992) proposed.</li>
+        <li>Resample: re-estimate from bootstrapped months many times and average the weights, Michaud's remedy.</li>
+        <li>Test out of sample: estimate on one window, hold the portfolio over the next, and compare with equal weights, as DeMiguel, Garlappi and Uppal (2009) did for fourteen models.</li>
+        <li>Add limits by group (all currencies together, say) and a cost for moving away from a current portfolio.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>Board of Governors of the Federal Reserve System. H.15 Selected Interest Rates (Treasury constant-maturity yields) and H.10 Foreign Exchange Rates (noon buying rates in New York), daily. Retrieved 14 October 2026 from https://www.federalreserve.gov/releases/h15/ and https://www.federalreserve.gov/releases/h10/. Public domain under the Board's website policy.</li>
+        <li>Bank for International Settlements. Central bank policy rates (WS_CBPOL), monthly, end of period. Retrieved 14 October 2026 from https://data.bis.org/topics/CBPOL. Used under the BIS terms of permitted use of statistics, with the BIS cited as the source.</li>
+        <li>Markowitz, H. (1952). Portfolio selection. <em>Journal of Finance</em>, 7(1), 77-91.</li>
+        <li>Michaud, R. O. (1989). The Markowitz optimization enigma: is 'optimized' optimal? <em>Financial Analysts Journal</em>, 45(1), 31-42.</li>
+        <li>Best, M. J., and Grauer, R. R. (1991). On the sensitivity of mean-variance-efficient portfolios to changes in asset means: some analytical and computational results. <em>Review of Financial Studies</em>, 4(2), 315-342.</li>
+        <li>Black, F., and Litterman, R. (1992). Global portfolio optimization. <em>Financial Analysts Journal</em>, 48(5), 28-43.</li>
+        <li>Chopra, V. K., and Ziemba, W. T. (1993). The effect of errors in means, variances, and covariances on optimal portfolio choice. <em>Journal of Portfolio Management</em>, 19(2), 6-11.</li>
+        <li>Ledoit, O., and Wolf, M. (2004). Honey, I shrunk the sample covariance matrix. <em>Journal of Portfolio Management</em>, 30(4), 110-119.</li>
+        <li>Nocedal, J., and Wright, S. J. (2006). <em>Numerical Optimization</em>, 2nd edition. Springer. Chapter 16.</li>
+        <li>DeMiguel, V., Garlappi, L., and Uppal, R. (2009). Optimal versus naive diversification: how inefficient is the 1/N portfolio strategy? <em>Review of Financial Studies</em>, 22(5), 1915-1953.</li>
+        <li>Swinkels, L. (2019). Treasury bond return data starting in 1962. <em>Data</em>, 4(3), 91.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
