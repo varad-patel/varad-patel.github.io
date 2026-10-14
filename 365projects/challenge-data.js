@@ -1121,7 +1121,17 @@ window.CHALLENGE = {
    "concept": "Market efficiency",
    "skills": "Backtesting, validation",
    "section": 3,
-   "date": "2026-12-11"
+   "date": "2026-12-11",
+   "built": "2026-10-14",
+   "question": "Does a rule that follows recent winners, or bets on a turn, still work in years it was not tuned on, and how much of the best rule's record is luck?",
+   "finding": "With all ten assets and a held-out test from January 2013, the best of 480 rules in 2000 to 2012 (cross-sectional momentum, 3-month look-back, holding six) had a Sharpe ratio of 0.78 but scored -0.51 afterwards, number 426 of 480, with a probability of backtest overfitting of 81%, and reshuffled training months produced a best of 0.79 on average.",
+   "limit": "The assets are Treasuries and currency deposits for a dollar investor over one 27-year history, so a gap between two Sharpe ratios smaller than about 0.27 held out is within chance.",
+   "sources": [
+    "Federal Reserve Board H.15 and H.10",
+    "Bank for International Settlements"
+   ],
+   "img": "img/063.jpg",
+   "url": "63/"
   },
   {
    "id": 64,
@@ -1130,7 +1140,17 @@ window.CHALLENGE = {
    "concept": "Risk and return",
    "skills": "Quadratic optimisation",
    "section": 3,
-   "date": "2026-12-12"
+   "date": "2026-12-12",
+   "built": "2026-10-14",
+   "question": "Which mix of assets gives the highest expected return for the volatility you accept, and how much does that mix depend on expected returns nobody knows?",
+   "finding": "With all eleven assets estimated over 1999 to 2026, no short positions and 4% volatility, the portfolio that is efficient on those past estimates is 59.2% 2-year Treasuries, 25.5% Australian dollar deposits and 15.3% 20-year Treasuries, but raising the 5-year Treasury's expected return by one standard error (0.82 points) moves its weight from 0% to 79.1% and changes 84.1% of the portfolio.",
+   "limit": "Expected returns are past averages with standard errors of up to two percentage points a year, and the optimiser treats them as facts.",
+   "sources": [
+    "Federal Reserve Board H.15 and H.10",
+    "Bank for International Settlements"
+   ],
+   "img": "img/064.jpg",
+   "url": "64/"
   },
   {
    "id": 65,
@@ -1139,7 +1159,17 @@ window.CHALLENGE = {
    "concept": "Risk",
    "skills": "Return statistics",
    "section": 3,
-   "date": "2026-12-13"
+   "date": "2026-12-13",
+   "built": "2026-10-14",
+   "question": "How risky is a given mix of Treasuries and foreign currency deposits, measured by volatility, worst fall and Sharpe ratio, and do the three agree?",
+   "finding": "Rebalanced monthly from 1999 to 2026, $4,000 in 10-year Treasuries with $2,000 each in euro, yen and Australian dollar deposits had a volatility of 6.27% and a Sharpe ratio of 0.08 and fell 21.9% from December 2020 to October 2022, while 20-year Treasuries alone had a Sharpe ratio of 0.18 but fell 42.3% from July 2020 to October 2023.",
+   "limit": "The measures describe one past stretch at month-ends, and a Sharpe ratio over 332 months is uncertain by about 0.19.",
+   "sources": [
+    "Federal Reserve Board H.15 and H.10",
+    "Bank for International Settlements"
+   ],
+   "img": "img/065.jpg",
+   "url": "65/"
   },
   {
    "id": 66,
