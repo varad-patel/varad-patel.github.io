@@ -1,0 +1,7 @@
+{
+  "question": "Does the price of a stock index move like a random walk?",
+  "finding": "For the S&P/TSX Composite over 812 monthly changes from 1956 to 2023 the two-month variance ratio is 1.095 and would look significant on its own (p = 0.031), but the joint test across four horizons finds it consistent with a random walk (p = 0.120), and of the 21 indices in the list 4 reject at the 5% level and none after allowing for 21 tests.",
+  "limit": "Failing to reject a random walk is not proof of one, and no individual share prices could be republished, so the verdicts are about Canadian indices only.",
+  "sources": ["Statistics Canada"],
+  "built": "2026-10-14"
+}

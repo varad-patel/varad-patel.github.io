@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Random Walk versus Reality · 365 projects</title>
+  <meta name="description" content="Choose a Toronto stock index and get a verdict, from Lo and MacKinlay's variance-ratio test, on whether its price behaves like a random walk.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .rw62-stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+    .rw62-years { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: end; }
+    .rw62-verdict { font-size: 1.15rem; }
+    .source-note { padding-top: 12px; border-top: 1px solid var(--grid); overflow-wrap: anywhere; }
+    .stat .v { font-size: 1.35rem; }
+    .rw62-rt caption { text-align: left; font-weight: 600; font-size: 0.86rem; color: var(--slate); padding-bottom: 6px; }
+    .rw62-rt th[scope="row"] { font-weight: 600; }
+    .rw62-rt thead th { vertical-align: bottom; }
+    /* The kit keeps headings and numbers on one line; these tables let them wrap so they can narrow to their box. */
+    .tbl.rw62-rt th, .tbl.rw62-rt td { white-space: normal; }
+    /* The widest table needs about 600 pixels. Whenever its box is narrower (a phone, or beside the controls on a
+       tablet or a small laptop) each row becomes a short list of labelled lines. Written twice: for the box, and for
+       the screen in browsers without container queries. */
+    .rw62-tbl { container-type: inline-size; }
+    @container (max-width: 620px) {
+      .rw62-rt, .rw62-rt tbody, .rw62-rt tr, .rw62-rt th, .rw62-rt td, .rw62-rt caption { display: block; }
+      .rw62-rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+      .rw62-rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .rw62-rt th[scope="row"], .rw62-rt td { border: 0; padding: 1px 0; }
+      .rw62-rt td, .rw62-rt td.num { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; overflow-wrap: anywhere; }
+      .rw62-rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+    }
+    @media (max-width: 640px) {
+      .rw62-rt, .rw62-rt tbody, .rw62-rt tr, .rw62-rt th, .rw62-rt td, .rw62-rt caption { display: block; }
+      .rw62-rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+      .rw62-rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .rw62-rt th[scope="row"], .rw62-rt td { border: 0; padding: 1px 0; }
+      .rw62-rt td, .rw62-rt td.num { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; overflow-wrap: anywhere; }
+      .rw62-rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+    }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+    @media (max-width: 600px) { .p-sec .eq { white-space: normal; } }
+  </style>
+</head>
+<body class="proj" data-day="62">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Random Walk versus Reality</h1>
+      <p class="lede">Choose a stock index and the years to look at, and get a verdict on whether its price moved like a random walk: Lo and MacKinlay's variance-ratio test, with its assumptions and its traps in plain view.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Variance-ratio test of the random walk on stock indices">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>The page opens on the S&amp;P/TSX Composite over all 812 monthly changes from January 1956 to September 2023. Its two-month variance ratio is 1.095, and on its own the robust statistic z*(2) = 2.15 would be called significant (p = 0.031). But four horizons are tested, and the joint test needs the largest |z*| to pass 2.49: the verdict is consistent with a random walk (joint p = 0.120). Over the whole list, 4 of the 21 indices reject at the 5% level, and none does once the test allows for 21 tries.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>If the price of a share or an index is a random walk, each month's change is a fresh draw that owes nothing to the months before. Then the past cannot be used to forecast the future, and charts of past prices are pictures of luck. The idea is old, and it fits the efficient market hypothesis that Eugene Fama reviewed in 1970: if traders could see a pattern coming they would trade on it until it vanished.</p>
+      <p>Andrew Lo and Craig MacKinlay (1988) turned the idea into a sharp test. If changes are independent, their variances add up: the variance of a two-month change is twice that of a one-month change, and the variance of a <var>q</var>-month change is <var>q</var> times as large. The ratio of the two, scaled by <var>q</var>, should be 1. Above 1, moves tend to continue; below 1, they tend to reverse. Using weekly returns on US shares from 1962 to 1985, they rejected the random walk, most strongly for portfolios of small companies, and the paper's title said so.</p>
+      <p>A rejection is not a money machine, and a random walk is not the same thing as an efficient market: prices can be efficient and still drift predictably if the return investors require changes over time. Studies of longer horizons found the opposite pattern, a slow pull back over several years (Poterba and Summers 1988; Fama and French 1988), and Richardson and Stock (1989) showed that the usual large-sample approximations mislead badly at those horizons. The tool shows one market's evidence and how easily a verdict can be manufactured by testing many horizons, many indices or many spans of years.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The data</h3>
+      <p>Statistics Canada's table 10-10-0125-01 holds the month-end closes of 21 Toronto Stock Exchange indices: the S&amp;P/TSX Composite from January 1956, the S&amp;P/TSX 60 from 1982, the Toronto 35 from 1987 to 2003, seven older TSE sector indices from 1956 to 2003 and eleven S&amp;P/TSX sector indices from December 1997. The table was compiled from the Bank of Canada's figures before 2017 and from the Toronto Stock Exchange's eReview after, and it stopped on 1 November 2023, so every series ends by September 2023. The Composite's values are those of the price index, which leaves dividends out (its close at the end of September 2023, 19,541.27, is the price index, not the total-return one). Statistics Canada publishes them under its Open Licence; no source was found that allows the prices of individual shares to be republished, which is why the list holds indices only.</p>
+      <h3>The variance ratio</h3>
+      <p>Let <var>p</var><sub>0</sub>, …, <var>p</var><sub><var>N</var></sub> be the natural logarithms of the month-end closes, so there are <var>N</var> monthly changes <var>r</var><sub><var>k</var></sub> = <var>p</var><sub><var>k</var></sub> − <var>p</var><sub><var>k</var>−1</sub>, with average <var>μ</var> = (<var>p</var><sub><var>N</var></sub> − <var>p</var><sub>0</sub>) / <var>N</var>. Following Lo and MacKinlay, with overlapping <var>q</var>-month changes and their corrections for bias,</p>
+      <p class="eq"><var>σ</var><sub>a</sub><sup>2</sup> = Σ<sub><var>k</var>=1</sub><sup><var>N</var></sup> (<var>r</var><sub><var>k</var></sub> − <var>μ</var>)<sup>2</sup> / (<var>N</var> − 1)</p>
+      <p class="eq"><var>σ</var><sub>c</sub><sup>2</sup>(<var>q</var>) = Σ<sub><var>k</var>=<var>q</var></sub><sup><var>N</var></sup> (<var>p</var><sub><var>k</var></sub> − <var>p</var><sub><var>k</var>−<var>q</var></sub> − <var>qμ</var>)<sup>2</sup> / <var>m</var>, &nbsp; <var>m</var> = <var>q</var>(<var>N</var> − <var>q</var> + 1)(1 − <var>q</var>/<var>N</var>)</p>
+      <p class="eq">VR(<var>q</var>) = <var>σ</var><sub>c</sub><sup>2</sup>(<var>q</var>) / <var>σ</var><sub>a</sub><sup>2</sup></p>
+      <p>For monthly changes with first-order autocorrelation <var>ρ</var>, VR(2) is close to 1 + <var>ρ</var>, which is the quickest way to read the chart.</p>
+      <h3>Two statistics and their assumptions</h3>
+      <p>If the changes are independent and identically distributed, the first statistic is approximately standard normal in large samples:</p>
+      <p class="eq"><var>z</var>(<var>q</var>) = (VR(<var>q</var>) − 1) / √(2(2<var>q</var> − 1)(<var>q</var> − 1) / (3<var>qN</var>))</p>
+      <p>Real markets have calm and stormy spells, so the size of the changes is not constant. Lo and MacKinlay's second statistic allows for that. It needs only that the changes are uncorrelated (each has expected value <var>μ</var> whatever happened before), with some limits on how their variance behaves:</p>
+      <p class="eq"><var>δ</var>(<var>j</var>) = <var>N</var> Σ<sub><var>k</var>=<var>j</var>+1</sub><sup><var>N</var></sup> (<var>r</var><sub><var>k</var></sub> − <var>μ</var>)<sup>2</sup>(<var>r</var><sub><var>k</var>−<var>j</var></sub> − <var>μ</var>)<sup>2</sup> / [Σ<sub><var>k</var>=1</sub><sup><var>N</var></sup> (<var>r</var><sub><var>k</var></sub> − <var>μ</var>)<sup>2</sup>]<sup>2</sup></p>
+      <p class="eq"><var>θ</var>(<var>q</var>) = Σ<sub><var>j</var>=1</sub><sup><var>q</var>−1</sup> [2(<var>q</var> − <var>j</var>)/<var>q</var>]<sup>2</sup> <var>δ</var>(<var>j</var>), &nbsp; <var>z</var>*(<var>q</var>) = (VR(<var>q</var>) − 1) / √(<var>θ</var>(<var>q</var>) / <var>N</var>)</p>
+      <p>The verdict uses <var>z</var>*; the table shows both. In Lo and MacKinlay's own simulations (1989), with a random walk whose variance changes, the variance-ratio test was more reliable than the Dickey–Fuller and Box–Pierce tests. Both statistics rest on large-sample approximations, which grow poor when <var>q</var> is a large fraction of <var>N</var> (Richardson and Stock 1989; the simulation panel below shows it at the shortest spans), so the tool asks for at least 64 monthly changes, four times the longest horizon.</p>
+      <h3>Four horizons, one verdict</h3>
+      <p>The tool tests <var>q</var> = 2, 4, 8 and 16 months, the horizons of Lo and MacKinlay's paper (in weeks there). Four tests at 5% each give more than a 5% chance that one of them rejects a true random walk. Chow and Denning (1993) therefore compare the largest of the four |<var>z</var>*| with the studentised maximum modulus distribution with infinite degrees of freedom:</p>
+      <p class="eq">reject if max<sub><var>q</var></sub> |<var>z</var>*(<var>q</var>)| &gt; <var>c</var>, &nbsp; <var>c</var> = Φ<sup>−1</sup>((1 + 0.95<sup>1/4</sup>) / 2) = 2.4909</p>
+      <p>because with infinite degrees of freedom that distribution is the largest |<var>Z</var>| among four independent standard normals, for which P(max |<var>Z</var>| ≤ <var>c</var>) = (2Φ(<var>c</var>) − 1)<sup>4</sup>. The joint p-value is 1 − (2Φ(max |<var>z</var>*|) − 1)<sup>4</sup>. The bound treats the four statistics as if they were independent; they are positively correlated, so the test rejects a true random walk less often than 5%, and the simulation panel shows by how much. A value exactly at the critical value does not reject. When the test rejects, the horizon with the largest |<var>z</var>*| gives the direction.</p>
+      <h3>Testing the test</h3>
+      <p>The simulation panel builds 1,000 random walks with the chosen index's number of months and standard deviation and runs the same joint test on each. With changes of constant size, both statistics reject close to the promised 5% or below. With calm and stormy spells, made by a GARCH(1,1) process whose variance is 0.10 × the last squared change + 0.85 × the last variance (plus a constant that keeps the long-run variance the same), <var>z</var> rejects too often and <var>z</var>* does not: for the Composite's 812 months, 9.0% against 4.4%. Over short spans the approximation fails for both: with 64 monthly changes, the fewest the tool accepts, z* rejected 76 of 1,000 random walks of constant size. The panel judges each count against 64 of 1,000, the most that a test which truly errs 5% of the time reaches with probability 97.5%, and says which statistic went past it. The seed is fixed, so the counts can be checked.</p>
+      <h3>Many indices, many tries</h3>
+      <p>The last panel tests every index in the list over its whole history. With 21 tests at 5%, about one would reject a true random walk by chance. Bonferroni's correction asks each to pass at 5% / 21 instead, which caps the chance of any false rejection at 5%.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>That a price is a random walk.</strong> Failing to reject is not acceptance. With a few hundred monthly changes the test misses weak patterns, and a slow drift back over several years barely moves a 16-month ratio.</li>
+        <li><strong>Why a pattern appears.</strong> Some shares in an index trade rarely, so their last recorded prices lag the news and the index catches up the following month. That makes index changes look as if they continue, with no chance to trade on it. The four indices that reject all show moves that continue, the direction this effect produces.</li>
+        <li><strong>Anything about single shares.</strong> No prices of individual companies could be had under a licence that allows republishing them. An index averages many shares, and shares on their own behave differently: Lo and MacKinlay found the clearest departures in portfolios of small companies.</li>
+        <li><strong>A verdict free of searching.</strong> With 21 indices, four horizons and any span of years, some combination will reject by chance. The joint test covers the horizons and the Bonferroni count covers the list, but nothing covers a search through years until a verdict appears.</li>
+        <li><strong>Short-term behaviour.</strong> These are month-end closes. Weekly or daily data would give the test far more changes to work with, and patterns that last days are invisible here.</li>
+        <li><strong>Recent years.</strong> Statistics Canada stopped the table in November 2023, and the older sector indices end in 2003.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Replace the large-sample approximation, which the simulation panel shows failing on short spans, with a wild bootstrap of the joint statistic (Kim 2006), which keeps each month's change at its own size and so keeps the spells in the data.</li>
+        <li>Add weekly or daily data from an open source when one exists, and individual shares if their prices can be published.</li>
+        <li>Test all the indices together, allowing for how closely they move, instead of one at a time with a Bonferroni count.</li>
+        <li>Add longer horizons with the small-sample corrections they need, to look for the slow reversal reported for US shares.</li>
+        <li>Show how a trading rule built on the pattern would have done after costs, to separate a statistical departure from an exploitable one.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>Source: Statistics Canada, Table 10-10-0125-01 Toronto Stock Exchange statistics, January 1956 to September 2023. Reproduced and distributed on an "as is" basis with the permission of Statistics Canada. Retrieved 14 October 2026 from https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1010012501 under the Statistics Canada Open Licence (https://www.statcan.gc.ca/en/terms-conditions/open-licence). The licence leaves third parties' rights in the information with them: the indices belong to S&amp;P Dow Jones Indices and TMX Group.</li>
+        <li>Lo, A. W., and MacKinlay, A. C. (1988). Stock market prices do not follow random walks: evidence from a simple specification test. <em>Review of Financial Studies</em>, 1(1), 41-66.</li>
+        <li>Lo, A. W., and MacKinlay, A. C. (1989). The size and power of the variance ratio test in finite samples: a Monte Carlo investigation. <em>Journal of Econometrics</em>, 40(2), 203-238.</li>
+        <li>Chow, K. V., and Denning, K. C. (1993). A simple multiple variance ratio test. <em>Journal of Econometrics</em>, 58(3), 385-401.</li>
+        <li>Fama, E. F. (1970). Efficient capital markets: a review of theory and empirical work. <em>Journal of Finance</em>, 25(2), 383-417.</li>
+        <li>Poterba, J. M., and Summers, L. H. (1988). Mean reversion in stock prices: evidence and implications. <em>Journal of Financial Economics</em>, 22(1), 27-59.</li>
+        <li>Fama, E. F., and French, K. R. (1988). Permanent and temporary components of stock prices. <em>Journal of Political Economy</em>, 96(2), 246-273.</li>
+        <li>Richardson, M., and Stock, J. H. (1989). Drawing inferences from statistics based on multiyear asset returns. <em>Journal of Financial Economics</em>, 25(2), 323-348.</li>
+        <li>Kim, J. H. (2006). Wild bootstrapping variance ratio tests. <em>Economics Letters</em>, 92(1), 38-43.</li>
+        <li>Wichura, M. J. (1988). Algorithm AS 241: the percentage points of the normal distribution. <em>Applied Statistics</em>, 37(3), 477-484.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
