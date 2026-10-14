@@ -189,6 +189,8 @@ you call a page built.
 * Every text box, number box and file has a limit, and the limit has a message: length, size (refuse a large
   file before reading it), range (1e308 is a number), whole numbers where only they make sense.
 * Long unbroken text (a pasted URL, an 80-letter name) must wrap: `overflow-wrap: anywhere`.
+* A number box's `step` must allow every value the tool accepts: the kit colours `:invalid` inputs red, so
+  `step="0.05"` marks a valid 0.33 red with no message. Use `step="any"` unless only whole numbers are valid.
 * Files arrive in other encodings, with other separators, empty, or of the wrong kind.
 * Text written to a CSV that starts with `=`, `+`, `-` or `@` is a spreadsheet formula. Guard it.
 
