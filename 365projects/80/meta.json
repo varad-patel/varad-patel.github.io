@@ -1,0 +1,7 @@
+{
+  "question": "Can simple forecasting models beat the random walk at predicting exchange rates?",
+  "finding": "Twelve months ahead, with forecasts made from 1990, three models scored against the random walk for 22 currencies against the dollar came out ahead in 13 of 66 comparisons and by more than chance would usually allow in only one, fewer than the 1.7 that luck alone would give, while the random walk was ahead by that margin in 18.",
+  "limit": "The models see only each rate's own past, so the page tests time-series forecasting, not the economic models built on money, prices and interest rates that Meese and Rogoff tested.",
+  "sources": ["Federal Reserve Board H.10 Foreign Exchange Rates"],
+  "built": "2026-10-14"
+}

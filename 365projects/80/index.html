@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Currency Prediction Lab · 365 projects</title>
+  <meta name="description" content="Pick a currency pair and see three forecasting models against the random walk, with a scorecard of every past forecast that you can check and download.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .fx80-stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+    .fx80-years { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: end; }
+    .fx80-rate { font-size: 1.05rem; }
+    .fx80-rate strong { font-size: 1.35rem; font-weight: 650; }
+    .source-note { padding-top: 12px; border-top: 1px solid var(--grid); overflow-wrap: anywhere; }
+    .fx80-rt caption { text-align: left; font-weight: 600; font-size: 0.86rem; color: var(--slate); padding-bottom: 6px; }
+    .fx80-rt th[scope="row"] { font-weight: 600; }
+    .fx80-rt thead th { white-space: normal; vertical-align: bottom; }
+    /* The kit keeps headings and numbers on one line; these tables let them wrap so they can narrow to their box. */
+    .tbl.fx80-rt th, .tbl.fx80-rt td { white-space: normal; }
+    /* The widest of these tables needs about 640 pixels. Whenever its box is narrower (a phone, or beside the controls
+       on a tablet or a small laptop) each row becomes a short list of labelled lines. Written twice: for the box, and
+       for the screen in browsers without container queries. */
+    .fx80-tbl { container-type: inline-size; }
+    @container (max-width: 680px) {
+      .fx80-rt, .fx80-rt tbody, .fx80-rt tr, .fx80-rt th, .fx80-rt td, .fx80-rt caption { display: block; }
+      .fx80-rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+      .fx80-rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .fx80-rt th[scope="row"], .fx80-rt td { border: 0; padding: 1px 0; }
+      .fx80-rt td, .fx80-rt td.num { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; white-space: normal; overflow-wrap: anywhere; }
+      .fx80-rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+    }
+    @media (max-width: 640px) {
+      .fx80-rt, .fx80-rt tbody, .fx80-rt tr, .fx80-rt th, .fx80-rt td, .fx80-rt caption { display: block; }
+      .fx80-rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+      .fx80-rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .fx80-rt th[scope="row"], .fx80-rt td { border: 0; padding: 1px 0; }
+      .fx80-rt td, .fx80-rt td.num { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; white-space: normal; overflow-wrap: anywhere; }
+      .fx80-rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+    }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+    @media (max-width: 600px) { .p-sec .eq { white-space: normal; } }
+  </style>
+</head>
+<body class="proj" data-day="80">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Currency Prediction Lab</h1>
+      <p class="lede">Pick a currency pair and see what three simple forecasting models expect. Then check how each did against the hardest rule to beat: that the rate will not change.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Exchange rate forecasts and scorecard">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>The page opens on the pound in dollars, twelve months ahead, scoring the forecasts made from 1990. The panel "Every currency against the US dollar" repeats the test for all 22 currencies and the three models. Of those 66 comparisons a model came out ahead of the random walk in 13, and by more than chance would usually allow in one: reversion, for the Sri Lankan rupee. If no model had any skill, luck alone would give about 1.7 such results. The random walk was ahead by that margin in 18.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>In 1983 Richard Meese and Kenneth Rogoff tested the monetary and portfolio-balance models of exchange rates built in the 1970s on how well they forecast out of sample, and none did better than a random walk, the forecast that the rate stays where it is. Barbara Rossi's survey of 2013 still calls this the Meese and Rogoff puzzle. The result embarrassed a field, and four decades of work have only partly undone it: Cheung, Chinn and Garcia Pascual (2005) found that the models and currencies that forecast well in one period did not necessarily do so in another, and Rossi names the random walk without drift as the toughest benchmark of all.</p>
+      <p>One explanation is that an exchange rate is an asset price. Like a share price it moves on news about the future, and Charles Engel and Kenneth West (2005) showed that when the fundamentals behind it drift without returning and markets weigh the distant future heavily, the rate itself behaves almost exactly like a random walk, even though the fundamentals drive it. Another is that what does pull rates back, purchasing power parity, works slowly: Kenneth Rogoff (1996) described a consensus among long-run studies that deviations from it shrink by half only every three to five years.</p>
+      <p>This tool lets you rerun the contest on any pair of 23 currencies with three models that traders and economists actually reach for: drift, which assumes the past trend continues; momentum, which assumes this month's move predicts next month's; and reversion, which assumes the rate is pulled back towards its average. Every forecast is made with only the rates known at its date, and every one is scored.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The data</h3>
+      <p>The Federal Reserve Board's H.10 release publishes daily noon buying rates in New York for 23 currencies against the dollar, certified by the Federal Reserve Bank of New York for customs purposes. The tool keeps the last rate of each month for 22 of them (the Venezuelan bolivar is left out: its quoted rate jumps more than 300-fold in February 2018, then drops five zeros in August 2018 and six in October 2021 as the currency is redenominated) from 1971 or from the month the release starts quoting the currency, to September 2026. A cross rate such as euros in pounds is worked out from the two dollar rates. In a few months one currency had no rate on the last business day and its month-end comes from the day before, so a cross rate can mix two days; the worst pair, the Sri Lankan rupee against the New Taiwan dollar, does so in 39 of its 516 months. The rates are the release as it stands today; the Board notes that its data may be revised after a release appears, so a past forecast is scored on today's figures, which can differ slightly from those published at the time.</p>
+      <h3>Three models and the benchmark</h3>
+      <p>Let <var>s</var><sub><var>t</var></sub> be the natural logarithm of the rate at the end of month <var>t</var> (the price of one unit of the first currency in the second) and <var>w</var><sub><var>t</var></sub> = <var>s</var><sub><var>t</var></sub> − <var>s</var><sub><var>t</var>−1</sub> its monthly change. A forecast made at <var>t</var> for <var>h</var> months ahead is:</p>
+      <ul>
+        <li><strong>Random walk</strong>: <var>ŝ</var><sub><var>t</var>+<var>h</var></sub> = <var>s</var><sub><var>t</var></sub>. No change.</li>
+        <li><strong>Drift</strong>, ARIMA(0,1,0) with drift: <var>ŝ</var><sub><var>t</var>+<var>h</var></sub> = <var>s</var><sub><var>t</var></sub> + <var>h</var><var>μ</var>, where <var>μ</var> is the average monthly change over the fit window.</li>
+        <li><strong>Momentum</strong>, ARIMA(1,1,0) with drift: <var>w</var><sub><var>u</var></sub> = <var>c</var> + <var>φ</var><var>w</var><sub><var>u</var>−1</sub> + <var>e</var><sub><var>u</var></sub>, run forward from this month's change and added up.</li>
+        <li><strong>Reversion</strong>, ARIMA(1,0,0) with a constant: <var>s</var><sub><var>u</var></sub> = <var>a</var> + <var>ρ</var><var>s</var><sub><var>u</var>−1</sub> + <var>e</var><sub><var>u</var></sub>, run forward. With <var>ρ</var> below 1 this is</li>
+      </ul>
+      <p class="eq"><var>ŝ</var><sub><var>t</var>+<var>h</var></sub> = <var>m</var> + <var>ρ</var><sup><var>h</var></sup>(<var>s</var><sub><var>t</var></sub> − <var>m</var>), &nbsp; <var>m</var> = <var>a</var> / (1 − <var>ρ</var>)</p>
+      <p>a rate pulled back towards its average <var>m</var> at a pace set by <var>ρ</var>. Purchasing power parity predicts reversion of the real exchange rate, which is the nominal rate adjusted for the two countries' prices. For a pair whose inflation rates are alike the two move together, and the nominal rate is all this tool has.</p>
+      <p>Each model is fitted by least squares, which for these models is the conditional sum of squares that day 61 uses for its ARIMA models. Two bounds keep the forecasts sane, as a fit that respects the model would: <var>φ</var> is held between −0.99 and 0.99, and <var>ρ</var> between −0.99 and 1, where reversion becomes drift. For a fixed slope the best constant is found directly, and the remaining sum of squares is a parabola in the slope, so when the unbounded slope falls outside the range the best one inside it is the nearer end.</p>
+      <h3>The scorecard</h3>
+      <p>For every month that has at least ten years of rates behind it, the tool fits the three models on the rates up to that month and nothing later, and forecasts the next 36 months. The fit uses every month since the pair's first, or only the latest 20 or 10 years. This is a rolling-origin evaluation (Tashman 2000), and the scoring follows the same rules as day 61. A forecast's miss is |ln forecast − ln outcome|, the same whichever way round the pair is quoted; the average miss <var>m</var> is shown as the percentage e<sup><var>m</var></sup> − 1, and as a percentage of the random walk's average miss on the same dates. A model is said to come out ahead only when its average miss is below the random walk's by at least one part in 2,000. Whether a gap is more than luck is judged by the Diebold–Mariano (1995) test on the differences <var>d</var><sub><var>t</var></sub> between the two misses:</p>
+      <p class="eq">DM = <var>d̄</var> / √(<var>S</var> / <var>n</var>), &nbsp; <var>S</var> = <var>γ</var><sub>0</sub> + 2 Σ<sub><var>j</var>=1</sub><sup><var>h</var>−1</sup> (1 − <var>j</var>/<var>h</var>) <var>γ</var><sub><var>j</var></sub></p>
+      <p>with <var>γ</var><sub><var>j</var></sub> the autocovariance of <var>d</var> at lag <var>j</var>, weighted as Newey and West (1987) do because forecasts made a month apart share <var>h</var> − 1 months. The p-value is two-sided, from the normal distribution. Every scored forecast can be downloaded, so each number in the scorecard can be checked by hand.</p>
+      <h3>Every currency against the dollar</h3>
+      <p>The second panel runs the same scorecard for each of the 22 currencies against the dollar with the chosen horizon, window and years. That is 66 tests. If no model had any skill, each test would still come out "significantly ahead" with probability 0.025 (one side of a two-sided 5% test), so about 66 × 0.025 = 1.65 such results would be expected from luck alone. A single significant win in a table like this is evidence of very little.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Whether economic models beat the random walk.</strong> The three models see only the rate's own past. Meese and Rogoff tested monetary and portfolio-balance models, which use money supplies, output, interest rates and prices. Doing that honestly needs each country's figures as they were published at the time, from its own statistics office, which this page does not bundle.</li>
+        <li><strong>Whether a real edge exists when the test finds none.</strong> Twelve-month forecasts made a month apart overlap by eleven months, so 429 of them hold only about 36 years of separate evidence. In the page's tests a model given a series that truly reverts beats the random walk by 12% and the Diebold–Mariano test still gives p = 0.052. The test is also known to be cautious when the model contains the random walk as a special case, as all three do here (Clark and West 2007).</li>
+        <li><strong>Anything about pegged currencies.</strong> The Hong Kong dollar has been tied to the US dollar since 1983 and the yuan was managed for long stretches. There the random walk wins easily, and the models that learned from past devaluations lose badly.</li>
+        <li><strong>Whether a forecast would have made money.</strong> Holding a currency earns or pays its interest rate, so a correct forecast of a fall can still lose to the interest earned while waiting, and dealing costs something. The forward rate, which builds in the interest difference, is the market's own benchmark and is not used here.</li>
+        <li><strong>A result untouched by choice.</strong> The pair, the horizon, the window and the years are all settings. Searching through them for a pair where a model wins is the multiple-testing problem in another form.</li>
+        <li><strong>Prices at other times of day.</strong> These are noon rates in New York on the last business day of each month. Rates in London or Tokyo, or at the close, differ slightly.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Add purchasing power parity properly: the real exchange rate from each country's consumer prices, taking only the figures published by each forecast date.</li>
+        <li>Add the forward rate and an interest-rate model (uncovered interest parity), and score a carry trade alongside the forecasts.</li>
+        <li>Use the Clark–West test for models that nest the random walk, and report it beside the Diebold–Mariano test.</li>
+        <li>Forecast with daily data and score at horizons of days as well as months.</li>
+        <li>Pool the currencies in one panel regression, which gives a test of reversion far more power than 22 separate ones.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>Board of Governors of the Federal Reserve System. H.10 Foreign Exchange Rates, daily, complete release from the Data Download Program (release prepared 13 October 2026), retrieved 14 October 2026 from https://www.federalreserve.gov/releases/h10/. The Board's website policy places the information on its website in the public domain unless otherwise indicated and asks that the Board be cited as the source (https://www.federalreserve.gov/disclaimer.htm); the H.10 release marks no third-party material.</li>
+        <li>Meese, R. A., and Rogoff, K. (1983). Empirical exchange rate models of the seventies: do they fit out of sample? <em>Journal of International Economics</em>, 14(1-2), 3-24.</li>
+        <li>Rogoff, K. (1996). The purchasing power parity puzzle. <em>Journal of Economic Literature</em>, 34(2), 647-668.</li>
+        <li>Engel, C., and West, K. D. (2005). Exchange rates and fundamentals. <em>Journal of Political Economy</em>, 113(3), 485-517.</li>
+        <li>Cheung, Y.-W., Chinn, M. D., and Garcia Pascual, A. (2005). Empirical exchange rate models of the nineties: are any fit to survive? <em>Journal of International Money and Finance</em>, 24(7), 1150-1175.</li>
+        <li>Rossi, B. (2013). Exchange rate predictability. <em>Journal of Economic Literature</em>, 51(4), 1063-1119.</li>
+        <li>Tashman, L. J. (2000). Out-of-sample tests of forecasting accuracy: an analysis and review. <em>International Journal of Forecasting</em>, 16(4), 437-450.</li>
+        <li>Diebold, F. X., and Mariano, R. S. (1995). Comparing predictive accuracy. <em>Journal of Business and Economic Statistics</em>, 13(3), 253-263.</li>
+        <li>Newey, W. K., and West, K. D. (1987). A simple, positive semi-definite, heteroskedasticity and autocorrelation consistent covariance matrix. <em>Econometrica</em>, 55(3), 703-708.</li>
+        <li>Clark, T. E., and West, K. D. (2007). Approximately normal tests for equal predictive accuracy in nested models. <em>Journal of Econometrics</em>, 138(1), 291-311.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
