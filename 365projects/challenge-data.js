@@ -1103,7 +1103,16 @@ window.CHALLENGE = {
    "concept": "Forecasting, market efficiency",
    "skills": "ARIMA, backtesting, scheduled data refresh",
    "section": 3,
-   "date": "2026-12-09"
+   "date": "2026-12-09",
+   "built": "2026-10-14",
+   "question": "Can a time-series model forecast the price of gold better than assuming it will not change?",
+   "finding": "Over 468 forecasts made from 1985 to 2023, twelve months ahead, an ARIMA model chosen by AICc at each date missed by 12.1% on average against 12.3% for the latest price unchanged, a gap the Diebold-Mariano test cannot tell from chance (p = 0.657), and its 80% band held the outcome 91% of the time.",
+   "limit": "The World Bank's price is a monthly average, which makes changes slightly predictable even when the market price is a random walk, so a small edge here is not evidence against market efficiency.",
+   "sources": [
+    "World Bank Commodity Price Data (The Pink Sheet)"
+   ],
+   "img": "img/061.jpg",
+   "url": "61/"
   },
   {
    "id": 62,
@@ -1112,7 +1121,16 @@ window.CHALLENGE = {
    "concept": "Efficient market hypothesis",
    "skills": "Variance-ratio tests",
    "section": 3,
-   "date": "2026-12-10"
+   "date": "2026-12-10",
+   "built": "2026-10-14",
+   "question": "Does the price of a stock index move like a random walk?",
+   "finding": "For the S&P/TSX Composite over 812 monthly changes from 1956 to 2023 the two-month variance ratio is 1.095 and would look significant on its own (p = 0.031), but the joint test across four horizons finds it consistent with a random walk (p = 0.120), and of the 21 indices in the list 4 reject at the 5% level and none after allowing for 21 tests.",
+   "limit": "Failing to reject a random walk is not proof of one, and no individual share prices could be republished, so the verdicts are about Canadian indices only.",
+   "sources": [
+    "Statistics Canada"
+   ],
+   "img": "img/062.jpg",
+   "url": "62/"
   },
   {
    "id": 63,
@@ -1318,7 +1336,16 @@ window.CHALLENGE = {
    "concept": "Exchange rates",
    "skills": "Forecast evaluation",
    "section": 3,
-   "date": "2026-12-28"
+   "date": "2026-12-28",
+   "built": "2026-10-14",
+   "question": "Can simple forecasting models beat the random walk at predicting exchange rates?",
+   "finding": "Twelve months ahead, with forecasts made from 1990, three models scored against the random walk for 22 currencies against the dollar came out ahead in 13 of 66 comparisons and by more than chance would usually allow in only one, fewer than the 1.7 that luck alone would give, while the random walk was ahead by that margin in 18.",
+   "limit": "The models see only each rate's own past, so the page tests time-series forecasting, not the economic models built on money, prices and interest rates that Meese and Rogoff tested.",
+   "sources": [
+    "Federal Reserve Board H.10 Foreign Exchange Rates"
+   ],
+   "img": "img/080.jpg",
+   "url": "80/"
   },
   {
    "id": 81,
