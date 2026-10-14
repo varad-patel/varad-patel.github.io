@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Risk Calculator · 365 projects</title>
+  <meta name="description" content="Type a portfolio of US Treasuries and foreign currency deposits, or choose an example, and see its volatility, maximum drawdown and Sharpe ratio worked out from 1999 to 2026.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .rc-group { margin: 2px 0 4px; }
+    /* Each holding on one line: its name, then a box for the amount. */
+    .rc-group .field { display: grid; grid-template-columns: minmax(0, 1fr) minmax(6em, 9em); gap: 0 10px; align-items: center; margin: 0 0 6px; }
+    .rc-group .field input { width: 100%; min-width: 0; }
+    .rc-sub { margin: 6px 0 2px; font-size: 0.82rem; color: var(--slate); }
+    .rc-presets { gap: 6px; }
+    .rc-about { padding-top: 12px; border-top: 1px solid var(--grid); }
+    .rc-worked h2 { margin: 0 0 8px; }
+    .panel h2 { margin: 0 0 8px; }
+    .panel h3 { margin: 12px 0 4px; font-size: 1rem; }
+    .panel .eq { white-space: normal; overflow-wrap: anywhere; }
+    .rc-eq { font-family: var(--mono, monospace); white-space: nowrap; }
+    .tool p, .tool li, .note { overflow-wrap: anywhere; }
+    .tbl.rt th, .tbl.rt td { white-space: normal; }
+    .rt caption { font-weight: 600; font-size: 0.86rem; color: var(--slate); text-align: left; }
+    /* The table becomes a short list of labelled lines whenever its own box is narrower than the table (about
+       660px with seven columns), on a phone and beside the controls on a tablet. */
+    div:has(> table.rt) { container-type: inline-size; }
+    @container (max-width: 680px) {
+      .rt, .rt tbody, .rt tr, .rt th, .rt td, .rt caption { display: block; }
+      .rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .rt th[scope="row"], .rt td { border: 0; padding: 1px 0; }
+      .rt th[scope="row"] { text-align: left; }
+      .rt td { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; }
+      .rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+    }
+    @media (max-width: 640px) {
+      .rt, .rt tbody, .rt tr, .rt th, .rt td, .rt caption { display: block; }
+      .rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .rt th[scope="row"], .rt td { border: 0; padding: 1px 0; }
+      .rt th[scope="row"] { text-align: left; }
+      .rt td { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; }
+      .rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+    }
+    .jump { gap: 4px 16px; margin-bottom: 10px; }
+    .jump a { padding: 4px 0; }
+    .p-sec .eq { white-space: normal; }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body class="proj" data-day="65">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Risk Calculator</h1>
+      <p class="lede">Type how much you hold in each of eleven assets, or start from an example, and see the portfolio's volatility, its worst fall and its Sharpe ratio, each worked out in front of you.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Portfolio risk calculator">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>The page opens on $4,000 in 10-year Treasuries and $2,000 each in euro, yen and Australian dollar deposits, rebalanced every month from February 1999 to September 2026. Its volatility was 6.27% a year, its Sharpe ratio 0.08, and its largest fall 21.9%, from the end of December 2020 to the end of October 2022, a loss not made good by September 2026. Press "All in 20-year Treasuries" and the volatility is 11.54% and the Sharpe ratio 0.18, but the largest fall is 42.3%, from July 2020 to October 2023, as the 20-year yield rose from 0.98% to 5.21%; that loss has not been made good either. A 2-year Treasury had a slightly higher Sharpe ratio, 0.19, with a largest fall of 5.8%. No single one of these numbers describes the risk.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>"Risk" in finance usually means one of three things, and each answers a different question. Volatility, the standard deviation of returns, is the risk in Harry Markowitz's 1952 theory of portfolio choice: how widely results scatter around their average. The Sharpe ratio, which William Sharpe proposed in 1966 as a "reward-to-variability ratio" and restated in 1994, divides the return earned above a safe asset by that volatility, so that a calm investment and a wild one can be compared per unit of risk taken. The maximum drawdown is the largest fall from a high point to a later low: the number a saver actually lives through.</p>
+      <p>The three can disagree sharply. Volatility counts a gain like a loss and says nothing about order; two portfolios with the same volatility can have very different worst falls, because a run of losses in a row hurts more than the same losses scattered. A long-dated bond can have a respectable Sharpe ratio over decades and still lose four tenths of its value in three years. The tool puts all three side by side, shows the arithmetic behind each, and lets you change the mix to see which number moves.</p>
+      <p>The question matters outside textbooks because pension statements, fund factsheets and regulators all report some of these numbers, usually without saying which formula, which period, which risk-free rate or which way of turning monthly figures into yearly ones. Each choice changes the answer, so the tool states each one.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The data, and what it is not</h3>
+      <p>The eleven assets are shared with pages 63 and 64: monthly returns in US dollars, February 1999 to September 2026, nominal and before tax and costs. Treasury bills earn a twelfth of the 3-month yield each month. The 2, 5, 10 and 20-year Treasuries are bonds held at a constant maturity, modelled from the Treasury yields in the Federal Reserve's H.15 release: bought at par each month-end and priced in full a month later at the new yield, the par-bond idea of Swinkels (2019). They are close to a Treasury index but are not a fund anyone sells. The six currencies are cash deposits for a dollar investor: the change in the currency's dollar price at month-end (Federal Reserve H.10) plus a month of interest at its central bank's policy rate (Bank for International Settlements). There are no shares or commodities, because share indices belong to the firms that compute them, which do not allow them to be republished freely, and the open commodity prices are monthly averages. Page 63 gives every formula.</p>
+      <h3>Your portfolio</h3>
+      <p>Amounts are in US dollars, the currency of every return here; figures may be grouped in threes (2,500,000) or the Indian way (25,00,000), and an amount typed with another currency's sign is refused rather than read as dollars. The amounts become weights, <var>w</var><sub><var>i</var></sub> = amount<sub><var>i</var></sub> / total. Rebalanced monthly, the portfolio's return in month <var>t</var> is the weighted average of the assets' returns:</p>
+      <p class="eq"><var>r</var><sub><var>t</var></sub> = <var>w</var><sub>1</sub> <var>r</var><sub>1<var>t</var></sub> + … + <var>w</var><sub><var>n</var></sub> <var>r</var><sub><var>nt</var></sub></p>
+      <p>Bought once, each holding grows with its own returns, <var>v</var><sub><var>it</var></sub> = <var>v</var><sub><var>i</var>,<var>t</var>−1</sub>(1 + <var>r</var><sub><var>it</var></sub>), and the portfolio's return is the change in the total. The value <var>W</var><sub><var>t</var></sub> at each month-end starts at what you typed, <var>W</var><sub>0</sub>, and grows by (1 + <var>r</var><sub><var>t</var></sub>) each month.</p>
+      <h3>The three measures</h3>
+      <p>With <var>T</var> monthly returns and the bills' returns <var>r</var><sub>f</sub> for the same months:</p>
+      <p class="eq">volatility = √12 × sd(<var>r</var>)</p>
+      <p class="eq">maximum drawdown = min over <var>t</var> of <var>W</var><sub><var>t</var></sub> / max(<var>W</var><sub>0</sub>, …, <var>W</var><sub><var>t</var></sub>) − 1</p>
+      <p class="eq">Sharpe ratio = √12 × mean(<var>r</var> − <var>r</var><sub>f</sub>) / sd(<var>r</var> − <var>r</var><sub>f</sub>)</p>
+      <p class="eq">return a year = (∏ (1 + <var>r</var><sub><var>t</var></sub>))<sup>12/<var>T</var></sup> − 1</p>
+      <p>The standard deviation divides by <var>T</var> − 1. Multiplying a monthly standard deviation by √12, and a monthly mean by 12, gives yearly figures if months are independent of each other; that is the annualisation used throughout. The risk-free rate is the 3-month Treasury bill over the same months, not a fixed number: it averaged 2.09% a year over the whole period but under 0.1% in some years. Because the Sharpe ratio uses the bills' actual monthly returns, a portfolio of bills alone has an excess return of exactly zero every month, and its ratio is not defined. The drawdown is measured at month-ends only, from the starting value onward; the peak is the last month-end before the fall at which the high was set, and the fall is "made good" at the first later month-end at or above that high.</p>
+      <h3>Each holding's share of the risk</h3>
+      <p>With <var>S</var> the covariance matrix of monthly returns over the window, holding <var>i</var>'s share of the variance of the rebalanced portfolio is <var>w</var><sub><var>i</var></sub>(<var>Sw</var>)<sub><var>i</var></sub> / <var>w</var>′<var>Sw</var>. The shares add up to 100%; a share below zero belongs to a holding that tends to rise when the rest fall.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>The risk from here on.</strong> Every number describes one past stretch. The bond figures are dominated by falling yields to 2020 and the sharp rise after it; another stretch gives other numbers, as the window controls show.</li>
+        <li><strong>How precise a Sharpe ratio is.</strong> With <var>T</var> months its standard error is roughly √(12/<var>T</var>) when the ratio is small (Lo, 2002): about 0.19 over the full 332 months, so 0.08 and 0.18 are not reliably different.</li>
+        <li><strong>Falls inside a month.</strong> Drawdowns are measured on month-end values, so a crash and rebound within one month does not show. Daily data would give deeper falls.</li>
+        <li><strong>Whether months really are independent.</strong> The √12 rule assumes they are. If good months tend to follow good months, yearly volatility is larger than √12 times the monthly figure, and the Sharpe ratio is overstated (Lo, 2002, gives the correction).</li>
+        <li><strong>Shares, property or commodities, costs and taxes.</strong> The data hold only assets whose figures may be republished, the bonds are modelled, the deposits earn policy rates rather than a bank's rate, and nothing is charged for trading or tax.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Add the Sortino ratio, which divides by the spread of returns below a target only (Sortino and van der Meer, 1991), and the Calmar ratio of return to maximum drawdown.</li>
+        <li>Show rolling three-year volatility and Sharpe ratios, to see how much each changes with the window.</li>
+        <li>Apply Lo's correction for autocorrelation when annualising, and report a confidence interval for the Sharpe ratio.</li>
+        <li>Let visitors paste their own monthly returns, for a fund they hold, with the same checks.</li>
+        <li>Compare the observed maximum drawdown with what a random walk of the same mean and volatility would give (Magdon-Ismail, Atiya, Pratap and Abu-Mostafa, 2004).</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>Board of Governors of the Federal Reserve System. H.15 Selected Interest Rates (Treasury constant-maturity yields) and H.10 Foreign Exchange Rates (noon buying rates in New York), daily. Retrieved 14 October 2026 from https://www.federalreserve.gov/releases/h15/ and https://www.federalreserve.gov/releases/h10/. Public domain under the Board's website policy.</li>
+        <li>Bank for International Settlements. Central bank policy rates (WS_CBPOL), monthly, end of period. Retrieved 14 October 2026 from https://data.bis.org/topics/CBPOL. Used under the BIS terms of permitted use of statistics, with the BIS cited as the source.</li>
+        <li>Markowitz, H. (1952). Portfolio selection. <em>Journal of Finance</em>, 7(1), 77-91.</li>
+        <li>Sharpe, W. F. (1966). Mutual fund performance. <em>Journal of Business</em>, 39(1), part 2, 119-138.</li>
+        <li>Sharpe, W. F. (1994). The Sharpe ratio. <em>Journal of Portfolio Management</em>, 21(1), 49-58.</li>
+        <li>Sortino, F. A., and van der Meer, R. (1991). Downside risk. <em>Journal of Portfolio Management</em>, 17(4), 27-31.</li>
+        <li>Lo, A. W. (2002). The statistics of Sharpe ratios. <em>Financial Analysts Journal</em>, 58(4), 36-52.</li>
+        <li>Magdon-Ismail, M., Atiya, A. F., Pratap, A., and Abu-Mostafa, Y. S. (2004). On the maximum drawdown of a Brownian motion. <em>Journal of Applied Probability</em>, 41(1), 147-161.</li>
+        <li>Swinkels, L. (2019). Treasury bond return data starting in 1962. <em>Data</em>, 4(3), 91.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

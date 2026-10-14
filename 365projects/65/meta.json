@@ -1,0 +1,7 @@
+{
+  "question": "How risky is a given mix of Treasuries and foreign currency deposits, measured by volatility, worst fall and Sharpe ratio, and do the three agree?",
+  "finding": "Rebalanced monthly from 1999 to 2026, $4,000 in 10-year Treasuries with $2,000 each in euro, yen and Australian dollar deposits had a volatility of 6.27% and a Sharpe ratio of 0.08 and fell 21.9% from December 2020 to October 2022, while 20-year Treasuries alone had a Sharpe ratio of 0.18 but fell 42.3% from July 2020 to October 2023.",
+  "limit": "The measures describe one past stretch at month-ends, and a Sharpe ratio over 332 months is uncertain by about 0.19.",
+  "sources": ["Federal Reserve Board H.15 and H.10", "Bank for International Settlements"],
+  "built": "2026-10-14"
+}
