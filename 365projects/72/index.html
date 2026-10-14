@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Market Regime Detector · 365 projects</title>
+  <meta name="description" content="Fit a hidden Markov model to a market's monthly changes and see which regime it is in now, how it has switched over time, how many regimes the data support, and how stable the labels are.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    .source-note { padding-top: 12px; border-top: 1px solid var(--grid); }
+    .stat .v { font-size: 1.35rem; }
+    .rt-wrap { margin-top: 4px; }
+    .tbl.rt th, .tbl.rt td { white-space: normal; }
+    .rt caption { font-weight: 600; font-size: 0.86rem; color: var(--slate); }
+    .rt th[scope="row"] { font-weight: 600; border-bottom: 1px solid var(--grid); }
+    /* Each row becomes a short list of labelled lines whenever the table's own box is narrower than the widest
+       table (the regimes, about 720 px), beside the controls on a tablet as well as on a phone. */
+    div:has(> table.rt) { container-type: inline-size; }
+    @container (max-width: 740px) {
+      .rt, .rt tbody, .rt tr, .rt th, .rt td, .rt caption { display: block; }
+      .rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .rt th[scope="row"], .rt td { border: 0; padding: 1px 0; }
+      .rt td { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; overflow-wrap: anywhere; }
+      .rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+    }
+    @media (max-width: 640px) {
+      .rt, .rt tbody, .rt tr, .rt th, .rt td, .rt caption { display: block; }
+      .rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .rt th[scope="row"], .rt td { border: 0; padding: 1px 0; }
+      .rt td { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; overflow-wrap: anywhere; }
+      .rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+    }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+    @media (max-width: 600px) { .p-sec .eq { white-space: normal; } }
+  </style>
+</head>
+<body class="proj" data-day="72">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Market Regime Detector</h1>
+      <p class="lede">Markets seem to take turns between quiet stretches and turbulent ones. Pick a market and fit a hidden Markov model to see which regime it is in now, how it has switched over time, how many regimes the data support, and how far the labels can be trusted.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Hidden Markov model of market regimes">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>The page opens on the US 10-year Treasury yield, April 1953 to September 2026. BIC prefers three regimes. The turbulent one, in which the yield moves by 0.54 percentage points a month (standard deviation) against 0.20 in the normal regime, runs from September 1979 to March 1988, the Volcker years and their aftermath. In September 2026, the last month of data, the model puts a 99% probability on the normal regime, where the yield has been since February 2009. But the labels are fragile: refitted each year on the data available at the time, the model labels 14% of the months since May 1963 differently from the labels it gives with hindsight, and only 3 of 20 starting points reach the best fit, while the others stop at fits that label up to 58% of the months differently.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Traders talk about bull and bear markets, calm and crisis. The idea that an economy or a market switches between a few distinct states, each with its own behaviour, was put into a statistical model by James Hamilton in 1989, who used it to date American recessions from GNP growth. The same machinery, a hidden Markov model, was developed in the 1960s and 1970s by Leonard Baum and colleagues and made famous by speech recognition. Its premise is that what is observed each month is drawn from one of a few distributions, and which one is decided by a hidden state that follows a Markov chain: it tends to stay put, and occasionally jumps.</p>
+      <p>In finance the premise fits a stubborn fact. Returns are not drawn from one bell curve: quiet periods with small moves alternate with turbulent ones in which moves are several times larger, and the turbulent periods tend to come with falling prices. A two-regime model captures this with two bell curves and the odds of switching between them. Ang and Timmermann (2012) survey the evidence: the means, volatilities and correlations of returns differ across regimes, the regimes often line up with changes in regulation and policy, and switching between them matters for how investors should hold their portfolios.</p>
+      <p>The catch is that the regimes are not observed. The model infers them, and the inference changes as data arrive. A month that looked turbulent at the time can look normal in hindsight, and the other way round. A tool that labels the past with confidence while hiding how those labels would have looked in real time oversells what it knows, so this page measures that gap.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The data</h3>
+      <p>Five monthly series, each a monthly average. The US 10-year Treasury yield at constant maturity is from the Federal Reserve's H.15 release (public domain), from April 1953; the model reads its monthly change in percentage points, because a yield is already a rate. Gold (from January 1975), Brent crude oil (from January 1980) and copper (from January 1970) are World Bank Pink Sheet prices in US dollars (CC BY 4.0), and Bitcoin (August 2010 to April 2026) is the monthly average of Coin Metrics' daily price (CC BY-NC 4.0); for these the model reads the monthly log return in percent, 100 ln(<var>P</var><sub><var>t</var></sub> / <var>P</var><sub><var>t</var>−1</sub>). A stock index would be the obvious market, but index providers own their indices and do not allow the history to be republished, so the page uses open series.</p>
+      <h3>The model</h3>
+      <p>Each month <var>t</var> has a hidden regime <var>s</var><sub><var>t</var></sub> in 1 … <var>K</var>. The regime follows a Markov chain with transition probabilities <var>a</var><sub><var>ij</var></sub> = P(<var>s</var><sub><var>t</var>+1</sub> = <var>j</var> | <var>s</var><sub><var>t</var></sub> = <var>i</var>), and given the regime the month's change is normal:</p>
+      <p class="eq"><var>x</var><sub><var>t</var></sub> | <var>s</var><sub><var>t</var></sub> = <var>k</var> ~ N(<var>μ</var><sub><var>k</var></sub>, <var>σ</var><sub><var>k</var></sub><sup>2</sup>)</p>
+      <p>The parameters are the <var>K</var> means and standard deviations, the transition matrix and the probabilities of the first month's regime. Regimes are numbered from the lowest standard deviation to the highest and named accordingly (calm, normal, turbulent), which also removes the arbitrary order a fit would otherwise give them. A regime's expected length of stay is 1 / (1 − <var>a</var><sub><var>kk</var></sub>) months.</p>
+      <h3>Fitting: the Baum-Welch algorithm</h3>
+      <p>The likelihood sums over every possible path of regimes, which the forward recursion does in a single pass. With <var>b</var><sub><var>k</var></sub>(<var>x</var>) the normal density of regime <var>k</var>,</p>
+      <p class="eq"><var>α</var><sub><var>t</var></sub>(<var>j</var>) = [ Σ<sub><var>i</var></sub> <var>α</var><sub><var>t</var>−1</sub>(<var>i</var>) <var>a</var><sub><var>ij</var></sub> ] <var>b</var><sub><var>j</var></sub>(<var>x</var><sub><var>t</var></sub>) / <var>c</var><sub><var>t</var></sub>, &nbsp;&nbsp; ln <var>L</var> = Σ<sub><var>t</var></sub> ln <var>c</var><sub><var>t</var></sub></p>
+      <p>where <var>c</var><sub><var>t</var></sub> rescales each step to sum to one, so that <var>α</var><sub><var>t</var></sub>(<var>j</var>) is the probability of regime <var>j</var> given the data up to month <var>t</var> (the filtered probability) and nothing underflows. A backward recursion with the same scale factors gives, combined with the forward one, the probability of each regime given all the data, <var>γ</var><sub><var>t</var></sub>(<var>k</var>) (the smoothed probability), and the expected number of moves from each regime to each other. Baum-Welch, the expectation-maximisation algorithm for this model, then re-estimates</p>
+      <p class="eq"><var>a</var><sub><var>ij</var></sub> = expected moves <var>i</var> → <var>j</var> / expected moves out of <var>i</var></p>
+      <p class="eq"><var>μ</var><sub><var>k</var></sub> = Σ<sub><var>t</var></sub> <var>γ</var><sub><var>t</var></sub>(<var>k</var>) <var>x</var><sub><var>t</var></sub> / Σ<sub><var>t</var></sub> <var>γ</var><sub><var>t</var></sub>(<var>k</var>)</p>
+      <p class="eq"><var>σ</var><sub><var>k</var></sub><sup>2</sup> = Σ<sub><var>t</var></sub> <var>γ</var><sub><var>t</var></sub>(<var>k</var>) (<var>x</var><sub><var>t</var></sub> − <var>μ</var><sub><var>k</var></sub>)<sup>2</sup> / Σ<sub><var>t</var></sub> <var>γ</var><sub><var>t</var></sub>(<var>k</var>)</p>
+      <p>and repeats until the log-likelihood gains less than one part in 10<sup>8</sup>. Each step can only raise the likelihood, but it can stop at a local optimum, so every fit starts from 20 places (means at quantiles of the data; equal means with different spreads; the months split into one group per regime by their local volatility, the mean square of the changes within three months either side; and 17 random ones from a fixed seed) and keeps the best. The volatility start matters: without it, a dozen starts missed the best three-regime fit of the Treasury yield by 3.6 log-likelihood points, a fit an independent implementation found and the page's own algorithm confirms from that start. A regime's standard deviation is not allowed below 5% of the series' own, because a regime that shrinks onto a single month makes the likelihood infinite. The scaling follows Rabiner's (1989) tutorial.</p>
+      <h3>Checks</h3>
+      <p>The tests hold a two-regime, three-month example worked out by hand: summing the probability of all eight regime paths gives the same likelihood and the same smoothed probabilities as the recursions, and one Baum-Welch step gives the same new parameters as the formulas above applied to those enumerated probabilities. They also simulate 3,000 months from a known two-regime model; the fit recovers its means, standard deviations and switching probabilities within their sampling error and labels more than 90% of the months correctly.</p>
+      <h3>The labels shown</h3>
+      <p>The shading and the "since" tile use, for each month, the regime with the highest smoothed probability: the label with hindsight. The "latest regime" tile uses the filtered probability of the last month of data (September 2026 for the yield and the commodities, April 2026 for Bitcoin, whose archive stopped updating in May 2026), which uses no later data because there is none. The second chart shows both probabilities for the most volatile regime, but its filtered line still uses parameters fitted to the whole sample.</p>
+      <h3>How many regimes</h3>
+      <p>The tool fits 1, 2, 3 and 4 regimes and compares them by the Bayesian information criterion of Schwarz (1978),</p>
+      <p class="eq">BIC = −2 ln <var>L</var> + <var>p</var> ln <var>n</var>, &nbsp;&nbsp; <var>p</var> = 2<var>K</var> + <var>K</var>(<var>K</var> − 1) + (<var>K</var> − 1)</p>
+      <p>counting the means, standard deviations, free transition probabilities and free starting probabilities. The page opens on the number with the lowest BIC, at least two. BIC prefers two regimes for gold, oil, copper and Bitcoin, and three for the Treasury yield. The visitor can choose another number; BIC is only a guide, and its usual justification does not strictly hold for mixtures, whose likelihood is irregular when a regime is not needed.</p>
+      <h3>How unstable the labels are</h3>
+      <p>Two checks. First, the starting points: the panel says how many of the 20 reach the best fit, and how differently the other local optima they stop at label the months. Second, real time: from ten years into the sample (five for Bitcoin), the model is refitted every 12 months on the data available then, from three starting points (the three non-random ones above) and from the previous year's fit, keeping the best, and each following month is labelled by its filtered probability under those parameters, as an analyst would have done at the time. The panel reports how often those labels disagree with the labels from the full sample. Two things are still taken from hindsight: the number of regimes, chosen by BIC on the whole sample, and the ordering of regimes by volatility, which assumes a regime keeps its rank as data arrive.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>What comes next.</strong> The model says how long regimes have tended to last, not when this one ends. The expected stay is the average of a geometric distribution, in which next month is always the single most likely month for the regime to end. Nothing here is investment advice.</li>
+        <li><strong>Whether regimes are real.</strong> Two bell curves fit fat-tailed returns better than one, whether or not the market has distinct states. A model with more regimes always fits better, and BIC's verdict depends on its penalty.</li>
+        <li><strong>The labels of the recent past.</strong> The last months' labels are the least settled: with more data they will be revised, as the real-time check shows they were revised before.</li>
+        <li><strong>Smooth data as it really was.</strong> Every series here is a monthly average. Averaging smooths the path within a month and makes consecutive changes correlated (about 0.25 for a random walk, as Working showed in 1960), while the model treats months as independent within a regime.</li>
+        <li><strong>Regimes that change their nature.</strong> The parameters are fixed over seventy years of Treasury yields or fifty of gold. A "calm" month in 1960 and in 2020 are put in the same box, and the transition probabilities are assumed never to change.</li>
+        <li><strong>The stock market.</strong> No stock index is used, for the licensing reason given above, so nothing here describes equity bull and bear markets directly.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Use end-of-month or daily data where an open source exists, which removes the smoothing of monthly averages.</li>
+        <li>Fit several markets jointly, with a shared regime, to see whether gold, oil and bonds turn turbulent at the same time.</li>
+        <li>Let the transition probabilities depend on observed variables, such as the slope of the yield curve, as in Diebold, Lee and Weinbach's time-varying transition models.</li>
+        <li>Add autoregression within each regime, as Hamilton's original model has, and Student's t shocks within regimes.</li>
+        <li>Score the regimes as a forecast: does knowing today's filtered regime improve next month's forecast of volatility, compared with a GARCH model (day 68)?</li>
+        <li>Report a parametric bootstrap of the parameters, refitting on series simulated from the fitted model, to put intervals on the expected stays.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>Board of Governors of the Federal Reserve System. H.15 Selected Interest Rates: market yield on US Treasury securities at 10-year constant maturity, monthly averages (series RIFLGFCY10_N.M), through the Data Download Program. Public domain: "Unless otherwise indicated, information on Board's website is in the public domain". Retrieved 14 October 2026.</li>
+        <li>World Bank. Commodity Price Data (The Pink Sheet), monthly prices, workbook updated on 2 October 2026: gold, Brent crude oil, copper, as published. https://www.worldbank.org/en/research/commodity-markets. Licence: Creative Commons Attribution 4.0 (CC BY 4.0), https://creativecommons.org/licenses/by/4.0/. Retrieved 14 October 2026. The workbook names the original sources of each price.</li>
+        <li>Coin Metrics, Inc. Free Coin Metrics data archives (community data), daily PriceUSD for Bitcoin. https://github.com/coinmetrics/data. Licence: Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0), https://creativecommons.org/licenses/by-nc/4.0/. Coin Metrics publishes the data without any warranty. Changed here: averaged by calendar month, complete months only, rounded to six significant figures. Retrieved 14 October 2026; last updated 24 May 2026. This page is non-commercial.</li>
+        <li>Hamilton, J. D. (1989). A new approach to the economic analysis of nonstationary time series and the business cycle. <em>Econometrica</em>, 57(2), 357-384.</li>
+        <li>Baum, L. E., Petrie, T., Soules, G., and Weiss, N. (1970). A maximization technique occurring in the statistical analysis of probabilistic functions of Markov chains. <em>Annals of Mathematical Statistics</em>, 41(1), 164-171.</li>
+        <li>Rabiner, L. R. (1989). A tutorial on hidden Markov models and selected applications in speech recognition. <em>Proceedings of the IEEE</em>, 77(2), 257-286.</li>
+        <li>Schwarz, G. (1978). Estimating the dimension of a model. <em>Annals of Statistics</em>, 6(2), 461-464.</li>
+        <li>Ang, A., and Timmermann, A. (2012). Regime changes and financial markets. <em>Annual Review of Financial Economics</em>, 4, 313-337.</li>
+        <li>Working, H. (1960). Note on the correlation of first differences of averages in a random chain. <em>Econometrica</em>, 28(4), 916-918.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "question": "Which regime is a market in now, how has it switched over time, and how far can the labels be trusted?",
+  "finding": "A three-regime hidden Markov model of the US 10-year Treasury yield since 1953 puts September 1979 to March 1988 in its turbulent regime and September 2026, the last month of data, in its normal one (99%), but refitted each year on the data available at the time it labels 14% of months differently from its hindsight labels.",
+  "limit": "The regimes are inferred, not observed: the labels of recent months are the least settled, and a model with more regimes always fits better.",
+  "sources": ["Federal Reserve Board", "World Bank", "Coin Metrics"],
+  "built": "2026-10-14"
+}
