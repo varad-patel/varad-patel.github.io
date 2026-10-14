@@ -1228,7 +1228,16 @@ window.CHALLENGE = {
    "concept": "Speculation",
    "skills": "GARCH",
    "section": 3,
-   "date": "2026-12-16"
+   "date": "2026-12-16",
+   "built": "2026-10-14",
+   "question": "How volatile is a cryptocurrency now, how long do its storms last, and would a standard risk model's warnings have held up?",
+   "finding": "Fitted to Bitcoin's daily prices from 2018 to May 2026, GARCH(1,1) has a persistence of 0.961 (a volatility shock halves in about 17.5 days), and its 99% value at risk was exceeded on 23 of 2,064 backtest days (1.11%), against 46 days for the RiskMetrics rule.",
+   "limit": "The model describes the size of price moves in the window it was fitted to, not their direction, and no window contains the crash that has not happened yet.",
+   "sources": [
+    "Coin Metrics"
+   ],
+   "img": "img/068.jpg",
+   "url": "68/"
   },
   {
    "id": 69,
@@ -1237,7 +1246,19 @@ window.CHALLENGE = {
    "concept": "Bubbles, rationality",
    "skills": "SADF unit-root test",
    "section": 3,
-   "date": "2026-12-17"
+   "date": "2026-12-17",
+   "built": "2026-10-14",
+   "question": "Does an asset's price look explosive, the way a bubble would make it, and how often does the test that says so raise a false alarm?",
+   "finding": "Bitcoin's monthly price is explosive by the GSADF test (3.90 against a 5% critical value of 2.33, a verdict that survives Bitcoin's own upward trend, which raises the false-alarm rate on random walks from 6 in 100 to 28), with one dated episode from May 2017 to March 2018, but its bubble score in April 2026, its last month of data, is 55, while gold's in September 2026 is 99.",
+   "limit": "The test finds explosive growth, not its cause: fundamentals can grow explosively too, and it cannot say when an episode will end.",
+   "sources": [
+    "Coin Metrics",
+    "FHFA",
+    "Bureau of Labor Statistics",
+    "World Bank"
+   ],
+   "img": "img/069.jpg",
+   "url": "69/"
   },
   {
    "id": 70,
@@ -1264,7 +1285,18 @@ window.CHALLENGE = {
    "concept": "Market regimes",
    "skills": "Hidden Markov models",
    "section": 3,
-   "date": "2026-12-20"
+   "date": "2026-12-20",
+   "built": "2026-10-14",
+   "question": "Which regime is a market in now, how has it switched over time, and how far can the labels be trusted?",
+   "finding": "A three-regime hidden Markov model of the US 10-year Treasury yield since 1953 puts September 1979 to March 1988 in its turbulent regime and September 2026, the last month of data, in its normal one (99%), but refitted each year on the data available at the time it labels 14% of months differently from its hindsight labels.",
+   "limit": "The regimes are inferred, not observed: the labels of recent months are the least settled, and a model with more regimes always fits better.",
+   "sources": [
+    "Federal Reserve Board",
+    "World Bank",
+    "Coin Metrics"
+   ],
+   "img": "img/072.jpg",
+   "url": "72/"
   },
   {
    "id": 73,
