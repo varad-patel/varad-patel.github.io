@@ -1,0 +1,7 @@
+{
+  "question": "Does an asset's price look explosive, the way a bubble would make it, and how often does the test that says so raise a false alarm?",
+  "finding": "Bitcoin's monthly price is explosive by the GSADF test (3.90 against a 5% critical value of 2.33, a verdict that survives Bitcoin's own upward trend, which raises the false-alarm rate on random walks from 6 in 100 to 28), with one dated episode from May 2017 to March 2018, but its bubble score in April 2026, its last month of data, is 55, while gold's in September 2026 is 99.",
+  "limit": "The test finds explosive growth, not its cause: fundamentals can grow explosively too, and it cannot say when an episode will end.",
+  "sources": ["Coin Metrics", "FHFA", "Bureau of Labor Statistics", "World Bank"],
+  "built": "2026-10-14"
+}

@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bubble Detector · 365 projects</title>
+  <meta name="description" content="Pick an asset and get a bubble score from right-tailed unit root tests (SADF and GSADF), with the explosive episodes dated and the test's false-alarm rate and power shown on simulated prices.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    .source-note { padding-top: 12px; border-top: 1px solid var(--grid); }
+    .stat .v { font-size: 1.35rem; }
+    .rt-wrap { margin-top: 4px; }
+    .tbl.rt th, .tbl.rt td { white-space: normal; }
+    .rt caption { font-weight: 600; font-size: 0.86rem; color: var(--slate); }
+    .rt th[scope="row"] { font-weight: 600; border-bottom: 1px solid var(--grid); }
+    /* Each row becomes a short list of labelled lines whenever the table's own box is narrower than the widest
+       table (the episodes, about 600 px), beside the controls on a tablet as well as on a phone. */
+    div:has(> table.rt) { container-type: inline-size; }
+    @container (max-width: 620px) {
+      .rt, .rt tbody, .rt tr, .rt th, .rt td, .rt caption { display: block; }
+      .rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .rt th[scope="row"], .rt td { border: 0; padding: 1px 0; }
+      .rt td { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; overflow-wrap: anywhere; }
+      .rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+    }
+    @media (max-width: 640px) {
+      .rt, .rt tbody, .rt tr, .rt th, .rt td, .rt caption { display: block; }
+      .rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .rt th[scope="row"], .rt td { border: 0; padding: 1px 0; }
+      .rt td { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; overflow-wrap: anywhere; }
+      .rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+    }
+    /* The simulation controls sit in a grid: keep each field at its natural height beside the taller one. */
+    #app .grid2 > .field { align-content: start; }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+    @media (max-width: 600px) { .p-sec .eq { white-space: normal; } }
+  </style>
+</head>
+<body class="proj" data-day="69">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Bubble Detector</h1>
+      <p class="lede">A bubble, in the economist's sense, makes a price grow explosively: faster and faster, beyond what a random walk would do. Pick an asset and the tool runs the tests that look for that, scores how explosive the price looks now, dates the explosive episodes of the past, and shows on simulated prices how often the tests are fooled.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Explosive-root bubble tests on asset prices">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>The page opens on Bitcoin, monthly averages from August 2010 to April 2026. Its GSADF statistic is 3.90 against a 5% critical value of 2.33 for a series this long: explosive. The test dates one episode of six months or more, May 2017 to March 2018, over which the monthly average price rose 637%, before falling 56% in the next twelve months. In April 2026, its last month of data, Bitcoin's bubble score is 55, nowhere near explosive, while gold's in September 2026 is 99: explosive in that month, after an episode that began in April 2024. The critical values assume almost no trend: on 100 simulated random walks of Bitcoin's length the GSADF test raised 6 false alarms, but on 100 with Bitcoin's own steady rise (the panel's third kind of path) it raised 28. Bitcoin's own statistic is high enough to survive that: it is above the 99th percentile of such walks (see "What the critical values assume").</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Economists use "bubble" for a price that has come loose from what the asset is worth on its own terms, the value of the income it will earn. The theory of rational bubbles gives the idea a testable shape. If investors want an expected return <var>r</var> and the price is the fundamental value plus a bubble, then the bubble part must be expected to grow at the rate <var>r</var> every period, or nobody would hold it. A bubble therefore grows exponentially, and a price with a bubble in it is explosive in the statistical sense: its autoregressive coefficient is above one. Fundamentals, the argument goes, wander like a random walk at worst. So a price that is explosive while its fundamentals are not is evidence of a bubble.</p>
+      <p>Early tests asked this of a whole sample at once, and Diba and Grossman (1988) found no explosive bubble in American stock prices. Evans (1991) showed why such tests can miss one: a bubble that bursts and starts again looks, over a long sample, like a stationary process, and the test misses it. Peter Phillips, Yangru Wu and Jun Yu (2011) turned the test round. Their sup ADF test, SADF, runs the test on a growing window and takes the largest value, so an explosive stretch inside the sample stands out; applied to the Nasdaq they dated the start of the 1990s exuberance. Phillips, Shi and Yu (2015) generalised it to GSADF, which lets the window start anywhere, so that a second or third bubble is not hidden by the first, and gave a way to date each episode as it happens. Applied to the S&P 500's price-dividend ratio from 1871 to 2010, it picks out the great crash, Black Monday in 1987 and the dot-com bubble. The Federal Reserve Bank of Dallas publishes indicators of house-price exuberance built on these tests.</p>
+      <p>Explosive is not the same as irrational. A commodity can climb explosively because a mine closed and a war began; house prices can outrun rents for years because interest rates fell. The test finds the pattern a bubble would leave. Whether the cause was a bubble is a separate argument, and the tool keeps the two apart.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The data</h3>
+      <p>Six monthly series, each a monthly average, tested in natural logs. Bitcoin is the monthly average of Coin Metrics' daily US dollar price (CC BY-NC 4.0), August 2010 to April 2026. US house prices relative to rents divide the Federal Housing Finance Agency's purchase-only house price index by the Bureau of Labor Statistics' consumer price index for rent of primary residence, both seasonally adjusted and public domain, January 1991 to July 2026; BLS published no rent figure for October 2025 because of the 2025 lapse in appropriations, and that one month is filled with the geometric mean of September and November. Rents stand in for the income a house provides, so this is the closest series here to a price over its fundamental. Gold and silver (from January 1975) and Brent crude oil and nickel (from January 1980) are World Bank Pink Sheet prices in US dollars (CC BY 4.0) to September 2026; earlier Pink Sheet prices were fixed or administered for months at a time.</p>
+      <h3>The test regression</h3>
+      <p>For a window of months, regress the change in the log price on its previous level and on <var>k</var> earlier changes:</p>
+      <p class="eq">Δ<var>y</var><sub><var>t</var></sub> = <var>a</var> + <var>b</var> <var>y</var><sub><var>t</var>−1</sub> + <var>c</var><sub>1</sub> Δ<var>y</var><sub><var>t</var>−1</sub> + … + <var>c</var><sub><var>k</var></sub> Δ<var>y</var><sub><var>t</var>−<var>k</var></sub> + <var>e</var><sub><var>t</var></sub></p>
+      <p>The statistic is the t ratio of <var>b</var>, the augmented Dickey-Fuller (ADF) statistic. Under a random walk <var>b</var> = 0; an explosive price has <var>b</var> &gt; 0, so the test looks at the right tail: a large positive value is evidence of explosiveness. The tool computes every window's regression from running sums of the products of the variables, so that each of the hundreds of thousands of windows costs a few dozen arithmetic operations.</p>
+      <h3>SADF, GSADF and the backward statistic</h3>
+      <p>Write ADF(<var>s</var>, <var>e</var>) for the statistic on the months <var>s</var> to <var>e</var>, and let every window hold at least <var>w</var> = 36 months, the smallest window Phillips, Shi and Yu used for the S&amp;P 500. Then</p>
+      <p class="eq">SADF = max<sub><var>e</var></sub> ADF(1, <var>e</var>)</p>
+      <p class="eq">BSADF(<var>e</var>) = max<sub><var>s</var> ≤ <var>e</var> − <var>w</var> + 1</sub> ADF(<var>s</var>, <var>e</var>)</p>
+      <p class="eq">GSADF = max<sub><var>e</var></sub> BSADF(<var>e</var>)</p>
+      <p>SADF keeps the start fixed at the first month (the test of Phillips, Wu and Yu); BSADF, the backward sup ADF statistic, asks for each month whether some window ending there looks explosive; GSADF is the largest of those. The whole-history tiles compare SADF and GSADF with their critical values.</p>
+      <h3>Dating and the bubble score</h3>
+      <p>A month is dated explosive when BSADF for that month exceeds the critical value of BSADF for a month that far into a random walk. An episode is a run of such months lasting longer than ln <var>T</var> months (6 or 7 here), the rule of Phillips, Wu and Yu; shorter crossings are counted but not shaded. The regression has an intercept, so <var>b</var> &gt; 0 means the series moves away from its recent level faster and faster in either direction: an accelerating fall can be dated as explosive too, which is why gold's episode of July 1997 to March 1998 shows a fall. The bubble score is the percentile of the BSADF statistic for the last month of data among the BSADF values of simulated random walks of the same length at their last month: a score of 97 means the statistic is higher than in 97% of random walks, and a score of 95 or more puts it above the 5% critical value (within twice the simulation error of it, the tile says "on the edge").</p>
+      <h3>Lags, chosen once for each series</h3>
+      <p>Every series here is a monthly average, and averaging makes the changes of even a pure random walk correlated, at about 0.25 from one month to the next (Working 1960). Left in the error, that correlation pushes the ADF statistic up. On simulated monthly averages of daily random walks the GSADF test with no lags raises a false alarm about one time in five at the 5% level (15% to 22% in separate simulations of Bitcoin's length), four times the level. The tool therefore adds <var>k</var> lagged changes, the augmentation of Said and Dickey (1984), with <var>k</var> chosen once for each series by the Bayesian information criterion on the whole sample (0 to 6 lags). BIC picks two lags for Bitcoin, gold, silver and Brent crude, one for nickel and three for house prices relative to rents.</p>
+      <h3>Critical values: simulated, and checked against the paper</h3>
+      <p>The tests' null distributions are not standard, so the critical values come from simulation, as in Phillips, Shi and Yu: 10,000 random walks <var>y</var><sub><var>t</var></sub> = 1/<var>T</var> + <var>y</var><sub><var>t</var>−1</sub> + <var>e</var><sub><var>t</var></sub> with standard normal <var>e</var><sub><var>t</var></sub> (their "asymptotically negligible drift" with <var>d</var> = <var>η</var> = 1) for each series' length and lag order, run through exactly the same code as the real data, with a fixed seed so that they can be reproduced. They are written by a script into a bundled file, with the 90th, 95th and 99th percentiles of BSADF for every month. A critical value from 10,000 runs still carries a Monte Carlo error, about 0.02 at the 95% level, estimated from the spacing of the simulated percentiles. The tool reports it, and calls a statistic within twice that error of its critical value "on the edge" rather than explosive or not: Brent crude's GSADF statistic, 2.84 against 2.86 at 5%, is the one case here. As a check, the same code with no lags reproduces Phillips, Shi and Yu's own Table 1(c), simulated from 5,000 runs with smallest windows of 40 months. For 400 months the bundled check gives 1.16, 1.45 and 1.99 for SADF at 90%, 95% and 99% (published: 1.19, 1.50, 1.98) and 1.96, 2.23 and 2.73 for GSADF (published: 1.97, 2.21, 2.71); the tests do the same for 100 and 200 months. The gaps are of the size the Monte Carlo error of the two simulations allows.</p>
+      <h3>What the critical values assume</h3>
+      <p>Phillips, Shi and Yu's null hypothesis is a random walk whose drift fades as the sample grows, so the critical values allow for almost no trend. A long, steady rise is not a bubble, but it pushes the ADF statistic up. The tool measures how much: its simulation panel offers random walks whose steps have a mean equal to the series' own average monthly change in logs, measured in standard deviations of that change (0.27 for Bitcoin, 0.16 for house prices relative to rents, 0.11 for gold and 0.06 or less for the other three). On 100 such walks of Bitcoin's length, GSADF passes its 5% critical value 28 times; on 1,000, its 95th and 99th percentiles are 3.22 and 3.79. Bitcoin's 3.90 is above both, so its whole-history verdict does not rest on the trend, but its dated episodes and its score are read against critical values that suit it less well. A note under the result tiles repeats this caution for the series shown.</p>
+      <h3>False alarms and power, shown rather than assumed</h3>
+      <p>The panel under the charts simulates paths of the same length as the chosen series and runs the same tests on them. Paths with no bubble are random walks, or monthly averages of daily random walks like the real data. Bubble paths follow the single-bubble process of Phillips, Wu and Yu: a random walk from 100 with steps of standard deviation 1; from 40% of the way in, <var>y</var><sub><var>t</var></sub> = <var>δ</var> <var>y</var><sub><var>t</var>−1</sub> + <var>e</var><sub><var>t</var></sub> with <var>δ</var> above 1 for a chosen number of months; then a collapse to the level where the bubble began, and a random walk again. The share of no-bubble paths that a test flags is its false-alarm rate, and the share of bubble paths flagged is its power, each with two simulation standard errors. A third kind of no-bubble path, a random walk with the chosen series' trend, shows the effect described above. The bubble paths' noise is about 1% of their level a month, far calmer than any of the real series except house prices relative to rents (Bitcoin's monthly average moves about 28% a month), so the power shown is what the test achieves on a calm market.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Whether it was a bubble.</strong> The test finds explosive growth. Fundamentals can be explosive too: a supply shock, a war, a hyperinflation, or for houses a long fall in interest rates. Only the house price series is measured against an income it earns, and even rents are an imperfect stand-in.</li>
+        <li><strong>When it will burst.</strong> A high score says the recent past looks explosive. The model has no mechanism for the collapse, and dated episodes often run on for months after the peak, because a window that still contains the climb can look explosive while prices fall.</li>
+        <li><strong>Exact false-alarm rates on real prices.</strong> The critical values assume a random walk with normal, steady errors and almost no trend. A steady rise makes the tests fire too often (28 false alarms in 100 random walks with Bitcoin's trend, against 6 without one); fat tails and volatility that comes in bursts can do the same; and the lag order chosen for the whole sample may not suit every window.</li>
+        <li><strong>Many tries.</strong> The page offers six assets, three levels and four statistics. Each whole-history test flags a random walk one time in twenty at the 5% level, so across many choices a chance verdict somewhere is likely. The level describes one test chosen in advance, not the most striking result found by looking around.</li>
+        <li><strong>A clean dating.</strong> Each month is compared with its own critical value, and the statistic moves slowly because neighbouring windows overlap, so over decades a random walk crosses for months at a time. The minimum length removes the shortest runs, not all of them: at the 5% level, 30 of 100 simulated random walks as long as Bitcoin's history produced at least one dated episode, and the share is higher for the longer series (the simulation panel measures it for each). Treat a single dated episode as a description, and the whole-history tests as the evidence.</li>
+        <li><strong>Prices adjusted for inflation.</strong> Commodity prices are in dollars of the day. A long inflation adds a drift, which is not explosive, but the scores are for nominal prices.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Test prices against fundamentals for more assets: the price-dividend ratio for a stock index, a commodity's price against its cost of production or inventories.</li>
+        <li>Use wild bootstrap critical values, which remain valid when volatility changes over time.</li>
+        <li>Choose the lag order inside each window, as Phillips, Shi and Yu also consider, and compare the dates.</li>
+        <li>Run the test in real time, month by month, and score how early each episode would have been flagged and how many false alarms came with it.</li>
+        <li>Use end-of-month prices where an open source exists, removing the smoothing of monthly averages.</li>
+        <li>Add the panel version of the test for many countries' house prices at once.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>Coin Metrics, Inc. Free Coin Metrics data archives (community data), daily PriceUSD for Bitcoin. https://github.com/coinmetrics/data. Licence: Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0), https://creativecommons.org/licenses/by-nc/4.0/. Coin Metrics publishes the data without any warranty. Changed here: averaged by calendar month, complete months only, rounded to six significant figures. Retrieved 14 October 2026; last updated 24 May 2026. This page is non-commercial.</li>
+        <li>Federal Housing Finance Agency. House Price Index, purchase-only, United States, monthly, seasonally adjusted (hpi_master.csv). https://www.fhfa.gov/data/hpi. FHFA's website policy: "Generally, information and materials produced by Federal agencies, including FHFA, are in the public domain". Retrieved 14 October 2026.</li>
+        <li>US Bureau of Labor Statistics. Consumer Price Index for All Urban Consumers: rent of primary residence in U.S. city average, seasonally adjusted (CUSR0000SEHA), through the BLS Public Data API. Public domain. Retrieved 14 October 2026.</li>
+        <li>World Bank. Commodity Price Data (The Pink Sheet), monthly prices, workbook updated on 2 October 2026: gold, silver, Brent crude oil, nickel, as published. https://www.worldbank.org/en/research/commodity-markets. Licence: Creative Commons Attribution 4.0 (CC BY 4.0), https://creativecommons.org/licenses/by/4.0/. Retrieved 14 October 2026.</li>
+        <li>Phillips, P. C. B., Wu, Y., and Yu, J. (2011). Explosive behavior in the 1990s Nasdaq: when did exuberance escalate asset values? <em>International Economic Review</em>, 52(1), 201-226.</li>
+        <li>Phillips, P. C. B., Shi, S., and Yu, J. (2015). Testing for multiple bubbles: historical episodes of exuberance and collapse in the S&amp;P 500. <em>International Economic Review</em>, 56(4), 1043-1078. Critical values checked against Table 1 of the working paper version, Cowles Foundation Discussion Paper 1914 (2013).</li>
+        <li>Phillips, P. C. B., and Yu, J. (2011). Dating the timeline of financial bubbles during the subprime crisis. <em>Quantitative Economics</em>, 2(3), 455-491.</li>
+        <li>Said, S. E., and Dickey, D. A. (1984). Testing for unit roots in autoregressive-moving average models of unknown order. <em>Biometrika</em>, 71(3), 599-607.</li>
+        <li>Working, H. (1960). Note on the correlation of first differences of averages in a random chain. <em>Econometrica</em>, 28(4), 916-918.</li>
+        <li>Diba, B. T., and Grossman, H. I. (1988). Explosive rational bubbles in stock prices? <em>American Economic Review</em>, 78(3), 520-530.</li>
+        <li>Evans, G. W. (1991). Pitfalls in testing for explosive bubbles in asset prices. <em>American Economic Review</em>, 81(4), 922-930.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
