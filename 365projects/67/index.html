@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Monte Carlo Market and VaR · 365 projects</title>
+  <meta name="description" content="Enter holdings with their expected returns, volatilities and correlations, simulate thousands of futures from a seeded generator, and see value at risk, expected shortfall and the chance of a given loss, each with its Monte Carlo error.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .d67-portfolio { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    .d67-portfolio h3 { margin-top: 6px; }
+    .d67-rows { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; container-type: inline-size; }
+    .d67-row { border: 1px solid var(--grid); margin: 0; padding: 6px 12px 12px; min-width: 0; background: var(--sheet); }
+    .d67-row legend { font-weight: 700; font-size: 0.9rem; padding: 0 4px; max-width: 100%; overflow-wrap: anywhere; }
+    .d67-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr)) auto; gap: 8px 12px; align-items: end; }
+    .d67-grid .field label { font-weight: 600; font-size: 0.86rem; }
+    .d67-msg { grid-column: 1 / -1; color: var(--bad); font-size: 0.82rem; line-height: 1.4; overflow-wrap: anywhere; }
+    .d67-msg:empty { display: none; }
+    .d67-remove { padding-bottom: 6px; }
+    @container (max-width: 640px) {
+      .d67-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+      .d67-name { grid-column: 1 / -1; }
+      .d67-remove { grid-column: 1 / -1; padding: 0; }
+    }
+    @container (max-width: 220px) { .d67-grid { grid-template-columns: minmax(0, 1fr); } }
+    .d67-corr { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 190px), 1fr)); gap: 10px 16px; }
+    .d67-corr label { font-weight: 600; font-size: 0.86rem; overflow-wrap: anywhere; }
+    .d67-examples { gap: 6px 8px; }
+    .d67-examples .btn { white-space: normal; text-align: left; }
+    .d67-compare p { overflow-wrap: anywhere; }
+    .d67-jump { gap: 2px 16px; }
+    .d67-jump a { padding: 6px 0; }
+    @media (min-width: 861px) { .d67-jump { display: none; } }
+    #d67-results, #d67-fan, #d67-hist { scroll-margin-top: 12px; }
+    .note p + p, .note p + ul, .note ul + div { margin-top: 6px; }
+    .note ul { margin: 4px 0 0; padding-left: 1.2em; }
+    .stat .v { font-size: 1.45rem; }
+    .p-sec .eq { white-space: normal; }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body class="proj" data-day="67">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Monte Carlo Market and VaR</h1>
+      <p class="lede">Enter a portfolio and your assumptions about it, simulate thousands of possible futures, and see how much it could lose, how likely a given loss is, and how sure the simulation can be about either.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Monte Carlo value at risk simulator">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>The page opens on a made-up $100,000 portfolio of shares, bonds and gold with normal returns. From seed 1, 10,000 simulated futures put its 10-day 99% value at risk at $5,127, with a Monte Carlo interval of $4,964 to $5,341, and the closed form, $5,077, lies inside it. Choose 1,000 futures and the interval is $1,026 wide; choose 100,000 and it is $101 wide: a hundred times the work buys ten times the precision, the square-root law of every Monte Carlo estimate.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>"How much could this lose?" has no answer, because almost anything can be lost. Value at risk replaces it with a question that has one: what loss will not be exceeded over the next ten trading days with 99% probability? It became the language of bank risk management in the 1990s, and in 1996 the Basle Committee on Banking Supervision wrote it into the rules for the capital banks must hold against market risk, computed daily at 99% over a ten-day holding period.</p>
+      <p>Value at risk has a blind spot. It says where the worst 1% of outcomes begins and nothing about how bad they are: a portfolio that loses $6,000 in its worst 1% and one that loses $600,000 can have the same VaR. Artzner, Delbaen, Eber and Heath (1999) showed a deeper flaw, that VaR can call two portfolios together riskier than the two apart, which punishes diversification, and set out the properties a "coherent" measure should have. Expected shortfall, the average loss in the worst outcomes, has them (Acerbi and Tasche 2002), and the Basel Committee's current rules for banks that use their own models ask for a 97.5% expected shortfall instead of VaR. The tool reports both.</p>
+      <p>For one holding, or for several whose gains add up to a normal distribution, both numbers have formulas. For anything else, a sum of lognormal prices, options, fat tails, they usually do not, and the honest method is to simulate: draw thousands of futures that obey the assumptions and read the loss off the worst of them. That raises a question simulations often skip: a number estimated from 10,000 random futures is itself uncertain. The tool says by how much, and opens on a case with a closed form so the claim can be checked.</p>
+      <p>The futures are driven by Brownian motion, the random walk in continuous time that Louis Bachelier used for prices in 1900. Bachelier let prices wander by normally distributed amounts; the "normal returns" model here is his. Later finance let them wander by normally distributed percentages instead, geometric Brownian motion, which keeps a price above zero; that is the "lognormal prices" model.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The two models</h3>
+      <p>Holding <var>i</var> is worth <var>V</var><sub><var>i</var></sub> today, with an expected return <var>μ</var><sub><var>i</var></sub> and a volatility <var>σ</var><sub><var>i</var></sub>, both a year. Time <var>t</var> is in years of 252 trading days. With normal returns (arithmetic Brownian motion) and lognormal prices (geometric Brownian motion) its value at time <var>t</var> is</p>
+      <p class="eq"><var>V</var><sub><var>i</var></sub>(<var>t</var>) = <var>V</var><sub><var>i</var></sub> (1 + <var>μ</var><sub><var>i</var></sub><var>t</var> + <var>σ</var><sub><var>i</var></sub><var>W</var><sub><var>i</var></sub>(<var>t</var>)) &nbsp;&nbsp; or &nbsp;&nbsp; <var>V</var><sub><var>i</var></sub>(<var>t</var>) = <var>V</var><sub><var>i</var></sub> exp((<var>μ</var><sub><var>i</var></sub> − <var>σ</var><sub><var>i</var></sub><sup>2</sup>/2)<var>t</var> + <var>σ</var><sub><var>i</var></sub><var>W</var><sub><var>i</var></sub>(<var>t</var>))</p>
+      <p>where each <var>W</var><sub><var>i</var></sub> is a standard Brownian motion and two of them have correlation <var>ρ</var><sub><var>ij</var></sub>. In both, the expected value grows at <var>μ</var>: by <var>V</var>(1 + <var>μt</var>) in the first and <var>V</var>e<sup><var>μt</var></sup> in the second. The holdings are bought and held: nothing is rebalanced or traded during the horizon. The portfolio is the sum of the holdings, and its gain is its value at the horizon <var>h</var> less its value today.</p>
+      <h3>Correlated randomness, and when correlations are impossible</h3>
+      <p>The correlations form a matrix <var>R</var> with ones on its diagonal. The tool splits it as <var>R</var> = <var>Q</var>Λ<var>Q</var><sup>T</sup> (its eigenvalues Λ and eigenvectors <var>Q</var>, found by Jacobi rotations), sets <var>L</var> = <var>Q</var>Λ<sup>1/2</sup>, and turns independent normal draws <var>z</var> into correlated ones <var>Lz</var>, which have correlation matrix <var>LL</var><sup>T</sup> = <var>R</var>. This works even when two holdings are perfectly correlated and the matrix is singular, where the usual Cholesky factor fails.</p>
+      <p>Not every table of numbers between −1 and 1 is a correlation matrix. If A moves closely with B and B with C, A cannot move against C. Precisely, <var>R</var> is valid only if none of its eigenvalues is below zero (the tool allows −10<sup>−10</sup> for rounding); otherwise some combination of the holdings would have a negative variance. When the check fails the tool says, for each pair, what range that one correlation would have to move into with all the others left as they are. The smallest eigenvalue is a concave function of any one entry, so that range is a single interval, found by a golden-section search for its best point and bisection for its two ends. For three holdings it is the textbook bound <var>ρ</var><sub>AC</sub> = <var>ρ</var><sub>AB</sub><var>ρ</var><sub>BC</sub> ± √((1 − <var>ρ</var><sub>AB</sub><sup>2</sup>)(1 − <var>ρ</var><sub>BC</sub><sup>2</sup>)). The button "Use the nearest valid correlations" applies Higham's (2002) alternating projections, which find the valid correlation matrix closest to the one typed, then rounds it to two decimals, pulling it slightly towards no correlation if the rounding broke it.</p>
+      <h3>The simulation</h3>
+      <p>Each future is built in steps of <var>Δt</var> = <var>h</var>/<var>k</var>, with <var>k</var> the horizon in trading days up to a maximum of 25. At each step the tool draws independent standard normals by the Box-Muller method from the kit's seeded generator (mulberry32), correlates them with <var>L</var>, and adds √<var>Δt</var> times the result to each <var>W</var><sub><var>i</var></sub>. Brownian increments are exactly normal, so this is exact at the points it keeps: the value at the horizon has precisely the model's distribution whatever <var>k</var> is, and the steps only draw the fan. The work is done 25 milliseconds at a time so the page stays responsive, with a count of futures done and a button to stop; a stopped run reports what it has. The same seed gives the same futures, and the first 1,000 futures of a 100,000 run are those of a 1,000 run.</p>
+      <h3>Value at risk and expected shortfall from the futures</h3>
+      <p>Sort the <var>n</var> simulated losses (minus the gains) as <var>L</var><sub>(1)</sub> ≤ … ≤ <var>L</var><sub>(<var>n</var>)</sub>. At confidence <var>c</var>, with <var>k</var> = ⌈<var>nc</var>⌉,</p>
+      <p class="eq">VaR = <var>L</var><sub>(<var>k</var>)</sub>, &nbsp;&nbsp; ES = [ (<var>k</var>/<var>n</var> − <var>c</var>) <var>L</var><sub>(<var>k</var>)</sub> + (1/<var>n</var>) Σ<sub><var>j</var> &gt; <var>k</var></sub> <var>L</var><sub>(<var>j</var>)</sub> ] / (1 − <var>c</var>)</p>
+      <p>so VaR is the smallest loss that at least a share <var>c</var> of futures do not exceed, and ES is the average of the worst share 1 − <var>c</var> of futures, the estimator of Acerbi and Tasche (2002); when <var>n</var>(1 − <var>c</var>) is a whole number it is simply the mean of the <var>n</var>(1 − <var>c</var>) largest losses.</p>
+      <h3>The Monte Carlo error</h3>
+      <p>The number of futures below the true VaR is binomial with mean <var>nc</var> and variance <var>nc</var>(1 − <var>c</var>), whatever the distribution of losses. So the order statistics <var>L</var><sub>(<var>a</var>)</sub> and <var>L</var><sub>(<var>b</var>)</sub>, with <var>a</var>, <var>b</var> = <var>nc</var> ∓ 1.96√(<var>nc</var>(1 − <var>c</var>)), rounded outwards, bracket the true VaR about 95% of the time. For ES the tool uses its large-sample standard error, which follows from writing the estimator as an average over futures (Manistre and Hancock 2005 study this variance at length),</p>
+      <p class="eq">se(ES)<sup>2</sup> = [ Var(<var>L</var> | <var>L</var> &gt; VaR) + <var>c</var> (ES − VaR)<sup>2</sup> ] / (<var>n</var>(1 − <var>c</var>))</p>
+      <p>and reports ES ± 1.96 se. That interval rests on a large-sample approximation, and the tail it averages is short. In a coverage experiment run for this page (4,000 simulations at each setting, normal losses and a skewed lognormal holding), it held the true ES about 90% of the time with 10 futures beyond the VaR, 93% with 20 to 25 and 94% with 50 to 100, while the VaR interval held the true VaR between about 95% and 98% of the time throughout. So the tool gives the VaR interval from 10 futures beyond the VaR, the ES interval only from 50, calls the ES one approximate, and otherwise says how many more futures are needed. The chance of the loss to watch is a share of futures, with a 95% Wilson (1927) interval. A test runs 300 independent simulations and checks that both intervals contain the true value between 90% and 99% of the time. These intervals measure only the randomness of the simulation, not whether the assumptions are right.</p>
+      <h3>The closed forms</h3>
+      <p>With normal returns the gain over <var>h</var> years is exactly normal, with</p>
+      <p class="eq"><var>m</var> = <var>h</var> Σ<sub><var>i</var></sub> <var>V</var><sub><var>i</var></sub><var>μ</var><sub><var>i</var></sub>, &nbsp;&nbsp; <var>s</var><sup>2</sup> = <var>h</var> Σ<sub><var>i</var></sub>Σ<sub><var>j</var></sub> <var>V</var><sub><var>i</var></sub><var>V</var><sub><var>j</var></sub><var>σ</var><sub><var>i</var></sub><var>σ</var><sub><var>j</var></sub><var>ρ</var><sub><var>ij</var></sub></p>
+      <p class="eq">VaR = −<var>m</var> + <var>s z</var><sub><var>c</var></sub>, &nbsp;&nbsp; ES = −<var>m</var> + <var>s</var> φ(<var>z</var><sub><var>c</var></sub>) / (1 − <var>c</var>), &nbsp;&nbsp; P(loss ≥ <var>x</var>) = N((−<var>x</var> − <var>m</var>) / <var>s</var>)</p>
+      <p>where <var>z</var><sub><var>c</var></sub> is the normal quantile (2.3263 at 99%) and φ the normal density. With lognormal prices and a single holding, the log return is normal with mean (<var>μ</var> − <var>σ</var><sup>2</sup>/2)<var>h</var> and standard deviation <var>σ</var>√<var>h</var>, which gives VaR, ES and the loss chance in closed form too; for several lognormal holdings there is none. The tool prints the closed form next to the simulation whenever one exists and says whether it lies inside each Monte Carlo interval.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Anything the assumptions leave out.</strong> The returns, volatilities and correlations are typed in, not measured, and every number on the page follows from them. A Monte Carlo interval measures the simulation's own noise, not how wrong the inputs are, which is usually far larger.</li>
+        <li><strong>How fat the real tails are.</strong> Both models give tails that thin out like the normal distribution's. Mandelbrot (1963) found that cotton price changes had far fatter tails than that, and later studies have found fat tails in many markets: large losses arrive more often than either model allows, and calm and turbulent spells come in clusters.</li>
+        <li><strong>What correlations do in a crisis.</strong> The correlations here are constant. Longin and Solnik (2001) found that correlations between national stock markets rise in bear markets but not in bull markets, so diversification is weakest when it is needed.</li>
+        <li><strong>What happens beyond the VaR, from VaR alone.</strong> That is what expected shortfall is for, and even it is an average: the single worst future can be far worse.</li>
+        <li><strong>Losses from trading or from being unable to trade.</strong> Holdings are bought and held. Nothing is rebalanced, and nothing models the cost of selling in a falling market.</li>
+        <li><strong>Whether to hold the portfolio.</strong> This is an illustration of the method, not investment advice, and the example holdings and their numbers are made up.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Draw shocks from a Student t distribution or a GARCH process, so that tails are fatter and volatility clusters, and compare the VaR with the normal one.</li>
+        <li>Add historical simulation: replay the actual daily returns of a past period from an open dataset instead of drawing from a model.</li>
+        <li>Split the VaR into each holding's contribution (component VaR), so the visitor can see which holding drives the risk.</li>
+        <li>Use variance reduction, such as antithetic draws or importance sampling in the tail (Glasserman, Heidelberger and Shahabuddin 2000), to narrow the Monte Carlo interval for the same work.</li>
+        <li>Backtest the VaR on a real series: count the days the loss exceeded it and test that count, as Kupiec (1995) proposed.</li>
+        <li>Allow options and short positions, whose gains are not linear in the prices and where only simulation will do.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Basle Committee on Banking Supervision (1996). <em>Amendment to the capital accord to incorporate market risks</em>. Bank for International Settlements, January.</li>
+        <li>Basel Committee on Banking Supervision. <em>The Basel Framework</em>, chapter MAR33, Internal models approach: capital requirements calculation, version effective 1 January 2023. Bank for International Settlements.</li>
+        <li>Artzner, P., Delbaen, F., Eber, J.-M., and Heath, D. (1999). Coherent measures of risk. <em>Mathematical Finance</em>, 9(3), 203-228.</li>
+        <li>Acerbi, C., and Tasche, D. (2002). On the coherence of expected shortfall. <em>Journal of Banking and Finance</em>, 26(7), 1487-1503.</li>
+        <li>Bachelier, L. (1900). Théorie de la spéculation. <em>Annales scientifiques de l'École normale supérieure</em>, 17, 21-86.</li>
+        <li>Higham, N. J. (2002). Computing the nearest correlation matrix: a problem from finance. <em>IMA Journal of Numerical Analysis</em>, 22(3), 329-343.</li>
+        <li>Manistre, B. J., and Hancock, G. H. (2005). Variance of the CTE estimator. <em>North American Actuarial Journal</em>, 9(2), 129-156.</li>
+        <li>Wilson, E. B. (1927). Probable inference, the law of succession, and statistical inference. <em>Journal of the American Statistical Association</em>, 22(158), 209-212.</li>
+        <li>Mandelbrot, B. (1963). The variation of certain speculative prices. <em>Journal of Business</em>, 36(4), 394-419.</li>
+        <li>Longin, F., and Solnik, B. (2001). Extreme correlation of international equity markets. <em>Journal of Finance</em>, 56(2), 649-676.</li>
+        <li>Glasserman, P., Heidelberger, P., and Shahabuddin, P. (2000). Variance reduction techniques for estimating value-at-risk. <em>Management Science</em>, 46(10), 1349-1364.</li>
+        <li>Kupiec, P. H. (1995). Techniques for verifying the accuracy of risk measurement models. <em>Journal of Derivatives</em>, 3(2), 73-84.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "question": "How much could a portfolio lose over a given horizon, how likely is a given loss, and how sure can a simulation of thousands of futures be about either?",
+  "finding": "For a made-up $100,000 portfolio with normal returns, 10,000 simulated futures from seed 1 put the 10-day 99% value at risk at $5,127 (Monte Carlo interval $4,964 to $5,341) against a closed form of $5,077, and the interval narrows from $1,026 wide with 1,000 futures to $101 with 100,000.",
+  "limit": "Every number follows from the returns, volatilities and correlations typed in, and both models have thinner tails and steadier correlations than real markets, which the Monte Carlo interval does not measure.",
+  "sources": [],
+  "built": "2026-10-14"
+}
