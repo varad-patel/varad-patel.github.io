@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kelly Criterion Lab · 365 projects</title>
+  <meta name="description" content="Enter an edge and the odds and get the Kelly stake, with the exact and simulated chance that half Kelly, Kelly, twice Kelly and your own stake fall to a ruin line.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .d85-msg { font-size: 0.82rem; color: var(--bad); line-height: 1.4; }
+    .d85-msg:empty { display: none; }
+    .d85-derived { padding: 8px 12px; background: #fff; border: 1px solid var(--grid); }
+    .d85-examples { gap: 6px 8px; }
+    .d85-examples .btn { white-space: normal; text-align: left; }
+    .d85-stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .d85-jump { gap: 2px 16px; }
+    .d85-jump a { padding: 6px 0; }
+    @media (min-width: 861px) { .d85-jump { display: none; } }
+    #d85-results, #d85-table, #d85-paths { scroll-margin-top: 12px; }
+    .stat .v { font-size: 1.45rem; }
+    /* The comparison: one column per stake when there is room; when its own box is narrower than the table, each
+       measure becomes a short list of the four stakes. */
+    .tbl.d85-rt th, .tbl.d85-rt td { white-space: normal; }
+    .d85-rt-box { container-type: inline-size; }
+    @container (max-width: 640px) {
+      .d85-rt, .d85-rt tbody, .d85-rt tr, .d85-rt th, .d85-rt td, .d85-rt caption { display: block; }
+      .d85-rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .d85-rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .d85-rt th[scope="row"], .d85-rt td { border: 0; padding: 1px 0; }
+      .d85-rt td { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; overflow-wrap: anywhere; }
+      .d85-rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+    }
+    @media (max-width: 560px) {
+      .d85-rt, .d85-rt tbody, .d85-rt tr, .d85-rt th, .d85-rt td, .d85-rt caption { display: block; }
+      .d85-rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .d85-rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .d85-rt th[scope="row"], .d85-rt td { border: 0; padding: 1px 0; }
+      .d85-rt td { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; overflow-wrap: anywhere; }
+      .d85-rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+    }
+    .d85-rt caption { font-weight: 600; font-size: 0.86rem; color: var(--slate); }
+    .d85-rt th[scope="row"] { font-weight: 600; }
+    .p-sec .eq { white-space: normal; }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body class="proj" data-day="85">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Kelly Criterion Lab</h1>
+      <p class="lede">Enter your edge and the odds and get the stake that makes a bankroll grow fastest, then watch thousands of simulated bettors find out what staking half, all or twice that amount does to the chance of ruin.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Kelly criterion calculator and ruin simulator">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>Take a bet with a 55% chance at even money, a 10% edge, and make it 1,000 times. Kelly stakes 10% of the bankroll each time: the median bettor ends with 150 times the start, yet the exact chance of falling to half the start at some point is 47%. Half Kelly keeps three quarters of the growth rate, ends at 43 times the start, and halves only 11.5% of the time. Twice Kelly grows nothing: the median bettor ends with 0.87 of the start and 90% halve at some point, while the average bankroll is 398 million times the start, carried by a lucky few.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Suppose you have an edge: a bet you expect to win on average. How much of your money should you put on it? Stake everything and one loss ends the game. Stake a little and the edge earns almost nothing. In 1956 John Kelly, a scientist at Bell Telephone Laboratories, answered the question for a gambler with a "private wire" that brings the results of a game just before they become public, while the old odds are still on offer. If the same kind of bet comes round again and again, the stake that makes the bankroll grow fastest in the long run is the one that maximises the expected logarithm of wealth, and the growth rate it achieves equals the rate at which the wire carries information, the quantity Claude Shannon had defined eight years before.</p>
+      <p>The logarithm was not new. Daniel Bernoulli had proposed in 1738 that the value of money to a person rises with its logarithm, so that a gain matters in proportion to what one already has. What Kelly added, and Leo Breiman (1961) made general, is a reason that does not depend on anyone's tastes: over many bets, a bettor who maximises the expected log ends up ahead of a bettor following any essentially different strategy, with a probability that tends to one, and in the limit reaches a distant target in the fewest bets on average. Henry Latané (1959) had argued the same for choosing investments.</p>
+      <p>The catch is in "the long run". Even the fastest-growing stake takes alarming losses on the way: in the long-run approximation the chance of ever falling to half the starting bankroll at full Kelly is one half. Staking a fraction of Kelly gives up a little growth for a lot of safety (MacLean, Ziemba and Blazenko 1992), and staking more than about twice Kelly (the exact point depends on the bet, and the tool works it out) turns a favourable bet into a losing strategy. Paul Samuelson (1979) objected that maximising the mean log is no rule for a person who simply dislikes risk more or less than the logarithm does, however long the horizon. And all of it assumes the bettor knows the chance of winning, which no one does.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The bet</h3>
+      <p>Each bet wins with probability <var>p</var> and then pays <var>b</var> for every 1 staked (net odds: even money is <var>b</var> = 1, and decimal odds are <var>b</var> + 1). Otherwise the stake is lost. The edge is the expected profit on a stake of 1:</p>
+      <p class="eq"><var>e</var> = <var>p</var>(1 + <var>b</var>) − 1, &nbsp;&nbsp; so &nbsp;&nbsp; <var>p</var> = (1 + <var>e</var>) / (1 + <var>b</var>)</p>
+      <p>The tool takes either the chance or the edge with the odds and works out the other. The chance is capped at 99.9%: a sure thing is not a bet.</p>
+      <h3>Growth and the Kelly stake</h3>
+      <p>A bettor who stakes a fixed fraction <var>f</var> of the current bankroll multiplies it by 1 + <var>bf</var> after a win and by 1 − <var>f</var> after a loss. After <var>n</var> bets with <var>W</var> wins the bankroll is (1 + <var>bf</var>)<sup><var>W</var></sup>(1 − <var>f</var>)<sup><var>n</var> − <var>W</var></sup> times the start, and its logarithm grows on average by</p>
+      <p class="eq"><var>g</var>(<var>f</var>) = <var>p</var> ln(1 + <var>bf</var>) + (1 − <var>p</var>) ln(1 − <var>f</var>) &nbsp; a bet.</p>
+      <p>Setting the derivative <var>pb</var>/(1 + <var>bf</var>) − (1 − <var>p</var>)/(1 − <var>f</var>) to zero gives Kelly's stake, edge over odds,</p>
+      <p class="eq"><var>f</var>* = <var>p</var> − (1 − <var>p</var>)/<var>b</var> = <var>e</var>/<var>b</var>, &nbsp;&nbsp; or nothing when <var>e</var> ≤ 0,</p>
+      <p class="eq"><var>g</var>(<var>f</var>*) = <var>p</var> ln(<var>p</var>(1 + <var>b</var>)) + (1 − <var>p</var>) ln((1 − <var>p</var>)(1 + <var>b</var>)/<var>b</var>).</p>
+      <p>At even money this is ln 2 × (1 − <var>H</var>), where <var>H</var> is the entropy of the bet in bits: Kelly's information rate. The tool reports the typical growth a bet as e<sup><var>g</var></sup> − 1, the factor by which the median bankroll grows each bet. For small edges <var>g</var> is close to a parabola in <var>f</var>, so half Kelly keeps about 75% of the growth rate and twice Kelly about none. Past the point where <var>g</var> falls back to zero the bankroll shrinks although every single bet is favourable. For a small edge that point is near twice Kelly; in general it is not, so the tool finds it by bisection: 1.99 times Kelly for 55% at even money, 2.11 for the long shot, 1.55 for 80% at even money, and as little as 1.11 for a near-certain bet at odds of 0.01.</p>
+      <h3>Exact answers for a fixed number of bets</h3>
+      <p>Over <var>n</var> bets the number of wins is binomial, so the median bankroll and the chance of ending below the start come straight from the binomial distribution. The average bankroll is (1 + <var>fe</var>)<sup><var>n</var></sup>, far above the median because a few very lucky paths carry it. The chance of falling to the ruin line <var>x</var> (a share of the start) at some point is found exactly by dynamic programming: after <var>t</var> bets with <var>w</var> wins the bankroll depends only on <var>t</var> and <var>w</var>, so the tool carries the probability of every (<var>t</var>, <var>w</var>) not yet ruined forward one bet at a time and moves into "ruined" any that lands on the line or below. That is about <var>n</var><sup>2</sup>/2 steps, two million for 2,000 bets. A test checks it against a count over all 4,096 win-loss sequences of a 12-bet game.</p>
+      <h3>The long-run approximation</h3>
+      <p>Treat the log of the bankroll as a Brownian motion with drift <var>g</var> and variance <var>v</var> = <var>p</var>(1 − <var>p</var>)[ln(1 + <var>bf</var>) − ln(1 − <var>f</var>)]<sup>2</sup> a bet. The chance that it ever falls by <var>a</var> = −ln <var>x</var> is then</p>
+      <p class="eq">P(ever reach <var>x</var>) = exp(−2<var>ga</var>/<var>v</var>) when <var>g</var> &gt; 0, and 1 otherwise.</p>
+      <p>For a small edge and a stake of <var>c</var> times Kelly, 2<var>g</var>/<var>v</var> ≈ 2/<var>c</var> − 1, so the chance is about <var>x</var><sup>2/<var>c</var> − 1</sup>: one half for halving at full Kelly, one eighth at half Kelly, and certainty at twice Kelly or more. The table labels this "about" because real bets move in jumps, not continuously.</p>
+      <h3>The simulation</h3>
+      <p>Each simulated bettor makes the chosen number of bets, with wins drawn from the kit's seeded generator (mulberry32). All four stakes see the same wins and losses, so the comparison between them is not blurred by luck. For each stake the tool records whether the bankroll ever touched the ruin line and whether it ended below the start, and gives each share with a 95% Wilson (1927) interval next to the exact figure; the median line in the chart is drawn from the simulated bettors' wins. The work runs 25 milliseconds at a time with a count and a stop button.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Your edge.</strong> Everything starts from a chance of winning that you type in. Real edges are estimates, usually too hopeful, and staking Kelly on an overestimated edge is staking more than Kelly on the true one. That is the commonest reason practitioners bet a fraction of it.</li>
+        <li><strong>The short run.</strong> Kelly's guarantee is about growth over many bets. Over a few dozen bets other stakes can come out ahead, and the path at full Kelly is rough: a drawdown to half the bankroll is a coin toss.</li>
+        <li><strong>The right stake for you.</strong> The log rule fits one attitude to risk. Samuelson's point stands: someone who dislikes losses more should stake less, and nothing here says what you should do. This is an illustration of the mathematics, not betting or investment advice.</li>
+        <li><strong>Bets that come together or depend on each other.</strong> The tool takes one bet at a time with the same odds, each independent of the last. Several bets at once, or correlated ones, need the portfolio form of Kelly.</li>
+        <li><strong>Costs and limits.</strong> Commissions, minimum and maximum stakes, and bookmakers who limit winning customers all change the answer.</li>
+        <li><strong>Exact ruin over an infinite horizon.</strong> The exact figures are for the number of bets chosen; the "for ever" column is a continuous approximation that ignores the jumps of real bets.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Let the chance of winning be uncertain, for example a beta distribution from a record of past wins, and show how the best stake shrinks with the uncertainty.</li>
+        <li>Handle several simultaneous bets or assets, where the Kelly stakes solve a small optimisation problem, and the continuous version for investing, where the stake is the excess return over the variance.</li>
+        <li>Add a target: the stake that reaches a chosen multiple of the bankroll in the fewest bets on average, Breiman's other criterion.</li>
+        <li>Show the whole distribution of the worst drawdown for each stake, not only the chance of crossing one line.</li>
+        <li>Let the visitor bet by hand against a hidden chance and compare their stakes with Kelly's afterwards.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Kelly, J. L. (1956). A new interpretation of information rate. <em>Bell System Technical Journal</em>, 35(4), 917-926.</li>
+        <li>Bernoulli, D. (1954). Exposition of a new theory on the measurement of risk. Translated by L. Sommer. <em>Econometrica</em>, 22(1), 23-36. First published in Latin in 1738.</li>
+        <li>Breiman, L. (1961). Optimal gambling systems for favorable games. In <em>Proceedings of the Fourth Berkeley Symposium on Mathematical Statistics and Probability</em>, Vol. 1, 65-78. University of California Press.</li>
+        <li>Latané, H. A. (1959). Criteria for choice among risky ventures. <em>Journal of Political Economy</em>, 67(2), 144-155.</li>
+        <li>MacLean, L. C., Ziemba, W. T., and Blazenko, G. (1992). Growth versus security in dynamic investment analysis. <em>Management Science</em>, 38(11), 1562-1585.</li>
+        <li>Samuelson, P. A. (1979). Why we should not make mean log of wealth big though years to act are long. <em>Journal of Banking and Finance</em>, 3(4), 305-307.</li>
+        <li>Shannon, C. E. (1948). A mathematical theory of communication. <em>Bell System Technical Journal</em>, 27(3), 379-423, and 27(4), 623-656.</li>
+        <li>Wilson, E. B. (1927). Probable inference, the law of succession, and statistical inference. <em>Journal of the American Statistical Association</em>, 22(158), 209-212.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "question": "How much of a bankroll should be staked on a favourable bet, and what do half, full and twice the Kelly stake do to growth and to the chance of ruin?",
+  "finding": "On a 10% edge at even money over 1,000 bets, Kelly's 10% stake ends with a median 150 times the start but a 47% chance of halving at some point; half Kelly ends at 43 times with an 11.5% chance; twice Kelly's median bettor ends with 0.87 of the start and 90% halve, while the average bankroll is 398 million times the start.",
+  "limit": "Kelly needs the true chance of winning, which no bettor knows, and staking it on an overestimated edge is staking more than Kelly.",
+  "sources": [],
+  "built": "2026-10-14"
+}
