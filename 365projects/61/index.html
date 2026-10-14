@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gold Price Forecaster · 365 projects</title>
+  <meta name="description" content="Pick a horizon and see an ARIMA forecast of the gold price with its uncertainty bands, and a running scorecard of past forecasts against assuming no change.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .g61-stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+    .g61-years { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: end; }
+    .source-note { padding-top: 12px; border-top: 1px solid var(--grid); overflow-wrap: anywhere; }
+    .stat .v { font-size: 1.35rem; }
+    .g61-rt caption { text-align: left; font-weight: 600; font-size: 0.86rem; color: var(--slate); padding-bottom: 6px; }
+    .g61-rt th[scope="row"] { font-weight: 600; white-space: nowrap; }
+    /* Six columns need about 520 pixels. Whenever the box is narrower (a phone, or beside the controls on a tablet
+       or a small laptop) each forecast becomes a short list of labelled lines. Written twice: for the box, and for
+       the screen in browsers without container queries. */
+    .g61-recent { container-type: inline-size; }
+    @container (max-width: 560px) {
+      .g61-rt, .g61-rt tbody, .g61-rt tr, .g61-rt th, .g61-rt td, .g61-rt caption { display: block; }
+      .g61-rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+      .g61-rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .g61-rt th[scope="row"], .g61-rt td { border: 0; padding: 1px 0; }
+      .g61-rt td, .g61-rt td.num { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; white-space: normal; overflow-wrap: anywhere; }
+      .g61-rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+    }
+    @media (max-width: 640px) {
+      .g61-rt, .g61-rt tbody, .g61-rt tr, .g61-rt th, .g61-rt td, .g61-rt caption { display: block; }
+      .g61-rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+      .g61-rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .g61-rt th[scope="row"], .g61-rt td { border: 0; padding: 1px 0; }
+      .g61-rt td, .g61-rt td.num { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; white-space: normal; overflow-wrap: anywhere; }
+      .g61-rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+    }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+    @media (max-width: 600px) { .p-sec .eq { white-space: normal; } }
+  </style>
+</head>
+<body class="proj" data-day="61">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Gold Price Forecaster</h1>
+      <p class="lede">Pick a horizon and see where a time-series model puts the price of gold, with its uncertainty bands. Then check the running scorecard: how the same model's past forecasts did against simply assuming no change.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Gold price forecast and scorecard">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>Leave the model, the fit and the horizon as the page opens (the AICc choice, every month since 1975, 12 months ahead) and set the scorecard to forecasts made from 1985 to 2023, years whose forecasts all have outcomes at every horizon up to 24 months, so the result does not move when the monthly refresh adds a price. Over those 468 forecasts the ARIMA forecast missed by 12.1% on average and the naive forecast, the latest price unchanged, by 12.3%: ahead by 0.2 percentage points, a gap the Diebold–Mariano test cannot tell from chance (p = 0.657). One month ahead the two missed by 2.61% and 2.63%. The model's 80% band held the outcome 91% of the time twelve months ahead and 94% one month ahead: over these years it was wider than it needed to be.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>If tomorrow's price could be worked out from today's, traders would buy or sell until it no longer could. Paul Samuelson turned that thought into a theorem in 1965: in a market where prices already reflect what everyone can anticipate, the changes in those prices cannot be predicted from their own past. Eugene Fama's 1970 review called such a market efficient, and the simplest consequence is a benchmark that every forecaster of a traded price has to face: the forecast that the price will stay where it is.</p>
+      <p>Gold is a good place to test this. It pays no dividend and no interest, so there is no stream of cash to value, and its price moves with real interest rates, the dollar, central bank buying and fear. Plenty of people forecast it. A model that only looks at the price's own history should, if the market is efficient, do no better than the no-change forecast once it is made to forecast honestly, using only what was known at the time.</p>
+      <p>The tool uses the standard tool for this job, the ARIMA model of Box and Jenkins (1970), and puts it through that test. It also shows a subtlety that changes how any small edge should be read. The World Bank's monthly gold price is the average of the month's daily prices, and Holbrook Working showed in 1960 that averaging a random walk makes the changes in the averages predictable: each change from one monthly average to the next is correlated with the one before it, by about 0.25. A model that picks this up is not beating the market. Nobody can trade at a monthly average.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The data</h3>
+      <p>The price is the World Bank's monthly average gold price in US dollars per troy ounce, from the Pink Sheet. Its definition is the spot price averaged over the month's trading days from June 2025, and before that the London afternoon fixing for 99.5% fine gold, averaged the same way. The page uses the months from January 1975. The workbook shows the official $35 until December 1967; from March 1968 central banks dealt with one another at an official price beside the free market (the two-tier system), and Americans could not own gold bullion until Executive Order 11825 of 31 December 1974. Prices are published to the dollar and are not adjusted for inflation. The snapshot is rebuilt by <code>scripts/data/gold.py</code>, which reads the current workbook from the World Bank, checks that its layout, units and history are what they were, and stops without writing anything if not. A scheduled job runs it each month.</p>
+      <h3>The model</h3>
+      <p>Let <var>y</var><sub><var>t</var></sub> be the natural logarithm of the price and <var>w</var><sub><var>t</var></sub> = <var>y</var><sub><var>t</var></sub> − <var>y</var><sub><var>t</var>−1</sub> its monthly change. An ARIMA(<var>p</var>, 1, <var>q</var>) model says the changes follow</p>
+      <p class="eq">(<var>w</var><sub><var>t</var></sub> − <var>μ</var>) = <var>φ</var><sub>1</sub>(<var>w</var><sub><var>t</var>−1</sub> − <var>μ</var>) + … + <var>φ</var><sub><var>p</var></sub>(<var>w</var><sub><var>t</var>−<var>p</var></sub> − <var>μ</var>) + <var>e</var><sub><var>t</var></sub> + <var>θ</var><sub>1</sub><var>e</var><sub><var>t</var>−1</sub> + … + <var>θ</var><sub><var>q</var></sub><var>e</var><sub><var>t</var>−<var>q</var></sub></p>
+      <p>where the shocks <var>e</var><sub><var>t</var></sub> are independent with mean 0 and variance <var>σ</var><sup>2</sup>, and <var>μ</var> is a drift: the average monthly change, or zero for a model without drift. The naive forecast is the special case with nothing at all: <var>p</var> = <var>q</var> = 0 and no drift, a pure random walk.</p>
+      <h3>Fitting</h3>
+      <p>The parameters minimise the conditional sum of squares: run the equation forward, setting shocks before the start to zero, and add up the squared shocks <var>e</var><sub><var>t</var></sub>. With no moving-average terms this is a least-squares regression and is solved directly. Otherwise the tool searches with the Nelder–Mead simplex method (1965), over the partial autocorrelations of each polynomial rather than its coefficients: every set of partial autocorrelations between −1 and 1 gives a stationary autoregressive part and an invertible moving-average part, and every such part has one (Barndorff-Nielsen and Schou 1973). The search starts from the previous month's fit. With both an autoregressive and a moving-average term the sum of squares can have a second valley along <var>φ</var> = −<var>θ</var>, where the two nearly cancel, so for ARIMA(1,1,1) it also starts in each valley and at the best point of a coarse grid, keeps the lowest result and restarts the simplex once from there. Every candidate model starts its sum at the same month so that their fits can be compared, and <var>σ</var><sup>2</sup> is the mean of the squared shocks over the <var>N</var> months summed.</p>
+      <h3>Choosing the order</h3>
+      <p>At every forecast date the tool fits twelve models, every <var>p</var> and <var>q</var> with <var>p</var> + <var>q</var> ≤ 2, each with and without drift, and keeps the one with the lowest corrected Akaike criterion of Hurvich and Tsai (1989):</p>
+      <p class="eq">AICc = <var>N</var>(ln 2π<var>σ</var><sup>2</sup> + 1) + 2<var>k</var> + 2<var>k</var>(<var>k</var> + 1) / (<var>N</var> − <var>k</var> − 1), &nbsp; <var>k</var> = <var>p</var> + <var>q</var> + (1 with drift) + 1</p>
+      <p>This is the same rule automatic forecasting software uses (Hyndman and Khandakar 2008), over a smaller set of models. The model menu also offers two fixed choices: ARIMA(0,1,1), the shape that averaging leaves in a random walk, and a random walk with drift.</p>
+      <h3>Forecasts and bands</h3>
+      <p>The forecast runs the equation forward with future shocks set to zero and adds up the forecast changes. Writing the model's response to a shock as <var>ψ</var><sub>0</sub> = 1, <var>ψ</var><sub><var>j</var></sub> = <var>θ</var><sub><var>j</var></sub> + <var>φ</var><sub>1</sub><var>ψ</var><sub><var>j</var>−1</sub> + … + <var>φ</var><sub><var>p</var></sub><var>ψ</var><sub><var>j</var>−<var>p</var></sub> (with <var>θ</var><sub><var>j</var></sub> = 0 beyond <var>q</var>), and its running total as <var>Ψ</var><sub><var>j</var></sub> = <var>ψ</var><sub>0</sub> + … + <var>ψ</var><sub><var>j</var></sub>, the error of the log forecast <var>h</var> months ahead has variance</p>
+      <p class="eq"><var>s</var><sub><var>h</var></sub><sup>2</sup> = <var>σ</var><sup>2</sup> (<var>Ψ</var><sub>0</sub><sup>2</sup> + <var>Ψ</var><sub>1</sub><sup>2</sup> + … + <var>Ψ</var><sub><var>h</var>−1</sub><sup>2</sup>)</p>
+      <p>and the bands are the log forecast ± 1.2816 <var>s</var><sub><var>h</var></sub> (80%) and ± 1.9600 <var>s</var><sub><var>h</var></sub> (95%), turned back into dollars. That makes the central forecast a median and the bands wider above than below. For a random walk without drift, <var>s</var><sub><var>h</var></sub> = <var>σ</var>√<var>h</var>.</p>
+      <h3>The scorecard</h3>
+      <p>For every month from January 1985 to the latest, the tool takes the prices up to the end of that month and nothing later, chooses the model, fits it and forecasts the next 24 months. This is a rolling-origin evaluation (Tashman 2000): every forecast is one that could have been made on its date. Changing the horizon only changes which of the stored forecasts are scored. The fit uses every month since January 1975, or only the latest 20 or 10 years if chosen.</p>
+      <p>A forecast's miss is |ln forecast − ln outcome|, so a forecast 25% too high and one 20% too low miss by the same amount, and the average miss <var>m</var> is shown as the percentage e<sup><var>m</var></sup> − 1. The model is said to come out ahead only when its average miss is below the naive forecast's by at least one part in 2,000; a smaller difference is called level. Whether a gap is more than luck is judged by the Diebold–Mariano (1995) test on the differences <var>d</var><sub><var>t</var></sub> between the two misses:</p>
+      <p class="eq">DM = <var>d̄</var> / √(<var>S</var> / <var>n</var>), &nbsp; <var>S</var> = <var>γ</var><sub>0</sub> + 2 Σ<sub><var>j</var>=1</sub><sup><var>h</var>−1</sup> (1 − <var>j</var>/<var>h</var>) <var>γ</var><sub><var>j</var></sub></p>
+      <p>where <var>γ</var><sub><var>j</var></sub> is the autocovariance of <var>d</var> at lag <var>j</var>. The weights are Newey and West's (1987); the lags are there because forecasts made a month apart, each looking <var>h</var> months ahead, share <var>h</var> − 1 months of luck. The p-value is two-sided, from the normal distribution. The scorecard also counts how often the model was strictly closer, and how often each band held the outcome: an honest 80% band should hold it about 80% of the time.</p>
+      <h3>Checked against a separate implementation</h3>
+      <p>The fits were checked against a separate program written for the purpose: golden-section search for ARIMA(0,1,1), coordinate search for ARIMA(1,1,1) and ARIMA(0,1,2), and the normal equations for ARIMA(2,1,0). They agree to the precision the tests hold. A second, independent backtest (least squares by the Levenberg–Marquardt method from several starts, and the <var>ψ</var> weights from a statistics library) gives the same twelve fits at every date with the fit on every month since 1975, and so the same scorecard. With the 10-year window they differ on 36 of 6,012 fits, where this page's search found the lower sum of squares 31 times and the other program 5 times, by under 1%, and on the model chosen at 2 of 501 dates. The forecast variances are tested against their closed forms, the Diebold–Mariano statistic against a hand-worked case, and Working's result against a simulation.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Whether gold is predictable at prices anyone can trade.</strong> The series is a monthly average. Working (1960) showed that the changes in averages of a random walk have a first-order autocorrelation near 0.25, which an ARIMA(0,1,1) matches with <var>θ</var> ≈ 0.27. Fitted to every month from January 1975 to September 2026, gold gives <var>θ</var> = 0.26. A one-month edge of that kind comes from averaging, not from a flaw in the market, and month-end prices would be needed to test the market itself.</li>
+        <li><strong>Whether a model with no edge here has none anywhere.</strong> A p-value above 0.05 means the test found no evidence, not that the two forecasts are equally good. With forecasts that overlap by <var>h</var> − 1 months, 468 forecasts twelve months ahead hold only about 39 separate years of evidence. The Diebold–Mariano test is also known to be cautious when the model contains the naive forecast as a special case, as every ARIMA here does (Clark and West 2007).</li>
+        <li><strong>How wide the bands should be.</strong> The bands assume normal shocks of constant size. Gold's volatility comes in spells, and an expanding fit carries the turmoil of 1979 and 1980 into every later band; on the scorecard the bands held the outcome more often than they claim. Fitting on the latest ten years instead gives bands that hold 84% of outcomes one month ahead but only 71% twelve months ahead. Neither choice is calibrated.</li>
+        <li><strong>A result untouched by choice.</strong> The model, the fit window, the horizon and the years are all settings. Trying them until the scorecard looks good uses the outcomes to choose, and what is left is no longer an out-of-sample test. The finding uses the settings the page opens with.</li>
+        <li><strong>Why gold moved.</strong> The model sees only the price. It knows nothing of real interest rates, the dollar, central bank purchases or wars, and it cannot tell a crisis from a trend.</li>
+        <li><strong>What gold is worth in your money.</strong> Prices are in nominal US dollars. For someone paid in rupees or pounds the exchange rate moves the price as much as the metal does.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Use month-end or daily prices, so that a forecast is scored on a price someone could have traded at and the averaging effect disappears.</li>
+        <li>Model the changing volatility, for example with a GARCH model, or calibrate the bands on past forecast errors, and score them with a proper scoring rule as well as their coverage.</li>
+        <li>Add predictors that theory links to gold, such as the yield on inflation-protected Treasury bonds or a dollar index, and see whether they survive the same scorecard.</li>
+        <li>Replace the Diebold–Mariano test with the Clark–West adjustment for models that nest the random walk, and add the small-sample correction of Harvey, Leybourne and Newbold (1997).</li>
+        <li>Fit by exact maximum likelihood with a Kalman filter instead of the conditional sum of squares, and widen the search to more orders.</li>
+        <li>Compare with the futures market's own forecast: the price for delivery in a year, which already prices in interest and storage.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>World Bank. Commodity Price Data (The Pink Sheet), monthly prices, column "Gold" ($/troy oz), from https://www.worldbank.org/en/research/commodity-markets. This page was written with the workbook "Updated on October 02, 2026", retrieved 14 October 2026; the tool names the edition and retrieval date of the snapshot it is running on. Licence: CC BY 4.0, the licence that page points to under "Using this Data" (https://datacatalog.worldbank.org/public-licenses). The workbook names the sources of the gold price as Bloomberg Finance L.P., Kitco.com, the International Monetary Fund's International Financial Statistics, the London Bullion Market, Metals Week, Platts Metals Week, Shearson Lehman Brothers' Metal Market Weekly Review, Thomson Reuters Datastream and the World Bank.</li>
+        <li>Box, G. E. P., and Jenkins, G. M. (1970). <em>Time Series Analysis: Forecasting and Control</em>. Holden-Day.</li>
+        <li>Samuelson, P. A. (1965). Proof that properly anticipated prices fluctuate randomly. <em>Industrial Management Review</em>, 6(2), 41-49.</li>
+        <li>Fama, E. F. (1970). Efficient capital markets: a review of theory and empirical work. <em>Journal of Finance</em>, 25(2), 383-417.</li>
+        <li>Working, H. (1960). Note on the correlation of first differences of averages in a random chain. <em>Econometrica</em>, 28(4), 916-918.</li>
+        <li>Nelder, J. A., and Mead, R. (1965). A simplex method for function minimization. <em>The Computer Journal</em>, 7(4), 308-313.</li>
+        <li>Barndorff-Nielsen, O., and Schou, G. (1973). On the parametrization of autoregressive models by partial autocorrelations. <em>Journal of Multivariate Analysis</em>, 3(4), 408-419.</li>
+        <li>Hurvich, C. M., and Tsai, C.-L. (1989). Regression and time series model selection in small samples. <em>Biometrika</em>, 76(2), 297-307.</li>
+        <li>Hyndman, R. J., and Khandakar, Y. (2008). Automatic time series forecasting: the forecast package for R. <em>Journal of Statistical Software</em>, 27(3).</li>
+        <li>Tashman, L. J. (2000). Out-of-sample tests of forecasting accuracy: an analysis and review. <em>International Journal of Forecasting</em>, 16(4), 437-450.</li>
+        <li>Diebold, F. X., and Mariano, R. S. (1995). Comparing predictive accuracy. <em>Journal of Business and Economic Statistics</em>, 13(3), 253-263.</li>
+        <li>Newey, W. K., and West, K. D. (1987). A simple, positive semi-definite, heteroskedasticity and autocorrelation consistent covariance matrix. <em>Econometrica</em>, 55(3), 703-708.</li>
+        <li>Clark, T. E., and West, K. D. (2007). Approximately normal tests for equal predictive accuracy in nested models. <em>Journal of Econometrics</em>, 138(1), 291-311.</li>
+        <li>Harvey, D., Leybourne, S., and Newbold, P. (1997). Testing the equality of prediction mean squared errors. <em>International Journal of Forecasting</em>, 13(2), 281-291.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

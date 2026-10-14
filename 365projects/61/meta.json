@@ -1,0 +1,7 @@
+{
+  "question": "Can a time-series model forecast the price of gold better than assuming it will not change?",
+  "finding": "Over 468 forecasts made from 1985 to 2023, twelve months ahead, an ARIMA model chosen by AICc at each date missed by 12.1% on average against 12.3% for the latest price unchanged, a gap the Diebold-Mariano test cannot tell from chance (p = 0.657), and its 80% band held the outcome 91% of the time.",
+  "limit": "The World Bank's price is a monthly average, which makes changes slightly predictable even when the market price is a random walk, so a small edge here is not evidence against market efficiency.",
+  "sources": ["World Bank Commodity Price Data (The Pink Sheet)"],
+  "built": "2026-10-14"
+}
