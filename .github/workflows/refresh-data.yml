@@ -1,6 +1,7 @@
 name: refresh data
 
-# Day 31 (What Is Driving Inflation?) and day 32 read consumer prices from a snapshot, 365projects/data/prices.js.
+# Day 31 (What Is Driving Inflation?) and day 32 read consumer prices from a snapshot, 365projects/data/prices.js,
+# and day 61 (Gold Price Forecaster) reads the World Bank's monthly gold price from 365projects/61/data.js.
 # Eurostat publishes the full HICP around the 17th of each month and the ONS publishes the CPI around the third
 # Wednesday, so a run on the 20th and on the 28th catches both. The script writes the snapshot only if its own
 # checks pass, and nothing is committed unless every test in the repository passes afterwards.
@@ -41,6 +42,31 @@ jobs:
       # A push made by a workflow does not start a Pages build by itself, so ask for one.
       - name: Publish
         if: steps.commit.outputs.changed == 'true'
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds"
+        env:
+          GH_TOKEN: ${{ github.token }}
+      # Day 61 (Gold Price Forecaster) reads the World Bank Pink Sheet's monthly gold price, updated in the first days
+      # of each month. These steps run even if the consumer-price steps above failed, and a failure here cannot undo
+      # a price refresh that has already been pushed.
+      - name: Refresh the gold price
+        if: ${{ !cancelled() }}
+        run: python scripts/data/gold.py
+      - name: Test with the new gold prices
+        if: ${{ !cancelled() }}
+        run: node --test "365projects/**/*.test.mjs" && pip install pytest && python scripts/build_data.py && pytest -q
+      - name: Commit the new gold snapshot if it changed
+        id: gold
+        if: ${{ !cancelled() }}
+        run: |
+          if git diff --quiet -- 365projects/61/data.js; then echo "no change"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add 365projects/61/data.js
+          git commit -m "Refresh gold price data"
+          git push
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+      - name: Publish the gold refresh
+        if: ${{ !cancelled() && steps.gold.outputs.changed == 'true' }}
         run: gh api -X POST "repos/${{ github.repository }}/pages/builds"
         env:
           GH_TOKEN: ${{ github.token }}
