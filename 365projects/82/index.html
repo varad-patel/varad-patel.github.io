@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Banking Contagion Network · 365 projects</title>
+  <meta name="description" content="Shock one bank and watch failures spread through a network of interbank debts, cleared exactly with the Eisenberg-Noe algorithm, and see which results depend on the shape of the network.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .d82-msg { font-size: 0.82rem; color: var(--bad); line-height: 1.4; }
+    .d82-msg:empty { display: none; }
+    .d82-examples { gap: 6px 8px; }
+    .d82-examples .btn { white-space: normal; text-align: left; }
+    .d82-stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .d82-jump { gap: 2px 16px; }
+    .d82-jump a { padding: 6px 0; }
+    @media (min-width: 861px) { .d82-jump { display: none; } }
+    #d82-verdict, #d82-network, #d82-shapes, #d82-table { scroll-margin-top: 12px; }
+    .stat .v { font-size: 1.4rem; }
+    .controls h2 { padding-top: 6px; border-top: 1px solid var(--grid); }
+    .d82-net { width: 100%; background: #fff; border: 1px solid var(--grid); }
+    .d82-net svg { display: block; width: 100%; height: auto; max-height: 60vh; }
+    .d82-node { cursor: pointer; }
+    .d82-node:focus { outline: none; }
+    .d82-node .d82-ring { stroke: transparent; stroke-width: 3; }
+    .d82-node:focus-visible .d82-ring, .d82-node:hover .d82-ring { stroke: var(--focus); }
+    .d82-label { font: 600 12px var(--sans); pointer-events: none; }
+    .d82-legend i { border-radius: 50%; }
+    .d82-legend i.d82-dash { width: 18px; height: 0; border-radius: 0; border-top: 2px dashed #c0392b; background: none; }
+    .d82-legend i.d82-line { width: 18px; height: 0; border-radius: 0; border-top: 2px solid #9aa7b4; background: none; }
+    .d82-info { min-height: 2.6em; }
+    /* The bank table: eight columns when there is room; one short list per bank when its own box is narrower. */
+    .tbl.d82-rt th, .tbl.d82-rt td { white-space: normal; overflow-wrap: anywhere; }
+    .tbl.d82-rt tbody th[scope="row"] { font-weight: 600; border-bottom: 1px solid var(--grid); }
+    .d82-rt-box { container-type: inline-size; }
+    @container (max-width: 900px) {
+      .d82-rt, .d82-rt tbody, .d82-rt tr, .d82-rt th, .d82-rt td, .d82-rt caption { display: block; }
+      .d82-rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .d82-rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .d82-rt tbody th[scope="row"], .d82-rt td { border: 0; padding: 1px 0; }
+      .d82-rt td { display: flex; justify-content: space-between; gap: 14px; text-align: right; }
+      .d82-rt td::before { content: attr(data-label); color: var(--slate); text-align: left; flex: none; max-width: 45%; }
+    }
+    .p-sec .eq { white-space: normal; }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body class="proj" data-day="82">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Banking Contagion Network</h1>
+      <p class="lede">Banks owe each other money, so one bank's loss can become its creditors' loss. Shock one bank and watch failures spread through the network, wave by wave, and see how much of the outcome depends on how the network is wired.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Interbank contagion simulator">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>Ten banks each hold outside assets of 100 and a capital buffer of 6, and owe and are owed 100 by other banks, with depositors paid first if a bank fails. When one bank loses 40, the loss travels round a ring and brings down six banks, one wave at a time; spread over a complete network, where every bank lends to every other, it brings down only the bank that was hit. When the bank loses 70, more than the 60 that all the buffers add up to, the complete network and the ring both lose all ten banks, while two clusters that lend each other only 5% of their loans lose five. The page opens on the ring; the examples switch to the other cases.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Banks lend to each other all the time, so every bank is also a creditor of other banks. If one bank suffers a loss larger than its own funds, it cannot pay all its debts, and its creditors receive less than they were owed. If their buffers are thin, they in turn cannot pay theirs. A shock to one bank can therefore travel along the chain of debts, which is what regulators mean by contagion.</p>
+      <p>Larry Eisenberg and Thomas Noe (2001) asked what "everyone pays what they can" means when what each bank can pay depends on what the others pay it. They showed that a consistent set of payments, a clearing vector, always exists and is unique under mild conditions, and gave an algorithm that finds it and, along the way, shows which banks fail directly and which fail only because others did. Franklin Allen and Douglas Gale (2000) had argued that spreading interbank lending over many counterparties makes a system more resilient, because a loss is shared thinly. Daron Acemoglu, Asuman Ozdaglar and Alireza Tahbaz-Salehi (2015) showed that this is only half the story. When outside debts such as deposits come first, dense connections are best for small shocks but transmit large ones to everyone: past a threshold, the most connected network flips from the most to the least stable. This is the "robust-yet-fragile" property Andrew Haldane had conjectured in 2009.</p>
+      <p>It matters because the same structure cannot be judged good or bad without asking how large the shocks are, and because who loses, shareholders, depositors or other banks, is decided by the wiring as much as by the size of the loss.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The banks</h3>
+      <p>There are <var>n</var> banks. Each holds outside assets worth <var>a</var> = 100 and owes <var>v</var> = 100 − <var>b</var> to depositors and other outside creditors, where <var>b</var> is its capital buffer. Bank <var>i</var> owes bank <var>j</var> the amount <var>L</var><sub><var>ij</var></sub>; every network here is regular, so each bank owes <var>y</var> to other banks in all and is owed <var>y</var>, and before the shock each bank's own funds are exactly <var>b</var>. The shock cuts one bank's outside assets from 100 to 100 − <var>s</var>.</p>
+      <h3>The shapes</h3>
+      <p>In the ring bank <var>i</var> owes everything to bank <var>i</var> + 1 (the last to the first). In the complete network each bank owes <var>y</var>/(<var>n</var> − 1) to every other bank. Two clusters split the banks into halves; a bank lends (1 − <var>δ</var>) of its lending evenly inside its own half and <var>δ</var> evenly across, the weakly connected network of Acemoglu and co-authors. The random network gives each bank <var>k</var> creditors chosen at random with the seed, built as <var>k</var> random matchings in which no bank owes itself or the same bank twice, so that every bank also has <var>k</var> debtors.</p>
+      <h3>Clearing</h3>
+      <p>Let <var>X</var><sub><var>j</var></sub> be what bank <var>j</var> pays other banks in all, split in proportion to what it owes each. Bank <var>i</var>'s cash is</p>
+      <p class="eq"><var>h</var><sub><var>i</var></sub> = <var>e</var><sub><var>i</var></sub> + Σ<sub><var>j</var></sub> (<var>L</var><sub><var>ji</var></sub> / <var>y</var><sub><var>j</var></sub>) <var>X</var><sub><var>j</var></sub>,</p>
+      <p>where <var>e</var><sub><var>i</var></sub> is its outside assets after the shock. With outside creditors paid first (Acemoglu, Ozdaglar and Tahbaz-Salehi), and with everyone ranking equally (Eisenberg and Noe), the payments must satisfy</p>
+      <p class="eq"><var>X</var><sub><var>i</var></sub> = min(<var>y</var><sub><var>i</var></sub>, max(0, <var>h</var><sub><var>i</var></sub> − <var>v</var>)) &nbsp;&nbsp; or &nbsp;&nbsp; <var>X</var><sub><var>i</var></sub> = (<var>y</var><sub><var>i</var></sub> / (<var>v</var> + <var>y</var><sub><var>i</var></sub>)) min(<var>v</var> + <var>y</var><sub><var>i</var></sub>, max(0, <var>h</var><sub><var>i</var></sub>))</p>
+      <p>for every bank at once: nobody pays more than it has, a bank that cannot pay in full pays out everything, and creditors of equal rank share in proportion. A bank fails when <var>h</var><sub><var>i</var></sub> &lt; <var>v</var> + <var>y</var><sub><var>i</var></sub>.</p>
+      <h3>The fictitious default algorithm</h3>
+      <p>Round 1 assumes that every bank pays in full and finds the banks that still cannot: these fail because of the shock itself. Round 2 works out exactly what those banks can pay, with everyone else still paying in full, and finds the banks that this shortfall brings down; and so on. Each round's payments come from solving the linear equations <var>X</var><sub><var>i</var></sub> = <var>s</var><sub><var>i</var></sub>(<var>h</var><sub><var>i</var></sub> − <var>c</var><sub><var>i</var></sub>) for the failed banks that pay part of their debts (<var>s</var> = 1 and <var>c</var> = <var>v</var> with outside creditors first; <var>s</var> = <var>y</var>/(<var>v</var> + <var>y</var>) and <var>c</var> = 0 with equal ranking), with the banks that pay nothing or everything held fixed. Payments only fall from round to round, so there are at most <var>n</var> rounds, and they are the waves of failure the tool steps through. When outside creditors come first, a group of failed banks that owe only each other gives equations with no solution until the right banks are marked as paying nothing; the tool then takes a few rounds of "every bank pays what its cash allows" from the current payments, which can only move down towards the answer, and solves again.</p>
+      <h3>Checks</h3>
+      <p>The tests work two cases by hand: a chain in which A, holding 5, owes B 10 and B, holding 2, owes C 10 (A pays 5, B pays 7, and A fails in wave 1 and B in wave 2); and two banks that owe each other 10 and owe 10 outside, holding 4 and 6, which pay each other 14/3 and 16/3 under equal ranking and nothing at all when outside creditors come first. On 300 random systems the result is a fixed point of the equations and agrees with plain repeated payment rounds run to convergence to within 10<sup>−8</sup>. With equal ranking, payment rounds started from nothing and from full payment meet, as Eisenberg and Noe's uniqueness result requires. And in every case the shareholders' and outside creditors' losses add up exactly to the shock.</p>
+      <h3>What the shape changes</h3>
+      <p>The chart runs the same banks and the same shock through all four shapes for every shock size from 0 to 100. With outside creditors paid first and these opening numbers, the complete network loses only the bank that was hit for any shock up to 60, which is <var>n</var> × <var>b</var>, the system's combined buffer, and loses all ten above it, as Acemoglu, Ozdaglar and Tahbaz-Salehi prove for regular networks with large enough interbank debts.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>The cost of failure itself.</strong> Here a failed bank hands over everything it has, at full value, so the network only moves losses around and the total lost always equals the shock. In reality failure destroys value: assets sold in a hurry, lawyers, frozen payments. Rogers and Veraart (2013) add such costs to the clearing problem, and then the network changes the size of the loss too, and the clearing vector need no longer be unique.</li>
+        <li><strong>Other channels of contagion.</strong> Losses travel here only through unpaid debts. Banks also hurt each other by selling the same assets at once, by losing access to funding (day 81 is a run on one bank), and by marking down claims on banks that are weak but have not yet failed.</li>
+        <li><strong>Real networks.</strong> Every network here is regular: identical banks with identical totals owed and owing. Real interbank networks have a few large, central banks and many small ones, and their exposures are mostly confidential.</li>
+        <li><strong>Timing.</strong> All debts fall due at one date and clear at once. Real payments happen over days, and a bank that is solvent but short of cash can fail on the way.</li>
+        <li><strong>Several shocks.</strong> One bank is hit. Acemoglu, Ozdaglar and Tahbaz-Salehi also study several banks hit at once, where the threshold moves.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Add Rogers and Veraart's default costs, recovering only a share of a failed bank's assets, and show the network changing the total loss.</li>
+        <li>Let the visitor draw banks of different sizes, including a core-periphery network with a few large hubs.</li>
+        <li>Hit several banks at once, or draw shocks at random and report the distribution of failures for each shape.</li>
+        <li>Add a rescue: a central bank or a group of solvent banks that can inject funds, and find the cheapest rescue that stops the cascade.</li>
+        <li>Add fire sales: failed banks sell a common asset, pushing down its price for everyone who holds it.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Eisenberg, L., and Noe, T. H. (2001). Systemic risk in financial systems. <em>Management Science</em>, 47(2), 236-249.</li>
+        <li>Acemoglu, D., Ozdaglar, A., and Tahbaz-Salehi, A. (2015). Systemic risk and stability in financial networks. <em>American Economic Review</em>, 105(2), 564-608.</li>
+        <li>Allen, F., and Gale, D. (2000). Financial contagion. <em>Journal of Political Economy</em>, 108(1), 1-33.</li>
+        <li>Rogers, L. C. G., and Veraart, L. A. M. (2013). Failure and rescue in an interbank network. <em>Management Science</em>, 59(4), 882-898.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

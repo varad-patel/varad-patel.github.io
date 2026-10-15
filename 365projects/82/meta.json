@@ -1,0 +1,7 @@
+{
+  "question": "When one bank suffers a loss, how far do failures spread through a network of interbank debts, and how much depends on the network's shape?",
+  "finding": "With ten banks each holding a buffer of 6 and owing 100 to other banks, a loss of 40 at one bank fells six banks in a ring but only the bank hit in a complete network, while a loss of 70, above the system's combined buffer of 60, fells all ten in both and five in two weakly linked clusters.",
+  "limit": "Failure costs nothing here beyond the losses passed on, the networks are regular and stylised, and unpaid debts are the only channel of contagion.",
+  "sources": [],
+  "built": "2026-10-14"
+}
