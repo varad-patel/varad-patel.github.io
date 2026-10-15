@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Taylor Rule versus the Central Bank · 365 projects</title>
+  <meta name="description" content="Set the Taylor rule's weights and compare the rate it prescribes with what the Federal Reserve and the Reserve Bank of India actually set, month by month.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: 12px 18px; align-items: start; }
+    .years .field { flex: 1 1 110px; }
+    /* The inflation measure gets a row of its own, so its longer names are not cut off. */
+    .country .grid3 > .field:first-child { grid-column: 1 / -1; }
+    .rule-eq { padding: 8px 10px; background: color-mix(in srgb, var(--ink) 5%, transparent); overflow-wrap: anywhere; }
+    .country .stat .v { font-size: 1.3rem; }
+    .country h2 { font-size: 1.05rem; }
+    .jump { gap: 4px 14px; }
+    .jump a { padding: 4px 0; }
+    .country h2 { scroll-margin-top: 12px; }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+    @media (max-width: 600px) { .p-sec .eq { white-space: normal; } }
+  </style>
+</head>
+<body class="proj" data-day="84">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Taylor Rule versus the Central Bank</h1>
+      <p class="lede">In 1993 John Taylor showed that a two-line formula described the Federal Reserve's interest rate surprisingly well. Set the formula's weights and see, month by month, how far the Fed and the Reserve Bank of India have strayed from it since.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Taylor rule compared with the policy rates of the Federal Reserve and the Reserve Bank of India">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>With Taylor's weights of 0.5 and 0.5, core PCE inflation and an output gap from a Hodrick-Prescott filter, the rule tracks the Federal Reserve's target over Taylor's own years, 1987 to 1992: the target was on average 0.07 points above it, with a typical gap of 1.0 point. From 2001 to June 2026 the target sat on average 2.3 points below the rule, more than a point below it in 239 of 306 months and 9.5 points below in February 2022. The Reserve Bank of India's repo rate, from 2014 (set From to 2014) to March 2026 against a 4% target, sat 1.3 points below on CPI (Combined) inflation and 1.6 points below on the CPI for industrial workers.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Should a central bank follow a fixed rule or use its judgement each time it meets? Finn Kydland and Edward Prescott argued in 1977 that discretion can leave everyone worse off: a bank free to surprise people with inflation will be expected to, and expected inflation becomes actual inflation. A rule that the public can check ties the bank's hands. But a rule cannot foresee a banking crisis or a pandemic, and every central bank in the world sets its rate by committee.</p>
+      <p>John Taylor's 1993 paper cut through the argument with a formula simple enough to compute on the back of an envelope: set the short-term rate at 2% plus inflation, plus half of inflation's excess over 2%, plus half of the percentage gap between output and its trend. He showed that it matched the Fed's rate closely from 1987 to 1992, and offered it not as a machine to replace the committee but as a benchmark against which to judge its decisions. The rule raises the rate by more than one point for each point of inflation, so that the real interest rate rises when inflation does. That property, now called the Taylor principle, is what keeps inflation from feeding on itself in most models of the economy (day 74 shows why).</p>
+      <p>Since 2008 the benchmark has been argued over constantly. How far it says the Fed should have gone depends on the inputs. With this page's defaults (core PCE, a Hodrick-Prescott gap and Taylor's weights) it never asked for less than 0.6% between 2008 and 2015, and for less than zero only in three months of 2020, down to −2.0% in June; with a weight of 1 on the gap and the one-sided gap it asked for −2.1% in March 2009. In 2021 and 2022, when inflation rose and the Fed held its rate near zero until March 2022, the defaults put the rule 6.8 points above the Fed's target on average. Whether those gaps were wisdom or error depends on the question this page puts in the open: which inflation, which measure of slack, and which neutral rate the rule is given. India adopted a formal inflation target only in 2016, after decades in which the Reserve Bank watched wholesale prices, so it is a different test of the same idea.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The rule</h3>
+      <p class="eq"><var>i</var><sub><var>t</var></sub> = <var>r</var>* + <var>π</var><sub><var>t</var></sub> + <var>a</var> (<var>π</var><sub><var>t</var></sub> − <var>π</var>*) + <var>b</var> <var>x</var><sub><var>t</var></sub></p>
+      <p>where <var>π</var><sub><var>t</var></sub> is inflation over the past twelve months, <var>π</var>* the target, <var>r</var>* the real interest rate that neither speeds the economy up nor slows it down, and <var>x</var><sub><var>t</var></sub> the output gap in percent. Taylor's values were <var>r</var>* = 2, <var>π</var>* = 2 and <var>a</var> = <var>b</var> = 0.5. The weights are shared by both countries; <var>r</var>* and <var>π</var>* are set for each. The page compares the prescription with the rate each bank actually set, month by month, and reports the mean and the root mean square of actual minus rule, the months in which the bank was more than one point below the rule (looser) or above it (tighter), and the months in which the rule asked for less than zero.</p>
+      <h3>The policy rates</h3>
+      <p>Both rates are end-of-month values from the Bank for International Settlements' compilation of central bank policy rates. For the United States it is the federal funds target set by the Federal Open Market Committee, the midpoint of the target range since December 2008. For India it is the repo rate from April 2001; the BIS notes that the Reserve Bank had no single policy rate before then. The Reserve Bank's own website restricts reproduction of its material, which is why its rate comes from the BIS.</p>
+      <h3>Which inflation</h3>
+      <p>For the United States the page offers four measures, each a twelve-month change: the price index for personal consumption expenditures (PCE) without food and energy, the default because it is the gauge the Fed watches; PCE prices including food and energy, the index in which the Fed defined its 2% target in 2012; the consumer price index for urban consumers (CPI-U) from the Bureau of Labor Statistics; and the GDP deflator, as Taylor used, a quarterly series whose four-quarter change is given to each month of the quarter. Since 2001 CPI inflation has run on average 0.34 points above PCE inflation, and every tenth of a point of inflation adds 0.15 points to the rule with Taylor's weights. The BLS published no CPI for October 2025, so that month is blank on the CPI.</p>
+      <p>For India the default follows the Reserve Bank's own history. Until the expert committee chaired by Urjit Patel reported in January 2014, the Reserve Bank's main measure of inflation was the wholesale price index; since 2016 its target, set by the government under the amended Reserve Bank of India Act, is 4% for the all-India consumer price index (Combined) published by the Ministry of Statistics and Programme Implementation. The BIS series the page uses joins the wholesale index (to December 2012) to the consumer index (from January 2013), so the page computes twelve-month rates only within each part: wholesale prices to 2012, consumer prices from 2014, and nothing for 2013, since a 2013 rate would compare a consumer price with a wholesale one. The ministry moved the consumer index to a 2024 base in 2026, and the BIS links the two bases, so some of its rates for 2025 differ from those first published (for June 2025, 2.31% here against 2.10% in the ministry's release). The alternative is the CPI for industrial workers, an older index from the Labour Bureau that the OECD publishes for India. The choice matters: in May 2019 the industrial workers' index was 8.65% above a year earlier and the Combined index 3.03%, and in July 2009 wholesale prices were 0.62% lower than a year earlier while the industrial workers' index was 11.89% higher.</p>
+      <h3>Which slack</h3>
+      <p>Neither country publishes an official monthly output gap. The page takes quarterly real GDP (from the Bureau of Economic Analysis for the US, from 1947; from the World Bank's Global Economic Monitor for India, seasonally adjusted, from 1996), and measures the gap as the percentage deviation of output from a Hodrick-Prescott trend with the usual quarterly smoothing, <var>λ</var> = 1600:</p>
+      <p class="eq"><var>τ</var> = argmin Σ (ln <var>Y</var><sub><var>t</var></sub> − <var>τ</var><sub><var>t</var></sub>)<sup>2</sup> + <var>λ</var> Σ (<var>τ</var><sub><var>t</var>+1</sub> − 2<var>τ</var><sub><var>t</var></sub> + <var>τ</var><sub><var>t</var>−1</sub>)<sup>2</sup>, &nbsp;&nbsp; <var>x</var><sub><var>t</var></sub> = 100 (ln <var>Y</var><sub><var>t</var></sub> − <var>τ</var><sub><var>t</var></sub>)</p>
+      <p>The minimiser solves (<var>I</var> + <var>λ</var> <var>K</var>′<var>K</var>) <var>τ</var> = ln <var>Y</var>, where <var>K</var> takes second differences; the matrix has five bands and the page solves it by elimination, matching the statsmodels library to eight decimal places on both series. Each month takes its quarter's gap. "Hindsight" filters the whole series at once, so the trend in 2008 already knows about 2009. "Data to date" filters only the quarters up to each date and keeps the last value, the estimate a forecaster with today's revised GDP could have made then; it needs ten years of data first. Neither uses the GDP figures actually published at the time, which were often revised later. The rule's prescription depends on this choice as much as on the weights: in the second quarter of 2020 the two-sided gap was −8.9% for the US and −25% for India, where GDP fell by about a quarter in three months, so the rule called for a rate far below zero.</p>
+      <h3>The best-fitting weights</h3>
+      <p>Below each chart the page reports the weights that would have matched the bank's rate best over the chosen months, holding <var>r</var>* and <var>π</var>* at the values typed: a least-squares regression of <var>i</var> − <var>r</var>* − <var>π</var> on <var>π</var> − <var>π</var>* and <var>x</var>, with no constant. A negative weight on inflation means the rate rose by less than inflation over those months; that describes what happened, not a rule anyone proposed.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>What the banks knew.</strong> The page uses data as revised today. Athanasios Orphanides showed in 2001 that a Taylor rule computed with the figures the Fed had at the time gives quite different prescriptions from one computed with revised figures, mostly because early estimates of the output gap were later revised. The one-sided gap removes look-ahead in the trend, not in the data.</li>
+        <li><strong>The right neutral rate.</strong> <var>r</var>* cannot be observed. Model estimates for the US, such as those from the Laubach-Williams model, fell after 2008 to well below Taylor's 2%; if they are right, a rule with 2% asked for rates that were too high by the difference. For India the default of 2% is a placeholder, not an estimate.</li>
+        <li><strong>The output gap.</strong> The Hodrick-Prescott filter is a smoothing device, not a model of potential output; James Hamilton (2018) set out why it creates cycles that are not in the data and why its estimates at the end of a sample differ from those in the middle. The 2020 quarters, when output fell and recovered within months, strain it further: the trend bends towards the fall.</li>
+        <li><strong>Everything else the banks did.</strong> From 2009 the Fed bought government bonds on a large scale and promised to keep rates low, which a single short rate cannot capture. The Reserve Bank also uses reserve requirements, liquidity operations and the exchange rate.</li>
+        <li><strong>Who was right.</strong> A gap between the rule and the bank is not an error by either. Central banks move in small steps, look at forecasts rather than the past twelve months, and respond to things a two-variable formula ignores.</li>
+        <li><strong>Exact monthly timing.</strong> Rates are end-of-month values, inflation is the twelve months to that month, and the gap is the quarter's. The banks decided before most of those figures were published.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Use the data each bank actually had, from real-time archives such as the Philadelphia Fed's Real-Time Data Set for Macroeconomists, and compare the gap with the revised one.</li>
+        <li>Add interest-rate smoothing, <var>i</var><sub><var>t</var></sub> = <var>ρ</var> <var>i</var><sub><var>t</var>−1</sub> + (1 − <var>ρ</var>) × rule, and estimate a forward-looking rule as Clarida, Galí and Gertler (2000) did.</li>
+        <li>Replace the fixed <var>r</var>* with an estimate that changes over time, such as the Laubach-Williams model, and the HP gap with an estimate of potential output from a production function.</li>
+        <li>Compare the Fed's rate with a "shadow" rate that summarises bond purchases at the zero bound, as in Wu and Xia (2016).</li>
+        <li>Add other inflation-targeting banks with open data, such as the Bank of England or Brazil's central bank, to see whether India's departures are unusual.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>Bank for International Settlements. Central bank policy rates (WS_CBPOL), monthly, end of period: United States and India. Long series on consumer prices (WS_LONG_CPI): India, documented as the consumer price index from January 2013 and the wholesale price index from April 1953 to December 2012, from the Ministry of Statistics and Programme Implementation. Retrieved 14 October 2026. Used under the BIS terms of use, which allow reproduction with the BIS cited as the source.</li>
+        <li>US Bureau of Economic Analysis. National Income and Product Accounts: PCE price index and PCE excluding food and energy (monthly), real GDP in chained dollars and the GDP implicit price deflator (quarterly). Retrieved 14 October 2026. Public domain.</li>
+        <li>US Bureau of Labor Statistics. Consumer Price Index for All Urban Consumers, all items, US city average, not seasonally adjusted (CUUR0000SA0). Retrieved 14 October 2026. Public domain.</li>
+        <li>OECD (2026), Consumer price indices (CPIs, HICPs), COICOP 1999, OECD Data Explorer, https://sdmx.oecd.org/public/rest/data/OECD.SDD.TPS,DSD_PRICES@DF_PRICES_ALL,1.0/IND.M.N.CPI.._T.N. (accessed on 14 October 2026): India, national consumer price index, growth over one year. The index is the Labour Bureau's (Ministry of Labour and Employment, Government of India) consumer price index for industrial workers. Used under the OECD Terms and Conditions for data, with credit to the OECD and the Labour Bureau. The Labour Bureau's own website is not consistent about reuse: its Terms and Conditions say its material may be reproduced free of charge if the source is prominently acknowledged, while its Website Policy says its contents may not be reproduced without permission. The figures here come from the OECD's republication, and the Labour Bureau is acknowledged as the first of those pages asks; no separate permission has been sought.</li>
+        <li>World Bank. Global Economic Monitor: India, GDP at constant 2010 prices in rupees, seasonally adjusted (NYGDPMKTPSAKN). Retrieved 14 October 2026. Licensed under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Changes: the page rounds the quarterly values to the nearest million rupees and derives an output gap from them with a Hodrick-Prescott filter.</li>
+        <li>Taylor, J. B. (1993). Discretion versus policy rules in practice. <em>Carnegie-Rochester Conference Series on Public Policy</em>, 39, 195-214.</li>
+        <li>Kydland, F. E., and Prescott, E. C. (1977). Rules rather than discretion: the inconsistency of optimal plans. <em>Journal of Political Economy</em>, 85(3), 473-491.</li>
+        <li>Orphanides, A. (2001). Monetary policy rules based on real-time data. <em>American Economic Review</em>, 91(4), 964-985.</li>
+        <li>Clarida, R., Galí, J., and Gertler, M. (2000). Monetary policy rules and macroeconomic stability: evidence and some theory. <em>Quarterly Journal of Economics</em>, 115(1), 147-180.</li>
+        <li>Hodrick, R. J., and Prescott, E. C. (1997). Postwar U.S. business cycles: an empirical investigation. <em>Journal of Money, Credit and Banking</em>, 29(1), 1-16.</li>
+        <li>Hamilton, J. D. (2018). Why you should never use the Hodrick-Prescott filter. <em>Review of Economics and Statistics</em>, 100(5), 831-843.</li>
+        <li>Laubach, T., and Williams, J. C. (2003). Measuring the natural rate of interest. <em>Review of Economics and Statistics</em>, 85(4), 1063-1070.</li>
+        <li>Wu, J. C., and Xia, F. D. (2016). Measuring the macroeconomic impact of monetary policy at the zero lower bound. <em>Journal of Money, Credit and Banking</em>, 48(2-3), 253-291.</li>
+        <li>Reserve Bank of India (2014). <em>Report of the Expert Committee to Revise and Strengthen the Monetary Policy Framework</em> (chairman Urjit R. Patel). Cited, not reproduced.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
