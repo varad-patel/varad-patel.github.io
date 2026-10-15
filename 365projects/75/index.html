@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Yield Curve Recession Model · 365 projects</title>
+  <meta name="description" content="See the US Treasury yield curve and a recession probability refitted each month on what was known at the time, scored out of sample with an ROC curve, the AUC and a confusion table at a threshold you set.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    .stack h3 { margin-top: 4px; }
+    .rates { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+    .cm-wrap .tbl td:first-child { font-weight: 600; }
+    /* Three short columns: let headings and numbers wrap so the table fits a 320 px phone. */
+    .cm-wrap .tbl th, .cm-wrap .tbl th.num { white-space: normal; }
+    .cm-wrap .tbl th, .cm-wrap .tbl td { padding: 6px; }
+    .month-row { align-items: end; }
+    .month-row .field { flex: 1 1 260px; }
+    .jump { gap: 4px 14px; }
+    .jump a { padding: 4px 0; }
+    .stat .v { font-size: 1.4rem; }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+    @media (max-width: 600px) { .p-sec .eq { white-space: normal; } }
+  </style>
+</head>
+<body class="proj" data-day="75">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Yield Curve Recession Model</h1>
+      <p class="lede">When short-term US interest rates rise above long-term ones, a recession has usually followed. See the yield curve, the recession probability it implies, and how well that probability would have done if you had used it at the time.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Yield curve and recession probability model">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>On its opening settings the page forecasts the state of the economy 12 months ahead from the 10-year less 3-month spread, with a probit refitted every month on what was known at the time. Its 525 forecasts made from January 1980 to September 2023 score an AUC of 0.83 (0.85 for one model fitted with hindsight) and a Brier score 20% lower than always forecasting the share of recession months known at the time. Set the threshold to 50% and only the 1981 to 1982 recession is caught, while all nine forecasts from January to September 2023 call a recession that has not come; at 20% all five recessions are caught, at the cost of flagging 61 of 473 months that were not followed by one.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>The yield curve plots the interest rate on government debt against the time until the debt is repaid. Usually it slopes upwards: lenders want more to tie money up for ten years than for three months. Now and then it inverts, with short rates above long ones. In the monthly data here, every US recession since 1969 was preceded by an inversion of the 10-year less 3-month spread, and Campbell Harvey (1988), Arturo Estrella and Gikas Hardouvelis (1991) and Estrella and Frederic Mishkin (1998) turned the pattern into forecasting models. The Federal Reserve Bank of New York publishes a recession probability from it every month.</p>
+      <p>Why should it work? Short rates are set by the central bank; long rates are roughly the average of the short rates the market expects, plus a premium. An inverted curve says the market expects rates to fall, which usually means it expects the central bank to cut because the economy will weaken. Tight policy today also squeezes banks, which borrow short and lend long. Neither story makes the curve a cause of recessions, and neither guarantees that the signal survives changes in how long rates are set.</p>
+      <p>The harder question is how good the signal is, and that is where most charts mislead. A model fitted on all the data, recessions of the 2000s included, will of course line up with those recessions. A fair test asks what someone using the model at each date would have seen: fitted only on the past that was known then, and judged against what happened next. That is what this page does, and the gap between the two is visible in every chart.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The data</h3>
+      <p>Yields are monthly averages of daily rates from the Federal Reserve Board's H.15 release, January 1959 to September 2026: constant-maturity Treasury yields at 3 and 6 months and 1, 2, 3, 5, 7, 10, 20 and 30 years, and the 3-month Treasury bill rate in the secondary market. The yield curve chart uses the constant-maturity yields as published; some maturities were not issued in every year (the 3-month constant maturity starts in September 1981, the 20-year has a gap from 1987 to 1993, the 30-year from 2002 to 2006), and such months are left blank. Recessions are the National Bureau of Economic Research's business-cycle dates: a recession runs from the month after a peak to the month of the trough. Nothing is interpolated.</p>
+      <h3>The spread</h3>
+      <p>Following the New York Fed, the 3-month bill rate, quoted on a discount basis <var>d</var>, is turned into a bond-equivalent yield before it is subtracted from the 10-year yield:</p>
+      <p class="eq"><var>b</var> = 100 × 365 <var>d</var> / (360 − 91 <var>d</var>) &nbsp;&nbsp; (<var>d</var> as a fraction), &nbsp;&nbsp; <var>S</var><sub><var>t</var></sub> = <var>y</var><sup>10</sup><sub><var>t</var></sub> − <var>b</var><sub><var>t</var></sub></p>
+      <p>The page's spreads equal those in the New York Fed's own spreadsheet to twelve decimal places (the tests check January 1959 and August 2026). The alternative, the 10-year less the 2-year yield, needs no conversion but starts only in June 1976.</p>
+      <h3>The model</h3>
+      <p>Let <var>R</var><sub><var>t</var>+<var>h</var></sub> be 1 if month <var>t</var> + <var>h</var> is a recession month and 0 otherwise. The model is</p>
+      <p class="eq">P(<var>R</var><sub><var>t</var>+<var>h</var></sub> = 1) = <var>F</var>(<var>α</var> + <var>β</var> <var>S</var><sub><var>t</var></sub>), &nbsp;&nbsp; <var>F</var> = Φ (probit) &nbsp; or &nbsp; <var>F</var>(<var>z</var>) = 1 / (1 + e<sup>−<var>z</var></sup>) (logit)</p>
+      <p>where Φ is the standard normal distribution function, computed here to full double precision with a power series near zero and a continued fraction in the tails. <var>α</var> and <var>β</var> maximise the log-likelihood</p>
+      <p class="eq">ℓ(<var>α</var>, <var>β</var>) = Σ [ <var>R</var> ln <var>F</var>(<var>z</var>) + (1 − <var>R</var>) ln (1 − <var>F</var>(<var>z</var>)) ], &nbsp;&nbsp; <var>z</var> = <var>α</var> + <var>β</var> <var>S</var></p>
+      <p>found by Fisher scoring: each step solves the 2 × 2 system given by the expected information, and is halved until the likelihood does not fall. Fitted to the same months as the New York Fed (spreads from January 1959 to December 2008, outcomes to December 2009), the page gets <var>α</var> = −0.5333 and <var>β</var> = −0.6333, against the published −0.5333 and −0.6330.</p>
+      <h3>Only what was known at the time</h3>
+      <p>Each month <var>t</var> from the chosen start, the page fits the model again on the pairs (<var>S</var><sub><var>s</var></sub>, <var>R</var><sub><var>s</var>+<var>h</var></sub>) whose outcome was known at the end of month <var>t</var>, then forecasts <var>R</var><sub><var>t</var>+<var>h</var></sub> from <var>S</var><sub><var>t</var></sub>. Yields are known at once and are not revised. Recession dates are another matter: the NBER announces a peak or a trough between 4 and 21 months after it happens (the February 2020 peak on 8 June 2020, the March 1991 trough on 22 December 1992). An outcome month counts as known at <var>t</var> if it is no later than the last turning point the NBER had announced by then, or at least 24 months before <var>t</var>, longer than any announcement has taken since the committee began announcing in 1980. Earlier turning points carry no announcement date, so for the first forecasts the page assumes that the state of each month before 1980 was known 24 months later; that is an assumption, not a record of what forecasters knew. So a model fitted in June 2008 learns nothing from 2007 or 2008, because the December 2007 peak was announced only on 1 December 2008. The rule is a little cautious: someone in 2016 would have been fairly sure that 2015 had no recession, but the page does not use 2015 until 2017.</p>
+      <p>A forecast is scored only if its outcome is known today. No turning point has been announced since the April 2020 trough, so outcomes are known to September 2024 and the last 12-month forecast scored is the one made in September 2023. Forecasts made since then are shown in the stat tile as today's probability and are not scored.</p>
+      <h3>Scoring the forecasts</h3>
+      <p>For a threshold <var>c</var>, a month is flagged when its forecast probability is at least <var>c</var>. The confusion table counts flagged and unflagged months against what happened. The hit rate is the share of recession months that were flagged; the false alarm rate is the share of other months that were flagged. The ROC curve draws hit rate against false alarm rate for every possible threshold at once, from flagging nothing (0, 0) to flagging everything (1, 1). The area under it, the AUC, equals the probability that a randomly chosen recession month got a higher forecast than a randomly chosen other month (ties count half), which is how the page computes it:</p>
+      <p class="eq">AUC = (Σ ranks of recession months − <var>n</var><sub>1</sub>(<var>n</var><sub>1</sub> + 1)/2) / (<var>n</var><sub>1</sub> <var>n</var><sub>0</sub>)</p>
+      <p>An AUC of 0.5 is a coin toss, 1 perfect. The Brier score is the mean squared error of the probabilities, (1/<var>n</var>) Σ (<var>p</var><sub><var>t</var></sub> − <var>R</var><sub><var>t</var>+<var>h</var></sub>)<sup>2</sup>; its skill is 1 − <var>B</var> / <var>B</var><sub>ref</sub>, where the reference forecast in each month is the share of recession months among the outcomes known then: the best single number to forecast every month if nothing but that history is used. Accuracy is compared with saying "no recession" every month, which is right most of the time. Finally, the page lists each recession whose months all fall inside the scored targets, with the first forecast that flagged it, and every unbroken stretch of flagged months none of whose targets was a recession month.</p>
+      <h3>With hindsight</h3>
+      <p>The grey lines are one model fitted on every outcome known today and applied to every month. Its better score is what look-ahead buys: it has already seen the recessions it is being tested on.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Much, statistically.</strong> The scored months since 1980 contain five recessions. Neighbouring months share eleven of their twelve months of future, so 525 forecasts are nowhere near 525 independent tests, and the page gives no confidence interval for the AUC. One more recession, caught or missed, would move every number.</li>
+        <li><strong>Whether 2020 was a success.</strong> The curve inverted in 2019 and a recession came in 2020, so the score counts it as a hit. The recession was caused by a pandemic that no bond market foresaw.</li>
+        <li><strong>Whether the signal still works.</strong> The spread was below zero in every month from November 2022 to November 2024, the longest run since 1959, and the model's forecasts were above 50% for nine months running in 2023; the outcomes known so far, to September 2024, contain no recession. Large bond purchases by central banks may have pushed long yields down and changed what an inversion means.</li>
+        <li><strong>When, or how bad.</strong> The model gives one probability for one month ahead. It says nothing about the depth of a recession, and the time from the first inverted month to the peak varies: 8 months before the 2001 and 2020 recessions, 13 before 1990 and 16 before 2007.</li>
+        <li><strong>A fair threshold.</strong> The threshold slider can be moved until the table looks good, and that uses the same months to choose and to test. The AUC, which does not depend on the threshold, is the fairer summary.</li>
+        <li><strong>Exactly what was known.</strong> The 24-month rule approximates what a forecaster knew about recession dates; it does not reproduce the uncertainty people actually felt. The recession dates themselves are the NBER's, a committee's judgement, not a mechanical rule.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Add a confidence interval for the AUC by resampling whole blocks of years rather than single months, so that the overlapping forecasts are treated honestly.</li>
+        <li>Compare other measures of the slope, such as the near-term forward spread of Engstrom and Sharpe (2019), and add credit spreads as a second predictor.</li>
+        <li>Fit a dynamic probit that also uses whether the economy is known to be in recession now, as in Kauppi and Saikkonen (2008).</li>
+        <li>Replace the 24-month rule with the exact information set at each date, using archived NBER memos and the dates when other indicators turned.</li>
+        <li>Run the same test for other countries with long government bond yields and an agreed recession chronology, such as the euro area's CEPR dates.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>Board of Governors of the Federal Reserve System. H.15 Selected Interest Rates, monthly averages: Treasury constant maturities (3 months to 30 years) and the 3-month Treasury bill secondary market rate, discount basis. Data Download Program, retrieved 14 October 2026. Public domain under the Board's website policy, which asks that the Board be cited as the source.</li>
+        <li>National Bureau of Economic Research. US Business Cycle Expansions and Contractions (business cycle data last updated 14 March 2023) and Business Cycle Dating Committee Announcements, https://www.nber.org/research/business-cycle-dating. Retrieved 14 October 2026. "Permission to copy is granted, provided attribution of source is given."</li>
+        <li>Federal Reserve Bank of New York. The Yield Curve as a Leading Indicator, and its monthly spreadsheet allmonth.xls (parameters α = −0.5333, β = −0.6330, estimated on data from January 1959 to December 2009). Used here only to check the page's calculations.</li>
+        <li>Estrella, A., and Hardouvelis, G. A. (1991). The term structure as a predictor of real economic activity. <em>Journal of Finance</em>, 46(2), 555-576.</li>
+        <li>Estrella, A., and Mishkin, F. S. (1998). Predicting U.S. recessions: financial variables as leading indicators. <em>Review of Economics and Statistics</em>, 80(1), 45-61.</li>
+        <li>Estrella, A., and Trubin, M. R. (2006). The yield curve as a leading indicator: some practical issues. <em>Current Issues in Economics and Finance</em>, 12(5). Federal Reserve Bank of New York.</li>
+        <li>Harvey, C. R. (1988). The real term structure and consumption growth. <em>Journal of Financial Economics</em>, 22(2), 305-333.</li>
+        <li>Hanley, J. A., and McNeil, B. J. (1982). The meaning and use of the area under a receiver operating characteristic (ROC) curve. <em>Radiology</em>, 143(1), 29-36.</li>
+        <li>Brier, G. W. (1950). Verification of forecasts expressed in terms of probability. <em>Monthly Weather Review</em>, 78(1), 1-3.</li>
+        <li>Engstrom, E. C., and Sharpe, S. A. (2019). The near-term forward yield spread as a leading indicator: a less distorted mirror. <em>Financial Analysts Journal</em>, 75(4), 37-49.</li>
+        <li>Kauppi, H., and Saikkonen, P. (2008). Predicting U.S. recessions with dynamic binary response models. <em>Review of Economics and Statistics</em>, 90(4), 777-791.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

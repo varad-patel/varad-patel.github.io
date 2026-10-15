@@ -1,0 +1,7 @@
+{
+  "question": "How well would a recession probability from the slope of the US yield curve have done if it had been fitted only on what was known at the time?",
+  "finding": "Forecasting 12 months ahead from the 10-year less 3-month spread with a probit refitted each month, the 525 forecasts made from January 1980 to September 2023 score an AUC of 0.83 (0.85 with hindsight); a 50% threshold catches only the 1981 to 1982 recession and calls one throughout January to September 2023, while 20% catches all five at the cost of flagging 61 of 473 other months.",
+  "limit": "Five recessions in overlapping monthly forecasts are a thin test, and the 2020 recession counted as a hit was caused by a pandemic.",
+  "sources": ["Federal Reserve Board H.15", "NBER business cycle dates"],
+  "built": "2026-10-14"
+}
