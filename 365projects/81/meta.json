@@ -1,0 +1,7 @@
+{
+  "question": "When do a bank's depositors run, and how much does it depend on the bank's investments, its promises and what depositors believe?",
+  "finding": "A bank that promises 1.05 on an investment returning 2 is sound if depositors wait whenever the investment's chance of paying off is above 77.4%, yet with private noisy signals depositors run whenever it is below 88.0% as the noise vanishes (on signals below 87.7% with the opening noise of 2 points); promising only 1 lowers the threshold to 75.0%, and promising Diamond and Dybvig's 1.22 raises it to 95%, the top of the range.",
+  "limit": "The bank's fundamentals are one number with an assumed distribution and an all-or-nothing investment, and deposit insurance, public news and contagion are left out.",
+  "sources": [],
+  "built": "2026-10-14"
+}

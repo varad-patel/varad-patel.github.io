@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bank Run Simulation · 365 projects</title>
+  <meta name="description" content="Set a bank's investments and promises and what its depositors believe, and see whether a run happens: Diamond and Dybvig's two equilibria, Goldstein and Pauzner's single threshold, and a simulated bank checked against both.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .d81-msg { font-size: 0.82rem; color: var(--bad); line-height: 1.4; }
+    .d81-msg:empty { display: none; }
+    .d81-examples { gap: 6px 8px; }
+    .d81-examples .btn { white-space: normal; text-align: left; }
+    .d81-stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .d81-story { display: grid; gap: 6px; }
+    .d81-bar { display: flex; gap: 2px; height: 22px; }
+    .d81-bar span { display: block; min-width: 2px; border-radius: 2px; }
+    .d81-jump { gap: 2px 16px; }
+    .d81-jump a { padding: 6px 0; }
+    @media (min-width: 861px) { .d81-jump { display: none; } }
+    #d81-verdict, #d81-payoffs, #d81-map, #d81-sim { scroll-margin-top: 12px; }
+    .stat .v { font-size: 1.35rem; }
+    .controls h2 { padding-top: 6px; border-top: 1px solid var(--grid); }
+    /* The comparison: three columns when there is room; a short list per measure when its box is narrower. */
+    .tbl.d81-cmp th, .tbl.d81-cmp td { white-space: normal; overflow-wrap: anywhere; }
+    .tbl.d81-cmp tbody th[scope="row"] { font-weight: 600; border-bottom: 1px solid var(--grid); }
+    .d81-cmp-box { container-type: inline-size; }
+    @container (max-width: 520px) {
+      .d81-cmp, .d81-cmp tbody, .d81-cmp tr, .d81-cmp th, .d81-cmp td, .d81-cmp caption { display: block; }
+      .d81-cmp thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .d81-cmp tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .d81-cmp tbody th[scope="row"], .d81-cmp td { border: 0; padding: 1px 0; }
+      .d81-cmp td { display: flex; justify-content: space-between; gap: 14px; text-align: right; }
+      .d81-cmp td::before { content: attr(data-label); color: var(--slate); text-align: left; }
+    }
+    .p-sec .eq { white-space: normal; }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body class="proj" data-day="81">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Bank Run Simulation</h1>
+      <p class="lede">A bank that keeps its promises can still be brought down by depositors who fear that others will not wait. Set the bank's investments and what its depositors believe, and see whether a run happens.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Bank run model and simulation">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>The bank on the opening screen invests in something that returns 2 for each 1 if it pays off, and promises depositors 1.05 if they withdraw early. Patient depositors are better off waiting, as long as others wait, whenever the chance that the investment pays off is above 77.4%. Yet when each depositor sees that chance with private noise there is only one equilibrium, and as the noise shrinks towards nothing they run whenever the chance is below 88.0% (with the opening noise of ±2 points, patient depositors run on signals below 87.7%): between 77.4% and 88.0%, runs are driven by fear of other depositors. Promise only 1 and the threshold falls to 75.0%, the bound below which the bank is unsound anyway; promise Diamond and Dybvig's 1.22 and the threshold rises to the top of the range, 95%, so that depositors run at every chance below it. Press "Each sees it with noise" and move the chance of success to see it.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Banks borrow short and lend long: deposits can be taken out on demand, loans cannot be called in without loss. Douglas Diamond and Philip Dybvig (1983) showed why this is useful and why it is dangerous. People do not know in advance whether they will need their money early. A bank pools them, invests most of the money for the long run, and promises anyone who withdraws early a little more than the investment would fetch if cashed in, insuring depositors against needing their money at a bad moment. That promise works as long as only those who need the money take it. But if patient depositors expect others to withdraw, the bank must sell its investment early to pay them, and those who wait may be left with nothing. Withdrawing then becomes the right thing to do for everyone. Both outcomes, calm and run, are equilibria, and nothing in the model says which one happens. Diamond and Dybvig also showed that suspending withdrawals, or deposit insurance, can remove the run.</p>
+      <p>A model with two answers cannot say how likely a run is, or how a bank's promises change the risk. Hans Carlsson and Eric van Damme (1993) found that the two answers merge into one when each player sees the state of the world with a little private noise, and Stephen Morris and Hyun Song Shin (1998) applied the idea to currency attacks. Itay Goldstein and Ady Pauzner (2005) did it for banks: when depositors see the bank's fundamentals with noise, there is a single threshold, and depositors run whenever the fundamentals fall below it. The threshold sits above the point where the bank is truly unsound, so some runs are still caused by fear of others, but now they are predictable, and the threshold rises with what the bank promises. More insurance against needing money early means more runs.</p>
+      <p>Runs are not history. Depositors took more than $40 billion out of Silicon Valley Bank on 9 March 2023, its management expected over $100 billion more to go on 10 March, and California's regulator closed it that morning (the Federal Reserve's review of April 2023).</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The bank and its depositors</h3>
+      <p>Each depositor puts 1 into the bank at date 0. At date 1 a share <var>λ</var> of them learn they are impatient and must consume at once; the rest are patient and can consume at date 1 or date 2. Nobody else can tell which type a depositor is. The bank invests everything: each unit returns <var>R</var> at date 2 with probability <var>p</var>(<var>θ</var>) = <var>θ</var>, and nothing otherwise, or fetches 1 if cashed in at date 1. It promises <var>r</var><sub>1</sub> to anyone withdrawing at date 1, paying in order of arrival until the money runs out (sequential service), and shares what is left at date 2 among those who waited. Depositors value consumption with <var>u</var>(<var>c</var>) = 1 − e<sup>−<var>ac</var></sup>, which is zero at nothing and has relative risk aversion <var>ac</var>, above 1 for <var>c</var> ≥ 1 when <var>a</var> &gt; 1, as Goldstein and Pauzner assume.</p>
+      <h3>Wait or withdraw</h3>
+      <p>If a share <var>n</var> of all depositors withdraws early, the bank must cash in <var>nr</var><sub>1</sub> units. A patient depositor's advantage from waiting is</p>
+      <p class="eq"><var>v</var>(<var>θ</var>, <var>n</var>) = <var>θ</var> <var>u</var>(<var>R</var>(1 − <var>nr</var><sub>1</sub>)/(1 − <var>n</var>)) − <var>u</var>(<var>r</var><sub>1</sub>) &nbsp;&nbsp; when <var>n</var> ≤ 1/<var>r</var><sub>1</sub>,</p>
+      <p class="eq"><var>v</var>(<var>θ</var>, <var>n</var>) = 0 − <var>u</var>(<var>r</var><sub>1</sub>)/(<var>nr</var><sub>1</sub>) &nbsp;&nbsp; when <var>n</var> &gt; 1/<var>r</var><sub>1</sub>,</p>
+      <p>since beyond 1/<var>r</var><sub>1</sub> the bank fails at date 1: those who wait get nothing, and a withdrawer is paid only if early enough in the queue, a chance of 1/(<var>nr</var><sub>1</sub>). The first chart plots both sides as sure amounts worth the same. As in Goldstein and Pauzner, at the very best fundamentals, here <var>θ</var> ≥ 95%, the investment pays <var>R</var> for sure and fetches <var>R</var> even when cashed in early, so that waiting is then better whatever others do.</p>
+      <h3>When everyone knows the fundamentals: two equilibria</h3>
+      <p>If <var>θ</var> is common knowledge, waiting is worse even when only the impatient withdraw once <var>θ</var> falls below the lower bound <var>θ</var><sub>L</sub> = <var>u</var>(<var>r</var><sub>1</sub>)/<var>u</var>(<var>r</var><sub>2</sub>), with <var>r</var><sub>2</sub> = <var>R</var>(1 − <var>λr</var><sub>1</sub>)/(1 − <var>λ</var>). Between <var>θ</var><sub>L</sub> and 95% both outcomes are equilibria. The tipping share <var>n̂</var> is where waiting and withdrawing are worth the same, <var>θ</var> <var>u</var>(<var>R</var>(1 − <var>n̂r</var><sub>1</sub>)/(1 − <var>n̂</var>)) = <var>u</var>(<var>r</var><sub>1</sub>), which for this utility has a closed form:</p>
+      <p class="eq"><var>n̂</var> = (<var>R</var> − <var>c</var>*)/(<var>Rr</var><sub>1</sub> − <var>c</var>*), &nbsp;&nbsp; <var>c</var>* = −ln(1 − <var>u</var>(<var>r</var><sub>1</sub>)/<var>θ</var>)/<var>a</var>.</p>
+      <p>To show beliefs choosing between the equilibria, each patient depositor's guess of the share withdrawing is drawn evenly from the range set; in the first round each withdraws if their guess is above <var>n̂</var> (a depositor exactly at it waits), so the share withdrawing is <var>λ</var> + (1 − <var>λ</var>) × P(guess &gt; <var>n̂</var>). After that everyone expects the share they saw, so the run takes hold if the first round passed <var>n̂</var> and dies out if not. This learning rule is an illustration added by the tool, not part of Diamond and Dybvig's model.</p>
+      <h3>When each sees the fundamentals with noise: one threshold</h3>
+      <p>Now <var>θ</var> is drawn evenly from 0 to 1 and each depositor sees <var>θ</var> + <var>e</var>, with <var>e</var> drawn evenly from −<var>ε</var> to <var>ε</var>. The noise is kept below 2.5 points, Goldstein and Pauzner's condition that the top band starts below 1 − 2<var>ε</var>, so that the fundamentals a depositor near the threshold thinks possible stay between 0 and 1. Goldstein and Pauzner show there is exactly one equilibrium, in which patient depositors withdraw on a signal below a threshold <var>θ</var>*. If everyone uses threshold <var>k</var>, the share withdrawing at fundamentals <var>θ</var> is</p>
+      <p class="eq"><var>n</var>(<var>θ</var>, <var>k</var>) = <var>λ</var> + (1 − <var>λ</var>) × min(1, max(0, (<var>k</var> − <var>θ</var> + <var>ε</var>)/(2<var>ε</var>))).</p>
+      <p>A depositor whose signal is exactly <var>k</var> believes <var>θ</var> is spread evenly over <var>k</var> ± <var>ε</var>, so she believes the share withdrawing is spread evenly over [<var>λ</var>, 1], with <var>θ</var> = <var>k</var> + <var>ε</var> − 2<var>ε</var>(<var>n</var> − <var>λ</var>)/(1 − <var>λ</var>). The threshold makes her indifferent:</p>
+      <p class="eq">∫<sub><var>λ</var></sub><sup>1</sup> <var>v</var>(<var>k</var> + <var>ε</var> − 2<var>ε</var>(<var>n</var> − <var>λ</var>)/(1 − <var>λ</var>), <var>n</var>) d<var>n</var> = 0.</p>
+      <p>The left side rises with <var>k</var>, so the tool finds the one root by bisection, integrating with an eight-point Gauss-Legendre rule on 64 pieces between the kinks. As the noise vanishes the condition becomes Goldstein and Pauzner's expression:</p>
+      <p class="eq"><var>θ</var>* = (<var>u</var>(<var>r</var><sub>1</sub>)/<var>r</var><sub>1</sub>)(1 − <var>λr</var><sub>1</sub> + ln <var>r</var><sub>1</sub>) / ∫<sub><var>λ</var></sub><sup>1/<var>r</var><sub>1</sub></sup> <var>u</var>(<var>R</var>(1 − <var>r</var><sub>1</sub><var>n</var>)/(1 − <var>n</var>)) d<var>n</var>.</p>
+      <p>The bank fails at date 1 when more than 1/<var>r</var><sub>1</sub> withdraw, which happens below <var>θ</var> = <var>k</var> + <var>ε</var> − 2<var>ε</var>(1/<var>r</var><sub>1</sub> − <var>λ</var>)/(1 − <var>λ</var>). The "Use Diamond and Dybvig's best contract" button sets <var>r</var><sub>1</sub> to the value that would be best if the investment were safe, where <var>u</var>′(<var>r</var><sub>1</sub>) = <var>R</var> <var>u</var>′(<var>r</var><sub>2</sub>): for this utility <var>r</var><sub>1</sub> = (<var>R</var> − (1 − <var>λ</var>) ln <var>R</var>/<var>a</var>)/(1 − <var>λ</var> + <var>λR</var>), which is 1.22 for the opening bank.</p>
+      <h3>The simulated bank</h3>
+      <p>The simulation follows individual depositors: each is impatient with probability <var>λ</var>; patient ones decide by their guess or their own signal; the withdrawers are put in a random order and paid <var>r</var><sub>1</sub> each until the investment, cashed in at 1 a unit, is gone (the last one paid may get part); one draw decides whether the rest pays off. The dots in the second chart are separate banks, one at each chance of success. The tests check that 200,000 simulated depositors withdraw in the share the formula gives, within five standard errors, at fundamentals across the threshold; that the first round of the belief rule matches its formula; that the threshold solves its condition and tends to the limit expression, which is checked against Goldstein and Pauzner's formula computed separately; that promising <var>r</var><sub>1</sub> = 1 makes the threshold equal the lower bound; and that the threshold rises with <var>r</var><sub>1</sub>, their Theorem 2.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>How likely a real run is.</strong> The chance of success, the even spread of fundamentals and the all-or-nothing investment are assumptions chosen to match Goldstein and Pauzner's structure. Real banks hold many assets that lose value gradually, and nobody observes one number called the fundamentals.</li>
+        <li><strong>What policy does.</strong> Deposit insurance, a lender of last resort and the suspension of withdrawals, which Diamond and Dybvig show can rule out the run, are not in the tool. Neither is the split between insured depositors and uninsured ones, on whom Silicon Valley Bank relied heavily.</li>
+        <li><strong>Public news.</strong> Here each depositor's information is private and equally precise. An announcement that everyone sees, and knows that others see, is common knowledge again, which is what produced two equilibria in the first place; how public and private news combine is beyond this tool.</li>
+        <li><strong>How depositors actually decide.</strong> The depositors here are rational and know the model. Real ones follow rumours, queues and each other, faster than ever when withdrawals take a phone and a minute.</li>
+        <li><strong>Contagion.</strong> There is one bank. A run on one bank can make depositors at others run, or make the bank's creditors fail. Day 82 follows losses through a network of banks.</li>
+        <li><strong>The best contract.</strong> The tool shows how the threshold rises with <var>r</var><sub>1</sub>; Goldstein and Pauzner go further and choose <var>r</var><sub>1</sub> to trade insurance against runs (their Theorems 3 and 4: the best promise is above 1 but below the first-best one). Their welfare results assume that the long investment is worth waiting for on average, E[<var>p</var>(<var>θ</var>)] <var>u</var>(<var>R</var>) &gt; <var>u</var>(1). With <var>p</var>(<var>θ</var>) = <var>θ</var> and <var>θ</var> spread evenly, E[<var>p</var>(<var>θ</var>)] is about a half while <var>u</var>(1) is at least two thirds for every risk aversion allowed here, so that assumption fails. The thresholds and the two theorems the tool shows do not depend on it; a welfare comparison would.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Add deposit insurance and a suspension rule and show how each removes the run equilibrium, and what each costs.</li>
+        <li>Let the investment fetch less than 1 a unit when cashed in early, so that fire sales make runs more likely.</li>
+        <li>Add a public signal alongside the private ones and show when multiple equilibria return.</li>
+        <li>Choose <var>r</var><sub>1</sub> to maximise depositors' expected welfare with runs taken into account, as Goldstein and Pauzner do, under a prior chosen by the visitor.</li>
+        <li>Split depositors into insured and uninsured, the split that mattered in 2023.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Diamond, D. W., and Dybvig, P. H. (1983). Bank runs, deposit insurance, and liquidity. <em>Journal of Political Economy</em>, 91(3), 401-419.</li>
+        <li>Goldstein, I., and Pauzner, A. (2005). Demand-deposit contracts and the probability of bank runs. <em>Journal of Finance</em>, 60(3), 1293-1327.</li>
+        <li>Carlsson, H., and van Damme, E. (1993). Global games and equilibrium selection. <em>Econometrica</em>, 61(5), 989-1018.</li>
+        <li>Morris, S., and Shin, H. S. (1998). Unique equilibrium in a model of self-fulfilling currency attacks. <em>American Economic Review</em>, 88(3), 587-597.</li>
+        <li>Board of Governors of the Federal Reserve System (2023). <em>Review of the Federal Reserve's Supervision and Regulation of Silicon Valley Bank</em>. 28 April 2023.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
