@@ -1,0 +1,7 @@
+{
+  "question": "When would a government that weighs the costs of default against the costs of repaying choose not to pay its foreign debt?",
+  "finding": "With Arellano's numbers for Argentina, a government at trend income repays debts up to 2.44% of a year's income and defaults on 2.50% or more, but 2.3% below trend it defaults on 1.25%; in one simulated history of 50,000 years it defaults 3.4 times a century (other seeds give up to 3.6), 98% of those defaults with income below trend, on average 8.2% below.",
+  "limit": "The penalties for default are assumed rather than derived, debt is one-quarter bonds held by risk-neutral lenders, and the model supports far less debt than real governments owe.",
+  "sources": [],
+  "built": "2026-10-14"
+}

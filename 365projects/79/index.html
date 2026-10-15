@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sovereign Default Simulator · 365 projects</title>
+  <meta name="description" content="Set a government's debt and a run of income shocks and see when it would choose to default, in the Eaton-Gersovitz and Arellano model of sovereign debt solved in your browser.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .d79-msg { font-size: 0.82rem; color: var(--bad); line-height: 1.4; }
+    .d79-msg:empty { display: none; }
+    .d79-examples { gap: 6px 8px; }
+    .d79-examples .btn { white-space: normal; text-align: left; }
+    .d79-stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .d79-events ul { margin: 6px 0 0; padding-left: 1.2em; }
+    .d79-events li + li { margin-top: 3px; }
+    .d79-jump { gap: 2px 16px; }
+    .d79-jump a { padding: 6px 0; }
+    @media (min-width: 861px) { .d79-jump { display: none; } }
+    #d79-verdict, #d79-map, #d79-path, #d79-long, #d79-situation { scroll-margin-top: 12px; }
+    .stat .v { font-size: 1.4rem; }
+    .d79-economy { border-top: 1px solid var(--grid); padding-top: 10px; }
+    .d79-economy summary { cursor: pointer; font-weight: 700; font-size: 0.95rem; padding: 4px 0; }
+    .d79-economy[open] summary { margin-bottom: 12px; }
+    .d79-second { padding-top: 22px; border-top: 1px solid var(--rule); }
+    #d79-shocks { scroll-margin-top: 12px; }
+    .tbl.d79-long tbody th[scope="row"] { border-bottom: 1px solid var(--grid); }
+    /* Two columns that may hold long words: let both wrap. */
+    .tbl.d79-long th, .tbl.d79-long td { white-space: normal; overflow-wrap: anywhere; }
+    .tbl.d79-long th[scope="row"] { font-weight: 600; }
+    .tbl.d79-long td.num { min-width: 7em; }
+    .p-sec .eq { white-space: normal; }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body class="proj" data-day="79">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Sovereign Default Simulator</h1>
+      <p class="lede">No court can make a government repay. Set its debt and the shocks to its income and see when repaying stops being worth it, in the model economists use to study sovereign default, solved in your browser.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Sovereign default model and simulator">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>With Arellano's numbers for Argentina, a government whose income is at trend repays any debt up to 2.44% of a year's income and defaults on 2.50% or more. Let income fall 2.3% below trend and it defaults on half that, 1.25%. In one simulated history of 50,000 years it defaults 3.4 times a century (other seeds give up to 3.6), and 98% of those defaults come with income below trend, on average 8.2% below. The page opens with these settings: set the debt to 2.50% and move income from trend one step down.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>A company that does not pay its debts can be taken to court and its assets seized. A government that does not pay its foreign creditors mostly cannot: its assets sit inside its own borders, under its own laws. So why do governments repay at all, and when would a government that weighs the costs and benefits choose not to? Jonathan Eaton and Mark Gersovitz (1981) answered with a model in which the government repays only to keep its access to borrowing, which it uses to smooth its citizens' consumption through good and bad years. Jeremy Bulow and Kenneth Rogoff (1989) then showed that this is not enough on its own: a country that could still save abroad after defaulting would insure itself that way and never repay, so lending has to be backed by sanctions that creditors can actually impose.</p>
+      <p>Cristina Arellano (2008) turned the idea into a quantitative model of Argentina, which defaulted in December 2001. A default wipes out the debt but shuts the country out of the market for a while and costs it output while it is out. The government compares the two lifetimes, repaying and defaulting, every quarter, and lenders, knowing this, charge an interest rate that exactly covers the chance of being let down. Default is a choice, not a running out of money, and it is chosen in recessions: that is when repaying a fixed debt hurts a risk-averse country most, and when the insurance that borrowing could give is dearest, because lenders, foreseeing default, have raised the rate. The model produces what the data show for emerging markets: interest rates that rise in bad times, and defaults in the middle of slumps.</p>
+      <p>Why it matters: whether a debt is "sustainable" is not only arithmetic about growth and interest (day 78). It also depends on whether the government wants to pay, and that depends on how much it has to lose.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The economy</h3>
+      <p>Each quarter the country receives an income <var>y</var>, which follows a persistent random process around a trend of 1:</p>
+      <p class="eq">log <var>y</var>′ = <var>ρ</var> log <var>y</var> + <var>η</var> <var>ε</var>′, &nbsp;&nbsp; <var>ε</var>′ ~ N(0, 1).</p>
+      <p>The tool replaces this with a chain of 21 income levels spread evenly over three standard deviations either side of trend, with Tauchen's (1986) method: the chance of moving from one level to another is the normal probability of the shock that lands between the half-way points around the new level. Arellano used another way of building the chain (Tauchen and Hussey 1991).</p>
+      <h3>The government</h3>
+      <p>The government starts the quarter owing <var>b</var> (debt is positive here; Arellano writes assets, the negative of debt), sees its income and chooses. If it repays, it sells new one-quarter bonds with face value <var>b</var>′ at price <var>q</var>(<var>b</var>′, <var>y</var>), and its citizens consume <var>c</var> = <var>y</var> − <var>b</var> + <var>q</var>(<var>b</var>′, <var>y</var>) <var>b</var>′. If it defaults, the debt is gone, but the country can neither borrow nor save, and its income is capped at <var>h</var>(<var>y</var>) = min(<var>ŷ</var> E[<var>y</var>], <var>y</var>): in good times default costs output. Each quarter in default it is let back into the market, with no debt, with probability <var>θ</var>. Utility is <var>u</var>(<var>c</var>) = <var>c</var><sup>1−<var>σ</var></sup>/(1 − <var>σ</var>), discounted by <var>β</var> a quarter. The values of repaying, defaulting and having the choice are</p>
+      <p class="eq"><var>v</var><sup>c</sup>(<var>b</var>, <var>y</var>) = max<sub><var>b</var>′</sub> { <var>u</var>(<var>y</var> − <var>b</var> + <var>q</var>(<var>b</var>′, <var>y</var>) <var>b</var>′) + <var>β</var> E[<var>v</var><sup>o</sup>(<var>b</var>′, <var>y</var>′) | <var>y</var>] }</p>
+      <p class="eq"><var>v</var><sup>d</sup>(<var>y</var>) = <var>u</var>(<var>h</var>(<var>y</var>)) + <var>β</var> E[<var>θ</var> <var>v</var><sup>o</sup>(0, <var>y</var>′) + (1 − <var>θ</var>) <var>v</var><sup>d</sup>(<var>y</var>′) | <var>y</var>]</p>
+      <p class="eq"><var>v</var><sup>o</sup>(<var>b</var>, <var>y</var>) = max { <var>v</var><sup>c</sup>(<var>b</var>, <var>y</var>), <var>v</var><sup>d</sup>(<var>y</var>) },</p>
+      <p>and the government defaults exactly when <var>v</var><sup>d</sup>(<var>y</var>) &gt; <var>v</var><sup>c</sup>(<var>b</var>, <var>y</var>). That comparison is the verdict the tool shows.</p>
+      <h3>The lenders</h3>
+      <p>Lenders are risk neutral and can earn <var>r</var> a quarter elsewhere, so they pay for a bond what they expect it to return:</p>
+      <p class="eq"><var>q</var>(<var>b</var>′, <var>y</var>) = (1 − <var>δ</var>(<var>b</var>′, <var>y</var>)) / (1 + <var>r</var>),</p>
+      <p>where <var>δ</var> is the chance, given today's income, that next quarter's income falls where the government would default on <var>b</var>′. The chart of what lenders pay shows <var>q</var>(1 + <var>r</var>) = 1 − <var>δ</var>. The annual spread is (1/<var>q</var>)<sup>4</sup> − (1 + <var>r</var>)<sup>4</sup>.</p>
+      <h3>Solving it</h3>
+      <p>Debt is put on a grid of 201 levels, 40 of them for saving and 160 for borrowing, up to 0.4 of a quarter's trend income (10% of a year's); Arellano used 200 equally spaced levels. The tool starts from the values of consuming income for ever and repeats four steps: mark the default decisions implied by the current values; price every bond from them; update the value of default; and update the value of repaying by searching over every new debt the lenders will pay something for. Because the new debt chosen never falls as the debt carried in rises, the search solves the middle debt first and lets each half search only its side of the middle's choice (Gordon and Qiu 2018), which gives the same answer in a fraction of the time. It stops when no value moves by more than 10<sup>−7</sup> and no default decision changes, which takes about 230 iterations for the Argentine numbers. If the government would ever borrow as much as the grid allows, the grid is widened by half and the solving starts again.</p>
+      <p>The tests check the solution against answers known in advance. With no income risk and no way back into the market, rolling over a debt <var>b</var> for ever costs <var>rb</var>/(1 + <var>r</var>) a quarter, so repaying beats default exactly while that cost is below the output lost by defaulting; the debt limit is (1 + <var>r</var>)(<var>y</var> − <var>h</var>)/<var>r</var> = 1.855 quarters of income for Arellano's numbers, and the solver finds it to within one grid step. With permanent exclusion the value of default must equal the autarky value (<var>I</var> − <var>βP</var>)<sup>−1</sup><var>u</var>(<var>h</var>), solved directly. The solution satisfies the equations above to within 10<sup>−6</sup> when every choice is searched; its default sets grow with debt and its prices never rise with the amount borrowed, which Arellano proves must hold; its default sets also shrink as income rises, which she proves for independent shocks with no output cost and permanent exclusion, and which a test checks in that case; and in the simulation the share of new bonds repaid matches the chance priced in, so lenders break even.</p>
+      <h3>The verdict, the shocks and the long run</h3>
+      <p>"Repaying against defaulting" turns the two values into the steady consumption for ever that would be worth the same, and gives the gap in per cent. "It would default on this debt" is the highest income at which the chosen debt is defaulted on. A designed recession holds income at the chosen level for two quarters, drops it to the chosen depth for the chosen number of quarters, then lets it return towards trend at the model's persistence, each quarter snapped to the nearest of the 21 levels; the government follows its solved policy, and the quarters in which a defaulter is let back in are drawn with the seed. The long-run table follows one economy for 200,000 quarters.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Why the penalties are what they are.</strong> Exclusion and the output cost are assumed, not derived. Reputation, the threat of trade sanctions, seized assets abroad and the cost of default to the country's own banks are all folded into two numbers. Bulow and Rogoff's argument is that this is where the real question lies.</li>
+        <li><strong>Courts, haircuts and negotiation.</strong> Here a default erases all the debt at once and nobody negotiates. Real defaults are partial, end in a restructuring that takes years, and can be fought over in foreign courts by creditors who refuse the deal.</li>
+        <li><strong>Contagion and the mood of lenders.</strong> There is one country and a pool of risk-neutral lenders who never run short of money. Crises that spread from one country to another, and lenders who demand more when they are frightened, are left out. With risk-neutral lenders the average spread is tied to the chance of default, and Arellano notes that this makes spreads too low: 3.58 points a year in her model against 10.25 in Argentina's data for 1983 to 2001. Matching those spreads this way would take a default about once a decade, where Argentina defaulted three times in a hundred years.</li>
+        <li><strong>Self-fulfilling crises.</strong> Calvo (1988) and Cole and Kehoe (2000) describe crises in which lenders' fear of default causes the default it fears, by raising the interest rate the government must pay (Calvo) or by refusing to roll its debt over (Cole and Kehoe), so that one country with one debt can face two outcomes. In this model's timing the equilibrium is unique (Auclert and Rognlie 2016), so it cannot show that kind of panic. Day 81 shows the same logic for a bank.</li>
+        <li><strong>Realistic debt levels.</strong> With one-quarter bonds the model supports debts of a few per cent of a year's income at most, far below what governments actually owe; Arellano matched it to Argentina's debt service, 5.53% of GDP, not to its debt. Chatterjee and Eyigungor (2012) show that long-term bonds let the model match Argentina's average debt-to-output ratio and its spreads.</li>
+        <li><strong>Exact numbers.</strong> With Arellano's parameters the tool finds 3.4 to 3.6 defaults per century (seeds 1 to 6) and average spreads of 4.7 to 4.8 points, against her 3 and 3.58. Her income chain, her debt grid and her way of solving and simulating differ from the tool's, and Hatchondo, Martinez and Sapriza (2010) show for this model that such choices move the results.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Long-term bonds that pay out over many years, which change how a heavy debt is rolled over and raise the debt the model can support.</li>
+        <li>Risk-averse lenders whose demand falls in bad times worldwide, to bring spreads up to the levels seen in the data.</li>
+        <li>Partial default and renegotiation, so that a default ends in a haircut agreed with creditors rather than a clean slate.</li>
+        <li>A rollover crisis in the style of Cole and Kehoe, where the timing lets lenders' expectations decide whether a solvent government defaults.</li>
+        <li>An income process estimated from a chosen country's own GDP, and a finer grid with interpolation between its points.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Arellano, C. (2008). Default risk and income fluctuations in emerging economies. <em>American Economic Review</em>, 98(3), 690-712.</li>
+        <li>Eaton, J., and Gersovitz, M. (1981). Debt with potential repudiation: theoretical and empirical analysis. <em>Review of Economic Studies</em>, 48(2), 289-309.</li>
+        <li>Bulow, J., and Rogoff, K. (1989). Sovereign debt: is to forgive to forget? <em>American Economic Review</em>, 79(1), 43-50.</li>
+        <li>Calvo, G. A. (1988). Servicing the public debt: the role of expectations. <em>American Economic Review</em>, 78(4), 647-661.</li>
+        <li>Cole, H. L., and Kehoe, T. (2000). Self-fulfilling debt crises. <em>Review of Economic Studies</em>, 67(1), 91-116.</li>
+        <li>Auclert, A., and Rognlie, M. (2016). Unique equilibrium in the Eaton-Gersovitz model of sovereign debt. <em>Journal of Monetary Economics</em>, 84, 134-146.</li>
+        <li>Chatterjee, S., and Eyigungor, B. (2012). Maturity, indebtedness, and default risk. <em>American Economic Review</em>, 102(6), 2674-2699.</li>
+        <li>Hatchondo, J. C., Martinez, L., and Sapriza, H. (2010). Quantitative properties of sovereign default models: solution methods matter. <em>Review of Economic Dynamics</em>, 13(4), 919-933.</li>
+        <li>Tauchen, G. (1986). Finite state Markov-chain approximations to univariate and vector autoregressions. <em>Economics Letters</em>, 20(2), 177-181.</li>
+        <li>Tauchen, G., and Hussey, R. (1991). Quadrature-based methods for obtaining approximate solutions to nonlinear asset pricing models. <em>Econometrica</em>, 59(2), 371-396.</li>
+        <li>Gordon, G., and Qiu, S. (2018). A divide and conquer algorithm for exploiting policy function monotonicity. <em>Quantitative Economics</em>, 9(2), 521-540.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
