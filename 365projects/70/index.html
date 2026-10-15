@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fear and Greed Index · 365 projects</title>
+  <meta name="description" content="A market mood index for Canadian shares built from open data on momentum, volatility and breadth, with every component and weight shown, 57 years of history, and a fair test of whether it forecasts anything.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    .stat .v { font-size: 1.35rem; }
+    .jumps { gap: 6px; }
+    .gauge-bar { position: relative; display: grid; grid-template-columns: repeat(5, 1fr); height: 34px; border: 1px solid var(--rule); }
+    .gauge-bar span { display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 600; line-height: 1.1; text-align: center; padding: 0 2px; color: var(--ink); overflow: hidden; }
+    .gauge-bar .g0 { background: #c9dcf3; } .gauge-bar .g1 { background: #e3edf9; } .gauge-bar .g2 { background: #f2f3f1; }
+    .gauge-bar .g3 { background: #fbe6d9; } .gauge-bar .g4 { background: #f6cdb7; }
+    .gauge-bar i { position: absolute; top: -5px; bottom: -5px; width: 4px; margin-left: -2px; background: var(--ink); border-radius: 2px; }
+    .gauge-ticks { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--slate); margin-top: 3px; }
+    .source-note { padding-top: 12px; border-top: 1px solid var(--grid); }
+    .tbl caption { white-space: normal; }
+    .tbl.rt th, .tbl.rt td { white-space: normal; }
+    /* Each row becomes a short labelled list whenever the table's own box is narrower than the widest table (about 560px). */
+    div:has(> table.rt) { container-type: inline-size; }
+    @container (max-width: 560px) {
+      .rt, .rt tbody, .rt tr, .rt td, .rt caption { display: block; }
+      .rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .rt td { border: 0; padding: 1px 0; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; overflow-wrap: anywhere; }
+      .rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+      .rt td:first-child { font-weight: 700; justify-content: flex-start; }
+      .rt td:first-child::before { content: none; }
+    }
+    @media (max-width: 600px) { .p-sec .eq { white-space: normal; } }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body class="proj" data-day="70">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Fear and Greed Index</h1>
+      <p class="lede">A gauge of market mood for Canadian shares, built in the open from momentum, volatility and breadth. See every part and its weight, move through 57 years of history, and check whether the gauge tells you anything about what came next.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Fear and greed index for Canadian shares">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>The page opens on September 2023, the last month of the data. With equal weights and a ten-year ranking window the index reads 15, extreme fear. As a forecast of the S&amp;P/TSX Composite's change over the next twelve months, in 553 monthly forecasts from September 1976 to September 2022 that each used only what was known at the time, it did worse than the plain historical average: an out-of-sample R² of −2.8% (−0.3% one month ahead). Looking back, the 88 months of extreme fear were followed by a twelve-month rise of 11.5% on average, against 7.2% for all months. But those months fall in only 26 separate spells, and neighbouring months share eleven of their twelve months: counting each spell once, from its first month, the rise averaged 6.1%. The panel "Does the index say anything about the months ahead?" shows these figures on load.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Prices move on news, but also on mood. When investors are frightened they sell what they would otherwise hold; when they are confident they pay up for the same things. Behavioural finance asks whether these swings in sentiment push prices away from value, and whether the push is later undone. De Bondt and Thaler (1985) found that the shares that had done worst over the previous few years went on to beat those that had done best, which they read as overreaction. Baker and Wurgler (2007) combined several market measures into a sentiment index for the US market and found that when it was high, the shares hardest to value did worst afterwards.</p>
+      <p>A "fear and greed" index squeezes the mood into one number from 0 to 100. The best known is published by CNN Business. This page is not that index and uses none of its data. Much of the market data such indices are made from is sold under licence, including the volatility indices calculated from option prices. This page builds its own from data that may be republished: the month-end closes of the Toronto composite and its sector indices, published by Statistics Canada under its Open Licence, and it shows every step.</p>
+      <p>Making one number from several is a choice at every turn: which signals, how to put them on a common scale, how to weight them. The tool lets you change the weights and the scale and watch the history move. Then it asks the question that matters to anyone tempted to use such a gauge: did a fearful reading ever tell you, in advance, that prices were about to rise? Welch and Goyal (2008) found that most of the variables proposed to forecast US share returns fail that test once the forecast may use only what was known at the time.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The data</h3>
+      <p>The S&amp;P/TSX Composite close at each month end from January 1956 to September 2023, and the closes of the sector indices: the seven sector indices of the old TSE 300 from 1956 to June 2003, and ten S&amp;P/TSX sector indices from December 1997. All come from Statistics Canada's table 10-10-0125-01, which stopped being updated in 2023, so the history ends there. The composite is a price index: dividends are not included.</p>
+      <h3>Three signals</h3>
+      <p>With <var>P</var><sub><var>t</var></sub> the composite at the end of month <var>t</var> and <var>r</var><sub><var>t</var></sub> = ln(<var>P</var><sub><var>t</var></sub> / <var>P</var><sub><var>t</var>−1</sub>) its monthly log return:</p>
+      <p class="eq"><var>momentum</var><sub><var>t</var></sub> = <var>P</var><sub><var>t</var></sub> / ( (1/10) Σ<sub><var>k</var>=0..9</sub> <var>P</var><sub><var>t</var>−<var>k</var></sub> ) − 1</p>
+      <p class="eq"><var>volatility</var><sub><var>t</var></sub> = √12 × standard deviation of <var>r</var><sub><var>t</var>−5</sub>, …, <var>r</var><sub><var>t</var></sub></p>
+      <p class="eq"><var>breadth</var><sub><var>t</var></sub> = share of sector indices whose close is above their own 10-month average</p>
+      <p>A ten-month average is the monthly cousin of the 200-day average that traders watch, and Faber (2007) used it in a well-known timing rule. Breadth uses the seven TSE 300 sectors up to December 1999 and the ten S&amp;P/TSX sectors from January 2000. In the 58 months from September 1998 to June 2003 when both can be measured, the two versions have a correlation of 0.86.</p>
+      <h3>A common scale</h3>
+      <p>Each signal is turned into a score from 0 to 100 by ranking it against its own last <var>W</var> months, the current month included (<var>W</var> is 60, 120 or 240):</p>
+      <p class="eq"><var>q</var><sub><var>t</var></sub> = 100 × [ #{<var>s</var> : <var>x</var><sub><var>s</var></sub> &lt; <var>x</var><sub><var>t</var></sub>} + ( #{<var>s</var> : <var>x</var><sub><var>s</var></sub> = <var>x</var><sub><var>t</var></sub>} − 1 ) / 2 ] / (<var>W</var> − 1)</p>
+      <p>over the months <var>s</var> from <var>t</var> − <var>W</var> + 1 to <var>t</var>. The highest value of the window scores 100 and the lowest 0. High momentum and high breadth are greedy; high volatility is fearful, so its score is 100 − <var>q</var>. Ranking only against the past keeps hindsight out: a month's score never changes when later months arrive.</p>
+      <h3>The index</h3>
+      <p class="eq"><var>index</var><sub><var>t</var></sub> = Σ<sub><var>c</var></sub> <var>w</var><sub><var>c</var></sub> <var>q</var><sub><var>c</var>,<var>t</var></sub> / Σ<sub><var>c</var></sub> <var>w</var><sub><var>c</var></sub></p>
+      <p>with the weights <var>w</var> from the sliders, equal by default. The bands are fifths of the scale: below 20 extreme fear, 20 to 40 fear, 40 to 60 neutral, 60 to 80 greed, above 80 extreme greed, an edge going to the band nearer the middle. An average of three scores is pulled towards 50, so the outer bands are rarer than a fifth of the time: with the defaults the index spends 13% of months in extreme fear and 11% in extreme greed.</p>
+      <h3>The forecast test</h3>
+      <p>Let <var>y</var><sub><var>t</var></sub> = ln(<var>P</var><sub><var>t</var>+<var>h</var></sub> / <var>P</var><sub><var>t</var></sub>) be the change over the next <var>h</var> months. At each month <var>t</var>, starting ten years after the index's first value, the tool fits <var>y</var><sub><var>s</var></sub> = <var>a</var> + <var>b</var> · <var>index</var><sub><var>s</var></sub> by least squares on every month <var>s</var> whose outcome was known by then (<var>s</var> + <var>h</var> ≤ <var>t</var>), and forecasts <var>ŷ</var><sub><var>t</var></sub> = <var>a</var> + <var>b</var> · <var>index</var><sub><var>t</var></sub>. The rival is the historical average <var>ȳ</var><sub><var>t</var></sub> of the same outcomes. The score is Campbell and Thompson's out-of-sample R²:</p>
+      <p class="eq"><var>R</var>²<sub>OS</sub> = 1 − Σ (<var>y</var><sub><var>t</var></sub> − <var>ŷ</var><sub><var>t</var></sub>)² / Σ (<var>y</var><sub><var>t</var></sub> − <var>ȳ</var><sub><var>t</var></sub>)²</p>
+      <p>Above zero, the index helped; below, it made the forecasts worse. Because the index model contains the average as a special case, chance alone favours the average in a finite sample, and the right test is Clark and West's (2007): with</p>
+      <p class="eq"><var>f</var><sub><var>t</var></sub> = (<var>y</var><sub><var>t</var></sub> − <var>ȳ</var><sub><var>t</var></sub>)² − [ (<var>y</var><sub><var>t</var></sub> − <var>ŷ</var><sub><var>t</var></sub>)² − (<var>ȳ</var><sub><var>t</var></sub> − <var>ŷ</var><sub><var>t</var></sub>)² ]</p>
+      <p>the statistic is the mean of <var>f</var> over its standard error, compared with the normal distribution, one-sided. Forecasts more than a month ahead overlap, so the standard error is Newey and West's (1987) with <var>h</var> − 1 lags. The running score in the chart adds up (<var>y</var> − <var>ȳ</var>)² − (<var>y</var> − <var>ŷ</var>)² month by month, so you can see when the index won and lost.</p>
+      <p>The table under it looks back over all months together, without that discipline: the average percentage change over the next <var>h</var> months after the index sat in each band, and how many separate spells each band made up. It describes the past and tests nothing; overlapping months and a handful of crashes dominate it. Neighbouring months share all but one month of their outcome, so a long spell counts many times over; the last column counts each spell once, by the change after its first month.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>What the mood is today.</strong> The open data end in September 2023. A gauge that ends three years ago describes history, not the market you face.</li>
+        <li><strong>Day-to-day mood.</strong> Monthly closes miss what happens inside a month: a crash and recovery within weeks barely registers. Daily index data and option-implied volatility would do better, and neither is openly licensed.</li>
+        <li><strong>A neutral answer about weights and windows.</strong> Equal weights and ten years are choices. A ten-year window that holds a calm decade makes a modest fall look extreme. Trying settings until the forecast test passes uses the very months the test is meant to keep unseen; with 9 window and horizon settings and many weight mixes, one is bound to look good by luck.</li>
+        <li><strong>Whether extremes matter in a way a straight line misses.</strong> The test fits a straight line through all readings. The look-back table hints that the most fearful months were followed by unusually good years, but the hint rests on a few long spells: counted once each, by their first month, they were not. Whether extremes matter is a different idea and needs its own test, chosen before looking, which this page does not run.</li>
+        <li><strong>Total returns.</strong> The composite leaves out dividends, which added a few percent a year. That shifts every average up but hardly changes the comparisons between bands or between the two forecasts.</li>
+        <li><strong>What to buy or sell.</strong> This is an illustration of how composite indices are built and tested, not investment advice.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Add a safe-haven signal, the return on shares against Government of Canada bonds, from the Bank of Canada's yield data, and test whether it adds anything.</li>
+        <li>Weight the signals by their first principal component, as Baker and Wurgler do, instead of by hand.</li>
+        <li>Fix a rule for the extremes in advance (for example: forecast the average plus a premium only in extreme fear), set it on 1966 to 1994 and judge it on 1995 to 2023.</li>
+        <li>Rebuild the history with total returns, adding the dividend yield Statistics Canada published until 2016.</li>
+        <li>Swap in daily data from an open source if one appears, and compare the daily and monthly gauges over the same years.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>Statistics Canada. Table 10-10-0125-01 Toronto Stock Exchange statistics, January 1956 to September 2023. https://doi.org/10.25318/1010012501-eng. Retrieved 14 October 2026. Source: Statistics Canada, Table 10-10-0125-01 Toronto Stock Exchange statistics, January 1956 to September 2023. Reproduced and distributed on an "as is" basis with the permission of Statistics Canada. The index on this page is adapted from Statistics Canada, Table 10-10-0125-01 Toronto Stock Exchange statistics, January 1956 to September 2023; this does not constitute an endorsement by Statistics Canada of this product. Licence: Statistics Canada Open Licence (https://www.statcan.gc.ca/en/terms-conditions/open-licence), under which "Intellectual property rights that third parties may have in the Information shall remain their property": the indices belong to S&amp;P Dow Jones Indices and TMX Group. The table names the Bank of Canada as its source before 2017 and the Toronto Stock Exchange eReview of TMX Group from 2017. The script that builds the page's copy is scripts/data/tsx_sentiment.py.</li>
+        <li>Baker, M., and Wurgler, J. (2007). Investor sentiment in the stock market. <em>Journal of Economic Perspectives</em>, 21(2), 129-151.</li>
+        <li>De Bondt, W. F. M., and Thaler, R. (1985). Does the stock market overreact? <em>Journal of Finance</em>, 40(3), 793-805.</li>
+        <li>Welch, I., and Goyal, A. (2008). A comprehensive look at the empirical performance of equity premium prediction. <em>Review of Financial Studies</em>, 21(4), 1455-1508.</li>
+        <li>Campbell, J. Y., and Thompson, S. B. (2008). Predicting excess stock returns out of sample: can anything beat the historical average? <em>Review of Financial Studies</em>, 21(4), 1509-1531.</li>
+        <li>Clark, T. E., and West, K. D. (2007). Approximately normal tests for equal predictive accuracy in nested models. <em>Journal of Econometrics</em>, 138(1), 291-311.</li>
+        <li>Newey, W. K., and West, K. D. (1987). A simple, positive semi-definite, heteroskedasticity and autocorrelation consistent covariance matrix. <em>Econometrica</em>, 55(3), 703-708.</li>
+        <li>Faber, M. T. (2007). A quantitative approach to tactical asset allocation. <em>Journal of Wealth Management</em>, 9(4), 69-79.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "question": "Does a fear and greed index built from momentum, volatility and breadth tell you anything about where share prices go next?",
+  "finding": "With equal weights the index read 15 (extreme fear) in September 2023, but as a forecast of the S&P/TSX Composite's change over the next twelve months it did worse than the historical average in 553 out-of-sample forecasts from 1976 to 2022 (R² of −2.8%), and although the 88 months of extreme fear were followed by an average rise of 11.5% against 7.2% for all months, they fall in 26 spells, and counted once per spell, from its first month, the rise was 6.1%.",
+  "limit": "The open data are monthly Canadian index closes that end in September 2023, so the gauge describes history, and its weights and ranking window are choices that a visitor can tune until the past looks good.",
+  "sources": ["Statistics Canada"],
+  "built": "2026-10-14"
+}
