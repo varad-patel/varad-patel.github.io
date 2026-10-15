@@ -1495,7 +1495,16 @@ window.CHALLENGE = {
    "concept": "Credit and fairness",
    "skills": "Logistic regression, calibration",
    "section": 3,
-   "date": "2026-12-31"
+   "date": "2026-12-31",
+   "built": "2026-10-14",
+   "question": "Given a borrower's profile, how likely are they to default, do the model's forecasts come true as often as they say, and does it treat groups of borrowers alike?",
+   "finding": "Fitted without sex on 19,998 Taiwanese cardholders and checked on 10,002 held out, the model's average forecast is 21.8% for women when 20.6% defaulted and 23.7% for men when 24.4% did; with sex as an input it comes within 0.6 points for both, and at a 50% cut-off it flags 4.3% of women and 6.3% of men who repaid.",
+   "limit": "The data come from one bank in Taiwan in 2005, several of their codes are undefined, and the forecasts are an illustration of the method, not a lending decision.",
+   "sources": [
+    "UCI Machine Learning Repository (Default of Credit Card Clients)"
+   ],
+   "img": "img/083.jpg",
+   "url": "83/"
   },
   {
    "id": 84,
@@ -1605,7 +1614,14 @@ window.CHALLENGE = {
    "concept": "Social choice",
    "skills": "Voting algorithms, simulation",
    "section": 4,
-   "date": "2027-01-06"
+   "date": "2027-01-06",
+   "built": "2026-10-14",
+   "question": "When the same voters rank the same candidates, how often do plurality, runoffs, approval, Borda and Condorcet's methods elect different winners?",
+   "finding": "On Pacuit's 21 voters plurality elects A, the runoffs, approval and Borda elect B, and Copeland and Schulze elect C; across 1,000 simulated three-candidate elections of 101 voters under impartial culture a Condorcet winner existed in 91.5%, plurality elected it 73.2% of the time against 95.6% for instant runoff, and all seven methods agreed in 52.4%.",
+   "limit": "Every ballot is assumed sincere and complete, and the simulated electorates come from simple models, not real elections.",
+   "sources": [],
+   "img": "img/089.jpg",
+   "url": "89/"
   },
   {
    "id": 90,
@@ -1614,7 +1630,16 @@ window.CHALLENGE = {
    "concept": "Electoral design",
    "skills": "Algorithms, CSV handling",
    "section": 4,
-   "date": "2027-01-07"
+   "date": "2027-01-07",
+   "built": "2026-10-14",
+   "question": "How does an instant-runoff count move from first preferences to a winner, and what happens to ballots that run out of candidates?",
+   "finding": "Counting all 52,369 formal ballots from Wollondilly at the 2023 New South Wales election reproduces the published distribution of preferences at all five counts: Judy Hannan, 4,126 votes behind on first preferences, wins 21,588 to 20,312, while 10,469 ballots (20.0%) are exhausted, 9,816 of them from voters who numbered a single square.",
+   "limit": "The real ballots are the Electoral Commission's reading of each paper, and the counting options cover common rules, not any one jurisdiction's law in full.",
+   "sources": [
+    "NSW Electoral Commission"
+   ],
+   "img": "img/090.jpg",
+   "url": "90/"
   },
   {
    "id": 91,
