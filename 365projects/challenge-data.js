@@ -1542,7 +1542,19 @@ window.CHALLENGE = {
    "concept": "Democratic uncertainty",
    "skills": "Bayesian aggregation, Monte Carlo",
    "section": 4,
-   "date": "2027-01-03"
+   "date": "2027-01-03",
+   "built": "2026-10-14",
+   "question": "How likely did the polls make each candidate's victory in 2016 and 2020, and what does the result say about those probabilities?",
+   "finding": "On election morning with the default assumptions the model gives Biden 93.9% in 2020 and Clinton 82.9% in 2016; its Brier scores of 0.037 and 0.075 would be matched or exceeded 60% and 11% of the time by a forecast exactly right about its own uncertainty, so neither year shows its probabilities were wrong.",
+   "limit": "Two elections cannot establish how large or how correlated polling errors are, so the error settings that drive the probabilities remain assumptions.",
+   "sources": [
+    "FiveThirtyEight polls (CC BY 4.0)",
+    "Federal Election Commission",
+    "US Census Bureau",
+    "Certificates of ascertainment (National Archives)"
+   ],
+   "img": "img/086.jpg",
+   "url": "86/"
   },
   {
    "id": 87,
@@ -1551,7 +1563,19 @@ window.CHALLENGE = {
    "concept": "Measuring public opinion",
    "skills": "Hierarchical Bayesian models",
    "section": 4,
-   "date": "2027-01-04"
+   "date": "2027-01-04",
+   "built": "2026-10-14",
+   "question": "How much does each pollster lean, and how much does the forecast depend on whether polling errors are shared across states?",
+   "finding": "In 2020 the model finds Trafalgar Group leaning furthest towards Trump (2.7 points of the two-party vote below the average poll) and Quinnipiac furthest towards Biden (1.8 above), yet removing every lean makes the polled states miss by more (2.6 points against 2.2), and five elections put the share of state error common to all states anywhere from 23% to 74%.",
+   "limit": "A house effect is measured against the average poll, so the polls alone cannot say whether the average itself is wrong, and five elections cannot pin down how much of the error the states share.",
+   "sources": [
+    "FiveThirtyEight polls (CC BY 4.0)",
+    "Federal Election Commission",
+    "US Census Bureau",
+    "Certificates of ascertainment (National Archives)"
+   ],
+   "img": "img/087.jpg",
+   "url": "87/"
   },
   {
    "id": 88,
@@ -1560,7 +1584,19 @@ window.CHALLENGE = {
    "concept": "Representation",
    "skills": "Monte Carlo simulation",
    "section": 4,
-   "date": "2027-01-05"
+   "date": "2027-01-05",
+   "built": "2026-10-14",
+   "question": "How often does the candidate who wins the popular vote lose the electoral college, and how wide is the window in which that can happen?",
+   "finding": "From the 2020 result swung uniformly, Biden needed more than 51.95% of the two-party vote, a lead of 3.9 points, to win the electoral college, so anywhere from 50% to 51.68% the popular-vote winner loses (with a 269 tie up to 51.95%); with the default uncertainty that happens in 22% of simulated elections from the 2020 map and 12% from the 2024 map.",
+   "limit": "How often an inversion happens depends almost entirely on the assumed size and pattern of the swings, which are the visitor's settings, not estimates.",
+   "sources": [
+    "Federal Election Commission",
+    "US Census Bureau",
+    "Certificates of ascertainment (National Archives)",
+    "US House of Representatives, Office of the Historian"
+   ],
+   "img": "img/088.jpg",
+   "url": "88/"
   },
   {
    "id": 89,
