@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Compound Interest Universe · 365 projects</title>
+  <meta name="description" content="Enter savings, return, fee and inflation assumptions and see how small differences in rate, fees, start age and pay-ins compound over decades, in money of the day and in today's money.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .d77-msg { font-size: 0.82rem; color: var(--bad); line-height: 1.4; }
+    .d77-msg:empty { display: none; }
+    .d77-presets { gap: 6px 8px; }
+    .d77-presets .btn { white-space: normal; text-align: left; }
+    .d77-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 120px), 1fr)); gap: 16px; align-items: start; }
+    .d77-views { align-items: flex-start; gap: 12px 20px; }
+    .d77-stack { display: grid; gap: 8px; }
+    .d77-jump { gap: 2px 16px; }
+    .d77-jump a { padding: 6px 0; }
+    @media (min-width: 861px) { .d77-jump { display: none; } }
+    #d77-results, #d77-chart, #d77-table { scroll-margin-top: 12px; }
+    .stat .v { font-size: 1.45rem; }
+    .tbl.d77-rt th, .tbl.d77-rt td { white-space: normal; }
+    .d77-rt th[scope="row"] { font-weight: 600; border-bottom: 1px solid var(--grid); }
+    .d77-rt caption { font-weight: 600; font-size: 0.86rem; color: var(--slate); }
+    .d77-rt .d77-na { color: var(--slate); }
+    /* Four columns when there is room; when its own box is narrower than the table, each change becomes a short list. */
+    .d77-rt-box { container-type: inline-size; }
+    @container (max-width: 640px) {
+      .d77-rt, .d77-rt tbody, .d77-rt tr, .d77-rt th, .d77-rt td, .d77-rt caption { display: block; }
+      .d77-rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .d77-rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .d77-rt th[scope="row"], .d77-rt td { border: 0; padding: 1px 0; }
+      .d77-rt td { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; overflow-wrap: anywhere; }
+      .d77-rt td[data-label]::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+      .d77-rt td.d77-na { justify-content: flex-start; text-align: left; }
+    }
+    @media (max-width: 560px) {
+      .d77-rt, .d77-rt tbody, .d77-rt tr, .d77-rt th, .d77-rt td, .d77-rt caption { display: block; }
+      .d77-rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .d77-rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .d77-rt th[scope="row"], .d77-rt td { border: 0; padding: 1px 0; }
+      .d77-rt td { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; overflow-wrap: anywhere; }
+      .d77-rt td[data-label]::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+      .d77-rt td.d77-na { justify-content: flex-start; text-align: left; }
+    }
+    .p-sec .eq { white-space: normal; }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body class="proj" data-day="77">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Compound Interest Universe</h1>
+      <p class="lede">Enter what you save, for how long and at what return, and see how a point of return, a point of fees or a few years' delay grows into a large difference over decades, in money of the day and in today's money.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Compound savings calculator">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>Save $200 a month from 25 to 65 at an assumed 5% a year before fees of 0.1%, with prices rising 2% a year, and the balance at 65 is worth $130,832 in today's money, from $96,000 paid in. Fees one point higher, 1.1% a year, leave 22.5% less, nearly as much as putting off the start by five years, which leaves 24.9% less. A saver who is 35 today needs $300 a month, $12,000 more in all, to end with about the same, $132,572. (The opening settings, the table rows "Fees 1 point higher" and "Start 5 years later", and the example "$300 a month from 35".)</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Money that earns a return on its return grows by a constant proportion, not a constant amount, and proportional growth is hard to judge by eye. Stango and Zinman (2009) called the tendency to think of it as straight-line growth exponential growth bias: people underestimate how much an investment grows and what interest rate a loan carries, and the households that show the bias most borrow more and save less. A difference that looks small in any one year, a point of return or of fees, multiplies the balance by the same small factor year after year, so over forty years it becomes a large share of the result.</p>
+      <p>That is why economists from Irving Fisher on have tied wealth to patience. Fisher (1930) described interest as the price that balances impatience to spend against the opportunity to invest. Someone who waits collects the compounding; someone who spends now, or starts later, gives up the years in which growth is largest in money terms, the last ones. Falk and co-authors (2018) measured patience with survey questions in 76 countries and found that more patient people save more, and that countries whose people are more patient on average tend to have higher income per person. None of that says which way the causation runs, but compounding is the mechanism that lets small differences in patience become large differences in wealth.</p>
+      <p>The tool keeps the arithmetic honest in three ways that are often skipped. It separates money of the day from today's money, because forty years of 2% inflation more than doubles prices. It counts fees as what they are, a share of the balance taken every year, so that what they take also stops growing. And it changes one thing at a time, so each difference can be seen on its own.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>One period at a time</h3>
+      <p>With a return before fees of <var>r</var> a year, a fee of <var>f</var> of the balance a year and <var>p</var> pay-ins a year (12 or 1), the balance grows each period by</p>
+      <p class="eq"><var>q</var> = [(1 + <var>r</var>)(1 − <var>f</var>)]<sup>1/<var>p</var></sup>, &nbsp;&nbsp; <var>B</var><sub><var>k</var>+1</sub> = <var>B</var><sub><var>k</var></sub> <var>q</var> + <var>c</var><sub><var>k</var></sub>,</p>
+      <p>where the pay-in <var>c</var><sub><var>k</var></sub> arrives at the end of the period. Pay-ins are the same within a year and rise by <var>h</var> from one year to the next, so in year <var>t</var> (counting from 0) each is <var>c</var>(1 + <var>h</var>)<sup><var>t</var></sup>. The fee charged in a period is the grown balance times 1 − (1 − <var>f</var>)<sup>1/<var>p</var></sup>; the tool adds these up as "fees took", and separately compares the end balance with the same plan without fees, which also counts the growth the fees would have earned.</p>
+      <h3>The closed forms it is checked against</h3>
+      <p>A lump sum <var>S</var>, and <var>n</var> payments of <var>C</var> at the end of each period (an ordinary annuity) or at the start (an annuity due), at <var>i</var> a period:</p>
+      <p class="eq"><var>S</var>(1 + <var>i</var>)<sup><var>n</var></sup>, &nbsp;&nbsp; <var>C</var> [(1 + <var>i</var>)<sup><var>n</var></sup> − 1] / <var>i</var>, &nbsp;&nbsp; <var>C</var> [(1 + <var>i</var>)<sup><var>n</var></sup> − 1] / <var>i</var> × (1 + <var>i</var>).</p>
+      <p>Payments that grow by <var>g</var> each period, <var>C</var>, <var>C</var>(1 + <var>g</var>), …, form a growing annuity:</p>
+      <p class="eq"><var>C</var> [(1 + <var>i</var>)<sup><var>n</var></sup> − (1 + <var>g</var>)<sup><var>n</var></sup>] / (<var>i</var> − <var>g</var>), &nbsp;&nbsp; or <var>C</var> <var>n</var> (1 + <var>i</var>)<sup><var>n</var> − 1</sup> when <var>i</var> = <var>g</var>.</p>
+      <p>The whole plan over <var>Y</var> years is then the lump sum at the yearly rate <var>Q</var> − 1, with <var>Q</var> = (1 + <var>r</var>)(1 − <var>f</var>), plus a growing annuity of yearly sums: each year's <var>p</var> pay-ins add up by the year's end to <var>c</var> × [(1 + <var>j</var>)<sup><var>p</var></sup> − 1] / <var>j</var>, with <var>j</var> = <var>Q</var><sup>1/<var>p</var></sup> − 1, and those sums grow by <var>h</var> a year. The tool shows this closed form under the results; tests hold the period-by-period sum to it within one part in ten billion across 200 random plans and the extreme settings, and hold the formulas to hand-worked values and the standard table figure for an annuity of 1 at 10% for 10 periods, 15.9374. Near <var>i</var> = <var>g</var> the subtraction would lose digits, so within 0.000001 of each other the terms are added up directly; near <var>i</var> = 0 the code uses e<sup><var>x</var></sup> − 1 and ln(1 + <var>x</var>) functions that keep full precision.</p>
+      <h3>Today's money</h3>
+      <p>With inflation <var>π</var> a year, an amount <var>t</var> years ahead is divided by (1 + <var>π</var>)<sup><var>t</var></sup>. The net return after inflation is Fisher's exact relation, (1 + <var>r</var>)(1 − <var>f</var>) / (1 + <var>π</var>) − 1, not <var>r</var> − <var>f</var> − <var>π</var>; at 7% and 3% it is 3.88%, not 4%. Switching the chart between today's money and money of each year changes only the deflator applied to the same balances. "Today's money" always means money of now: the rows that start 5 or 10 years later keep the end age and move every payment later, so their balance at the end is divided by (1 + <var>π</var>) raised to the full number of years from now, 40 rather than 35 in the opening plan. The line "Paid in so far" adds up each pay-in in today's money from the moment it is paid.</p>
+      <h3>Doubling time and the rule of 72</h3>
+      <p>Money growing at <var>i</var> a year doubles in ln 2 / ln(1 + <var>i</var>) years. Since ln(1 + <var>i</var>) is close to <var>i</var> for small <var>i</var>, the doubling time is close to 69.3 / (100 <var>i</var>); the rule of 72 uses 72 instead, which is close to the exact figure for rates near 8% (8 × 9.006 = 72.05) and divides evenly by many common rates. At 8% the rule's 9 years is almost exact (9.01); at 1% it says 72 years against an exact 69.66.</p>
+      <h3>Large numbers</h3>
+      <p>Every box has a range: returns from −50% to 50% a year, fees up to 10%, at most 100 years. Within them the largest possible balance is about 6 × 10<sup>26</sup> in money of the day (2 × 10<sup>31</sup> in today's money if prices fall 10% a year), far inside the range of the computer's numbers, which runs to about 10<sup>308</sup>, so nothing overflows; amounts above a thousand trillion are shown as powers of ten, and the tool says when the assumption behind a result is not believable.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>What returns will be.</strong> The return is your assumption, the same every year. Real returns vary, can be negative for years, and are not known in advance. Nothing here says what to invest in; it is an illustration of the arithmetic, not financial advice.</li>
+        <li><strong>The effect of ups and downs.</strong> A constant 5% a year is a geometric average. If 5% is the arithmetic average of returns that swing, the typical outcome is lower, and the order of good and bad years matters once money is being paid in or taken out.</li>
+        <li><strong>Taxes and other costs.</strong> Taxes on returns or withdrawals, tax relief on pay-ins, and fixed or one-off charges are left out.</li>
+        <li><strong>Steady inflation and steady pay-ins.</strong> Inflation is one number for the whole period, and the plan assumes every pay-in is made, which is often where real plans fail.</li>
+        <li><strong>What the money is for.</strong> The tool stops at the end age. How a balance becomes an income, and how long that income must last, is a separate calculation.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Draw returns at random each year with a chosen mean and spread, and show the range of outcomes instead of one line.</li>
+        <li>Turn the question round: the monthly saving needed to reach a target in today's money, found by solving the closed form.</li>
+        <li>Add withdrawals after the end age, and how long the balance lasts at a chosen income.</li>
+        <li>Add taxes, with the choice between taxing pay-ins and taxing withdrawals.</li>
+        <li>Let pay-ins arrive at the start of each period as well as the end, using the annuity-due formula.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Stango, V., and Zinman, J. (2009). Exponential growth bias and household finance. <em>Journal of Finance</em>, 64(6), 2807-2849.</li>
+        <li>Fisher, I. (1930). <em>The Theory of Interest as Determined by Impatience to Spend Income and Opportunity to Invest It</em>. New York: Macmillan.</li>
+        <li>Falk, A., Becker, A., Dohmen, T., Enke, B., Huffman, D., and Sunde, U. (2018). Global evidence on economic preferences. <em>Quarterly Journal of Economics</em>, 133(4), 1645-1692.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

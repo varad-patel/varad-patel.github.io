@@ -1,0 +1,7 @@
+{
+  "question": "How much do small differences in return, fees, start age and pay-ins change what savings grow to over decades?",
+  "finding": "Saving $200 a month from 25 to 65 at an assumed 5% before fees of 0.1%, with 2% inflation, ends at $130,832 in today's money; fees one point higher leave 22.5% less, nearly as much as starting five years later (24.9% less), and a saver who is 35 today needs $300 a month to end with about the same.",
+  "limit": "Returns are assumed constant and known, so the tool shows the arithmetic of compounding, not what any real investment will do, and it is not financial advice.",
+  "sources": [],
+  "built": "2026-10-14"
+}
