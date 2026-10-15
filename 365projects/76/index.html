@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Time Preference from Bond Yields · 365 projects</title>
+  <meta name="description" content="Move a horizon slider and see what the US Treasury market charges for waiting, and what the Ramsey equation says that implies about pure time preference.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .d76-msg { font-size: 0.82rem; color: var(--bad); line-height: 1.4; }
+    .d76-msg:empty { display: none; }
+    .d76-presets { gap: 6px 8px; }
+    .d76-presets .btn { white-space: normal; text-align: left; }
+    .d76-set { border: 1px solid var(--grid); padding: 10px 14px 14px; margin: 0; display: grid; gap: 14px; min-width: 0; }
+    .d76-set legend { font-weight: 700; font-size: 0.92rem; padding: 0 4px; }
+    .d76-words { font-size: 0.95rem; line-height: 1.55; overflow-wrap: anywhere; }
+    .d76-stack { display: grid; gap: 8px; }
+    .d76-jump { gap: 2px 16px; }
+    .d76-jump a { padding: 6px 0; }
+    @media (min-width: 861px) { .d76-jump { display: none; } }
+    #d76-results, #d76-table, #d76-curves, #d76-history { scroll-margin-top: 12px; }
+    .stat .v { font-size: 1.45rem; }
+    /* The decomposition: three columns when there is room; a short list per line when its own box is narrow. */
+    .tbl.d76-rt th, .tbl.d76-rt td { white-space: normal; }
+    .d76-rt th[scope="row"] { font-weight: 600; border-bottom: 1px solid var(--grid); }
+    .d76-rt caption { font-weight: 600; font-size: 0.86rem; color: var(--slate); }
+    .d76-rt-box { container-type: inline-size; }
+    @container (max-width: 600px) {
+      .d76-rt, .d76-rt tbody, .d76-rt tr, .d76-rt th, .d76-rt td, .d76-rt caption { display: block; }
+      .d76-rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .d76-rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .d76-rt th[scope="row"], .d76-rt td { border: 0; padding: 1px 0; text-align: left; }
+      .d76-rt td.num { text-align: left; font-weight: 650; }
+      .d76-rt td { overflow-wrap: anywhere; }
+    }
+    @media (max-width: 560px) {
+      .d76-rt, .d76-rt tbody, .d76-rt tr, .d76-rt th, .d76-rt td, .d76-rt caption { display: block; }
+      .d76-rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .d76-rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .d76-rt th[scope="row"], .d76-rt td { border: 0; padding: 1px 0; text-align: left; }
+      .d76-rt td.num { text-align: left; font-weight: 650; }
+      .d76-rt td { overflow-wrap: anywhere; }
+    }
+    .p-sec .eq { white-space: normal; }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body class="proj" data-day="76">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Time Preference from Bond Yields</h1>
+      <p class="lede">A bond price says what a dollar paid later is worth today. Move the horizon and the date to see how much the US Treasury market charges for waiting, and what that charge would say about patience if the Ramsey equation held exactly.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Treasury yield curve and implied time preference explorer">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>On 9 October 2026 the Treasury market priced $100 of today's buying power, delivered in 10 years, at $74.58: a real yield of 2.93% a year. At the end of July 2021 the same promise cost $111.96, more than it pays, a real yield of −1.13%. Read through the Ramsey equation with η = 1 and US consumption growth at its 1999 to 2025 average and spread, the implied rate of pure time preference went from −2.77% to 1.29% a year in about five years. Whatever values are chosen for the other terms, the implied rate moves by the same 4.06 points, because only the yield changed. (Horizon 10 years; press "Lowest real yield", then "Latest".)</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Irving Fisher described the rate of interest in 1930 as the meeting point of two forces: people's impatience to spend income now rather than later, and the opportunity to invest it and have more later. A government bond that promises a fixed sum in ten years is a direct price of waiting. If $100 in ten years sells for $60 today, the market as a whole is willing to give up $100 of future money for $60 of present money. It is tempting to read that price as a measurement of how much people care about the future.</p>
+      <p>Economists separate two reasons for valuing later money less. One is pure time preference: counting a unit of well-being as worth less simply because it arrives later. Frank Ramsey, in his 1928 paper on how much a nation should save, called that "ethically indefensible" and said it "arises merely from the weakness of the imagination". The other is that people later will probably be richer, so an extra dollar does them less good. Ramsey's model joins the two in one equation: the riskless real interest rate is the rate of pure time preference ρ plus η, how fast extra consumption loses value, times the growth of consumption.</p>
+      <p>That equation sits at the centre of a long argument about climate policy. The Stern Review, released in 2006, held that later generations count as much as this one, allowed a pure rate of only 0.1% a year for the small chance that humanity does not survive, took η = 1, and concluded that strong action now was worth its cost. William Nordhaus objected that the parameters should agree with observed returns on capital and saving rates, and reported that in his DICE-2006 model a pure rate of 0.1% fits them only with η of 2.25. If the market's real rate could be read straight into ρ, the dispute would be settled by data. This page tries exactly that with the cleanest market there is, US Treasury securities that pay in dollars or in inflation-protected dollars, and shows why the answer moves with every change in monetary policy and risk appetite, which no account of patience predicts.</p>
+      <p>The difficulty is old. Mehra and Prescott (1985) found that people would have to be implausibly averse to risk for this family of models to explain why shares have earned so much more than bonds. Philippe Weil (1989) added that preferences that cautious imply a riskless rate far higher than the one observed, and called it the risk-free rate puzzle. Turned round, as on this page, the same equations give a rate of pure time preference that is small or negative.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The curves</h3>
+      <p>Federal Reserve Board staff fit a smooth curve to the prices of Treasury notes and bonds every trading day, following Gürkaynak, Sack and Wright (2007), and the same for Treasury Inflation-Protected Securities (TIPS) from 1999 (Gürkaynak, Sack and Wright 2010). The nominal curve leaves out bills, floating-rate notes and the two most recently issued notes or bonds of each maturity. Each day's curve is six numbers, the parameters of Svensson's (1994) extension of the Nelson and Siegel (1987) curve. The zero-coupon yield at maturity <var>n</var> years, continuously compounded, is</p>
+      <p class="eq"><var>y</var>(<var>n</var>) = <var>β</var><sub>0</sub> + <var>β</var><sub>1</sub> (1 − e<sup>−<var>n</var>/<var>τ</var><sub>1</sub></sup>) / (<var>n</var>/<var>τ</var><sub>1</sub>) + <var>β</var><sub>2</sub> [(1 − e<sup>−<var>n</var>/<var>τ</var><sub>1</sub></sup>) / (<var>n</var>/<var>τ</var><sub>1</sub>) − e<sup>−<var>n</var>/<var>τ</var><sub>1</sub></sup>] + <var>β</var><sub>3</sub> [(1 − e<sup>−<var>n</var>/<var>τ</var><sub>2</sub></sup>) / (<var>n</var>/<var>τ</var><sub>2</sub>) − e<sup>−<var>n</var>/<var>τ</var><sub>2</sub></sup>]</p>
+      <p>and the instantaneous forward rate, the rate for waiting a little longer once <var>n</var> years have passed, is</p>
+      <p class="eq"><var>f</var>(<var>n</var>) = <var>y</var>(<var>n</var>) + <var>n</var> <var>y</var>′(<var>n</var>) = <var>β</var><sub>0</sub> + <var>β</var><sub>1</sub> e<sup>−<var>n</var>/<var>τ</var><sub>1</sub></sup> + <var>β</var><sub>2</sub> (<var>n</var>/<var>τ</var><sub>1</sub>) e<sup>−<var>n</var>/<var>τ</var><sub>1</sub></sup> + <var>β</var><sub>3</sub> (<var>n</var>/<var>τ</var><sub>2</sub>) e<sup>−<var>n</var>/<var>τ</var><sub>2</sub></sup>.</p>
+      <p>Before 2004 the TIPS curve is the four-parameter Nelson-Siegel curve (<var>β</var><sub>3</sub> = 0). The page bundles the parameters for the last trading day of every month from January 1999 and for the latest day published, 9 October 2026. Every bundled curve reproduces each yield and forward rate the Board publishes for that day (1 to 30 years nominal, 2 to 20 years real) to within about 0.00005 percentage points, the rounding of the published figures to four decimals. The page does not extrapolate: outside those maturities it shows nothing.</p>
+      <h3>Reading patience off a curve</h3>
+      <p>The price today of $1 paid in <var>n</var> years is the discount factor</p>
+      <p class="eq"><var>P</var>(<var>n</var>) = e<sup>−<var>n</var> <var>y</var>(<var>n</var>)/100</sup>, &nbsp;&nbsp; and between two dates &nbsp;&nbsp; <var>P</var>(<var>n</var>) / <var>P</var>(<var>m</var>) = e<sup>−(<var>n</var> − <var>m</var>) <var>f</var>(<var>m</var>, <var>n</var>)/100</sup>, &nbsp; <var>f</var>(<var>m</var>, <var>n</var>) = [<var>n</var> <var>y</var>(<var>n</var>) − <var>m</var> <var>y</var>(<var>m</var>)] / (<var>n</var> − <var>m</var>).</p>
+      <p>On the real curve the payment is $1 of today's buying power: TIPS principal is adjusted by the Bureau of Labor Statistics' consumer price index. The tool reports 100 <var>P</var>(<var>n</var>), the yield also as a rate compounded once a year (e<sup><var>y</var>/100</sup> − 1), the average share of value lost to each year of waiting (1 − e<sup>−<var>y</var>/100</sup>), and the half-life of a dollar, the horizon at which <var>n</var> <var>y</var>(<var>n</var>) = 100 ln 2, found by a scan and bisection. Inflation compensation is the nominal yield minus the real yield at the same maturity, as the Board defines it.</p>
+      <h3>The Ramsey equation</h3>
+      <p>A person who values consumption <var>C</var> with marginal utility <var>C</var><sup>−<var>η</var></sup> and discounts later well-being at rate <var>ρ</var> is indifferent at the margin between $1 of buying power now and a riskless claim to <var>X</var> of it in <var>n</var> years when the price of the claim is</p>
+      <p class="eq"><var>P</var>(<var>n</var>) = E[ e<sup>−<var>ρ</var><var>n</var></sup> (<var>C</var><sub><var>n</var></sub> / <var>C</var><sub>0</sub>)<sup>−<var>η</var></sup> ].</p>
+      <p>If the growth of log consumption is normal with mean <var>μ</var> and standard deviation <var>σ</var> a year, independently from year to year, the expectation is e<sup>−<var>η</var><var>μ</var><var>n</var> + <var>η</var>²<var>σ</var>²<var>n</var>/2</sup>, and the real yield is the same at every maturity:</p>
+      <p class="eq"><var>r</var> = <var>ρ</var> + <var>η</var><var>μ</var> − ½<var>η</var>²<var>σ</var>² &nbsp;&nbsp; so &nbsp;&nbsp; <var>ρ</var> = <var>r</var> − <var>η</var><var>μ</var> + ½<var>η</var>²<var>σ</var>².</p>
+      <p>With no uncertainty this is Ramsey's <var>r</var> = <var>ρ</var> + <var>η</var><var>g</var>. The last term is precautionary saving: uncertain growth makes people want to save, which pushes the riskless rate down. The tool puts the real zero-coupon yield at the chosen horizon in place of <var>r</var> and reports the <var>ρ</var> that would make the equation hold. The default <var>μ</var> and <var>σ</var> are the mean (1.66%) and standard deviation (1.97%) of the yearly growth of log US real consumption per person, 1999 to 2025, from the national accounts of the Bureau of Economic Analysis (Table 7.1, line 13); a button gives the 1949 to 2025 figures (2.11% and 1.89%). A test prices a ten-year bond in 200,000 simulated economies and recovers the formula's yield.</p>
+      <h3>What the yield does not reveal</h3>
+      <p>Each step of the table under the headline numbers says where its figure comes from. Two lines are observed: the nominal yield and the real yield, and so their gap. The gap mixes expected inflation with a premium for bearing inflation risk and with the extra yield TIPS pay because they are harder to trade; the Board warns that it "should not be interpreted" as expected inflation. The real yield in turn holds a term premium for the risk that real rates change, the TIPS liquidity premium, and, pulling the other way, the extra price investors pay for the safety and liquidity of Treasuries (Krishnamurthy and Vissing-Jorgensen 2012). No curve separates them, so the tool sets them to zero, and calls its answer the <em>implied</em> ρ. Because ρ = <var>r</var> − <var>η</var><var>μ</var> + ½<var>η</var>²<var>σ</var>², any change in the real yield passes one for one into the implied ρ when the other terms are held fixed; the history chart shows that directly.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Anyone's actual patience.</strong> The yield is set by whoever trades at the margin: central banks, foreign reserve managers, pension funds matching their liabilities, banks meeting rules. None of them is the representative person of Ramsey's model, and the expected path of short-term rates is set largely by the Federal Reserve.</li>
+        <li><strong>The premia.</strong> The term premium, the TIPS liquidity premium and the safety premium of Treasuries are all inside the yield and are taken as zero. D'Amico, Kim and Wei (2018) estimate that the gap between TIPS yields and riskless real yields, which they attribute mainly to liquidity, reached about 3 percentage points after the Lehman bankruptcy in late 2008, as TIPS became costlier to trade and to finance and investors grew more averse to risk. At a 2-year horizon "Highest real yield" lands on November 2008.</li>
+        <li><strong>Whether the model is right.</strong> The equation assumes one kind of utility, in which the same η governs dislike of risk and of uneven consumption over time, growth that is lognormal and independent from year to year, and a constant ρ. Epstein and Zin (1989) separate risk aversion from the willingness to substitute over time, which changes the formula.</li>
+        <li><strong>The right η and growth.</strong> They are assumptions. Past growth stands in for expected growth, and US consumption per person is deflated by a different price index from the one TIPS use. A choice of η moves ρ by η times the growth rate, more than the whole range of most ethical arguments about ρ.</li>
+        <li><strong>Prices, exactly.</strong> The yields are smooth fitted curves, not quoted prices of particular securities; the Board calls them a staff research product subject to revision. Short and long ends rest on few securities, and the real curve starts at 2 years.</li>
+        <li><strong>Other countries or currencies.</strong> One government's debt, in dollars. A country whose debt carries default or currency risk would add those premia too. Nothing here is advice on buying or selling bonds.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Subtract a model estimate of the term premium, for example the Board staff's three-factor model implemented as in Kim and Wright (2005), and show how much of the yield's swings it absorbs.</li>
+        <li>Split inflation compensation with surveys of expected inflation, and the TIPS liquidity premium with an estimate such as D'Amico, Kim and Wei's.</li>
+        <li>Add the Epstein-Zin version of the equation, with separate sliders for risk aversion and the elasticity of intertemporal substitution.</li>
+        <li>Add the Bank of England's fitted curves for index-linked gilts, to compare two markets' answers.</li>
+        <li>Plot long-horizon forward rates against the declining discount rates that Weitzman (1998) argued for under uncertainty about future rates, and against hyperbolic discounting of the kind Laibson (1997) used to model self-control.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>Board of Governors of the Federal Reserve System. The U.S. Treasury Yield Curve: 1961 to the Present (feds200628.csv), and The TIPS Yield Curve and Inflation Compensation (feds200805.csv). Staff research products, "not an official statistical release". https://www.federalreserve.gov/data/nominal-yield-curve.htm and https://www.federalreserve.gov/data/tips-yield-curve-and-inflation-compensation.htm. Retrieved 14 October 2026, data to 9 October 2026. Public domain: the Board's website notice says its information "is in the public domain and may be copied and distributed without permission", with the Board cited as the source.</li>
+        <li>US Bureau of Economic Analysis. National Income and Product Accounts, Table 7.1, Selected Per Capita Product and Income Series in Current and Chained Dollars, line 13 (personal consumption expenditures per capita, chained 2017 dollars), annual flat file dated 30 September 2026. Retrieved 14 October 2026. Public domain unless stated otherwise (bea.gov FAQ 145).</li>
+        <li>Gürkaynak, R. S., Sack, B., and Wright, J. H. (2007). The U.S. Treasury yield curve: 1961 to the present. <em>Journal of Monetary Economics</em>, 54(8), 2291-2304.</li>
+        <li>Gürkaynak, R. S., Sack, B., and Wright, J. H. (2010). The TIPS yield curve and inflation compensation. <em>American Economic Journal: Macroeconomics</em>, 2(1), 70-92.</li>
+        <li>Svensson, L. E. O. (1994). Estimating and interpreting forward interest rates: Sweden 1992-1994. NBER Working Paper 4871.</li>
+        <li>Nelson, C. R., and Siegel, A. F. (1987). Parsimonious modeling of yield curves. <em>Journal of Business</em>, 60(4), 473-489.</li>
+        <li>Ramsey, F. P. (1928). A mathematical theory of saving. <em>Economic Journal</em>, 38(152), 543-559.</li>
+        <li>Fisher, I. (1930). <em>The Theory of Interest as Determined by Impatience to Spend Income and Opportunity to Invest It</em>. New York: Macmillan.</li>
+        <li>Stern, N. (2007). <em>The Economics of Climate Change: The Stern Review</em>. Cambridge University Press.</li>
+        <li>Nordhaus, W. D. (2006). The "Stern Review" on the economics of climate change. NBER Working Paper 12741. Published in revised form as: A review of the Stern Review on the economics of climate change. <em>Journal of Economic Literature</em>, 45(3), 686-702 (2007).</li>
+        <li>Weil, P. (1989). The equity premium puzzle and the risk-free rate puzzle. <em>Journal of Monetary Economics</em>, 24(3), 401-421.</li>
+        <li>Mehra, R., and Prescott, E. C. (1985). The equity premium: a puzzle. <em>Journal of Monetary Economics</em>, 15(2), 145-161.</li>
+        <li>Epstein, L. G., and Zin, S. E. (1989). Substitution, risk aversion, and the temporal behavior of consumption and asset returns: a theoretical framework. <em>Econometrica</em>, 57(4), 937-969.</li>
+        <li>Krishnamurthy, A., and Vissing-Jorgensen, A. (2012). The aggregate demand for Treasury debt. <em>Journal of Political Economy</em>, 120(2), 233-267.</li>
+        <li>D'Amico, S., Kim, D. H., and Wei, M. (2018). Tips from TIPS: the informational content of Treasury Inflation-Protected Security prices. <em>Journal of Financial and Quantitative Analysis</em>, 53(1), 395-436.</li>
+        <li>Kim, D. H., and Wright, J. H. (2005). An arbitrage-free three-factor term structure model and the recent behavior of long-term yields and distant-horizon forward rates. Finance and Economics Discussion Series 2005-33, Board of Governors of the Federal Reserve System.</li>
+        <li>Weitzman, M. L. (1998). Why the far-distant future should be discounted at its lowest possible rate. <em>Journal of Environmental Economics and Management</em>, 36(3), 201-208.</li>
+        <li>Laibson, D. (1997). Golden eggs and hyperbolic discounting. <em>Quarterly Journal of Economics</em>, 112(2), 443-478.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

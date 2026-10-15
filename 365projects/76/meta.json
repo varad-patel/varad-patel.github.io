@@ -1,0 +1,7 @@
+{
+  "question": "What does the price of a US Treasury bond say about how patient the market is, and how much of it is pure time preference?",
+  "finding": "On 9 October 2026 the market priced $100 of buying power due in 10 years at $74.58 (a real yield of 2.93%), against $111.96 at the end of July 2021 (−1.13%); read through the Ramsey equation with fixed η and growth, pure time preference would have risen by 4.06 points in five years, from −2.77% to 1.29% with η = 1 and 1999 to 2025 consumption growth.",
+  "limit": "A real yield also holds term, liquidity and safety premia and reflects monetary policy, and no yield curve can separate these from patience, so the implied time preference is only what is left if they are all zero.",
+  "sources": ["Federal Reserve Board yield curves", "US Bureau of Economic Analysis"],
+  "built": "2026-10-14"
+}
