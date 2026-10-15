@@ -1,0 +1,7 @@
+{
+  "question": "How often does the candidate who wins the popular vote lose the electoral college, and how wide is the window in which that can happen?",
+  "finding": "From the 2020 result swung uniformly, Biden needed more than 51.95% of the two-party vote, a lead of 3.9 points, to win the electoral college, so anywhere from 50% to 51.68% the popular-vote winner loses (with a 269 tie up to 51.95%); with the default uncertainty that happens in 22% of simulated elections from the 2020 map and 12% from the 2024 map.",
+  "limit": "How often an inversion happens depends almost entirely on the assumed size and pattern of the swings, which are the visitor's settings, not estimates.",
+  "sources": ["Federal Election Commission", "US Census Bureau", "Certificates of ascertainment (National Archives)", "US House of Representatives, Office of the Historian"],
+  "built": "2026-10-14"
+}

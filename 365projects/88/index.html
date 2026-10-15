@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Electoral College Simulator · 365 projects</title>
+  <meta name="description" content="Swing the states from a past US presidential result, simulate thousands of elections over the 538 electoral votes, and see how often the popular-vote winner loses.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .d88-group { gap: 14px; padding-top: 12px; border-top: 1px solid var(--grid); }
+    .d88-grouphead { margin: 0; font-weight: 700; font-size: 0.95rem; }
+    .d88-source { padding-top: 12px; border-top: 1px solid var(--grid); overflow-wrap: anywhere; }
+    .d88-stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; min-width: 0; }
+    .d88-progress:empty { display: none; }
+    .d88-examples { gap: 6px 8px; }
+    .d88-examples .btn { white-space: normal; text-align: left; }
+    .d88-regions summary, .d88-units summary { cursor: pointer; font-weight: 600; padding: 4px 0; width: fit-content; }
+    .d88-regions[open] summary, .d88-units[open] summary { margin-bottom: 8px; }
+    .d88-chips { display: flex; flex-wrap: wrap; gap: 6px 8px; }
+    .d88-chip { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 3px 4px 3px 8px; border: 1px solid var(--grid); background: #fff; font-size: 0.86rem; max-width: 100%; overflow-wrap: anywhere; }
+    .d88-jump { gap: 2px 16px; }
+    .d88-jump a { padding: 6px 0; }
+    @media (min-width: 861px) { .d88-jump { display: none; } }
+    .stat .v { font-size: 1.4rem; }
+    .d88-rt caption { text-align: left; font-weight: 600; font-size: 0.86rem; color: var(--slate); padding-bottom: 6px; }
+    .d88-rt th[scope="row"] { font-weight: 600; }
+    .d88-rt thead th { vertical-align: bottom; }
+    .tbl.d88-rt th, .tbl.d88-rt td { white-space: normal; }
+    /* A table becomes a short list of labelled lines whenever its box is narrower than the table: the history table
+       needs about 520 pixels, the table of every contest about 640. Written for each box, and for the screen in
+       browsers without container queries. */
+    .d88-stack { container: d88s / inline-size; }
+    .d88-tbl { container: d88w / inline-size; }
+    @container d88s (max-width: 520px) {
+      .d88-rt, .d88-rt tbody, .d88-rt tr, .d88-rt th, .d88-rt td, .d88-rt caption { display: block; }
+      .d88-rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+      .d88-rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .d88-rt th[scope="row"], .d88-rt td { border: 0; padding: 1px 0; }
+      .d88-rt td, .d88-rt td.num { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; white-space: normal; overflow-wrap: anywhere; }
+      .d88-rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+    }
+    @container d88w (max-width: 660px) {
+      .d88-rt, .d88-rt tbody, .d88-rt tr, .d88-rt th, .d88-rt td, .d88-rt caption { display: block; }
+      .d88-rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+      .d88-rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .d88-rt th[scope="row"], .d88-rt td { border: 0; padding: 1px 0; }
+      .d88-rt td, .d88-rt td.num { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; white-space: normal; overflow-wrap: anywhere; }
+      .d88-rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+    }
+    @media (max-width: 640px) {
+      .d88-rt, .d88-rt tbody, .d88-rt tr, .d88-rt th, .d88-rt td, .d88-rt caption { display: block; }
+      .d88-rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+      .d88-rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .d88-rt th[scope="row"], .d88-rt td { border: 0; padding: 1px 0; }
+      .d88-rt td, .d88-rt td.num { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; white-space: normal; overflow-wrap: anywhere; }
+      .d88-rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+    }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+    @media (max-width: 600px) { .p-sec .eq { white-space: normal; } }
+  </style>
+</head>
+<body class="proj" data-day="88">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Electoral College Simulator</h1>
+      <p class="lede">Start from a real presidential result, swing the states, and run thousands of elections over the 538 electoral votes to see how often the candidate with the most votes loses.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Electoral college simulator">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>Start from the 2020 result and swing every state by the same amount: Joe Biden needs more than 51.95% of the two-party vote, a lead of 3.9 points, to win the electoral college. Anywhere from 50% to 51.68% Donald Trump wins it while losing the popular vote, and from 51.68% to 51.95% it ties at 269. From the 2016 map Hillary Clinton needed 51.52% and won 51.11%; from the 2024 map the gap is only 0.11 points, and from the 2012 map it runs the other way. With the default uncertainty of 2 points nationally and 2 per state, the popular-vote winner loses in 22% of 20,000 simulated elections from the 2020 map and 12% from the 2024 map.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Americans do not elect their president directly. Under Article II of the Constitution each state appoints as many electors as it has senators and representatives, and the District of Columbia has three. Every state but two gives all its electors to the candidate with the most votes in the state. Maine and Nebraska give two to the statewide winner and one to the winner of each congressional district. A candidate needs 270 of the 538 electoral votes; if no one has a majority, the House of Representatives chooses, with each state's delegation casting one vote.</p>
+      <p>Because votes are counted state by state, a candidate who piles up large margins in a few states can win more votes nationally and still lose. The House of Representatives' historians list five such elections: 1824, 1876, 1888, 2000 and 2016. The first is a special case: in 1824 six of the 24 states let their legislatures choose the electors, so Andrew Jackson's lead in the popular vote was counted in only 18 states, and with no one holding a majority of electoral votes the House chose John Quincy Adams. Geruso, Spears and Talesara (2022), whose study starts in 1836, count four, and argue that the small number is not reassuring. In their estimates, about 40 percent of elections decided by a popular-vote margin within one point would be expected to produce such an inversion, a rate stable since the early 1800s; the United States has seen few because it has had few close elections.</p>
+      <p>This is a question about representation. Supporters of the system say it makes candidates win across many states rather than run up votes in the largest; critics say it makes a vote in a close state count for more than one in a safe state. Whatever the merits, which way the system leans changes from one election to the next with where each party's voters live. Erikson, Sigman and Yao (2020) simulated the 2020 election from earlier results and concluded that the bias would probably favour the Republicans again, though by less than in 2016. The tool lets you measure the lean of any of four maps.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The base map</h3>
+      <p>The tool starts from a certified result: 2012, 2016, 2020 or 2024. For each state, and for each district of Maine and Nebraska, it takes the Democrat's share of the two-party vote, <var>x</var><sub><var>u</var></sub> = 100<var>D</var><sub><var>u</var></sub>/(<var>D</var><sub><var>u</var></sub> + <var>R</var><sub><var>u</var></sub>), and the two-party turnout <var>V</var><sub><var>u</var></sub> = <var>D</var><sub><var>u</var></sub> + <var>R</var><sub><var>u</var></sub>. State figures are the Federal Election Commission's; district figures are the votes for each party's district electors on the states' certificates of ascertainment. Electoral votes follow the 2010 census for 2012 to 2020 and the 2020 census for 2024.</p>
+      <h3>The swings</h3>
+      <p>The visitor sets a national swing <var>n</var>, a swing for each Census region <var>g</var>, and a swing <var>o</var> for any state or district. A district moves with its state and then by its own swing:</p>
+      <p class="eq"><var>x</var>′<sub><var>u</var></sub> = min(100, max(0, <var>x</var><sub><var>u</var></sub> + <var>n</var> + <var>g</var><sub>region</sub> + <var>o</var><sub>state</sub> + <var>o</var><sub>district</sub>))</p>
+      <h3>The count</h3>
+      <p>A contest goes to the Democrat if <var>x</var>′ is above 50 and to the Republican if below; a contest at exactly 50 goes to neither and is reported as unresolved. Maine's and Nebraska's two statewide votes follow the statewide share and each district's vote follows its own; unticking the rule gives all of a state's votes to its statewide winner instead. The national popular vote holds each state's turnout fixed:</p>
+      <p class="eq"><var>P</var> = Σ<sub>states</sub> <var>x</var>′<sub><var>s</var></sub> <var>V</var><sub><var>s</var></sub> / Σ<sub>states</sub> <var>V</var><sub><var>s</var></sub></p>
+      <p>The popular-vote winner is whoever has more of the two-party vote, which is also who has more votes overall, since other candidates' votes are the same for both.</p>
+      <h3>The tipping point and the window</h3>
+      <p>Rank the contests from the most to the least Democratic and add up their electoral votes. The contest that takes the Democrat to 270 is the tipping point, and its share minus <var>P</var> measures which way the map leans. A further uniform swing moves every share and <var>P</var> by the same amount, so the Democrat wins the electoral college exactly when <var>P</var> passes <var>P</var> + 50 − <var>x</var><sub>tip</sub>, while the popular vote turns at 50. Between the two lies the window in which the popular-vote winner loses. If the running total hits exactly 269 on the way, the stretch between the contest that reaches 269 and the one that reaches 270 is a tie.</p>
+      <h3>The simulation</h3>
+      <p>Each simulated election adds a national error with standard deviation <var>σ</var><sub>N</sub> to every contest, an error with standard deviation <var>σ</var><sub>S</sub> to each state, which its districts share, and half that again to each district, all normal and drawn with the page's seeded generator. The tool counts how often each side reaches 270, how often no one does, and how often the winner of <var>P</var> loses the count, and groups the simulated elections by the popular-vote lead 2(<var>P</var> − 50) to show where the inversions happen.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>How likely an inversion is in a real election.</strong> The answer depends almost entirely on the uncertainty settings, which are the visitor's. The tool shows the mechanism and the window; the probability is only as good as the settings.</li>
+        <li><strong>Anything about turnout.</strong> Each state's turnout is held at the base year's. A swing that came from new voters in one state rather than voters changing sides would change the popular vote differently.</li>
+        <li><strong>Third parties.</strong> Shares are of the two-party vote. A strong third candidate can win electoral votes or change who leads in a state in ways this cannot show.</li>
+        <li><strong>Elections the House decides.</strong> A 269 to 269 tie or an unresolved contest is reported, not settled. Faithless electors, such as the seven of 2016, are not modelled: electoral votes are counted as pledged.</li>
+        <li><strong>Realistic patterns of change.</strong> Random errors here are national plus independent states. Real swings cluster by region and by the kind of voter, which makes the extremes more likely than the simulation shows.</li>
+        <li><strong>The nineteenth century.</strong> 1824, 1876 and 1888 were fought with other states and other electorates, and the base maps start in 2012. In 1824 there was not even a national popular vote: six legislatures chose their states' electors.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Add base maps back to 1976 from the MIT Election Data and Science Lab's returns, and chart the tipping-point lean election by election.</li>
+        <li>Draw swings from the past: resample the state-by-state swings of earlier pairs of elections instead of independent normal errors.</li>
+        <li>Model a contingent election in the House, with each state's delegation voting as one.</li>
+        <li>Compare other rules: every state splitting by district, proportional allocation, or a national popular vote, and count the inversions under each.</li>
+        <li>Let turnout change by state as well as the shares.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>Federal Election Commission. Federal Elections 2012, 2016 and 2020 (Table 2, Presidential Electoral and Popular Vote) and Official 2024 Presidential General Election Results. Public domain. Retrieved 14 October 2026.</li>
+        <li>US Census Bureau. Apportionment population and number of representatives by state: 2020 Census (Table 1), with the change from the 2010 apportionment; state geocodes v2024 for the Census regions. Public domain. Retrieved 14 October 2026.</li>
+        <li>States of Maine and Nebraska. Certificates of ascertainment, 2012 to 2024, as published by the US National Archives (https://www.archives.gov/electoral-college): votes for each party's district electors. Maine's 2012 and 2016 certificates leave 415 and 184 overseas and military votes out of the district totals. Retrieved 15 October 2026.</li>
+        <li>US National Archives, Office of the Federal Register. Electoral College results for 1824, 1876, 1888, 2000 and 2016, and "Distribution of Electoral Votes" (https://www.archives.gov/electoral-college). Retrieved 15 October 2026.</li>
+        <li>US House of Representatives, Office of the Historian. "Electoral College" (https://history.house.gov/Institution/Electoral-College/Electoral-College/), for the five elections in which the popular-vote winner lost. Retrieved 15 October 2026.</li>
+        <li>Constitution of the United States, Article II, Section 1, and the Twelfth and Twenty-third Amendments.</li>
+        <li>Woolley, J. T., and Peters, G. The American Presidency Project, University of California, Santa Barbara. "Election of 1824" (https://www.presidency.ucsb.edu/statistics/elections/1824): the six states whose legislatures chose the electors, and the popular vote in the other 18. Retrieved 15 October 2026.</li>
+        <li>Library of Congress. "Presidential Election of 1824: A Resource Guide" (https://guides.loc.gov/presidential-election-1824): popular and electoral votes. Retrieved 15 October 2026.</li>
+        <li>Geruso, M., Spears, D., and Talesara, I. (2022). Inversions in US presidential elections: 1836-2016. <em>American Economic Journal: Applied Economics</em>, 14(1), 327-357.</li>
+        <li>Erikson, R. S., Sigman, K., and Yao, L. (2020). Electoral College bias and the 2020 presidential election. <em>Proceedings of the National Academy of Sciences</em>, 117(45), 27940-27944.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
