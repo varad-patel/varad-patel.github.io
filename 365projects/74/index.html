@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Central Bank Simulator · 365 projects</title>
+  <meta name="description" content="Play central banker in a textbook New Keynesian economy: set the interest rate each quarter, watch inflation and output respond, and see your score against the best anyone could do.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    .verdicts { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+    .nowrap { white-space: nowrap; }
+    .tool-grid.model-lab { padding-top: 22px; border-top: 1px solid var(--grid); }
+    /* Wide screens: the restart controls sit under the rate, the results span both rows. Narrow: after the results. */
+    .game-grid { grid-template-rows: auto 1fr; }
+    .game-grid > .restart { grid-column: 1; grid-row: 2; }
+    .game-grid > .out { grid-column: 2; grid-row: 1 / span 2; }
+    @media (max-width: 860px) { .game-grid { grid-template-rows: none; } .game-grid > .restart, .game-grid > .out { grid-column: auto; grid-row: auto; } }
+    details.params summary { cursor: pointer; width: fit-content; padding: 2px 0; font-weight: 600; }
+    details.params p { margin-top: 6px; }
+    .stat .v { font-size: 1.45rem; }
+    /* The results table: four short columns that wrap on a phone. */
+    .out .panel .tbl th, .out .panel .tbl td, .out .panel .tbl .num { white-space: normal; }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+    @media (max-width: 600px) { .p-sec .eq { white-space: normal; } }
+  </style>
+</head>
+<body class="proj" data-day="74">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Central Bank Simulator</h1>
+      <p class="lede">You run the central bank of a textbook economy. Each quarter, knowing only what has already happened, set the interest rate, then see what inflation and output did and how your score compares with the best anyone could have done.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Central bank simulator and the New Keynesian model behind it">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>On the opening shocks (number 2026), holding the rate at 6% for all sixteen quarters scores 6.47, while the best that anyone could expect from last quarter's figures and a perfect knowledge of the model scores 2.07, and the public's own rule, which uses this quarter's figures, scores 0.88: most of what remains is the cost of not knowing what is happening now. Over 2,000 sets of shocks the three average 3.34, 1.62 and 0.47. In the lab, Taylor's rule answers a monetary policy shock of a point a year by moving the rate only 0.34 points, because output falls by 0.26% and inflation by 0.35 points at once; lower the response to inflation from 1.00 to 0.95 and the model no longer has a unique equilibrium.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Central banks steer the economy with one short-term interest rate. A higher rate makes saving more attractive and borrowing dearer, so households and firms spend less; with less demand, firms raise prices less often. The New Keynesian model, set out by Richard Clarida, Jordi Galí and Mark Gertler in 1999 and in Galí's textbook, turns that story into three equations: one for spending, one for prices, and one for the central bank. It is the core of the models central banks use, and the simplest model in which monetary policy has real effects because prices are sticky.</p>
+      <p>Two ideas in it are worth playing with. The first is that expectations do much of the work. How much people spend today depends on what they expect tomorrow, so a rate rise that people expect to last does more than one they expect to be reversed. The second is the Taylor principle: a central bank must raise its rate by more than one point for each point of inflation, so that the real interest rate rises. If it does not, the model does not settle on one path; inflation can rise simply because people expect it to, and nothing in the rule stops it. The lab below the game shows both.</p>
+      <p>The game adds the problem every real central bank has: it sets the rate before it knows what is happening this quarter. The score shows how much that costs. Even a player who understood the model perfectly would lose far more than a rule that could see the current quarter.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The model</h3>
+      <p>Time is in quarters. <var>y</var><sub><var>t</var></sub> is the output gap in percent (output against the level it would reach with flexible prices), <var>π</var><sub><var>t</var></sub> inflation and <var>i</var><sub><var>t</var></sub> the nominal interest rate, both as quarterly rates and as deviations from the steady state. The economy follows Galí's dynamic IS curve and New Keynesian Phillips curve, with a cost-push shock added to the latter as in Clarida, Galí and Gertler (1999):</p>
+      <p class="eq"><var>y</var><sub><var>t</var></sub> = E<sub><var>t</var></sub><var>y</var><sub><var>t</var>+1</sub> − (1/<var>σ</var>)(<var>i</var><sub><var>t</var></sub> − E<sub><var>t</var></sub><var>π</var><sub><var>t</var>+1</sub> − <var>r</var><sub><var>t</var></sub>)</p>
+      <p class="eq"><var>π</var><sub><var>t</var></sub> = <var>β</var> E<sub><var>t</var></sub><var>π</var><sub><var>t</var>+1</sub> + <var>κ</var> <var>y</var><sub><var>t</var></sub> + <var>u</var><sub><var>t</var></sub></p>
+      <p>Here <var>r</var><sub><var>t</var></sub> is the natural rate of interest (a demand shock) and <var>u</var><sub><var>t</var></sub> a cost-push shock, each following <var>s</var><sub><var>t</var></sub> = <var>ρ</var> <var>s</var><sub><var>t</var>−1</sub> + <var>e</var><sub><var>t</var></sub>. The parameters are Galí's baseline calibration (second edition, chapter 3, as listed in his slides for that chapter): <var>σ</var> = 1, inverse Frisch elasticity <var>φ</var> = 5, <var>β</var> = 0.99, elasticity of substitution <var>ε</var> = 9, <var>α</var> = 1/4 and Calvo stickiness <var>θ</var> = 3/4, so that</p>
+      <p class="eq"><var>κ</var> = <var>λ</var> (<var>σ</var> + (<var>φ</var> + <var>α</var>)/(1 − <var>α</var>)) = 0.1717, &nbsp;&nbsp; <var>λ</var> = (1 − <var>θ</var>)(1 − <var>βθ</var>)/<var>θ</var> × (1 − <var>α</var>)/(1 − <var>α</var> + <var>αε</var>)</p>
+      <p>The page reports inflation and the rate in percent a year: four times the quarterly figure, plus a 2% target for inflation and a neutral nominal rate of 400 × (−ln <var>β</var>) + 2 = 6.02%. Galí linearises around zero inflation; adding the target supposes that prices not reset rise with it, which changes none of the dynamics.</p>
+      <h3>The rule the public expects</h3>
+      <p>The public expects the central bank to follow Galí's Taylor-type rule, <var>i</var><sub><var>t</var></sub> = 1.5 <var>π</var><sub><var>t</var></sub> + 0.125 <var>y</var><sub><var>t</var></sub> + <var>v</var><sub><var>t</var></sub>, which is Taylor's 1.5 and 0.5 in annual units. Whatever rate you set, the public reads the difference from that rule as a monetary policy shock <var>v</var><sub><var>t</var></sub> that it expects to shrink by half each quarter, Galí's <var>ρ</var><sub><var>v</var></sub> = 0.5. With the rule in place the model can be written</p>
+      <p class="eq"><var>z</var><sub><var>t</var></sub> = <var>A</var> E<sub><var>t</var></sub><var>z</var><sub><var>t</var>+1</sub> + <var>B</var><sub><var>r</var></sub><var>r</var><sub><var>t</var></sub> + <var>B</var><sub><var>u</var></sub><var>u</var><sub><var>t</var></sub> − <var>B</var><sub><var>r</var></sub><var>v</var><sub><var>t</var></sub>, &nbsp;&nbsp; <var>z</var> = (<var>y</var>, <var>π</var>)</p>
+      <p class="eq"><var>A</var> = Ω [[<var>σ</var>, 1 − <var>βφ</var><sub>π</sub>], [<var>σκ</var>, <var>κ</var> + <var>β</var>(<var>σ</var> + <var>φ</var><sub><var>y</var></sub>)]], &nbsp; <var>B</var><sub><var>r</var></sub> = Ω (1, <var>κ</var>), &nbsp; <var>B</var><sub><var>u</var></sub> = Ω (−<var>φ</var><sub>π</sub>, <var>σ</var> + <var>φ</var><sub><var>y</var></sub>), &nbsp; Ω = 1/(<var>σ</var> + <var>φ</var><sub><var>y</var></sub> + <var>κφ</var><sub>π</sub>)</p>
+      <p>For a shock with persistence <var>ρ</var>, guessing <var>z</var><sub><var>t</var></sub> = <var>ψ</var> <var>s</var><sub><var>t</var></sub> gives E<sub><var>t</var></sub><var>z</var><sub><var>t</var>+1</sub> = <var>ρψ</var><var>s</var><sub><var>t</var></sub> and so <var>ψ</var> = (<var>I</var> − <var>ρA</var>)<sup>−1</sup><var>B</var>, the method of undetermined coefficients. Each quarter the page finds the <var>v</var><sub><var>t</var></sub> that makes the rule's rate equal yours; the outcome is the model's equilibrium for the three shocks as the public sees them. That is a rational-expectations equilibrium only for a central bank whose departures from the rule really do halve each quarter. Yours need not: hold the rate steady and next quarter's departure is whatever your rate and the new shocks make it, not half of this one, so the public's forecast of next quarter is wrong, and it never revises the way it reads you. Each quarter's figures satisfy both equations given the rate you set and what the public expects, but those expectations are fixed beliefs about policy, not forecasts of the rates you will actually set. In this calibration one point on the rate lowers this quarter's annual inflation by 1.03 points and the output gap by 0.76%.</p>
+      <h3>The game</h3>
+      <p>Each game has sixteen quarters, starting at the target with no gap. The shocks come from a seeded generator: the natural rate with <var>ρ</var> = 0.8 and innovations of 0.4 points a year, the cost-push shock with <var>ρ</var> = 0.5 and 0.24 points a year. These sizes are this page's choice, picked so that doing nothing lets inflation drift a point or two from target; they are not estimates. You see each quarter's results only after setting its rate, and you can choose any rate from 0% to 12% in quarter-point steps. The same shocks number always replays the same shocks.</p>
+      <h3>The score</h3>
+      <p>Each quarter's loss is</p>
+      <p class="eq"><var>L</var><sub><var>t</var></sub> = (<var>π</var><sup>a</sup><sub><var>t</var></sub> − 2)<sup>2</sup> + 0.305 × <var>y</var><sub><var>t</var></sub><sup>2</sup></p>
+      <p>with <var>π</var><sup>a</sup> annual inflation in percent. The weight 0.305 = 16<var>κ</var>/<var>ε</var> is the one the model itself implies: the second-order approximation to household welfare in Galí's chapter 4 weighs squared quarterly inflation by <var>ε</var>/<var>λ</var> and the squared gap by <var>σ</var> + (<var>φ</var> + <var>α</var>)/(1 − <var>α</var>), a ratio of <var>κ</var>/<var>ε</var>, and the factor 16 converts quarterly inflation to annual. Your score is the average loss over the quarters played; lower is better.</p>
+      <h3>What you are compared with</h3>
+      <p>At the end the same shocks are replayed with three strategies. Holding 6% throughout is the trivial one (6% is the step nearest the neutral 6.02%). The best possible with last quarter's figures knows the model exactly, reads last quarter's shocks from its figures (two equations, two unknowns), and sets the rate that minimises the expected loss given the shocks it expects now, rounded to a quarter point. Because this quarter's surprises add to the outcome whatever the rate, that rate also minimises the loss at the expected shocks, and because a quarter's rate affects only that quarter (the public never learns from it), no strategy that uses only past figures can do better on average. The public's rule, applied with this quarter's figures, is the textbook equilibrium; no central bank has those figures when it decides.</p>
+      <h3>The lab: determinacy</h3>
+      <p>With the rule fixed, the model has a unique bounded solution only if both eigenvalues of <var>A</var> lie inside the unit circle (Blanchard and Kahn 1980). Bullard and Mitra (2002) showed that for this model that is equivalent to</p>
+      <p class="eq"><var>κ</var>(<var>φ</var><sub>π</sub> − 1) + (1 − <var>β</var>)<var>φ</var><sub><var>y</var></sub> &gt; 0</p>
+      <p>the Taylor principle with a small allowance for the output response. The lab computes both and they agree (the tests check more than 2,000 rules). When the condition fails, <var>A</var> has an eigenvalue outside the unit circle, so <var>A</var><sup>−1</sup> has one inside it, and starting the economy anywhere along that eigenvector gives a path <var>z</var><sub><var>t</var>+1</sub> = <var>A</var><sup>−1</sup><var>z</var><sub><var>t</var></sub> that satisfies every equation with no shock at all and fades away: a sunspot. The lab draws it. Its impulse responses are the undetermined-coefficients solution above; for a monetary policy shock they equal Galí's closed form, <var>y</var> = −(1 − <var>βρ</var>)Λ<var>v</var> and <var>π</var> = −<var>κ</var>Λ<var>v</var> with Λ = 1/[(1 − <var>βρ</var>)(<var>σ</var>(1 − <var>ρ</var>) + <var>φ</var><sub><var>y</var></sub>) + <var>κ</var>(<var>φ</var><sub>π</sub> − <var>ρ</var>)], to twelve decimal places. When the equilibrium is not unique and the shock fades at exactly the rate of the self-fulfilling path (<var>ρ</var> times the root of <var>A</var> outside the unit circle equals 1), that solution does not exist, and close to that point its responses become enormous; the lab says so, and at the point itself draws no response.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>The cost of past mistakes.</strong> The basic model has no memory of its own: once a shock fades, the economy returns to the target whatever rates were set before. Real inflation is more persistent, and a central bank that falls behind finds it costly to catch up.</li>
+        <li><strong>How long policy takes to work.</strong> Here a rate change acts in the same quarter. In real economies the full effect takes a year or two, which is why central banks act on forecasts.</li>
+        <li><strong>Whether people would believe you.</strong> The public in this game always expects the same rule and treats every departure from it as a shock that halves each quarter. Real people learn from what a central bank does; one that kept surprising them would change their expectations, and the model would change with them.</li>
+        <li><strong>The size of real shocks.</strong> The calibration of the economy comes from Galí's textbook, but the shock sizes were chosen to make a playable game. Your score says how you did in this economy, not how a central bank would do in any real one.</li>
+        <li><strong>The zero lower bound in expectations.</strong> You cannot set a rate below zero, but the public's expectations ignore that limit, as linear models do.</li>
+        <li><strong>The natural level of output.</strong> The game shows you the output gap as if it were measured. Real central banks have to estimate it, and their estimates are often revised a lot.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Add inflation persistence with the hybrid Phillips curve of Galí and Gertler (1999), so that letting inflation run has a cost in later quarters.</li>
+        <li>Let the public learn the player's rule from the rates set, as in the adaptive-learning models of Evans and Honkapohja, so that credibility can be won and lost.</li>
+        <li>Delay the effect of the rate by a quarter or two and give the player a noisy forecast, as a real policy committee has.</li>
+        <li>Compare discretion with commitment: compute the optimal policy of Galí's chapter 5 and show how much a bank gains by promising future rates.</li>
+        <li>Keep a table of scores in the browser and plot the distribution of a player's scores against the best possible strategy's over many games.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Galí, J. (2015). <em>Monetary Policy, Inflation, and the Business Cycle: An Introduction to the New Keynesian Framework and Its Applications</em>, 2nd edition. Princeton University Press. Chapter 3; calibration as listed in the author's chapter 3 slides (June 2015), crei.cat.</li>
+        <li>Galí, J. (2008). <em>Monetary Policy, Inflation, and the Business Cycle</em>, 1st edition. Princeton University Press. Chapter 4, section 4.4: the welfare loss function (sample chapter published by the press).</li>
+        <li>Clarida, R., Galí, J., and Gertler, M. (1999). The science of monetary policy: a New Keynesian perspective. <em>Journal of Economic Literature</em>, 37(4), 1661-1707.</li>
+        <li>Bullard, J., and Mitra, K. (2002). Learning about monetary policy rules. <em>Journal of Monetary Economics</em>, 49(6), 1105-1129.</li>
+        <li>Blanchard, O. J., and Kahn, C. M. (1980). The solution of linear difference models under rational expectations. <em>Econometrica</em>, 48(5), 1305-1311.</li>
+        <li>Calvo, G. A. (1983). Staggered prices in a utility-maximizing framework. <em>Journal of Monetary Economics</em>, 12(3), 383-398.</li>
+        <li>Taylor, J. B. (1993). Discretion versus policy rules in practice. <em>Carnegie-Rochester Conference Series on Public Policy</em>, 39, 195-214.</li>
+        <li>Galí, J., and Gertler, M. (1999). Inflation dynamics: a structural econometric analysis. <em>Journal of Monetary Economics</em>, 44(2), 195-222.</li>
+        <li>Woodford, M. (2003). <em>Interest and Prices: Foundations of a Theory of Monetary Policy</em>. Princeton University Press.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
