@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Election Forecast Model · 365 projects</title>
+  <meta name="description" content="Rebuild a probabilistic forecast of the 2016 or 2020 US presidential election from open state polls, change the polling-error assumptions, and score it against the result.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .d86-group { gap: 14px; padding-top: 12px; border-top: 1px solid var(--grid); }
+    .d86-grouphead { margin: 0; font-weight: 700; font-size: 0.95rem; }
+    .d86-presets { gap: 6px 8px; }
+    .d86-jump { gap: 2px 16px; }
+    .d86-jump a { padding: 6px 0; }
+    @media (min-width: 861px) { .d86-jump { display: none; } }
+    .d86-presets .btn { white-space: normal; text-align: left; }
+    .d86-source { padding-top: 12px; border-top: 1px solid var(--grid); overflow-wrap: anywhere; }
+    .d86-stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    .d86-progress:empty { display: none; }
+    .d86-units summary { cursor: pointer; font-weight: 600; padding: 4px 0; width: fit-content; }
+    .d86-units[open] summary { margin-bottom: 8px; }
+    .stat .v { font-size: 1.4rem; }
+    .d86-rt caption { text-align: left; font-weight: 600; font-size: 0.86rem; color: var(--slate); padding-bottom: 6px; }
+    .d86-rt th[scope="row"] { font-weight: 600; }
+    .d86-rt thead th { vertical-align: bottom; }
+    /* The kit keeps headings and numbers on one line; these tables let them wrap so they can narrow to their box. */
+    .tbl.d86-rt th, .tbl.d86-rt td { white-space: normal; }
+    /* A table becomes a short list of labelled lines whenever its box is narrower than the table: the score tables
+       need about 470 pixels, the table of every contest about 800. Written for each box, and for the screen in
+       browsers without container queries. */
+    .d86-stack { container: d86s / inline-size; }
+    .d86-tbl { container: d86w / inline-size; }
+    @container d86s (max-width: 470px) {
+      .d86-rt, .d86-rt tbody, .d86-rt tr, .d86-rt th, .d86-rt td, .d86-rt caption { display: block; }
+      .d86-rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+      .d86-rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .d86-rt th[scope="row"], .d86-rt td { border: 0; padding: 1px 0; }
+      .d86-rt td, .d86-rt td.num { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; white-space: normal; overflow-wrap: anywhere; }
+      .d86-rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+    }
+    @container d86w (max-width: 820px) {
+      .d86-rt, .d86-rt tbody, .d86-rt tr, .d86-rt th, .d86-rt td, .d86-rt caption { display: block; }
+      .d86-rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+      .d86-rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .d86-rt th[scope="row"], .d86-rt td { border: 0; padding: 1px 0; }
+      .d86-rt td, .d86-rt td.num { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; white-space: normal; overflow-wrap: anywhere; }
+      .d86-rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+    }
+    @media (max-width: 640px) {
+      .d86-rt, .d86-rt tbody, .d86-rt tr, .d86-rt th, .d86-rt td, .d86-rt caption { display: block; }
+      .d86-rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+      .d86-rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .d86-rt th[scope="row"], .d86-rt td { border: 0; padding: 1px 0; }
+      .d86-rt td, .d86-rt td.num { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; white-space: normal; overflow-wrap: anywhere; }
+      .d86-rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+    }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+    @media (max-width: 600px) { .p-sec .eq { white-space: normal; } }
+  </style>
+</head>
+<body class="proj" data-day="86">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Election Forecast Model</h1>
+      <p class="lede">Rebuild a probabilistic forecast of the 2016 or 2020 US presidential election from the state polls that were public at the time, change how wrong you think the polls could be, and score the forecast against what happened.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Presidential election forecast built from polls">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>On election morning, with the default assumptions and 20,000 simulated elections, the model gives Joe Biden a 93.9% chance in 2020 and Hillary Clinton an 82.9% chance in 2016. Biden won with 306 electoral votes, a total that 22% of the simulations matched or fell below; Clinton lost with 232, a total that only 4% of them matched or fell below. Scored over the 56 contests, the forecast's Brier score is 0.037 in 2020 and 0.075 in 2016, and a forecast exactly right about its own uncertainty would score as badly or worse 60% and 11% of the time. Neither year on its own shows that the probabilities were wrong.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>A poll is a measurement with an error, and an election forecast is an argument about how large that error is. Before the 2016 election, high-profile predictions put Hillary Clinton's chance of winning at about 90 percent, with estimates ranging from 71 to over 99 percent, according to the committee the American Association for Public Opinion Research set up afterwards (Kennedy and others, 2018). They read much the same polls; what separated them was mostly what they assumed about error: how large it can be, and whether the states' errors move together. When Donald Trump won, the committee notes, there was a widespread perception that the polls had failed. It found that many polls, particularly in the Upper Midwest, had underestimated Trump, and that the explanations with the most evidence were a late swing towards him and a widespread failure to adjust for the overrepresentation of college graduates.</p>
+      <p>This matters beyond election night. A probability is a statement about uncertainty, and democratic debate runs on such statements: what a policy will cost, whether a referendum will pass, how likely a candidate is to win. Glenn Brier proposed in 1950 a way to score forecasts that are given as probabilities, and it rewards honesty: a forecaster scores best on average by stating the probability they actually believe. But a score from one election is a single draw. Gelman, Hullman, Wlezien and Morris (2020) describe how hard it is to check the calibration of election forecasts, and how that leaves room for a forecaster's incentives to shape the uncertainty they report.</p>
+      <p>The tool rebuilds a forecast in the spirit of Drew Linzer's model (2013) and its successors: state polls combined with a prior, then thousands of simulated elections in which the polls can be wrong in correlated ways. Because the elections are over, it can then score itself, and ask what that score can and cannot mean.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The polls</h3>
+      <p>The polls are FiveThirtyEight's file of the presidential polls it used to rate pollsters: every poll whose fieldwork had its middle day within 61 days of the election, for a state, Washington DC, a district of Maine or Nebraska, or the whole country, 1,151 in 2016 and 1,183 in 2020. Each poll gives the Democrat's and the Republican's percentages, <var>D</var> and <var>R</var>, among <var>n</var> respondents. The tool uses the Democrat's share of the two-party vote, so that undecided voters and third parties do not count:</p>
+      <p class="eq"><var>y</var> = 100 <var>D</var> / (<var>D</var> + <var>R</var>), &nbsp; <var>s</var><sup>2</sup> = 100<sup>2</sup> <var>p</var>(1 − <var>p</var>) / <var>n</var>′, &nbsp; <var>p</var> = <var>y</var> / 100, &nbsp; <var>n</var>′ = <var>n</var>(<var>D</var> + <var>R</var>) / 100</p>
+      <p><var>s</var><sup>2</sup> is the sampling variance among the <var>n</var>′ respondents who chose one of the two. Polls differ from each other by more than sampling alone, so each poll's variance is <var>v</var> = <var>s</var><sup>2</sup> + 1.5<sup>2</sup>: a further 1.5 points of non-sampling noise, somewhat above the 1.1 to 1.4 points that day 87's model finds in these polls when it ignores pollsters' leans. A poll counts only from two days after its middle field day, roughly when it would have been published, because the file gives the middle date and not the publication date. An older poll counts for less: a poll <var>a</var> days old on the forecast day has weight <var>w</var> = 2<sup>−<var>a</var>/<var>h</var></sup>, where <var>h</var> is the half-life.</p>
+      <h3>The prior</h3>
+      <p>Before its own polls are seen, each state is expected to repeat its result at the last election, <var>x</var><sub>prev</sub>, moved by the national swing <var>Δ</var>: the recency-weighted, precision-weighted average of the national polls minus the national two-party share last time (zero when no national poll is out yet, as 59 days before either election). This is uniform swing: every state is assumed to move as the country does, which lets a state with no polls inherit the national picture. The prior is normal with that mean and standard deviation <var>τ</var>, the prior spread.</p>
+      <h3>The aggregation</h3>
+      <p>Each state's polls update its prior by the normal-normal rule, with each poll's weight scaling its precision:</p>
+      <p class="eq"><var>P</var> = 1/<var>τ</var><sup>2</sup> + Σ <var>w</var><sub><var>i</var></sub>/<var>v</var><sub><var>i</var></sub>, &nbsp; <var>m</var> = ( (<var>x</var><sub>prev</sub> + <var>Δ</var>)/<var>τ</var><sup>2</sup> + Σ <var>w</var><sub><var>i</var></sub> <var>y</var><sub><var>i</var></sub>/<var>v</var><sub><var>i</var></sub> ) / <var>P</var>, &nbsp; sd = 1/√<var>P</var></p>
+      <p>The result, <var>m</var>, is the poll estimate in the table, and 1/√<var>P</var> its uncertainty if the polls were unbiased. The districts of Maine and Nebraska are treated as states of their own, with their own polls.</p>
+      <h3>The simulation</h3>
+      <p>Polls are not unbiased, and their errors are shared. In each simulated election the tool draws one national error, one error for each state and, for each district, half a state error more, and adds them to every estimate:</p>
+      <p class="eq"><var>x</var><sub><var>u</var></sub> = <var>m</var><sub><var>u</var></sub> + sd<sub><var>u</var></sub> <var>z</var><sub><var>u</var></sub> + <var>σ</var><sub>N</sub>′ <var>ε</var><sub>N</sub> + <var>σ</var><sub>S</sub> <var>ε</var><sub><var>s</var>(<var>u</var>)</sub> [+ 0.5 <var>σ</var><sub>S</sub> <var>ε</var><sub><var>u</var></sub> for a district], &nbsp; <var>σ</var><sub>N</sub>′<sup>2</sup> = <var>σ</var><sub>N</sub><sup>2</sup> + <var>δ</var><sup>2</sup> <var>d</var>/30</p>
+      <p><var>σ</var><sub>N</sub> is the national polling error, <var>σ</var><sub>S</sub> the state error, <var>δ</var> the opinion drift per 30 days and <var>d</var> the days left to the election. The <var>z</var> are standard normal; the <var>ε</var> are standard normal or, with fat tails, Student's t with 5 degrees of freedom scaled to the same variance, which makes errors of three standard deviations about four times as common. A unit goes to the Democrat when <var>x</var><sub><var>u</var></sub> is above 50, and its electoral votes are added up: 2 for the statewide winner in Maine and Nebraska and 1 for each district's winner, as those states award them. The chance of winning is the share of simulated elections in which a candidate reaches 270. The national error is what makes the states move together: with <var>σ</var><sub>N</sub> at zero, the states are independent and a lead in many of them becomes near certainty.</p>
+      <h3>The score</h3>
+      <p>The forecast gives each of the 56 contests a probability <var>p</var><sub><var>u</var></sub> that the Democrat wins it, and <var>o</var><sub><var>u</var></sub> is 1 if he or she did. The Brier score is</p>
+      <p class="eq"><var>B</var> = (1/56) Σ (<var>p</var><sub><var>u</var></sub> − <var>o</var><sub><var>u</var></sub>)<sup>2</sup></p>
+      <p>which is 0 for a perfect forecast and 0.25 for a coin flip on everything. The tool compares it with three benchmarks: the prior alone (the same simulation without state polls, drawn with the same random numbers), the previous election's winner given with certainty, and a coin flip. The calibration table groups contests by forecast probability and counts how often the Democrat won in each group. Finally, the tool scores the forecast against each of its own simulated elections. If its probabilities were exactly right, the real election would be one more draw from that distribution, so the share of simulated scores at or above the real one says how surprising the result should be to the forecast itself. The same is done for the electoral votes. Every probability here is a share of simulated elections, so a score's third decimal can move by one with another seed: with exact probabilities from the normal distribution, the 2016 score at the default settings is 0.0745, which 20,000 simulations with seed 1 put at 0.0746.</p>
+      <p>The results are the Federal Election Commission's certified state totals, and for the districts, the votes for each party's district electors on the certificates of ascertainment that Maine and Nebraska sent to the National Archives. Electoral votes count pledged electors, so 2016 is scored as 306 to 232, not the 304 to 227 cast after seven electors voted for someone else.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Whether the error settings are right.</strong> They are the visitor's assumptions. Two elections cannot pin down how large or how correlated polling errors are; day 87 shows how wide the range is even with five.</li>
+        <li><strong>What a published forecast said at the time.</strong> This is a reconstruction with today's files. 538's file holds only the polls it later rated, from the last 61 days, and the publication day of each poll is approximated by its middle field day plus two.</li>
+        <li><strong>How good the model is in general.</strong> Its settings were chosen knowing how 2016 and 2020 turned out, which is a form of hindsight no real forecaster had. A fair test needs elections the settings were not tuned on.</li>
+        <li><strong>Anything about polls treated as independent.</strong> Polls by the same pollster share its methods, so adding them as independent measurements overstates how much the polls know. The shared errors in the simulation are there to make up for this, crudely.</li>
+        <li><strong>The national popular vote.</strong> The forecast is built state by state; it does not model turnout or the national vote, and has no economic or approval-based fundamentals in its prior, only the last result and the national swing.</li>
+        <li><strong>Who will win the next election.</strong> No later poll file is bundled. 538's 2024 poll files now redirect to ABC News, so 2020 is the latest election with open poll-level data here.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Correct each pollster's lean before aggregating, with the house effects estimated on day 87, and see whether the score improves.</li>
+        <li>Let opinion move over the campaign with a random walk, as Linzer (2013) does, instead of down-weighting old polls.</li>
+        <li>Add a fundamentals prior from the economy and presidential approval, and test it out of sample on elections it was not tuned on.</li>
+        <li>Let states that resemble each other share errors, by region or by the share of college graduates, instead of one national error.</li>
+        <li>Report the log score beside the Brier score, and the continuous ranked probability score for the electoral votes.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>FiveThirtyEight. Pollster ratings data: raw_polls.csv (presidential general-election polls; the 2016 and 2020 cycles are used here). https://github.com/fivethirtyeight/data/tree/master/pollster-ratings. <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Retrieved 14 October 2026. Changes: only presidential general-election polls kept; districts renamed; shares turned into two-party shares on this page.</li>
+        <li>Federal Election Commission. Federal Elections 2012, Federal Elections 2016 and Federal Elections 2020 (Table 2, Presidential Electoral and Popular Vote). Public domain. Retrieved 14 October 2026.</li>
+        <li>US Census Bureau. Apportionment population and number of representatives by state: 2020 Census (Table 1), whose change from 2010 gives the 2010 apportionment behind the electoral votes of 2012 to 2020. Public domain. Retrieved 14 October 2026.</li>
+        <li>States of Maine and Nebraska. Certificates of ascertainment, 2012, 2016 and 2020, as published by the US National Archives (https://www.archives.gov/electoral-college): votes for each party's district electors. Maine's certificates for 2012 and 2016 leave 415 and 184 overseas and military votes out of the district totals. Retrieved 15 October 2026.</li>
+        <li>Brier, G. W. (1950). Verification of forecasts expressed in terms of probability. <em>Monthly Weather Review</em>, 78(1), 1-3.</li>
+        <li>Linzer, D. A. (2013). Dynamic Bayesian forecasting of presidential elections in the states. <em>Journal of the American Statistical Association</em>, 108(501), 124-134.</li>
+        <li>Kennedy, C., Blumenthal, M., Clement, S., Clinton, J. D., Durand, C., Franklin, C., and others (2018). An evaluation of the 2016 election polls in the United States. <em>Public Opinion Quarterly</em>, 82(1), 1-33.</li>
+        <li>Gelman, A., Hullman, J., Wlezien, C., and Morris, G. E. (2020). Information, incentives, and goals in election forecasts. <em>Judgment and Decision Making</em>, 15(5), 863-880.</li>
+        <li>Heidemanns, M., Gelman, A., and Morris, G. E. (2020). An updated dynamic Bayesian forecasting model for the US presidential election. <em>Harvard Data Science Review</em>, 2(4).</li>
+        <li>Gneiting, T., and Raftery, A. E. (2007). Strictly proper scoring rules, prediction, and estimation. <em>Journal of the American Statistical Association</em>, 102(477), 359-378.</li>
+        <li>Murphy, A. H. (1973). A new vector partition of the probability score. <em>Journal of Applied Meteorology</em>, 12(4), 595-600.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

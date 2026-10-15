@@ -1,0 +1,7 @@
+{
+  "question": "How likely did the polls make each candidate's victory in 2016 and 2020, and what does the result say about those probabilities?",
+  "finding": "On election morning with the default assumptions the model gives Biden 93.9% in 2020 and Clinton 82.9% in 2016; its Brier scores of 0.037 and 0.075 would be matched or exceeded 60% and 11% of the time by a forecast exactly right about its own uncertainty, so neither year shows its probabilities were wrong.",
+  "limit": "Two elections cannot establish how large or how correlated polling errors are, so the error settings that drive the probabilities remain assumptions.",
+  "sources": ["FiveThirtyEight polls (CC BY 4.0)", "Federal Election Commission", "US Census Bureau", "Certificates of ascertainment (National Archives)"],
+  "built": "2026-10-14"
+}
