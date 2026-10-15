@@ -1341,7 +1341,14 @@ window.CHALLENGE = {
    "concept": "Monetary policy",
    "skills": "New Keynesian model",
    "section": 3,
-   "date": "2026-12-22"
+   "date": "2026-12-22",
+   "built": "2026-10-14",
+   "question": "How well can you steer inflation and output with one interest rate when you only know what has already happened?",
+   "finding": "On the opening shocks, holding the rate at 6% scores 6.47, the best anyone could expect from last quarter's figures 2.07 and the public's rule with this quarter's figures 0.88 (3.34, 1.62 and 0.47 over 2,000 games); in the lab, Taylor's rule meets a one-point monetary policy shock with a rate only 0.34 points higher, and a response to inflation of 0.95 leaves the model without a unique equilibrium.",
+   "limit": "The basic New Keynesian model has no memory and acts within the quarter, and its public never learns, so the game understates the cost of falling behind.",
+   "sources": [],
+   "img": "img/074.jpg",
+   "url": "74/"
   },
   {
    "id": 75,
@@ -1350,7 +1357,17 @@ window.CHALLENGE = {
    "concept": "Macro forecasting",
    "skills": "Logistic regression, ROC curves",
    "section": 3,
-   "date": "2026-12-23"
+   "date": "2026-12-23",
+   "built": "2026-10-14",
+   "question": "How well would a recession probability from the slope of the US yield curve have done if it had been fitted only on what was known at the time?",
+   "finding": "Forecasting 12 months ahead from the 10-year less 3-month spread with a probit refitted each month, the 525 forecasts made from January 1980 to September 2023 score an AUC of 0.83 (0.85 with hindsight); a 50% threshold catches only the 1981 to 1982 recession and calls one throughout January to September 2023, while 20% catches all five at the cost of flagging 61 of 473 other months.",
+   "limit": "Five recessions in overlapping monthly forecasts are a thin test, and the 2020 recession counted as a hit was caused by a pandemic.",
+   "sources": [
+    "Federal Reserve Board H.15",
+    "NBER business cycle dates"
+   ],
+   "img": "img/075.jpg",
+   "url": "75/"
   },
   {
    "id": 76,
@@ -1466,7 +1483,20 @@ window.CHALLENGE = {
    "concept": "Rules versus discretion",
    "skills": "Policy rules, time series",
    "section": 3,
-   "date": "2027-01-01"
+   "date": "2027-01-01",
+   "built": "2026-10-14",
+   "question": "How far have the Federal Reserve and the Reserve Bank of India strayed from the rate a Taylor rule prescribes, and how much does the answer depend on the measures of inflation and slack?",
+   "finding": "With Taylor's weights, core PCE inflation and a Hodrick-Prescott output gap, the rule tracks the Fed over 1987 to 1992 (0.07 points apart on average), but from 2001 to June 2026 the Fed's target sat 2.3 points below it on average and more than a point below in 239 of 306 months; the RBI's repo rate sat 1.3 points below a 4%-target rule on CPI (Combined) inflation from 2014 and 1.6 points below on the CPI for industrial workers.",
+   "limit": "The page uses revised data, an unobservable neutral rate and a statistical trend for potential output, so a gap between rule and bank measures the rule's assumptions as much as the bank's choices.",
+   "sources": [
+    "Bank for International Settlements",
+    "US Bureau of Economic Analysis",
+    "US Bureau of Labor Statistics",
+    "OECD",
+    "World Bank Global Economic Monitor"
+   ],
+   "img": "img/084.jpg",
+   "url": "84/"
   },
   {
    "id": 85,
