@@ -1267,7 +1267,16 @@ window.CHALLENGE = {
    "concept": "Behavioural finance",
    "skills": "Composite indices",
    "section": 3,
-   "date": "2026-12-18"
+   "date": "2026-12-18",
+   "built": "2026-10-14",
+   "question": "Does a fear and greed index built from momentum, volatility and breadth tell you anything about where share prices go next?",
+   "finding": "With equal weights the index read 15 (extreme fear) in September 2023, but as a forecast of the S&P/TSX Composite's change over the next twelve months it did worse than the historical average in 553 out-of-sample forecasts from 1976 to 2022 (R² of −2.8%), and although the 88 months of extreme fear were followed by an average rise of 11.5% against 7.2% for all months, they fall in 26 spells, and counted once per spell, from its first month, the rise was 6.1%.",
+   "limit": "The open data are monthly Canadian index closes that end in September 2023, so the gauge describes history, and its weights and ranking window are choices that a visitor can tune until the past looks good.",
+   "sources": [
+    "Statistics Canada"
+   ],
+   "img": "img/070.jpg",
+   "url": "70/"
   },
   {
    "id": 71,
@@ -1276,7 +1285,16 @@ window.CHALLENGE = {
    "concept": "Information and prices",
    "skills": "Event-study methods",
    "section": 3,
-   "date": "2026-12-19"
+   "date": "2026-12-19",
+   "built": "2026-10-14",
+   "question": "How far did a currency move around a piece of news beyond what the rest of the market explains?",
+   "finding": "Over the two days after Draghi's \"whatever it takes\" the euro rose 1.9% against the dollar, but the basket of other currencies (without the krone and the franc, then both tied to the euro) rose 1.2% too, leaving an abnormal return of +0.83% that is not significant (t = 1.53, p = 0.13).",
+   "limit": "Anything else that happened on the event days is in the abnormal return too, the same news often moved the basket that defines the market, and one noon rate a day cannot say exactly when the news arrived.",
+   "sources": [
+    "Federal Reserve Board"
+   ],
+   "img": "img/071.jpg",
+   "url": "71/"
   },
   {
    "id": 72,
@@ -1305,7 +1323,16 @@ window.CHALLENGE = {
    "concept": "Monetary policy communication",
    "skills": "Lexicon-based NLP",
    "section": 3,
-   "date": "2026-12-21"
+   "date": "2026-12-21",
+   "built": "2026-10-14",
+   "question": "How hawkish or dovish does a central bank statement read, by a published dictionary, against every FOMC statement since 2000?",
+   "finding": "Across 220 FOMC decisions from 2000 to 2026 the dictionary score averaged +0.34 at raises, +0.18 at holds and −0.08 at cuts, but on the 46 decisions since 2021, after the dictionary was built, it scored none of the 6 cuts below zero.",
+   "limit": "A count of word pairs reads the description of the economy, not the decision or the surprise in it, and it was built from the statements it is tested on before 2021.",
+   "sources": [
+    "Federal Reserve Board"
+   ],
+   "img": "img/073.jpg",
+   "url": "73/"
   },
   {
    "id": 74,
