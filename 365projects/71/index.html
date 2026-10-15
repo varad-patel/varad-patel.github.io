@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>News and Markets Event Study · 365 projects</title>
+  <meta name="description" content="Choose a dated event, such as the Brexit vote or the end of the Swiss franc's floor, and measure the abnormal move in a currency around it with the market-model event study.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    .stat .v { font-size: 1.35rem; }
+    .event-about { display: grid; gap: 4px; padding-bottom: 12px; border-bottom: 1px solid var(--grid); overflow-wrap: anywhere; }
+    .source-note { padding-top: 12px; border-top: 1px solid var(--grid); overflow-wrap: anywhere; }
+    .basket71 { border: 0; padding: 0; margin: 0; min-width: 0; gap: 4px; }
+    .basket71 legend { padding: 0; margin-bottom: 4px; }
+    .basket71 .check span { overflow-wrap: anywhere; }
+    .tbl caption { white-space: normal; }
+    .tbl.rt th, .tbl.rt td { white-space: normal; }
+    /* Each row becomes a short labelled list whenever the table's own box is narrower than the table (about 640px). */
+    div:has(> table.rt) { container-type: inline-size; }
+    @container (max-width: 640px) {
+      .rt, .rt tbody, .rt tr, .rt td, .rt caption { display: block; }
+      .rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .rt td { border: 0; padding: 1px 0; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; overflow-wrap: anywhere; }
+      .rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+    }
+    @media (max-width: 600px) { .p-sec .eq { white-space: normal; } }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body class="proj" data-day="71">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>News and Markets Event Study</h1>
+      <p class="lede">Choose a dated piece of news, from the Brexit vote to the end of the Swiss franc's floor, and measure how far a currency moved beyond what the rest of the market explains, with the standard event-study method and its test statistics.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Event study of exchange rates around dated news">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>Choose Draghi's "whatever it takes" (26 July 2012) and keep the defaults: a 250-day estimation window, days 0 to +1, and a basket without the krone and the franc, which were both tied to the euro at the time. The euro rose 1.9% against the dollar over the two days, but the basket of other currencies rose 1.2% as well, and the abnormal return is only +0.83% (test statistic 1.53, p = 0.13): not significant. The other currencies may have risen partly because of the speech, which this method cannot tell apart from the market. Choose Japan's purchase of yen (22 September 2022, day 0 alone): the yen gained 1.4% while the basket fell 0.7%, an abnormal return of +1.8% (test statistic 3.05, p = 0.0025), yet 3 of the 250 days of the year before had an unexplained move as large, a share about five times that p-value.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>If markets digest news quickly, the effect of an event should show up in prices within days, and the size of the jump measures what the news was worth. The event study turns that into a method. Fama, Fisher, Jensen and Roll (1969) used it on stock splits; Brown and Warner (1985) showed that the simple version works well on daily data; and MacKinlay (1997) wrote the standard account that this page follows. It is now used in finance, law (to value damages in securities cases) and economics (to see how markets read a policy announcement).</p>
+      <p>The difficulty is that prices move all the time. On the day of an announcement a currency may fall because of the news, or because the dollar rose against everything for an unrelated reason. The event study separates the two. It learns from a quiet stretch before the event how the asset usually moves with the market, predicts what it should have done on the event days given what the market did, and calls the difference the abnormal return. Then it asks whether that difference is larger than the asset's ordinary day-to-day noise.</p>
+      <p>Most event studies use share prices, but daily share and index prices are sold under licence. This page uses exchange rates, which the Federal Reserve Board publishes in the public domain, and studies news that should have moved one currency more than others: a central bank's surprise, a referendum, a change of finance minister.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>Returns</h3>
+      <p>For a currency <var>i</var> on trading day <var>t</var> the return is the daily log change in its value in US dollars, <var>R</var><sub><var>it</var></sub> = ln(<var>S</var><sub><var>it</var></sub> / <var>S</var><sub><var>i</var>,<var>t</var>−1</sub>), so a positive return means the currency gained. The rates are the Board's H.10 noon buying rates in New York; a trading day is a day on which the currency has a rate, and a return spans from its previous rate.</p>
+      <h3>The market</h3>
+      <p>For shares the market is an index of all shares. For currencies against the dollar the natural counterpart is the average move of many currencies against it, which Lustig, Roussanov and Verdelhan (2011) use as their dollar risk factor. The page's market return <var>R</var><sub><var>mt</var></sub> is the plain average of the daily returns of a fixed basket: the Australian dollar, Canadian dollar, Swiss franc, Danish krone, pound, yen and Swedish krona, the members of the Board's former index of major currencies, with the krone, pegged first to the German mark and then to the euro, standing for the euro area because the release has no mark. The currency being studied is left out of its own basket, and so is the krone when the euro is studied. A tick box for each member leaves out others. The franc is the one that most often needs it: from 6 September 2011 to 15 January 2015 the Swiss National Bank held it at 1.20 per euro, so it moved with the euro. The two built-in euro events leave it out, and the tool warns when a study of the euro keeps it in the basket over those years. A basket currency counts on a day only if it has a rate on that day and on the previous one.</p>
+      <h3>The market model</h3>
+      <p>Day 0 is the first noon rate in New York that could carry the news; each built-in event says how its day 0 was chosen. The estimation window is the <var>L</var><sub>1</sub> trading days just before the event window, and on it the tool fits by least squares</p>
+      <p class="eq"><var>R</var><sub><var>it</var></sub> = <var>α</var> + <var>β</var> <var>R</var><sub><var>mt</var></sub> + <var>ε</var><sub><var>it</var></sub>, &nbsp;&nbsp; <var>σ̂</var><sup>2</sup> = Σ <var>ε̂</var><sub><var>it</var></sub><sup>2</sup> / (<var>L</var><sub>1</sub> − 2)</p>
+      <h3>Abnormal returns</h3>
+      <p>On each day <var>τ</var> of the event window, from <var>τ</var><sub>1</sub> to <var>τ</var><sub>2</sub>,</p>
+      <p class="eq"><var>AR</var><sub><var>τ</var></sub> = <var>R</var><sub><var>iτ</var></sub> − <var>α̂</var> − <var>β̂</var> <var>R</var><sub><var>mτ</var></sub>, &nbsp;&nbsp; <var>CAR</var> = Σ<sub><var>τ</var>=<var>τ</var><sub>1</sub>..<var>τ</var><sub>2</sub></sub> <var>AR</var><sub><var>τ</var></sub></p>
+      <p>The abnormal returns carry two kinds of error: the day's own noise and the error in <var>α̂</var> and <var>β̂</var>. With <var>L</var><sub>2</sub> = <var>τ</var><sub>2</sub> − <var>τ</var><sub>1</sub> + 1 days in the event window, <var>μ̂</var><sub><var>m</var></sub> the average market return in the estimation window and <var>S</var><sub><var>mm</var></sub> = Σ(<var>R</var><sub><var>mt</var></sub> − <var>μ̂</var><sub><var>m</var></sub>)<sup>2</sup> over it, MacKinlay's equations 8 to 11 give</p>
+      <p class="eq">Var(<var>AR</var><sub><var>τ</var></sub>) = <var>σ̂</var><sup>2</sup> [ 1 + 1/<var>L</var><sub>1</sub> + (<var>R</var><sub><var>mτ</var></sub> − <var>μ̂</var><sub><var>m</var></sub>)<sup>2</sup> / <var>S</var><sub><var>mm</var></sub> ]</p>
+      <p class="eq">Var(<var>CAR</var>) = <var>σ̂</var><sup>2</sup> [ <var>L</var><sub>2</sub> + <var>L</var><sub>2</sub><sup>2</sup>/<var>L</var><sub>1</sub> + (Σ<sub><var>τ</var></sub> <var>R</var><sub><var>mτ</var></sub> − <var>L</var><sub>2</sub> <var>μ̂</var><sub><var>m</var></sub>)<sup>2</sup> / <var>S</var><sub><var>mm</var></sub> ]</p>
+      <p>which is the sum of all entries of the matrix <var>σ̂</var><sup>2</sup>(<var>I</var> + <var>X</var>*(<var>X</var>′<var>X</var>)<sup>−1</sup><var>X</var>*′) in the paper; the tests check the two agree.</p>
+      <h3>The test</h3>
+      <p class="eq"><var>t</var> = <var>CAR</var> / √Var(<var>CAR</var>)</p>
+      <p>If the errors are normal and the news had no effect, this follows Student's <var>t</var> distribution with <var>L</var><sub>1</sub> − 2 degrees of freedom exactly, because the event-window errors are independent of the estimation window's. The tool reports the two-sided p-value and puts it in words: significant at 1%, 5%, 10% only, or not at 10%. The same is done for each day's abnormal return.</p>
+      <h3>A check without the normal curve</h3>
+      <p>Currency returns have fatter tails than the normal distribution, so a p-value from Student's <var>t</var> can be too small. The tool therefore also slides a window of the event window's length through the estimation period and counts how many times the summed residuals were at least as large in size as the event's <var>CAR</var>. Few such stretches means the event was unusual for that currency, whatever the shape of its tails. The count uses residuals of the fitted model, which are slightly smaller than true errors, so it leans towards calling the event unusual.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Whether the event caused the move.</strong> Anything else that happened on the same days is in the abnormal return too. On 22 September 2022 the Bank of Japan's decision and the Ministry of Finance's purchase of yen fall on the same day 0, and the Federal Reserve had raised its rate on the afternoon before, after that day's noon rate.</li>
+        <li><strong>How much of the news the basket took with it.</strong> The market model subtracts whatever moved the basket on the event days. In a study of one company's shares the company is a small part of the market; here the news often moved the basket too. In the year before Draghi's speech the daily moves of the krona, the pound and the Australian dollar against the dollar had correlations of 0.84, 0.72 and 0.69 with the euro's, and on the morning after the Brexit vote the yen rose 3.5% against the dollar while the krona fell 3.2%. The abnormal return then measures the move against the other currencies, which can understate what the news did to the currency against the dollar. Compare it with the actual change, and untick currencies to see how much the answer depends on the basket.</li>
+        <li><strong>What was expected.</strong> Markets move on surprises. A referendum result that polls had made likely, or a policy that was trailed, moves prices before day 0, and a window that starts on day 0 misses that. Widen the window to the left to see it, at the cost of more noise.</li>
+        <li><strong>Exactly when the news landed.</strong> The page has one rate a day, at noon in New York. News that broke in Asia overnight or in London in the morning is in that day's rate; news in the New York afternoon is in the next. Some times are known only from press reports, and each built-in event says how sure its day 0 is.</li>
+        <li><strong>Anything about a pegged currency's news value.</strong> When a central bank holds its currency still, the estimation window has almost no noise, and any move, even a small planned one, gives an enormous test statistic. The tool warns when this happens.</li>
+        <li><strong>The effect on shares, bonds or prices in shops.</strong> The page measures one currency against the dollar. The same news can move a currency little and the stock market a lot.</li>
+        <li><strong>An average effect of a kind of news.</strong> One event is one draw. To say what central bank surprises do in general, many events must be pooled, which this page does not do.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Pool several events of the same kind, such as every central bank surprise in the list, into an average abnormal return with its own test, as MacKinlay describes for many firms.</li>
+        <li>Add the constant-mean model and the market-adjusted model (<var>α</var> = 0, <var>β</var> = 1) as alternatives and show how much the choice matters.</li>
+        <li>Allow a gap between the estimation window and the event window, so that leaks before an announcement do not shape the model.</li>
+        <li>Use a non-parametric test that does not rely on the estimation window, such as a rank test across many events.</li>
+        <li>Add government bond yields, from the US Treasury's daily par yield curve, which is also in the public domain, to study the same events in rates.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>Board of Governors of the Federal Reserve System. H.10 Foreign Exchange Rates, daily noon buying rates in New York for twelve currencies, 2 January 1991 to 9 October 2026, from the Data Download Program (https://www.federalreserve.gov/releases/h10/). Release prepared 13 October 2026, retrieved 14 October 2026. In the public domain: the Board's website policy (https://www.federalreserve.gov/disclaimer.htm) says that "Unless otherwise indicated, information on Board's website is in the public domain and may be copied and distributed without permission". The script that builds the page's copy is scripts/data/fx_daily.py.</li>
+        <li>The sources for each event's date and time are named in the tool when the event is chosen: the Bank of England, the Federal Reserve (the transcript of the FOMC meeting of 20 December 1994), the International Monetary Fund (a news brief of 2 July 1997 and Michel Camdessus's address of 22 May 1995), the People's Bank of China, the Swiss National Bank, the European Central Bank, the Bank of Japan, the Presidency of South Africa, the UK Electoral Commission, the US Federal Election Commission, Japan's Ministry of Finance and HM Treasury. Checked 14 October 2026.</li>
+        <li>MacKinlay, A. C. (1997). Event studies in economics and finance. <em>Journal of Economic Literature</em>, 35(1), 13-39.</li>
+        <li>Campbell, J. Y., Lo, A. W., and MacKinlay, A. C. (1997). <em>The Econometrics of Financial Markets</em>, chapter 4. Princeton University Press.</li>
+        <li>Fama, E. F., Fisher, L., Jensen, M. C., and Roll, R. (1969). The adjustment of stock prices to new information. <em>International Economic Review</em>, 10(1), 1-21.</li>
+        <li>Brown, S. J., and Warner, J. B. (1985). Using daily stock returns: the case of event studies. <em>Journal of Financial Economics</em>, 14(1), 3-31.</li>
+        <li>Lustig, H., Roussanov, N., and Verdelhan, A. (2011). Common risk factors in currency markets. <em>Review of Financial Studies</em>, 24(11), 3731-3777.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
