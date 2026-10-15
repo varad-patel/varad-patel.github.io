@@ -1,0 +1,7 @@
+{
+  "question": "When the same voters rank the same candidates, how often do plurality, runoffs, approval, Borda and Condorcet's methods elect different winners?",
+  "finding": "On Pacuit's 21 voters plurality elects A, the runoffs, approval and Borda elect B, and Copeland and Schulze elect C; across 1,000 simulated three-candidate elections of 101 voters under impartial culture a Condorcet winner existed in 91.5%, plurality elected it 73.2% of the time against 95.6% for instant runoff, and all seven methods agreed in 52.4%.",
+  "limit": "Every ballot is assumed sincere and complete, and the simulated electorates come from simple models, not real elections.",
+  "sources": [],
+  "built": "2026-10-14"
+}

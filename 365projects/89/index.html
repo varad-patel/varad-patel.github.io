@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Voting Method Comparer · 365 projects</title>
+  <meta name="description" content="Rank candidates on a shared ballot and see plurality, two-round runoff, instant runoff, approval, Borda, Copeland and Schulze pick different winners from the same voters.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .d89-jump { gap: 2px 16px; }
+    .d89-jump a { padding: 6px 0; }
+    .d89-examples { gap: 6px 8px; }
+    .d89-examples .btn { white-space: normal; text-align: left; }
+    .d89-about { padding: 8px 12px; background: #fff; border: 1px solid var(--grid); }
+    .d89-msg { font-size: 0.82rem; color: var(--bad); line-height: 1.4; }
+    .d89-msg:empty { display: none; }
+    .d89-msg .note { color: var(--ink); }
+    .d89-msg ul { margin: 6px 0 0; padding-left: 1.2em; }
+    .d89-gen { display: grid; gap: 12px; }
+    .tool textarea { overflow-wrap: anywhere; }
+    .d89-summary { font-size: 1rem; line-height: 1.5; }
+    .d89-part { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; padding-top: 22px; border-top: 1px solid var(--rule); scroll-margin-top: 12px; }
+    .tool .d89-part > h2 { font-size: 1.08rem; }
+    #d89-results { scroll-margin-top: 12px; }
+    .d89-lie-grid { display: grid; grid-template-columns: minmax(200px, 280px) minmax(0, 1fr); gap: 14px 28px; align-items: start; }
+    @media (max-width: 700px) { .d89-lie-grid { grid-template-columns: minmax(0, 1fr); } }
+    .d89-lies { margin: 8px 0 0; padding-left: 1.2em; font-size: 0.9rem; line-height: 1.5; }
+    .d89-lies li + li { margin-top: 6px; }
+    .d89-details { display: grid; gap: 10px; }
+    .d89-more summary { cursor: pointer; font-weight: 600; font-size: 0.92rem; width: fit-content; padding: 2px 0; }
+    .d89-more[open] summary { margin-bottom: 8px; }
+    .d89-details { grid-template-columns: minmax(0, 1fr); }
+    .d89-more-body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+    .tbl.d89-fit th, .tbl.d89-fit td { white-space: nowrap; }
+    .d89-stacked, .d89-stacked tbody, .d89-stacked tr, .d89-stacked th, .d89-stacked td, .d89-stacked caption { display: block; }
+    .d89-stacked thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .d89-stacked tr { padding: 6px 0; border-bottom: 1px solid var(--grid); }
+    .tbl.d89-stacked th[scope="row"], .tbl.d89-stacked td { border: 0; padding: 1px 0; white-space: normal; }
+    .tbl.d89-stacked td { display: flex; justify-content: flex-end; gap: 0 14px; text-align: right; }
+    .d89-stacked td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; font-weight: 400; }
+    .tbl.d89-stacked td.d89-self { display: none; }
+    .d89-matrix td.d89-beat { font-weight: 700; }
+    .d89-scores caption, .d89-matrix caption, .d89-rt caption { font-weight: 600; font-size: 0.86rem; color: var(--slate); }
+    .d89-win { font-weight: 650; }
+    .tbl th[scope="row"] { font-weight: 600; border-bottom: 1px solid var(--grid); white-space: normal; }
+    /* The results table: three columns when there is room; when its own box is narrower, each method becomes a short list. */
+    .tbl.d89-rt th, .tbl.d89-rt td { white-space: normal; }
+    .d89-rt-box { container-type: inline-size; }
+    @container (max-width: 520px) {
+      .d89-rt, .d89-rt tbody, .d89-rt tr, .d89-rt th, .d89-rt td, .d89-rt caption { display: block; }
+      .d89-rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .d89-rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .d89-rt th[scope="row"], .d89-rt td { border: 0; padding: 1px 0; text-align: left; }
+      .d89-rt td::before { content: attr(data-label) ": "; color: var(--slate); font-weight: 400; }
+    }
+    .p-sec .eq { white-space: normal; }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body class="proj" data-day="89">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Voting Method Comparer</h1>
+      <p class="lede">The same voters, the same ballots, seven ways to count them. Edit or generate a set of ranked ballots and watch plurality, runoffs, approval, Borda and Condorcet's head-to-head methods pick different winners.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Voting method comparer">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>On the 21 voters the page opens with, plurality elects A; the two-round runoff, instant runoff, approval and Borda elect B; and Copeland and Schulze elect C, who beats every rival head to head. Across 1,000 simulated three-candidate elections of 101 voters with every ranking equally likely (the simulation's opening settings, seeds 1 to 1,000), a Condorcet winner existed in 91.5%, close to the limit of 91.2% for many voters; plurality elected that candidate 73.2% of the time, Borda 88.4% and instant runoff 95.6%, and all seven methods named the same single winner in 52.4% of the elections.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>With two candidates there is little to argue about: the one more voters prefer should win, and Kenneth May (1952) showed that simple majority rule is the only method that always gives a result (a winner or a tie), treats all voters alike and both candidates alike, and makes a candidate who was winning or tied the outright winner when any voter moves towards them. With three or more candidates, "the one the voters prefer" stops having one meaning. In the eighteenth century Jean-Charles de Borda proposed giving each candidate points for every place a voter ranks them, and the Marquis de Condorcet, in his <em>Essay on the Application of Analysis to the Probability of Majority Decisions</em> (1785), argued that a candidate who beats every rival in a two-way vote should win. He also found the snag: majorities can go round in a circle, A over B, B over C and C over A, so that such a candidate need not exist.</p>
+      <p>Modern elections use other methods again. Plurality, most first choices wins, is the simplest. France elects its president in two rounds. Instant runoff, also called ranked-choice voting or the alternative vote, eliminates the weakest candidate one at a time; New South Wales uses a form of it for its Legislative Assembly, and day 90 recounts two of its seats. Approval voting, studied by Brams and Fishburn (1978), lets each voter back as many candidates as they like. Each method answers a different question, and the tool shows how often the answers differ on the same ballots.</p>
+      <p>Two theorems say the disagreement cannot be designed away. Arrow (1950, 1951) proved that no method of turning individual rankings into a social ranking meets a short list of conditions that each look harmless. Gibbard (1973) and Satterthwaite (1975) proved that every method that picks one winner from three or more possibilities, other than a dictatorship, can be gamed: at some profile some voter does better by lying. Choosing a voting method is choosing which flaws to live with.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The ballots</h3>
+      <p>The profile is a list of groups of identical ballots, one per line: a count, a colon, then all the candidates from first to last, for example <code>12: B &gt; A | C</code>. Every candidate must be ranked, with no ties; day 90 handles ballots that stop early. The bar is the voters' approval line, used only by approval voting: they approve the candidates before it. A line without one approves its first choice only. Up to six candidates, 4,000 lines (enough for every distinct ballot of six candidates) and 100 million voters.</p>
+      <h3>The seven methods</h3>
+      <ul>
+        <li><strong>Plurality</strong>: the most first preferences wins.</li>
+        <li><strong>Two-round runoff</strong>: a candidate with more than half the first preferences wins outright. Otherwise the two with the most meet, and each voter backs whichever of the two they rank higher, as if they voted again sincerely.</li>
+        <li><strong>Instant runoff</strong>: while no candidate has more than half of the ballots, the candidate with the fewest first preferences among those still in is eliminated and their ballots count for the next candidate still in. With three candidates it always agrees with the two-round runoff on complete ballots; with four or more it need not.</li>
+        <li><strong>Approval</strong>: the most approvals wins.</li>
+        <li><strong>Borda count</strong>: with <var>n</var> candidates, a ballot gives <var>n</var> − 1 points to its first choice, <var>n</var> − 2 to its second and so on down to 0 for last; most points wins.</li>
+        <li><strong>Copeland</strong>: every pair of candidates meets head to head, and a candidate's score is wins minus losses; the highest score wins.</li>
+        <li><strong>Schulze</strong>: a completion of Condorcet's rule that still gives an answer when majorities cycle. Write <var>d</var>[<var>x</var>, <var>y</var>] for the voters ranking <var>x</var> above <var>y</var>. A defeat of <var>y</var> by <var>x</var> has strength <var>d</var>[<var>x</var>, <var>y</var>]. A chain of defeats is as strong as its weakest link, and <var>p</var>[<var>x</var>, <var>y</var>] is the strength of the strongest chain from <var>x</var> to <var>y</var>, found by the Floyd-Warshall algorithm for widest paths. Every <var>x</var> with <var>p</var>[<var>x</var>, <var>y</var>] ≥ <var>p</var>[<var>y</var>, <var>x</var>] for all <var>y</var> wins (Schulze 2011). Because every voter here ranks every candidate, <var>d</var>[<var>x</var>, <var>y</var>] + <var>d</var>[<var>y</var>, <var>x</var>] is the same for all pairs, so measuring defeats by winning votes or by margins gives the same result.</li>
+      </ul>
+      <p>A <strong>Condorcet winner</strong> beats every other candidate head to head by a strict majority. When one exists, Copeland and Schulze both elect it; the other five may not.</p>
+      <h3>Ties</h3>
+      <p>No tie is broken by an arbitrary rule. A method that cannot separate two or more candidates names all of them. When candidates tie for second place, the runoff is run for every pair that could have gone through. When candidates tie for last place in instant runoff, the count follows each elimination in turn and names every candidate some path elects; the round-by-round table follows the first path and says where the others lead.</p>
+      <h3>Voting differently</h3>
+      <p>For a chosen method, the tool takes each group of identical voters in turn, lets the whole group switch to every other ballot (every other ranking, or for approval every set of candidates), and reports a ballot that would elect someone the group strictly prefers: every new winner ranked by them above every current winner. Each line of the profile counts as one group, and only whole groups are tried, one at a time: part of a group, single voters and several groups acting together are not, so finding nothing does not prove that no one can gain. It runs on profiles of up to 24 groups, a group at a time, so the page stays responsive.</p>
+      <h3>Many elections</h3>
+      <p>Under impartial culture every voter's ranking is equally likely, drawn independently: each voter gives each candidate a utility drawn uniformly from 0 to 1 and ranks by it. In the left-and-right model candidates stand at random places between −1.5 and 1.5 on a line, voters are drawn from a standard normal distribution, and each ranks candidates by distance. Either way a voter approves every candidate above their own average utility, a sincere approval ballot. Election <var>k</var> uses seed <var>s</var> + <var>k</var> − 1, where <var>s</var> is the first seed, with the kit's seeded generator.</p>
+      <p>On a line every voter's preferences are single-peaked, and with an odd number of voters the candidate the median voter likes best then beats every other head to head (Black 1948), so a Condorcet winner always exists. Under impartial culture with three candidates, the chance of one has a limit as voters grow. Each voter's contributions to the margins of A over B, B over C and C over A have correlation −1/3 with each other, so the three margins tend to normal variables with those correlations. A cycle needs all three positive or all three negative, and for three standard normal variables with pairwise correlations <var>ρ</var> the chance that all are positive is 1/8 + 3/(4π) × arcsin <var>ρ</var>. So</p>
+      <p class="eq">P(Condorcet winner) → 1 − 2 [1/8 − 3/(4π) × arcsin(1/3)] = 3/4 + 3/(2π) × arcsin(1/3) ≈ 91.23%.</p>
+      <p>With three voters the chance is exactly 17/18: of the 216 ways three voters can rank three candidates, 12 make a cycle. The tests check both.</p>
+      <h3>The two theorems, stated exactly</h3>
+      <p><strong>Arrow's theorem</strong>, in the form Arrow gave it in the second edition of <em>Social Choice and Individual Values</em> (1963), as Morreau states it: suppose there are more than two alternatives and a finite group of people. A social welfare function takes each person's ranking of the alternatives (ties allowed) and returns a social ranking. No social welfare function satisfies all five of these conditions:</p>
+      <ul>
+        <li><strong>Unrestricted domain</strong>: it accepts every combination of individual rankings.</li>
+        <li><strong>Social ordering</strong>: what it returns is always a ranking, possibly with ties, never a cycle.</li>
+        <li><strong>Weak Pareto</strong>: if everyone strictly prefers <var>x</var> to <var>y</var>, so does society.</li>
+        <li><strong>Independence of irrelevant alternatives</strong>: whenever everyone ranks <var>x</var> and <var>y</var> the same way in two profiles, society ranks <var>x</var> and <var>y</var> the same way in both.</li>
+        <li><strong>Non-dictatorship</strong>: there is no person whose every strict preference society always shares.</li>
+      </ul>
+      <p>Borda breaks independence, which is how it escapes; pairwise majority breaks social ordering, which is Condorcet's paradox.</p>
+      <p><strong>The Gibbard-Satterthwaite theorem</strong>, as List states it: there is no social choice rule satisfying all of universal domain (it accepts every profile of individual preference orderings), non-dictatorship (no individual's top choice among the possible winners always wins), the range constraint (at least three different alternatives can win), resoluteness (it always names exactly one winner) and strategy-proofness (no individual can ever obtain a winner they strictly prefer by submitting a false preference ordering). The seven methods here are not resolute when they tie, and they accept only strict rankings, so they sit just outside the theorem's letter; its lesson still shows in the search, which finds groups who gain by voting differently. Approval ballots are not orderings, so the theorem as stated does not reach approval voting, but the search still finds groups who gain by moving their line.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Which method is best.</strong> Each method is right by its own standard: most first choices, a majority at the end, broad acceptability, beating everyone head to head. The tool shows that the standards conflict; it cannot weigh them.</li>
+        <li><strong>How real voters would vote.</strong> Every ballot is taken as sincere, and the runoff assumes that voters vote again exactly as they ranked. Real voters respond to the method, the polls and the parties' advice, and the search for better ballots looks at one group at a time, not at whole campaigns.</li>
+        <li><strong>Where people draw an approval line.</strong> Approval needs information that rankings do not carry. In the examples the lines are made up, and in the simulations the rule is a convention, so the approval results are only as good as those lines.</li>
+        <li><strong>How often this happens in real elections.</strong> Impartial culture is a deliberately featureless model, and the line model the opposite extreme. Real electorates fall somewhere between, and the shares from either model are not estimates for any real election.</li>
+        <li><strong>Ballots that stop early, or ties within a ballot.</strong> Every candidate must be ranked strictly. Real ranked ballots are often incomplete, which changes instant runoff in particular; day 90 counts those.</li>
+        <li><strong>Every method.</strong> Seven is a selection. Kemeny's rule, Coombs's method, score voting, majority judgment and many others would add answers of their own.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Add score voting and majority judgment, which ask for grades instead of rankings, with the same profiles extended by grades.</li>
+        <li>Search for single voters who can change the result, and count in the simulation how often each method can be gamed by one voter or one group.</li>
+        <li>Let the visitor drag candidates and voters on a two-dimensional map of opinion and watch the winners change, which shows the centre squeeze directly.</li>
+        <li>Load real ranked ballots from public election records and see how often the methods would have disagreed in practice.</li>
+        <li>Report each method's axioms (monotonicity, independence of clones, the Condorcet criteria) and show a profile that breaks each one it fails.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Pacuit, E. Voting methods. In E. N. Zalta (ed.), <em>The Stanford Encyclopedia of Philosophy</em>, first published 2011, revised 24 June 2019. The 21-voter example is from its section 1 and the runoff example from section 2.1; the approval lines are added here.</li>
+        <li>Morreau, M. Arrow's theorem. <em>The Stanford Encyclopedia of Philosophy</em>, first published 2014, revised 7 December 2025.</li>
+        <li>List, C. Social choice theory. <em>The Stanford Encyclopedia of Philosophy</em>, first published 2013, revised 14 October 2022.</li>
+        <li>Arrow, K. J. (1950). A difficulty in the concept of social welfare. <em>Journal of Political Economy</em>, 58(4), 328-346.</li>
+        <li>Arrow, K. J. <em>Social Choice and Individual Values</em>. First edition 1951; second edition 1963.</li>
+        <li>Gibbard, A. (1973). Manipulation of voting schemes: a general result. <em>Econometrica</em>, 41(4), 587-601.</li>
+        <li>Satterthwaite, M. A. (1975). Strategy-proofness and Arrow's conditions: existence and correspondence theorems for voting procedures and social welfare functions. <em>Journal of Economic Theory</em>, 10(2), 187-217.</li>
+        <li>May, K. O. (1952). A set of independent necessary and sufficient conditions for simple majority decision. <em>Econometrica</em>, 20(4), 680-684.</li>
+        <li>Black, D. (1948). On the rationale of group decision-making. <em>Journal of Political Economy</em>, 56(1), 23-34.</li>
+        <li>Brams, S. J., and Fishburn, P. C. (1978). Approval voting. <em>American Political Science Review</em>, 72(3), 831-847.</li>
+        <li>Schulze, M. (2011). A new monotonic, clone-independent, reversal symmetric, and Condorcet-consistent single-winner election method. <em>Social Choice and Welfare</em>, 36(2), 267-303.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
