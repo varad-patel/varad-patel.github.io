@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Central Bank Language Tracker · 365 projects</title>
+  <meta name="description" content="Paste a central bank statement and score how hawkish or dovish it reads with a published dictionary, against every statement of the US Federal Open Market Committee since 2000.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    .tool textarea { overflow-wrap: anywhere; }
+    .stat .v { font-size: 1.35rem; }
+    .marked { max-height: 460px; overflow: auto; padding: 12px 14px; background: #fff; border: 1px solid var(--grid); font: 400 0.98rem/1.7 var(--serif); white-space: pre-wrap; overflow-wrap: anywhere; }
+    .marked:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+    .marked mark { color: var(--ink); border-radius: 2px; padding: 0 1px; }
+    .marked mark.kw { background: none; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; font-weight: 650; }
+    .marked mark.md.up { background: #fbe0d4; }
+    .marked mark.md.down { background: #d6e6f8; }
+    .marked mark.md.zero { background: #e8ebef; }
+    .marked mark.kw.up { text-decoration-color: #b8431a; }
+    .marked mark.kw.down { text-decoration-color: #1f5fae; }
+    .marked mark.kw.zero { text-decoration-color: #5b6573; }
+    .marked sup.val { font: 700 0.7rem/1 var(--sans); color: var(--ink); margin: 0 2px; }
+    .marked sup.pol { padding: 1px 4px; border: 1px solid var(--rule); border-radius: 3px; }
+    .marked .aside { color: #5b6573; }
+    .near { margin: 0; padding-left: 1.1em; display: grid; gap: 8px; }
+    .near li span { margin-right: 6px; }
+    details.pairs summary, details.dict > summary { cursor: pointer; font-weight: 600; width: fit-content; }
+    details.pairs ol { margin: 8px 0 0; padding-left: 1.6em; font-size: 0.88rem; max-height: 300px; overflow: auto; overflow-wrap: anywhere; }
+    details.dict { padding: 14px 16px; }
+    details.dict > summary { font-size: 0.95rem; }
+    details.dict[open] > summary { margin-bottom: 10px; }
+    .dict-topic p, .dict-topic li { font-size: 0.88rem; line-height: 1.5; overflow-wrap: anywhere; }
+    .dict-topic p { margin-top: 6px; }
+    .dict-topic ul { margin: 6px 0 0; padding-left: 1.2em; }
+    .tbl caption { white-space: normal; }
+    .tbl.rt th, .tbl.rt td { white-space: normal; }
+    /* Each row becomes a short labelled list whenever the table's own box is narrower than the widest table (about 290px). */
+    div:has(> table.rt) { container-type: inline-size; }
+    @container (max-width: 320px) {
+      .rt, .rt tbody, .rt tr, .rt td, .rt caption { display: block; }
+      .rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .rt td { border: 0; padding: 1px 0; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; overflow-wrap: anywhere; }
+      .rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+      .rt td:first-child { font-weight: 700; justify-content: flex-start; }
+      .rt td:first-child::before { content: none; }
+    }
+    @media (max-width: 600px) { .p-sec .eq { white-space: normal; } }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body class="proj" data-day="73">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Central Bank Language Tracker</h1>
+      <p class="lede">Paste a central bank statement and see how hawkish or dovish it reads, word by word, by a published dictionary, and where it sits among every statement of the US Federal Open Market Committee since 2000.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Score a central bank statement">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>Of the 226 FOMC statements from February 2000 to September 2026, 220 announced a decision on the rate. The dictionary's score averaged +0.34 at the 41 raises, +0.18 at the 145 holds and −0.08 at the 34 cuts, and it was above zero for 40 of the raises and below zero for 23 of the cuts. The dictionary was built from the statements of 2000 to 2020. On the 46 decisions since, it scored all 12 raises above zero but none of the 6 cuts below zero, and the averages bunched together: +0.36, +0.31 and +0.27. The panel "Does the score track what the Committee did?" shows these figures on load.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>A central bank moves markets twice: when it changes its interest rate and when it talks about what it sees and what it might do. Since the mid-1990s central banks have said more and more, on the theory that a policy people understand works through expectations as well as through today's rate. The survey of Blinder and co-authors (2008) gathers the evidence that words move asset prices and make policy easier to predict, and Gürkaynak, Sack and Swanson found that the Federal Open Market Committee's statements moved longer-term US interest rates more than its rate decisions did.</p>
+      <p>Markets have a shorthand for the message. A <strong>hawkish</strong> statement leans towards tighter policy: higher rates, worry about inflation, confidence that the economy can bear it. A <strong>dovish</strong> one leans towards easing: worry about jobs and growth, comfort about inflation. Reading for the lean is a skill, and the question this page asks is how far a mechanical count of words can do it, and how far it can be trusted.</p>
+      <p>General-purpose word lists do badly on economic text. Loughran and McDonald (2011) showed that almost three quarters of the words the widely used Harvard dictionary calls negative are not negative in companies' annual reports, "liability" among them. Researchers therefore write dictionaries for the job. This page uses the one Gardner, Scotti and Vega built for FOMC statements, published by the Federal Reserve Board in 2021 and in the <em>Journal of Econometrics</em> in 2022. It pairs a topic word with the word that says which way it moved, so that "unemployment rose" and "inflation rose" count in opposite directions.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The past statements</h3>
+      <p>The page carries the text of every statement the FOMC issued from 2 February 2000 to 16 September 2026, 226 in all, as the Federal Reserve Board publishes them: the statement, the voting record and any related action of the Board in the same release. For each one it reads the federal funds target from the statement's own words (the single rate before December 2008, the top of the range after it) and compares it with the previous decision to label it a raise, a hold or a cut. Six statements made no decision on the rate, such as the liquidity statement of 10 August 2007; they are shown, but left out of the check against decisions.</p>
+      <h3>Topics, keywords and modifiers</h3>
+      <p>The dictionary has five topics. For four of them (inflation, the labour market, output and financial conditions) it lists keywords, each with a sign: +1 for "inflation", "employment" or "spending", −1 for "unemployment" or "job losses", whose rise is bad news. It also lists modifiers with a sign for each topic: "increased" is +1, "declined" −1, "steady" 0. Within each sentence the tool pairs every keyword with the nearest modifier listed for its topic, counting distance in words from the start of one to the start of the other, and the pair scores the product of the two signs:</p>
+      <p class="eq"><var>pair</var> = <var>s</var><sub>keyword</sub> × <var>s</var><sub>modifier</sub> &nbsp;&nbsp; so "unemployment has declined" = (−1) × (−1) = +1</p>
+      <p>A positive pair is news that points to tighter policy: a stronger economy or rising inflation. The fifth topic, future policy, has sixteen rules made of phrases. A sentence that contains every phrase of a rule, such as "judges" and "increases in the target range", scores the rule's sign.</p>
+      <h3>Sentences set aside</h3>
+      <p>Statements often say how policy is meant to help: "today's action will help to promote a return to moderate growth". Read literally that is good news about output, written at the moment the Committee thought output was in trouble. The dictionary therefore sets aside sentences that match one of fourteen rules (they mention the dual mandate, say the Committee "will monitor" and act "as needed", and so on). They count for nothing in the four topics and are left out of the word count, though a future-policy rule can still fire on them.</p>
+      <h3>The score</h3>
+      <p>With <var>N</var> the number of words in the sentences that count,</p>
+      <p class="eq"><var>score</var> = ( Σ pairs + Σ policy rules ) / √<var>N</var></p>
+      <p>Dividing by the square root of the length, as the authors do, keeps a long statement from scoring high only because it is long, without letting one pair in a short statement dominate. The table beside the score splits it by topic. The ranking against the past is the share of the 226 statements with a lower score, a tie counting as half. The words in the second tile follow from that share: "more dovish than most" at or below 20%, "on the dovish side" below 40%, "middling" from 40% to 60%, "on the hawkish side" above 60% and "more hawkish than most" from 80%.</p>
+      <h3>Where the tables are silent</h3>
+      <p>The authors' program is not public, so the page had to settle how the tables are matched. Every entry matches the start of a word, so "increas" covers "increased" and "increasing" (the paper's marks of a space before "flat" and "low", which keep them out of "inflation" and "slow", are met by that rule); an entry the paper marks with a space after it, such as "up" or "moderate", must be a whole word; "soft" does not match "software", as the paper says. In a phrase every word but the last must match whole. Where several entries start at the same word the longest is taken. A modifier that lies inside the keyword itself is not its modifier, so "job losses increased" scores −1, not +1. Where two modifiers are equally near, the one after the keyword wins. A sentence ends at a full stop, question mark or exclamation mark followed by a capital letter, except after an initial or a short abbreviation such as "U.S.". Text is put in Unicode compatibility form first, so a ligature copied from a PDF ("ﬁnancial") reads as two letters, and invisible formatting characters such as soft hyphens and zero-width spaces are removed, so that they cannot split a word. A phrase rule with ".*?" (anything in between) is matched piece by piece in order, which gives the same answer as the regular expression in the paper's table but stays fast on any text. These choices are the page's; another reading of the same tables would give somewhat different numbers.</p>
+      <h3>The check against decisions</h3>
+      <p>The last panel asks whether the score sorts statements by what the Committee did. It averages the score over raises, holds and cuts, separately for 2000 to 2020, the years the dictionary was built from, and for 2021 to 2026, which it never saw. It also counts how often the score's sign agrees with the direction of a move. A switch compares each decision with the statement before it instead, which is what a reader trying to forecast the next move would have had.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Whether a statement surprised anyone.</strong> Markets react to the part of a statement they did not expect. A score measures the level of the language, not its change from the last statement or from what traders had priced in.</li>
+        <li><strong>What the Committee decided, or why.</strong> The dictionary reads the description of the economy. On 15 March 2020 the FOMC cut its rate to near zero in an emergency, yet the statement scores +0.30, higher than 148 of the other 225 statements, because it still describes the strong economy of the months before the pandemic.</li>
+        <li><strong>Grammar.</strong> Counting pairs cannot tell a verb from an adjective or follow a negation. "The Committee expects inflation to moderate" counts "moderate" as +1, the dictionary's sign for a moderate pace, though the sentence says inflation will fall.</li>
+        <li><strong>How well it would work on new statements.</strong> The words were chosen by reading the statements of 2000 to 2020, so its success on those years is partly built in. Since 2021 it has separated raises from cuts much less well: the cuts of 2024 and 2025 came with the words that inflation "remains somewhat elevated", which the dictionary reads as hawkish.</li>
+        <li><strong>Other central banks.</strong> The dictionary was written for the FOMC's house style. The Bank of England, the European Central Bank and the Reserve Bank of India use other words for the same ideas, and a low count of matches on their texts means the dictionary is not listening, not that the text is neutral.</li>
+        <li><strong>The authors' exact numbers.</strong> The matching rules above are this page's reading of the published tables. The scores rank statements in the way the paper describes, but they are not the authors' series.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Score the change from the previous statement, sentence by sentence, which is closer to what markets react to.</li>
+        <li>Test the score against market reactions: the move in two-year Treasury yields in the hour after each statement.</li>
+        <li>Add dictionaries built for other central banks, such as the one Picault and Renault (2017) built to measure the European Central Bank's stance from its press conferences, so that a pasted ECB text is read in its own terms.</li>
+        <li>Handle negation and verbs with a sentence parser, and compare the result with the plain count on the same statements.</li>
+        <li>Extend the archive to minutes and press-conference transcripts, which say much more than the statements do.</li>
+        <li>Fit the weights of topics to past decisions on the years up to 2020 and judge the fitted score on the years after, as a fair forecast test.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>Board of Governors of the Federal Reserve System. FOMC statements, 2 February 2000 to 16 September 2026, from the meeting calendars at https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm. Retrieved 14 October 2026. Works of the US government; the Board's website policy (https://www.federalreserve.gov/disclaimer.htm) says that "Unless otherwise indicated, information on Board's website is in the public domain". The script that builds the page's copy is scripts/data/fomc_statements.py.</li>
+        <li>Gardner, B., Scotti, C., and Vega, C. (2021). Words speak as loudly as actions: central bank communication and the response of equity prices to macroeconomic announcements. Finance and Economics Discussion Series 2021-074, Board of Governors of the Federal Reserve System. https://doi.org/10.17016/FEDS.2021.074. Appendix tables A5 to A10 are the dictionary used here; Crossref records the paper as a US government work in the public domain.</li>
+        <li>Gardner, B., Scotti, C., and Vega, C. (2022). Words speak as loudly as actions: central bank communication and the response of equity prices to macroeconomic announcements. <em>Journal of Econometrics</em>, 231(2), 387-409.</li>
+        <li>Apel, M., and Blix Grimaldi, M. (2014). How informative are central bank minutes? <em>Review of Economics</em>, 65(1), 53-76. An earlier dictionary of the same kind, for the minutes of Sweden's Riksbank.</li>
+        <li>Loughran, T., and McDonald, B. (2011). When is a liability not a liability? Textual analysis, dictionaries, and 10-Ks. <em>Journal of Finance</em>, 66(1), 35-65.</li>
+        <li>Blinder, A. S., Ehrmann, M., Fratzscher, M., De Haan, J., and Jansen, D.-J. (2008). Central bank communication and monetary policy: a survey of theory and evidence. <em>Journal of Economic Literature</em>, 46(4), 910-945.</li>
+        <li>Gürkaynak, R. S., Sack, B., and Swanson, E. T. (2005). Do actions speak louder than words? The response of asset prices to monetary policy actions and statements. <em>International Journal of Central Banking</em>, 1(1).</li>
+        <li>Picault, M., and Renault, T. (2017). Words are not all created equal: a new measure of ECB communication. <em>Journal of International Money and Finance</em>, 79, 136-156.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

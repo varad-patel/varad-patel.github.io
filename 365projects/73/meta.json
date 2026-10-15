@@ -1,0 +1,7 @@
+{
+  "question": "How hawkish or dovish does a central bank statement read, by a published dictionary, against every FOMC statement since 2000?",
+  "finding": "Across 220 FOMC decisions from 2000 to 2026 the dictionary score averaged +0.34 at raises, +0.18 at holds and −0.08 at cuts, but on the 46 decisions since 2021, after the dictionary was built, it scored none of the 6 cuts below zero.",
+  "limit": "A count of word pairs reads the description of the economy, not the decision or the surprise in it, and it was built from the statements it is tested on before 2021.",
+  "sources": ["Federal Reserve Board"],
+  "built": "2026-10-14"
+}
