@@ -1429,7 +1429,14 @@ window.CHALLENGE = {
    "concept": "Sovereign debt",
    "skills": "Dynamic optimisation",
    "section": 3,
-   "date": "2026-12-27"
+   "date": "2026-12-27",
+   "built": "2026-10-14",
+   "question": "When would a government that weighs the costs of default against the costs of repaying choose not to pay its foreign debt?",
+   "finding": "With Arellano's numbers for Argentina, a government at trend income repays debts up to 2.44% of a year's income and defaults on 2.50% or more, but 2.3% below trend it defaults on 1.25%; in one simulated history of 50,000 years it defaults 3.4 times a century (other seeds give up to 3.6), 98% of those defaults with income below trend, on average 8.2% below.",
+   "limit": "The penalties for default are assumed rather than derived, debt is one-quarter bonds held by risk-neutral lenders, and the model supports far less debt than real governments owe.",
+   "sources": [],
+   "img": "img/079.jpg",
+   "url": "79/"
   },
   {
    "id": 80,
@@ -1456,7 +1463,14 @@ window.CHALLENGE = {
    "concept": "Coordination, financial fragility",
    "skills": "Coordination games",
    "section": 3,
-   "date": "2026-12-29"
+   "date": "2026-12-29",
+   "built": "2026-10-14",
+   "question": "When do a bank's depositors run, and how much does it depend on the bank's investments, its promises and what depositors believe?",
+   "finding": "A bank that promises 1.05 on an investment returning 2 is sound if depositors wait whenever the investment's chance of paying off is above 77.4%, yet with private noisy signals depositors run whenever it is below 88.0% as the noise vanishes (on signals below 87.7% with the opening noise of 2 points); promising only 1 lowers the threshold to 75.0%, and promising Diamond and Dybvig's 1.22 raises it to 95%, the top of the range.",
+   "limit": "The bank's fundamentals are one number with an assumed distribution and an all-or-nothing investment, and deposit insurance, public news and contagion are left out.",
+   "sources": [],
+   "img": "img/081.jpg",
+   "url": "81/"
   },
   {
    "id": 82,
@@ -1465,7 +1479,14 @@ window.CHALLENGE = {
    "concept": "Systemic risk",
    "skills": "Network simulation",
    "section": 3,
-   "date": "2026-12-30"
+   "date": "2026-12-30",
+   "built": "2026-10-14",
+   "question": "When one bank suffers a loss, how far do failures spread through a network of interbank debts, and how much depends on the network's shape?",
+   "finding": "With ten banks each holding a buffer of 6 and owing 100 to other banks, a loss of 40 at one bank fells six banks in a ring but only the bank hit in a complete network, while a loss of 70, above the system's combined buffer of 60, fells all ten in both and five in two weakly linked clusters.",
+   "limit": "Failure costs nothing here beyond the losses passed on, the networks are regular and stylised, and unpaid debts are the only channel of contagion.",
+   "sources": [],
+   "img": "img/082.jpg",
+   "url": "82/"
   },
   {
    "id": 83,
