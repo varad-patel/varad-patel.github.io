@@ -1332,7 +1332,17 @@ window.CHALLENGE = {
    "concept": "Time preference",
    "skills": "Yield-curve mathematics",
    "section": 3,
-   "date": "2026-12-24"
+   "date": "2026-12-24",
+   "built": "2026-10-14",
+   "question": "What does the price of a US Treasury bond say about how patient the market is, and how much of it is pure time preference?",
+   "finding": "On 9 October 2026 the market priced $100 of buying power due in 10 years at $74.58 (a real yield of 2.93%), against $111.96 at the end of July 2021 (−1.13%); read through the Ramsey equation with fixed η and growth, pure time preference would have risen by 4.06 points in five years, from −2.77% to 1.29% with η = 1 and 1999 to 2025 consumption growth.",
+   "limit": "A real yield also holds term, liquidity and safety premia and reflects monetary policy, and no yield curve can separate these from patience, so the implied time preference is only what is left if they are all zero.",
+   "sources": [
+    "Federal Reserve Board yield curves",
+    "US Bureau of Economic Analysis"
+   ],
+   "img": "img/076.jpg",
+   "url": "76/"
   },
   {
    "id": 77,
@@ -1341,7 +1351,14 @@ window.CHALLENGE = {
    "concept": "Patience and wealth",
    "skills": "Exponential growth",
    "section": 3,
-   "date": "2026-12-25"
+   "date": "2026-12-25",
+   "built": "2026-10-14",
+   "question": "How much do small differences in return, fees, start age and pay-ins change what savings grow to over decades?",
+   "finding": "Saving $200 a month from 25 to 65 at an assumed 5% before fees of 0.1%, with 2% inflation, ends at $130,832 in today's money; fees one point higher leave 22.5% less, nearly as much as starting five years later (24.9% less), and a saver who is 35 today needs $300 a month to end with about the same.",
+   "limit": "Returns are assumed constant and known, so the tool shows the arithmetic of compounding, not what any real investment will do, and it is not financial advice.",
+   "sources": [],
+   "img": "img/077.jpg",
+   "url": "77/"
   },
   {
    "id": 78,
@@ -1350,7 +1367,16 @@ window.CHALLENGE = {
    "concept": "Fiscal sustainability",
    "skills": "Difference equations",
    "section": 3,
-   "date": "2026-12-26"
+   "date": "2026-12-26",
+   "built": "2026-10-14",
+   "question": "Where does a government's debt go as a share of GDP, given the interest rate it pays, how fast its economy grows and its primary deficit?",
+   "finding": "With US debt at 125.9% of GDP and a primary deficit of 3.24% in 2025, holding r and g at their 2025 values (4.02%, 5.00%) sends debt towards 347% of GDP, while their 2021 to 2025 averages (3.67%, 7.58%) send it towards 89%: the primary deficit that would hold debt steady is 1.17% of GDP in one case and 4.58% in the other.",
+   "limit": "The projection holds interest, growth and the primary deficit fixed, while in reality they move with each other, with inflation and with the debt itself, so it shows where the arithmetic leads, not what will happen.",
+   "sources": [
+    "OECD Economic Outlook No 119"
+   ],
+   "img": "img/078.jpg",
+   "url": "78/"
   },
   {
    "id": 79,
