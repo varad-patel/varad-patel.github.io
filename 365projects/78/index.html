@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Government Debt Dynamics · 365 projects</title>
+  <meta name="description" content="Set the interest rate on the debt, nominal growth and the primary deficit, starting from real OECD figures for 32 countries, and see where debt goes as a share of GDP.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .d78-msg { font-size: 0.82rem; color: var(--bad); line-height: 1.4; }
+    .d78-msg:empty, .d78-edited:empty { display: none; }
+    .d78-edited { color: var(--warn); }
+    .d78-presets { gap: 6px 8px; }
+    .d78-presets .btn { white-space: normal; text-align: left; }
+    .d78-words { font-size: 0.95rem; line-height: 1.55; overflow-wrap: anywhere; }
+    .d78-stack { display: grid; gap: 8px; }
+    .d78-jump { gap: 2px 16px; }
+    .d78-jump a { padding: 6px 0; }
+    @media (min-width: 861px) { .d78-jump { display: none; } }
+    #d78-results, #d78-chart, #d78-country { scroll-margin-top: 12px; }
+    .stat .v { font-size: 1.4rem; }
+    .tbl.d78-rt th, .tbl.d78-rt td { white-space: normal; }
+    .d78-rt th[scope="row"] { font-weight: 600; border-bottom: 1px solid var(--grid); }
+    .d78-rt caption { font-weight: 600; font-size: 0.86rem; color: var(--slate); }
+    .d78-rt-box { container-type: inline-size; }
+    @container (max-width: 560px) {
+      .d78-rt, .d78-rt tbody, .d78-rt tr, .d78-rt th, .d78-rt td, .d78-rt caption { display: block; }
+      .d78-rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .d78-rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .d78-rt th[scope="row"], .d78-rt td { border: 0; padding: 1px 0; overflow-wrap: anywhere; }
+    }
+    @media (max-width: 560px) {
+      .d78-rt, .d78-rt tbody, .d78-rt tr, .d78-rt th, .d78-rt td, .d78-rt caption { display: block; }
+      .d78-rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .d78-rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .d78-rt th[scope="row"], .d78-rt td { border: 0; padding: 1px 0; overflow-wrap: anywhere; }
+    }
+    .p-sec .eq { white-space: normal; }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body class="proj" data-day="78">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Government Debt Dynamics</h1>
+      <p class="lede">Set the interest rate a government pays, how fast its economy grows and how much it borrows beyond its interest bill, and see where its debt goes as a share of GDP, starting from real figures for 32 countries.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Government debt-to-GDP projection">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>The United States ended 2025 with gross government debt of 125.9% of GDP and a primary deficit of 3.24%. Hold the interest rate on the debt and nominal growth at their 2025 values, 4.02% and 5.00%, and debt heads for 347% of GDP, reaching 164% after 20 years. Hold them at their 2021 to 2025 averages, 3.67% and 7.58%, and the same deficit leads towards 89%, and 107% after 20 years. The primary deficit that would hold debt where it is: 1.17% of GDP in the first case, 4.58% in the second. Almost everything turns on r − g. (United States, Years ahead 20; "Last year", then "5 years".)</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Whether a government's debt is a problem depends less on its size in money than on its size relative to the economy that must carry it. Evsey Domar argued in 1944 that a debt which keeps growing need not become a growing burden so long as national income grows too: what matters is the debt, and the taxes needed to pay its interest, measured against income. The modern form of the argument follows the ratio of debt to GDP and finds it driven by three things: the interest rate on the debt, the growth rate of the economy and the budget balance before interest.</p>
+      <p>The arithmetic is short. Each year interest makes the debt grow by <var>r</var>, growth makes the economy, the denominator, grow by <var>g</var>, and the government adds any primary deficit, the gap between spending and revenue leaving out interest. When <var>r</var> is below <var>g</var>, the economy outgrows the interest, and any constant primary deficit leads not to ever-rising debt but to a ratio at which the two forces balance. When <var>r</var> is above <var>g</var>, interest outruns growth, and holding the ratio steady needs a primary surplus that grows with the debt. The sign of <var>r</var> − <var>g</var> divides two worlds.</p>
+      <p>In which world rich countries live became a live argument in economics. Olivier Blanchard (2019) used the American Economic Association's presidential address to argue that safe interest rates below growth had been the norm rather than the exception in US history, and that if this continued, "public debt may have no fiscal cost". The tool's country data show how quickly the sign can look different: the effective rate on debt moves slowly, but nominal growth jumps with inflation and recessions, so the answer depends on which years are averaged. Henning Bohn (1998) pointed out a second reason the arithmetic alone overstates the danger: the US government has historically raised its primary surplus when debt was high, so the primary deficit is not a constant at all.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The difference equation</h3>
+      <p>Let <var>D</var> be debt and <var>Y</var> nominal GDP. If the primary deficit in year <var>t</var> + 1 is <var>PD</var><sub><var>t</var>+1</sub>, debt grows by interest and by that deficit, <var>D</var><sub><var>t</var>+1</sub> = (1 + <var>r</var>) <var>D</var><sub><var>t</var></sub> + <var>PD</var><sub><var>t</var>+1</sub>, while GDP grows by <var>g</var>, <var>Y</var><sub><var>t</var>+1</sub> = (1 + <var>g</var>) <var>Y</var><sub><var>t</var></sub>. Dividing one by the other gives the ratios <var>d</var> = <var>D</var>/<var>Y</var> and <var>p</var> = <var>PD</var>/<var>Y</var>:</p>
+      <p class="eq"><var>d</var><sub><var>t</var>+1</sub> = <var>d</var><sub><var>t</var></sub> (1 + <var>r</var>) / (1 + <var>g</var>) + <var>p</var>.</p>
+      <p>Only the ratio (1 + <var>r</var>) / (1 + <var>g</var>) matters, so <var>r</var> and <var>g</var> can both be nominal or both real (deflated by the same price index); mixing a real growth rate with a nominal interest rate is the commonest error. The change in one year splits into the snowball, <var>d</var><sub><var>t</var></sub> (<var>r</var> − <var>g</var>) / (1 + <var>g</var>), and the primary deficit <var>p</var>; the tool shows both for the first year.</p>
+      <h3>The closed forms</h3>
+      <p>With <var>a</var> = (1 + <var>r</var>) / (1 + <var>g</var>) constant, the equation solves exactly:</p>
+      <p class="eq"><var>d</var><sub><var>t</var></sub> = <var>a</var><sup><var>t</var></sup> <var>d</var><sub>0</sub> + <var>p</var> (1 − <var>a</var><sup><var>t</var></sup>) / (1 − <var>a</var>), &nbsp;&nbsp; or <var>d</var><sub>0</sub> + <var>p</var> <var>t</var> when <var>r</var> = <var>g</var>.</p>
+      <p>The ratio stands still at</p>
+      <p class="eq"><var>d</var>* = <var>p</var> (1 + <var>g</var>) / (<var>g</var> − <var>r</var>), &nbsp;&nbsp; and <var>d</var><sub><var>t</var></sub> − <var>d</var>* = <var>a</var><sup><var>t</var></sup> (<var>d</var><sub>0</sub> − <var>d</var>*).</p>
+      <p>So when <var>r</var> &lt; <var>g</var> (<var>a</var> &lt; 1) the gap to <var>d</var>* shrinks by the factor <var>a</var> every year and halves every ln 2 / (−ln <var>a</var>) years, whatever the start; the tool says the ratio "settles". When <var>r</var> &gt; <var>g</var> the gap grows by <var>a</var> a year: above <var>d</var>* debt rises without limit, below it falls without limit, and only a start exactly at <var>d</var>* stays put. When <var>r</var> = <var>g</var> there is no steady state unless <var>p</var> = 0. These verdicts are worked out from the closed form, not by looking at the chart, and the tests hold the year-by-year iteration to the explicit solution across 300 random scenarios and the extremes.</p>
+      <p>To hold the ratio at today's <var>d</var><sub>0</sub>, the primary balance must be</p>
+      <p class="eq">surplus = <var>d</var><sub>0</sub> (<var>r</var> − <var>g</var>) / (1 + <var>g</var>),</p>
+      <p>a surplus when <var>r</var> &gt; <var>g</var> and a deficit when <var>r</var> &lt; <var>g</var>. Exactly this balance holds the ratio; a better one makes it fall every year, a worse one makes it rise.</p>
+      <h3>The real starting points</h3>
+      <p>The OECD's Economic Outlook No 119 (Edition 2026/1) gives general government gross financial liabilities, gross interest paid, the primary balance (net lending excluding net interest) and nominal GDP each year. The tool keeps the 32 countries with an unbroken run of all four from 1995, or a later first year, to 2024 or 2025. It keeps only outturns: each country stops at the last year in which the OECD marks every one of its series as historical rather than projected (2025 for most countries, 2024 for Japan, Switzerland, Ireland, Lithuania and South Korea). Choosing a country fills the boxes with that year's debt ratio and primary deficit, and with <var>r</var> and <var>g</var> averaged over the last year, five years or ten. The effective interest rate is gross interest paid in a year divided by gross debt at the end of the year before, the average rate on all debt, which lags behind market rates as old bonds mature.</p>
+      <p>The country table also replays the equation over the last five years with each year's actual <var>r</var>, <var>g</var> and primary balance, and compares the result with the published ratio. The gap is the stock-flow adjustment: everything that changes debt besides deficits and interest, such as lending, buying or selling financial assets, exchange-rate and market-value changes, and interest the government receives, which is not netted off here. It is often several points of GDP over five years, a reminder that the equation is an accounting identity only once that term is added.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>What will happen.</strong> The projection holds <var>r</var>, <var>g</var> and the primary deficit fixed for decades. None of them stays fixed, and they depend on each other and on the debt: higher debt can raise interest rates, and governments change budgets when debt rises.</li>
+        <li><strong>How much debt is too much.</strong> No ratio in the equation marks a crisis: it says where debt goes, not when lenders would stop lending. Japan's gross debt has been above 200% of GDP in every year since 2012 in these data. Who holds the debt, in which currency, and whether a central bank stands behind it are outside the model.</li>
+        <li><strong>Interest that reprices.</strong> The effective rate is an average over old and new debt. When market rates rise, it climbs only as debt is refinanced, which the tool's single <var>r</var> cannot show.</li>
+        <li><strong>Net debt.</strong> The figures are gross. A government with large financial assets owes much less net than gross. A path below zero means the model has run past what gross debt can describe.</li>
+        <li><strong>Comparisons across countries.</strong> Gross financial liabilities follow the national accounts definition. It is not the measure that budget rules such as the European Union's use, the two can differ, and countries record some liabilities differently.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Let the interest rate reprice gradually: split the debt by maturity so a rise in market rates passes through as bonds are rolled over.</li>
+        <li>Add uncertainty: draw <var>r</var>, <var>g</var> and the primary balance from their joint history and show a fan of paths, as stochastic debt sustainability analyses do.</li>
+        <li>Add a fiscal reaction function in the spirit of Bohn (1998), with the primary surplus rising as debt rises, and show when it stabilises the ratio.</li>
+        <li>Add net debt, and the stock-flow adjustment as an explicit term.</li>
+        <li>Bring in emerging economies, where debt in foreign currency makes the exchange rate part of <var>r</var>, once an openly licensed source is available.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>OECD (2026). OECD Economic Outlook No 119 (Edition 2026/1). Series GGFLQ, GGFL, GGINTP, NLGXQ and GDP, dataflow OECD.ECO.MAD,DSD_EO@DF_EO version 1.5, from https://sdmx.oecd.org/public/rest/, with the edition's list of last historical points. Retrieved 14 October 2026. Used under the OECD Terms and Conditions for data (free to extract, adapt and share for any purpose with credit to the OECD); projections dropped, ratios and averages computed by this page.</li>
+        <li>Domar, E. D. (1944). The "burden of the debt" and the national income. <em>American Economic Review</em>, 34(4), 798-827.</li>
+        <li>Blanchard, O. (2019). Public debt and low interest rates. <em>American Economic Review</em>, 109(4), 1197-1229.</li>
+        <li>Bohn, H. (1998). The behavior of U.S. public debt and deficits. <em>Quarterly Journal of Economics</em>, 113(3), 949-963.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

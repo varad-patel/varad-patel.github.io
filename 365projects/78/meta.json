@@ -1,0 +1,7 @@
+{
+  "question": "Where does a government's debt go as a share of GDP, given the interest rate it pays, how fast its economy grows and its primary deficit?",
+  "finding": "With US debt at 125.9% of GDP and a primary deficit of 3.24% in 2025, holding r and g at their 2025 values (4.02%, 5.00%) sends debt towards 347% of GDP, while their 2021 to 2025 averages (3.67%, 7.58%) send it towards 89%: the primary deficit that would hold debt steady is 1.17% of GDP in one case and 4.58% in the other.",
+  "limit": "The projection holds interest, growth and the primary deficit fixed, while in reality they move with each other, with inflation and with the debt itself, so it shows where the arithmetic leads, not what will happen.",
+  "sources": ["OECD Economic Outlook No 119"],
+  "built": "2026-10-14"
+}
