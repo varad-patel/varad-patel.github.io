@@ -1,0 +1,7 @@
+{
+  "question": "How much does each pollster lean, and how much does the forecast depend on whether polling errors are shared across states?",
+  "finding": "In 2020 the model finds Trafalgar Group leaning furthest towards Trump (2.7 points of the two-party vote below the average poll) and Quinnipiac furthest towards Biden (1.8 above), yet removing every lean makes the polled states miss by more (2.6 points against 2.2), and five elections put the share of state error common to all states anywhere from 23% to 74%.",
+  "limit": "A house effect is measured against the average poll, so the polls alone cannot say whether the average itself is wrong, and five elections cannot pin down how much of the error the states share.",
+  "sources": ["FiveThirtyEight polls (CC BY 4.0)", "Federal Election Commission", "US Census Bureau", "Certificates of ascertainment (National Archives)"],
+  "built": "2026-10-14"
+}

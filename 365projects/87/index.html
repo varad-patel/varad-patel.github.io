@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Polling Error and House Effects · 365 projects</title>
+  <meta name="description" content="Choose pollsters from the 2016 or 2020 US presidential polls, see how much each leans with a hierarchical Bayesian model, and see how correlated polling errors shift the forecast.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .d87-group { gap: 14px; padding-top: 12px; border-top: 1px solid var(--grid); }
+    .d87-grouphead { margin: 0; font-weight: 700; font-size: 0.95rem; }
+    .d87-source { padding-top: 12px; border-top: 1px solid var(--grid); overflow-wrap: anywhere; }
+    .d87-stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; min-width: 0; }
+    .d87-progress:empty { display: none; }
+    .d87-presets { gap: 6px 8px; }
+    .d87-presets .btn { white-space: normal; text-align: left; }
+    .d87-jump { gap: 2px 16px; }
+    .d87-jump a { padding: 6px 0; }
+    @media (min-width: 861px) { .d87-jump { display: none; } }
+    .stat .v { font-size: 1.4rem; }
+    /* The list of pollsters: name and tick box, the interval on a scale from R +4 to D +4, the value in words. */
+    .d87-leans { display: grid; gap: 0; }
+    .d87-row, .d87-axis { display: grid; grid-template-columns: minmax(0, 13em) minmax(90px, 1fr) minmax(0, 15em); gap: 4px 12px; align-items: center; }
+    .d87-row { padding: 5px 0; border-bottom: 1px solid var(--grid); }
+    .d87-row .check { font-size: 0.86rem; overflow-wrap: anywhere; }
+    .d87-axis { font-size: 0.78rem; color: var(--slate); }
+    .d87-scale { display: flex; justify-content: space-between; }
+    .d87-track { position: relative; display: block; height: 16px; background: color-mix(in srgb, var(--ink) 5%, transparent); border-radius: 2px; }
+    .d87-zero { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--slate); }
+    .d87-bar { position: absolute; top: 6px; height: 4px; background: var(--c7); border-radius: 2px; }
+    .d87-dot { position: absolute; top: 3px; width: 10px; height: 10px; margin-left: -5px; border-radius: 50%; background: var(--ink); }
+    .d87-val { font-size: 0.82rem; overflow-wrap: anywhere; }
+    .d87-small { padding-top: 6px; }
+    .d87-small .check { font-size: 0.86rem; }
+    .d87-stack { container: d87s / inline-size; }
+    @container d87s (max-width: 600px) {
+      .d87-row { grid-template-columns: minmax(0, 1fr); }
+      .d87-axis { grid-template-columns: minmax(0, 1fr); }
+      .d87-axis > span:first-child, .d87-axis > span:last-child { display: none; }
+    }
+    .d87-rt caption { text-align: left; font-weight: 600; font-size: 0.86rem; color: var(--slate); padding-bottom: 6px; }
+    .d87-rt th[scope="row"] { font-weight: 600; }
+    .d87-rt thead th { vertical-align: bottom; }
+    .tbl.d87-rt th, .tbl.d87-rt td { white-space: normal; }
+    /* Tables become a short list of labelled lines whenever their box is narrower than about 600 pixels. */
+    .d87-tbl { container: d87t / inline-size; }
+    @container d87t (max-width: 600px) {
+      .d87-rt, .d87-rt tbody, .d87-rt tr, .d87-rt th, .d87-rt td, .d87-rt caption { display: block; }
+      .d87-rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+      .d87-rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .d87-rt th[scope="row"], .d87-rt td { border: 0; padding: 1px 0; }
+      .d87-rt td, .d87-rt td.num { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; white-space: normal; overflow-wrap: anywhere; }
+      .d87-rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+    }
+    @media (max-width: 640px) {
+      .d87-rt, .d87-rt tbody, .d87-rt tr, .d87-rt th, .d87-rt td, .d87-rt caption { display: block; }
+      .d87-rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+      .d87-rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .d87-rt th[scope="row"], .d87-rt td { border: 0; padding: 1px 0; }
+      .d87-rt td, .d87-rt td.num { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; white-space: normal; overflow-wrap: anywhere; }
+      .d87-rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+    }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+    @media (max-width: 600px) { .p-sec .eq { white-space: normal; } }
+  </style>
+</head>
+<body class="proj" data-day="87">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Polling Error and House Effects</h1>
+      <p class="lede">Every pollster leans a little. Choose which pollsters to trust, see how much each one leans, and see how the forecast changes when polling errors move together across the states.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="House effects and correlated polling errors">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>In the 2020 polls, among the 18 pollsters with at least 15 polls, the model finds Trafalgar Group leaning furthest towards Donald Trump (2.7 points of the two-party vote below the average poll, 90% interval 2.2 to 3.2) and Quinnipiac furthest towards Joe Biden (1.8 points above). Removing every pollster's lean makes the polled states miss by more, not less: on average the fitted polls overstated Biden by 2.6 points against 2.2 without the correction, because a lean is measured against the average poll, and in 2020 the average poll overstated Biden, so correcting the polls that leaned towards Trump moved them away from the result. And five elections cannot say how much of that error the states share: somewhere between 23% and 74%.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Two polls of the same state in the same week rarely agree, and some pollsters disagree with the rest in the same direction poll after poll. Poll watchers call this a house effect. It comes from choices each pollster makes: how it reaches people (telephone, online panel, text message), how it decides who is likely to vote, and how it weights its sample to look like the electorate. Simon Jackman (2005) showed how to estimate house effects by pooling polls over a campaign, and how pooling gives a better estimate of opinion than any one poll.</p>
+      <p>A house effect is relative. The polls alone can say that one pollster runs two points more Republican than the average, but not whether the average itself is right, because every pollster could be wrong in the same direction. That shared error is what made 2016 so painful for pollsters (Kennedy and others 2018), and the polls in this tool show 2020 repeating it: on average they overstated the Democrat by about two points in both years. For 2020, Clinton, Lapinski and Trussler (2022) found in state telephone polls that Democrats were more likely than Republicans to cooperate with interviewers, even after allowing for age, gender, race and where people live: a bias that would touch every pollster relying on the same kind of contact. Shirani-Mehr, Rothschild, Goel and Gelman (2018) studied state polls taken in the final three weeks of campaigns from 1998 to 2014 and found errors about twice as large as the reported margins of error implied, with an average absolute election-level bias of about two points that polls of the same race shared.</p>
+      <p>How much of the error is shared across states decides how certain a forecast should be. If each state's polls missed independently, a candidate ahead in many states would be almost sure to win; if they all miss together, a lead of three points everywhere can vanish at once. The trouble is that this correlation can only be measured across elections, and there are few of them: the tool shows how little five elections pin it down.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The polls</h3>
+      <p>The polls are FiveThirtyEight's presidential polls from the final 61 days of each campaign, those it used to rate pollsters. Each poll <var>i</var> gives the Democrat's share of the two-party vote, <var>y</var><sub><var>i</var></sub> = 100<var>D</var>/(<var>D</var> + <var>R</var>), and its sampling variance <var>s</var><sub><var>i</var></sub><sup>2</sup> = 100<sup>2</sup><var>p</var>(1 − <var>p</var>)/<var>n</var>′, where <var>n</var>′ is the number of respondents who chose one of the two. The model counts the weeks before the election, <var>w</var> = 0 for the last seven days up to 8 for days 56 to 61.</p>
+      <h3>The model</h3>
+      <p class="eq"><var>y</var><sub><var>i</var></sub> = <var>α</var><sub>place</sub> + <var>γ</var><sub>week</sub> + <var>h</var><sub>pollster</sub> + <var>e</var><sub><var>i</var></sub>, &nbsp; <var>e</var><sub><var>i</var></sub> ~ N(0, <var>s</var><sub><var>i</var></sub><sup>2</sup> + <var>σ</var><sup>2</sup>)</p>
+      <p><var>α</var> is opinion in each state, district or the whole country in the final week; <var>γ</var> is movement shared by every place in each earlier week (with <var>γ</var><sub>0</sub> = 0); <var>h</var> is the pollster's house effect; <var>σ</var> is error beyond sampling that every poll carries. The model is hierarchical: house effects are drawn from a common distribution whose spread <var>τ</var> is itself estimated, so a pollster with two polls is pulled towards zero and one with fifty is judged mostly on its own record.</p>
+      <p class="eq"><var>h</var> ~ N(0, <var>τ</var><sup>2</sup>), &nbsp; <var>τ</var><sup>2</sup> ~ InvGamma(2, 2), &nbsp; <var>σ</var><sup>2</sup> ~ InvGamma(2, 2), &nbsp; <var>α</var> ~ N(50, 15<sup>2</sup>), &nbsp; <var>γ</var><sub><var>w</var></sub> ~ N(0, 5<sup>2</sup>)</p>
+      <p>The inverse-gamma priors keep <var>τ</var> and <var>σ</var> away from zero (Gelman 2006 discusses the choice of prior for such variances). With about 170 pollsters they weigh little when pollsters really do lean by a point or more; when no pollster leans at all, the prior still holds the estimate of <var>τ</var> at a few tenths of a point, as the check on fake polls below shows.</p>
+      <h3>The estimation</h3>
+      <p>The tool fits the model by Gibbs sampling (Gelfand and Smith 1990): it draws each group of unknowns in turn from its distribution given all the others, 3,000 times, and keeps the last 2,500 draws. Given the rest, each <var>α</var>, <var>γ</var> and <var>h</var> is normal, with precision equal to its prior precision plus Σ 1/(<var>s</var><sub><var>i</var></sub><sup>2</sup> + <var>σ</var><sup>2</sup>) over its polls; <var>τ</var><sup>2</sup> is inverse-gamma with shape 2 + <var>K</var>/2 and scale 2 + Σ<var>h</var><sup>2</sup>/2 for <var>K</var> pollsters, drawn with Marsaglia and Tsang's method (2000); <var>σ</var><sup>2</sup> moves by a Metropolis step on its logarithm. Because only differences between pollsters are identified, each draw is reported relative to the average poll: the poll-weighted mean of <var>h</var> is subtracted from every <var>h</var> and added to every <var>α</var>, which leaves each <var>α</var> + <var>h</var>, and so the fit, unchanged. A house effect is therefore a lean against the polls in the fit, each pollster weighted by its number of polls, after allowing for place and week; leaving pollsters out changes what the average is. A house effect's 90% interval runs from the 5th to the 95th percentile of its draws; a pollster "leans" only when the whole interval is on one side of zero. Unticking the box at the top sets every <var>h</var> to zero instead.</p>
+      <h3>The check on known leans</h3>
+      <p>To test the method, the tool makes fake polls with the real polls' places, weeks, pollsters and sample sizes, but with a known truth: each place's level is its actual result, each week moves by a draw from N(0, 1), each pollster leans by a draw from N(0, <var>τ</var><sub>true</sub><sup>2</sup>), and each poll adds sampling error and N(0, <var>σ</var><sub>true</sub><sup>2</sup>). It fits the same model and reports how far the estimated leans are from the true ones and how often the 90% intervals hold them. In the tool's own tests over eight seeds, the intervals held the truth for about 87% of pollsters in 2020 and 84% in 2016, a little short of 90%.</p>
+      <h3>The forecast with correlated errors</h3>
+      <p>Each state's estimate is its fitted level <var>α</var> with its posterior standard deviation; a contest with no polls in the fit takes last election's result moved by the average swing of the polled states. Each simulated election then adds one error shared by every state and one per state, with total standard deviation <var>S</var> and shared share <var>ρ</var>:</p>
+      <p class="eq"><var>x</var><sub><var>u</var></sub> = <var>α</var><sub><var>u</var></sub> + sd<sub><var>u</var></sub><var>z</var><sub><var>u</var></sub> + <var>S</var>√<var>ρ</var> <var>ε</var><sub>N</sub> + <var>S</var>√(1 − <var>ρ</var>) <var>ε</var><sub><var>s</var>(<var>u</var>)</sub></p>
+      <p>A district of Maine or Nebraska shares its state's error and adds half a state error of its own. Electoral votes are counted as in day 86, and the curve repeats the 10,000-election forecast with 3,000 elections for each <var>ρ</var> from 0 to 1, with the same random numbers at every point.</p>
+      <h3>Five elections</h3>
+      <p>For 2004 to 2020 the tool takes, for every state (and Washington DC) with at least 3 polls in the final 21 days, the average poll minus the certified result. The mean over states, <var>c</var><sub><var>t</var></sub>, is that election's shared error; the spread of the states around it is their own error. If polls are unbiased on average, the shared error's standard deviation is estimated by √(Σ<var>c</var><sub><var>t</var></sub><sup>2</sup>/5), and since 5<var>σ̂</var><sup>2</sup>/<var>σ</var><sup>2</sup> follows a chi-square distribution with 5 degrees of freedom, a 90% interval for <var>σ</var> is</p>
+      <p class="eq"><var>σ̂</var> √(5/<var>χ</var><sup>2</sup><sub>0.95, 5</sub>) to <var>σ̂</var> √(5/<var>χ</var><sup>2</sup><sub>0.05, 5</sub>) = <var>σ̂</var> √(5/11.07) to <var>σ̂</var> √(5/1.146)</p>
+      <p>The states' spread is pooled over the five elections, and the shared share is <var>ρ</var> = <var>σ</var><sub>N</sub><sup>2</sup>/(<var>σ</var><sub>N</sub><sup>2</sup> + <var>σ</var><sub>S</sub><sup>2</sup>), with its interval from the two ends of the interval for <var>σ</var><sub>N</sub>. Correlations between one election's state deviations and the next have 90% intervals from Fisher's <var>z</var> transformation.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Which pollster is right.</strong> A house effect is a lean against the average poll. A pollster far from the average in 2020 was closer to the result; the same pollster may be further from it next time. Accuracy can only be judged against results, over many elections.</li>
+        <li><strong>The correlation of errors with any precision.</strong> Five elections give five shared errors, and a 90% interval for their spread that runs from about two-thirds to twice the estimate. Some state errors also repeat from one election to the next, which a single shared error does not capture.</li>
+        <li><strong>Why a pollster leans.</strong> The model sees only the numbers. Mode, weighting, likely-voter screens and sponsors all differ, and 538's partisan flag is the only one of them in the data here.</li>
+        <li><strong>Leans that change.</strong> Each pollster gets one house effect for the campaign; a pollster that changed its method midway is averaged.</li>
+        <li><strong>Exact intervals.</strong> On fake polls the 90% intervals held the true lean somewhat less often than 90%, and the noise term treats every poll alike, though some pollsters are noisier than others. 538 fills a missing sample size with a typical one and does not say which.</li>
+        <li><strong>The polls of 2024.</strong> 538's 2024 poll files now redirect to ABC News, so the latest campaign with open poll-level data here is 2020.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Let house effects differ by state and by method, and give each pollster its own noise.</li>
+        <li>Let opinion in each state follow a random walk day by day, as in Jackman's model, instead of a shared weekly movement.</li>
+        <li>Use each pollster's house effects from earlier cycles as its prior, to test whether leans persist.</li>
+        <li>Pool Senate and governor polls to measure shared error in many more races, as Shirani-Mehr and colleagues did.</li>
+        <li>Replace the single shared error with errors that are correlated by region or by the share of college graduates.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>FiveThirtyEight. Pollster ratings data: raw_polls.csv (presidential general-election polls, 2004 to 2020). https://github.com/fivethirtyeight/data/tree/master/pollster-ratings. <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Retrieved 14 October 2026. Changes: only presidential general-election polls kept; districts renamed; shares turned into two-party shares on this page.</li>
+        <li>Federal Election Commission. Federal Elections 2004, 2008, 2012, 2016 and 2020 (Table 2, Presidential Electoral and Popular Vote). Public domain. Retrieved 14 and 15 October 2026.</li>
+        <li>US Census Bureau. Apportionment of the House of Representatives, 2010 census (from Table 1, 2020 Census), for electoral votes. Public domain. Retrieved 14 October 2026.</li>
+        <li>States of Maine and Nebraska. Certificates of ascertainment, 2012 to 2020, as published by the US National Archives (https://www.archives.gov/electoral-college). Retrieved 15 October 2026.</li>
+        <li>Jackman, S. (2005). Pooling the polls over an election campaign. <em>Australian Journal of Political Science</em>, 40(4), 499-517.</li>
+        <li>Shirani-Mehr, H., Rothschild, D., Goel, S., and Gelman, A. (2018). Disentangling bias and variance in election polls. <em>Journal of the American Statistical Association</em>, 113(522), 607-614.</li>
+        <li>Gelman, A. (2006). Prior distributions for variance parameters in hierarchical models (comment on article by Browne and Draper). <em>Bayesian Analysis</em>, 1(3), 515-534.</li>
+        <li>Gelfand, A. E., and Smith, A. F. M. (1990). Sampling-based approaches to calculating marginal densities. <em>Journal of the American Statistical Association</em>, 85(410), 398-409.</li>
+        <li>Marsaglia, G., and Tsang, W. W. (2000). A simple method for generating gamma variables. <em>ACM Transactions on Mathematical Software</em>, 26(3), 363-372.</li>
+        <li>Kennedy, C., Blumenthal, M., Clement, S., Clinton, J. D., Durand, C., Franklin, C., and others (2018). An evaluation of the 2016 election polls in the United States. <em>Public Opinion Quarterly</em>, 82(1), 1-33.</li>
+        <li>Clinton, J., Lapinski, J., and Trussler, M. (2022). Reluctant Republicans, eager Democrats? <em>Public Opinion Quarterly</em>, 86(2), 247-269.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
