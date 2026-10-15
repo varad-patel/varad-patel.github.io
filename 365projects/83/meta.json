@@ -1,0 +1,7 @@
+{
+  "question": "Given a borrower's profile, how likely are they to default, do the model's forecasts come true as often as they say, and does it treat groups of borrowers alike?",
+  "finding": "Fitted without sex on 19,998 Taiwanese cardholders and checked on 10,002 held out, the model's average forecast is 21.8% for women when 20.6% defaulted and 23.7% for men when 24.4% did; with sex as an input it comes within 0.6 points for both, and at a 50% cut-off it flags 4.3% of women and 6.3% of men who repaid.",
+  "limit": "The data come from one bank in Taiwan in 2005, several of their codes are undefined, and the forecasts are an illustration of the method, not a lending decision.",
+  "sources": ["UCI Machine Learning Repository (Default of Credit Card Clients)"],
+  "built": "2026-10-14"
+}

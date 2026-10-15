@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Credit Risk Model · 365 projects</title>
+  <meta name="description" content="Enter a borrower profile and get a chance of default from a logistic regression fitted on 30,000 real credit card holders, then check its calibration and whether it treats women and men, or younger and older cardholders, alike.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .d83-part { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; padding-top: 22px; border-top: 1px solid var(--rule); scroll-margin-top: 12px; }
+    .d83-part:first-of-type { border-top: 0; padding-top: 0; }
+    .tool .d83-part > h2 { font-size: 1.08rem; }
+    .tool .d83-part h3 { font-size: 0.95rem; }
+    .d83-jump { gap: 2px 16px; }
+    .d83-jump a { padding: 6px 0; }
+    .d83-msg { font-size: 0.82rem; color: var(--bad); line-height: 1.4; }
+    .d83-msg:empty { display: none; }
+    .d83-unused { flex: 0 0 auto; min-width: 6.8rem; text-align: right; font-style: italic; font-weight: 400; font-size: 0.8rem; color: var(--slate); }
+    .d83-examples { gap: 6px 8px; }
+    .d83-examples .btn { white-space: normal; text-align: left; }
+    .d83-picked:empty { display: none; }
+    .d83-picked { padding: 8px 12px; background: #fff; border: 1px solid var(--grid); }
+    .d83-progress:empty { display: none; }
+    .d83-mini { padding: 6px 10px; background: #fff; border: 1px solid var(--grid); }
+    @media (min-width: 861px) { .d83-mini { display: none; } }
+    #d83-result { scroll-margin-top: 12px; }
+    .d83-stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .d83-details summary { cursor: pointer; color: var(--slate); width: fit-content; padding: 2px 0; font-size: 0.86rem; }
+    .d83-details[open] summary { margin-bottom: 8px; }
+    .stat .v { font-size: 1.45rem; }
+    /* Contributions: a bar to the right raises the chance of default, to the left lowers it. */
+    .d83-bars { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; }
+    .d83-bars li { display: grid; grid-template-columns: minmax(90px, 36%) minmax(60px, 1fr) auto; gap: 10px; align-items: center; font-size: 0.88rem; }
+    .d83-bar-name { overflow-wrap: anywhere; line-height: 1.3; }
+    .d83-bar-track { position: relative; height: 14px; background: color-mix(in srgb, var(--ink) 6%, transparent); }
+    .d83-bar-track::after { content: ""; position: absolute; left: 50%; top: -2px; bottom: -2px; border-left: 1.5px solid var(--ink); }
+    .d83-bar-fill { position: absolute; top: 0; bottom: 0; min-width: 1px; }
+    .d83-bar-fill.up { left: 50%; background: var(--c2); }
+    .d83-bar-fill.down { right: 50%; background: var(--c1); }
+    .d83-bar-val { font-weight: 650; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; }
+    .d83-bars li.d83-off .d83-bar-val { font-weight: 400; color: var(--slate); }
+    @media (max-width: 420px) { .d83-bars li { grid-template-columns: minmax(0, 1fr) auto; } .d83-bar-track { grid-column: 1 / -1; grid-row: 2; } }
+    /* The fairness table: four columns when there is room; when its own box is narrower, each measure becomes a short list. */
+    .tbl.d83-rt th, .tbl.d83-rt td { white-space: normal; }
+    .d83-rt-box { container-type: inline-size; }
+    @container (max-width: 600px) {
+      .d83-rt, .d83-rt tbody, .d83-rt tr, .d83-rt th, .d83-rt td, .d83-rt caption { display: block; }
+      .d83-rt thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .d83-rt tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+      .d83-rt th[scope="row"], .d83-rt td { border: 0; padding: 1px 0; }
+      .d83-rt td { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; text-align: right; overflow-wrap: anywhere; }
+      .d83-rt td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+    }
+    /* The coefficients: a list per row when the box is narrower than the table. */
+    .d83-coef-box { container-type: inline-size; }
+    @container (max-width: 500px) {
+      .d83-coef, .d83-coef tbody, .d83-coef tr, .d83-coef td, .d83-coef caption { display: block; }
+      .d83-coef thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .d83-coef tr { padding: 6px 0; border-bottom: 1px solid var(--grid); }
+      .d83-coef td { border: 0; padding: 1px 0; display: flex; justify-content: flex-end; gap: 0 14px; text-align: right; white-space: normal; }
+      .d83-coef td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+    }
+    .d83-rt caption, .d83-coef caption, .d83-unaware caption { font-weight: 600; font-size: 0.86rem; color: var(--slate); }
+    .d83-rt th[scope="row"], .d83-unaware th[scope="row"] { font-weight: 600; border-bottom: 1px solid var(--grid); white-space: normal; }
+    .tbl.d83-unaware th { white-space: normal; }
+    .p-sec .eq { white-space: normal; }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body class="proj" data-day="83">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Credit Risk Model</h1>
+      <p class="lede">Enter a borrower's profile and a logistic regression fitted on 30,000 real credit card holders gives the chance they default. Then check whether its forecasts come true as often as they say, and whether it treats women and men, or younger and older cardholders, alike.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Credit risk model with calibration and fairness checks">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>Fitted without sex on 19,998 cardholders and checked on the 10,002 held out, the model's average forecast for women is 21.8% when 20.6% of them defaulted, and for men 23.7% when 24.4% did; given sex as an input it comes within 0.6 points for both (21.2% and 24.6%). Leaving sex out does not make the forecasts fair by every measure either: at a 50% cut-off the model flags 4.3% of the women who repaid and 6.3% of the men who repaid. The page opens on these settings; the table under the fairness check gives the figures with sex.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>A lender who offers credit is betting that it will be repaid, and the chance that it will not, the probability of default, sets who is offered credit, how much and at what price. Logistic regression is the classic way to estimate it: it turns a weighted sum of a borrower's characteristics into a probability, and every weight can be read, checked and argued with. A probability is only useful if it means what it says. In the paper that introduced the data used here, Yeh and Lien (2009) compared six data-mining methods on the accuracy of their estimated probabilities of default. Whether a stated probability matches what happens is calibration: of the borrowers given 20%, about 20% should default.</p>
+      <p>A model can be calibrated overall and still treat groups differently. In 2016 a team at ProPublica argued that COMPAS, a risk score used in American courts, was biased against African-American defendants: its errors ran one way, with African-American defendants more often wrongly labelled high-risk and white defendants more often wrongly labelled low-risk. Replies, one of them from the tool's maker, answered that a given score, or a high-risk label, meant about the same chance of reoffending in both groups. Two papers showed that both sides could be right at once, and that this is not a defect of one score but arithmetic. Kleinberg, Mullainathan and Raghavan proved that being calibrated within each group and being equally right on average about the people who do and do not default are incompatible except in two special cases. Chouldechova showed that when two groups default at different rates, a flag that is equally reliable for both cannot make the same share of mistakes in each.</p>
+      <p>The usual first response is to leave the protected attribute out. Dwork and colleagues (2012) called this "fairness through blindness" and pointed out why it fails: other attributes can encode group membership, as a neighbourhood encoded race in the American practice of redlining. Here the cost runs the other way as well. Without sex, the model mistakes part of the difference between women's and men's default rates for something else, and its forecasts drift above the truth for women and below it for men. In the United States the Equal Credit Opportunity Act forbids creditors to discriminate on the basis of race, colour, religion, national origin, sex, marital status or age, among other grounds; this model uses marital status and age as inputs, and whether a lender could is a legal question that it does not answer.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The data</h3>
+      <p>The UCI Machine Learning Repository's "Default of Credit Card Clients", donated by I-Cheng Yeh in 2016, holds 30,000 cardholders of one bank in Taiwan: their credit limit in New Taiwan dollars, sex, education, marital status and age, their repayment status, bill and payment in each month from April to September 2005, and whether they defaulted on the next month's payment. 6,636 of them, 22.1%, did. The tool uses nine of these, as follows.</p>
+      <ul>
+        <li><strong>Credit limit</strong>, as the logarithm of the limit over NT$100,000. The source says it covers the cardholder's own credit and their family's supplementary credit.</li>
+        <li><strong>Age</strong> in years, per ten years over 35.</li>
+        <li><strong>Education</strong>: graduate school, university, high school, or the rest. The codebook defines 4 as "others"; the data also use 0, 5 and 6 (345 cardholders), which it does not define, so they join "others".</li>
+        <li><strong>Marital status</strong>: married, single, or the rest (the codebook's 3, "others", and the undefined 0, 54 cardholders).</li>
+        <li><strong>Sex</strong>, coded 1 for male and 2 for female. It is left out of the model to begin with.</li>
+        <li><strong>Repayment status in September 2005.</strong> The codebook defines −1 as paying duly and 1 to 9 as that many months of delay. The data also use −2 (2,759 cardholders) and 0 (14,737), which it does not define. The tool keeps each as its own category instead of guessing, and groups delays of three months or more (463 cardholders).</li>
+        <li><strong>Months late from April to August 2005</strong>: how many of those five months show a delay of one month or more. One oddity: a one-month delay is coded 3,688 times in September but only 34 times in all of April to August, so in practice this counts delays of two months or more. The source does not explain it.</li>
+        <li><strong>The September bill as a share of the limit</strong>, limited to between −50% (a card in credit) and 150%.</li>
+        <li><strong>The amount paid in September</strong>, as ln(1 + amount). Bills and payments are rounded to the nearest NT$10 in the bundled data.</li>
+      </ul>
+      <p>Before any model was fitted, each cardholder was sent to a held-out third with probability 1/3, using the kit's seeded generator with seed 83: 19,998 to fit on and 10,002 held out. Every score, chart and fairness figure on the page is computed on the held-out cardholders, except the separate cut-offs, which are chosen on the training ones.</p>
+      <h3>The model</h3>
+      <p>For cardholder <var>i</var> with inputs <var>x</var><sub><var>i</var></sub> (a 1 for the intercept, then the columns above, with dummy columns for each category except a reference one), the model says</p>
+      <p class="eq">P(default<sub><var>i</var></sub>) = <var>p</var><sub><var>i</var></sub> = 1 / (1 + e<sup>−<var>η</var><sub><var>i</var></sub></sup>), &nbsp; <var>η</var><sub><var>i</var></sub> = <var>β</var><sub>0</sub> + <var>β</var><sub>1</sub><var>x</var><sub><var>i</var>1</sub> + … + <var>β</var><sub><var>k</var></sub><var>x</var><sub><var>i</var><var>k</var></sub>.</p>
+      <p>The reference categories are graduate school, married, male and paying duly. The coefficients maximise the log-likelihood of what happened to the training cardholders,</p>
+      <p class="eq">ℓ(<var>β</var>) = Σ<sub><var>i</var></sub> [ <var>y</var><sub><var>i</var></sub> <var>η</var><sub><var>i</var></sub> − ln(1 + e<sup><var>η</var><sub><var>i</var></sub></sup>) ],</p>
+      <p>where <var>y</var><sub><var>i</var></sub> is 1 for a default. The tool finds them by Newton's method, which for this model is the same as iteratively reweighted least squares: starting from the log-odds of the training default rate, it repeats</p>
+      <p class="eq"><var>β</var> ← <var>β</var> + (<var>X</var><sup>T</sup><var>WX</var>)<sup>−1</sup> <var>X</var><sup>T</sup>(<var>y</var> − <var>p</var>), &nbsp; <var>W</var> = diag(<var>p</var><sub><var>i</var></sub>(1 − <var>p</var><sub><var>i</var></sub>)),</p>
+      <p>halving a step if it would lower the likelihood, until the coefficients move by less than 10<sup>−10</sup> or the deviance, −2ℓ, falls by less than 10<sup>−10</sup> of itself; with the standard inputs that takes five steps, the last of which moves no coefficient by more than 0.00001. The standard errors are the square roots of the diagonal of (<var>X</var><sup>T</sup><var>WX</var>)<sup>−1</sup> at the estimate. For a profile with inputs <var>x</var>, the interval shown is <var>η</var> ± 1.96 √(<var>x</var><sup>T</sup><var>Vx</var>) on the log-odds, turned back into probabilities, where <var>V</var> is that inverse: it covers the uncertainty in the coefficients, not the luck of one borrower. Each input's push on the forecast is <var>β</var><sub><var>j</var></sub>(<var>x</var><sub><var>j</var></sub> − <var>x̄</var><sub><var>j</var></sub>), summed over its columns, where <var>x̄</var> is the training average; the pushes add up to the profile's log-odds minus the average cardholder's.</p>
+      <h3>Calibration and accuracy</h3>
+      <p>The Brier (1950) score is the mean squared gap between forecast and outcome, <var>B</var> = (1/<var>n</var>) Σ (<var>p</var><sub><var>i</var></sub> − <var>y</var><sub><var>i</var></sub>)<sup>2</sup>. It is compared with the best forecast that ignores every input, the training default rate for everyone, and the skill is 1 − <var>B</var>/<var>B</var><sub>0</sub>. The reliability diagram sorts the held-out cardholders by forecast, cuts them into ten groups of 1,000 or 1,001 (never splitting cardholders with the same forecast, so a model with few distinct forecasts gives fewer groups) and plots each group's average forecast against the share that defaulted, with a 95% Wilson (1927) interval for the share. The AUC is the chance that a randomly chosen defaulter gets a higher forecast than a randomly chosen repayer, counting ties as half; it measures ranking, not calibration.</p>
+      <h3>The fairness measures</h3>
+      <p>A cardholder is flagged when the forecast <var>p</var> is at least a cut-off <var>c</var>; flagging stands in for any adverse decision. For a group <var>a</var> and outcome <var>Y</var> (1 for a default), the table compares:</p>
+      <ul>
+        <li><strong>Demographic parity</strong>: the share flagged, P(<var>p</var> ≥ <var>c</var> | <var>A</var> = <var>a</var>), equal across groups.</li>
+        <li><strong>Equal opportunity</strong> (Hardt, Price and Srebro 2016): equal treatment of the people who qualify for the good outcome, here those who repay, so P(<var>p</var> ≥ <var>c</var> | <var>Y</var> = 0, <var>A</var> = <var>a</var>), the false positive rate, equal. With the share of defaulters flagged equal as well, the true positive rate, this is <strong>equalised odds</strong>.</li>
+        <li><strong>Predictive parity</strong>: the share of flagged cardholders who default, P(<var>Y</var> = 1 | <var>p</var> ≥ <var>c</var>, <var>A</var> = <var>a</var>), equal.</li>
+        <li><strong>Calibration within groups</strong>: among the members of each group given a forecast <var>s</var>, a share <var>s</var> default. The second reliability diagram checks it group by group; the average forecast against the base rate is its crudest summary.</li>
+        <li><strong>Balance for the positive and negative classes</strong> (Kleinberg and colleagues): the average forecast of the group's defaulters, and of its repayers, equal across groups.</li>
+      </ul>
+      <h3>Two impossibility results</h3>
+      <p>Kleinberg, Mullainathan and Raghavan (2017, first circulated in 2016), Theorem 1: if some risk assignment satisfies calibration within groups, balance for the negative class and balance for the positive class, then either the problem allows perfect prediction (for every combination of inputs, the true chance of the outcome is 0 or 1) or the two groups have equal base rates. Their Theorem 2 adds that satisfying the three conditions approximately forces the data to be approximately one of those two cases. (The arXiv version numbers them 1.1 and 1.2.) The result holds however the scores are made.</p>
+      <p>Chouldechova (2017): for a group with base rate <var>b</var>, the false positive rate, false negative rate and positive predictive value of any flag are tied by</p>
+      <p class="eq">FPR = <var>b</var>/(1 − <var>b</var>) × (1 − PPV)/PPV × (1 − FNR).</p>
+      <p>So if two groups' base rates differ, a flag with the same PPV in both (and PPV strictly between 0 and 1) cannot also give both the same false positive and false negative rates. The tool checks the identity on the held-out counts and shows what one group's false positive rate would have to be if its PPV and miss rate matched the other group's.</p>
+      <h3>Separate cut-offs</h3>
+      <p>"Equal flag rates" and "equal flag rates among those who repaid" choose a cut-off for each group so that, on the training cardholders, each group has the share flagged (or the share of repayers flagged) that the single cut-off produces overall. They are then applied to the held-out cardholders, where the equalised rates come out close but not exact.</p>
+      <h3>Proxies</h3>
+      <p>To measure how much of the protected attribute the other inputs carry, the tool fits a second logistic regression that predicts the group (women or men, under 30 or older) from the model's inputs without it, and reports its AUC on the held-out cardholders: 0.5 means the inputs carry no trace of the group, 1 that they reveal it perfectly. With the standard inputs it is 0.60 for sex, mostly through age (without age it falls to 0.56), and 0.80 for being under 30, mostly through marital status and the credit limit (0.67 without marital status, 0.78 without the limit). The comparison table refits the model with and without the attribute, keeping everything else.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Anyone's chance of default today.</strong> The data come from one bank in Taiwan over six months of 2005, when 22.1% of its cardholders defaulted on the next payment. Incomes, lending rules and the economy have all changed since, and the model has never seen a borrower from anywhere else. It is an illustration of the method, not a lending decision, a credit score or financial advice.</li>
+        <li><strong>What several codes mean.</strong> The source defines neither the repayment codes −2 and 0, held by over half the cardholders, nor education codes 0, 5 and 6 or marital status 0, and its one-month delays nearly vanish before September. The model uses them as recorded, so its coefficients on them describe the coding as much as the cardholders.</li>
+        <li><strong>Whether the outcomes are themselves fair.</strong> The credit limit, one of the inputs, was set by the bank. If past decisions treated a group worse, a model trained on their results learns that treatment as risk, and every fairness measure here is computed against those recorded outcomes.</li>
+        <li><strong>Whether the gaps are larger than chance.</strong> The fairness table has no intervals. With 3,945 men and 6,057 women held out, the 95% margin on a gap between two rates near 5% is about ±1 point, so a gap of one point is within sampling noise (the 2.0-point gap in repayers flagged is about twice that margin); the reliability diagrams show how wide the intervals are.</li>
+        <li><strong>Other groups and their overlaps.</strong> The data record sex as male or female and no ethnicity or income, and the check compares two groups at a time. A model can look fair to women and to younger cardholders separately and not to younger women.</li>
+        <li><strong>Which fairness measure is right.</strong> The theorems say they cannot all hold; choosing among them is a question of whose mistakes matter more, which the arithmetic cannot settle.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Recalibrate the forecasts on held-out data, by Platt scaling or isotonic regression, overall and within each group, and show what that does to the other fairness measures.</li>
+        <li>Put bootstrap intervals on every fairness gap, resampling the held-out cardholders, so that a gap can be told from noise.</li>
+        <li>Choose the cut-off from costs: what a missed default costs the lender against what a wrongly refused repayer loses, and how that choice moves each measure.</li>
+        <li>Compare a flexible model, such as gradient-boosted trees, on calibration as well as ranking, and see whether it reconstructs the protected attribute more strongly from the same inputs.</li>
+        <li>Check groups that overlap, such as women under 30, and add a third group where the data allow it.</li>
+        <li>Rerun the whole page on a newer open dataset, such as a credit bureau's public sample, to see which findings survive.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>Yeh, I.-C. (2009). Default of Credit Card Clients [Dataset]. UCI Machine Learning Repository. <a href="https://doi.org/10.24432/C55S3H">doi:10.24432/C55S3H</a>. Licensed under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Retrieved 15 October 2026; the bundled copy groups some codes, rounds bills and payments to the nearest NT$10 and one credit limit (NT$327,680) to NT$328,000, and is built by <code>scripts/data/credit_default.py</code>.</li>
+        <li>Yeh, I.-C., and Lien, C.-h. (2009). The comparisons of data mining techniques for the predictive accuracy of probability of default of credit card clients. <em>Expert Systems with Applications</em>, 36(2), 2473-2480.</li>
+        <li>Kleinberg, J., Mullainathan, S., and Raghavan, M. (2017). Inherent trade-offs in the fair determination of risk scores. In <em>8th Innovations in Theoretical Computer Science Conference (ITCS 2017)</em>, LIPIcs 67, 43:1-43:23. First circulated as arXiv:1609.05807 (2016).</li>
+        <li>Angwin, J., Larson, J., Mattu, S., and Kirchner, L. (23 May 2016). <a href="https://www.propublica.org/article/machine-bias-risk-assessments-in-criminal-sentencing">Machine bias</a>. ProPublica.</li>
+        <li>Chouldechova, A. (2017). Fair prediction with disparate impact: a study of bias in recidivism prediction instruments. <em>Big Data</em>, 5(2), 153-163.</li>
+        <li>Hardt, M., Price, E., and Srebro, N. (2016). Equality of opportunity in supervised learning. In <em>Advances in Neural Information Processing Systems 29 (NIPS 2016)</em>. Also arXiv:1610.02413.</li>
+        <li>Dwork, C., Hardt, M., Pitassi, T., Reingold, O., and Zemel, R. (2012). Fairness through awareness. In <em>Proceedings of the 3rd Innovations in Theoretical Computer Science Conference</em>, 214-226.</li>
+        <li>Brier, G. W. (1950). Verification of forecasts expressed in terms of probability. <em>Monthly Weather Review</em>, 78(1), 1-3.</li>
+        <li>Wilson, E. B. (1927). Probable inference, the law of succession, and statistical inference. <em>Journal of the American Statistical Association</em>, 22(158), 209-212.</li>
+        <li>US Department of Justice, Civil Rights Division. <a href="https://www.justice.gov/crt/equal-credit-opportunity-act-3">The Equal Credit Opportunity Act</a> (15 U.S.C. 1691 et seq.). Checked 15 October 2026.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
