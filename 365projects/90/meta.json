@@ -1,0 +1,7 @@
+{
+  "question": "How does an instant-runoff count move from first preferences to a winner, and what happens to ballots that run out of candidates?",
+  "finding": "Counting all 52,369 formal ballots from Wollondilly at the 2023 New South Wales election reproduces the published distribution of preferences at all five counts: Judy Hannan, 4,126 votes behind on first preferences, wins 21,588 to 20,312, while 10,469 ballots (20.0%) are exhausted, 9,816 of them from voters who numbered a single square.",
+  "limit": "The real ballots are the Electoral Commission's reading of each paper, and the counting options cover common rules, not any one jurisdiction's law in full.",
+  "sources": ["NSW Electoral Commission"],
+  "built": "2026-10-14"
+}

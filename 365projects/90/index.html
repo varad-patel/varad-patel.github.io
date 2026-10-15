@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ranked-Choice Election Engine · 365 projects</title>
+  <meta name="description" content="Enter or upload ranked ballots as CSV, or simulate an electorate, and watch an instant-runoff count round by round, with exhausted ballots, overvotes, skipped rankings and tie rules you choose, checked against two real New South Wales counts.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .d90-jump { gap: 2px 16px; }
+    .d90-jump a { padding: 6px 0; }
+    .d90-examples { gap: 6px 8px; }
+    .d90-examples .btn { white-space: normal; text-align: left; }
+    .d90-about { padding: 8px 12px; background: #fff; border: 1px solid var(--grid); font-size: 0.86rem; line-height: 1.45; overflow-wrap: anywhere; }
+    .d90-about p + p { margin-top: 6px; }
+    .d90-drop { display: block; padding: 12px 14px; border: 2px dashed var(--rule); border-radius: 3px; background: #fff; font-size: 0.88rem; line-height: 1.45; cursor: pointer; }
+    .d90-drop.over, .d90-drop:focus-within { border-color: var(--ink); }
+    .d90-drop input { display: block; width: 100%; margin-top: 8px; font: inherit; font-size: 0.85rem; }
+    .d90-msgs { display: grid; gap: 8px; }
+    .d90-msgs:empty { display: none; }
+    .d90-msgs ul { margin: 6px 0 0; padding-left: 1.2em; }
+    .d90-msg { font-size: 0.82rem; color: var(--bad); line-height: 1.4; }
+    .d90-msg:empty { display: none; }
+    .d90-format summary, .d90-transfers summary { cursor: pointer; font-weight: 600; font-size: 0.9rem; width: fit-content; padding: 2px 0; }
+    .d90-format > div { display: grid; gap: 8px; margin-top: 8px; }
+    .d90-pre { margin: 0; padding: 8px 10px; background: #fff; border: 1px solid var(--grid); font-family: var(--mono); font-size: 0.85rem; overflow-x: auto; white-space: pre; }
+    .d90-panel { display: grid; gap: 12px; }
+    .d90-part { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; padding-top: 22px; border-top: 1px solid var(--rule); scroll-margin-top: 12px; }
+    .tool .d90-part > h2 { font-size: 1.08rem; }
+    .d90-sim-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 14px 28px; align-items: start; }
+    .d90-stack { display: grid; gap: 6px; }
+    .d90-stack:empty { display: none; }
+    .stat .v { font-size: 1.35rem; }
+    #d90-count, #d90-rounds, #d90-rules, #d90-export { scroll-margin-top: 12px; }
+    .d90-transfers ol { margin: 8px 0 0; padding-left: 1.4em; font-size: 0.9rem; line-height: 1.5; }
+    .d90-transfers li + li { margin-top: 6px; }
+    .d90-transfers li, .tool .stat, .d90-stack p, .d90-msgs li { overflow-wrap: anywhere; }
+    /* The round-by-round table. The script adds d90-stacked whenever the table is wider than its box. */
+    .d90-round-box { min-width: 0; }
+    .tbl.d90-rt th, .tbl.d90-rt td { white-space: nowrap; }
+    .tbl.d90-rt th[scope="row"] { font-weight: 600; border-bottom: 1px solid var(--grid); white-space: normal; min-width: 9em; }
+    .d90-rt caption { font-weight: 600; font-size: 0.86rem; color: var(--slate); white-space: normal; }
+    .d90-rt .d90-chg { color: var(--slate); font-weight: 400; font-size: 0.85em; }
+    .d90-rt .d90-tag { font-weight: 700; font-size: 0.85em; }
+    .d90-rt td.d90-elected { font-weight: 700; }
+    .d90-rt tr.d90-sum th, .d90-rt tr.d90-sum td { color: var(--slate); }
+    .d90-rt.d90-stacked, .d90-rt.d90-stacked tbody, .d90-rt.d90-stacked tr, .d90-rt.d90-stacked th, .d90-rt.d90-stacked td, .d90-rt.d90-stacked caption { display: block; }
+    .d90-rt.d90-stacked thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .d90-rt.d90-stacked tr { padding: 8px 0; border-bottom: 1px solid var(--grid); }
+    .d90-rt.d90-stacked th[scope="row"], .d90-rt.d90-stacked td { border: 0; padding: 1px 0; white-space: normal; }
+    /* A 60-character name with no spaces must break rather than push the list past the screen. */
+    .d90-rt.d90-stacked th[scope="row"] { min-width: 0; overflow-wrap: anywhere; }
+    .d90-rt.d90-stacked td { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 6px; text-align: right; }
+    .d90-rt.d90-stacked td::before { content: attr(data-label); color: var(--slate); text-align: left; margin-right: auto; }
+    .d90-rt.d90-stacked td.d90-gone { display: none; }
+    .tool textarea { white-space: pre; overflow-wrap: normal; }
+    .p-sec .eq { white-space: normal; }
+    .p-sec .refs li { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body class="proj" data-day="90">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Ranked-Choice Election Engine</h1>
+      <p class="lede">Enter or upload ranked ballots, or simulate an electorate, and watch an instant-runoff count unfold round by round: who is eliminated, where their ballots go, and how many run out of candidates. It reproduces two real counts from New South Wales exactly.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Ranked-choice election counter">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>Counting all 52,369 formal ballots cast in Wollondilly at the 2023 New South Wales state election reproduces the Electoral Commission's published distribution of preferences at all five counts. Judy Hannan, 4,126 votes behind Nathaniel Smith on first preferences, wins 21,588 to 20,312. By the last count 10,469 ballots, 20.0% of the formal vote, have run out of candidates, and 9,816 of them numbered a single square: 55.8% of Wollondilly's formal ballots marked only one candidate. The page opens on this count.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Instant runoff, also called ranked-choice voting, the alternative vote or the Hare rule, asks each voter to rank the candidates instead of choosing one. If someone is the first choice of more than half the voters, they win. If not, the candidate with the fewest first choices is eliminated and each of their ballots moves to the next candidate it ranks, as if those voters had come back for another round. The rounds go on until someone has a majority of the ballots still in the count. It saves a second trip to the polls and lets a voter back a long shot without wasting the vote.</p>
+      <p>The catch is in the words "still in the count". A ballot that ranks only eliminated candidates is exhausted: it plays no further part, so the winner's majority is a majority of the ballots left, not of everyone who voted. How many ballots exhaust depends on the rules as much as on the voters. In New South Wales, where voters may number as few squares as they like, more than half of Wollondilly's formal ballots numbered one, and a fifth of them had dropped out by the final count. A rule that requires a full ranking, or one that caps the number of rankings, changes that number. And every count needs rules for ballots marked badly: two candidates given the same number (an overvote), a number skipped, a name ranked twice, and for a tie at the bottom. Burnett and Kogan (2015) examine exhausted ballots in four ranked-choice elections.</p>
+      <p>Counting rules are written into law precisely because they can decide close races. The two real contests here show it: in Penrith the Liberal candidate Stuart Ayres led Labor's Karen McKeown by four first preferences out of 50,344 and lost by 1,435 after five eliminations. A count engine is only trustworthy if it reproduces official counts to the vote, so the tool checks itself against the published ones.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>Reading the ballots</h3>
+      <p>The ballots are a CSV file or text. The first line names the columns: an optional <code>count</code> column says how many identical ballots a row stands for, an optional <code>id</code> column is ignored, and every other column is a ranking, first to last. A cell holds a candidate's name; an empty cell, or one of the words <code>undervote</code>, <code>skipped</code> or <code>blank</code>, is a skipped ranking; names joined by <code>|</code>, or the word <code>overvote</code>, mark several candidates at one ranking. Commas, tabs or semicolons may separate cells, and the file may be UTF-8, UTF-16 or Windows-1252. Identical ballots are grouped as they are read. Up to 20 MB, a million rows, 40 candidates, 40 rankings and names of 60 characters; every refusal says which row and what to change.</p>
+      <h3>Turning a ballot into a list</h3>
+      <p>Each ballot becomes the list of candidates it can count for, read from first ranking to last: a candidate ranked again later is passed over; a skipped ranking is passed over, or stops the ballot if it is the second blank in a row, or stops it at once, as chosen; an overvote stops the ballot or is passed over, as chosen. A ballot whose list is empty, for example one with an overvote at its first ranking under the stopping rule, is set aside and counted separately, as an informal ballot would be.</p>
+      <h3>The count</h3>
+      <p>In round <var>k</var>, each ballot counts for the first candidate on its list who is still in. With <var>T</var><sub><var>k</var></sub> ballots still counting, a candidate with <var>v</var> &gt; <var>T</var><sub><var>k</var></sub>/2, that is with at least</p>
+      <p class="eq">⌊<var>T</var><sub><var>k</var></sub>/2⌋ + 1</p>
+      <p>ballots, the absolute majority, wins. Otherwise the candidate with the fewest ballots is eliminated, and each of their ballots moves to the next candidate on its list who is still in, or is exhausted if there is none. Exhausted ballots are counted by why they stopped: no candidate left on the list, an overvote, or skipped rankings. A candidate who gains a majority keeps it in later rounds, because their pile can only grow while the number of ballots still counting can only shrink; so counting on until two candidates remain, as New South Wales publishes its counts, never changes the winner.</p>
+      <h3>Ties</h3>
+      <p>When two or more candidates tie for fewest ballots, the chosen rule decides who goes. "Earlier rounds" looks back from the most recent round to the first for a round where their totals differed, and the one with fewer then goes; if they differ only among some, it keeps narrowing. "First round" looks forward from round 1 instead. If they were level in every round, or under "by lot", a draw is made with the kit's seeded generator, so a given seed always draws the same way. If the last two candidates are level, the same rule decides which of them is out. Laws differ in the details, for example in whether a three-way tie is narrowed step by step as here, so these options are common variants, not any one statute's wording; neither real contest here has a tie at any count.</p>
+      <h3>Checking against the official count</h3>
+      <p>The two real contests bundle every formal ballot paper in Wollondilly and Penrith, as preference sequences counted by the NSW Electoral Commission from its published preference data, and the Commission's published distribution of preferences. While those ballots are unchanged the tool compares every candidate's total at every count, the exhausted ballots, the ballots in the count and the absolute majority, and says whether all of them match; the tests do the same.</p>
+      <h3>Simulated electorates</h3>
+      <p>Voters are drawn from a standard normal distribution on a left-right line and candidates placed at random between −1.5 and 1.5. Each voter ranks candidates from nearest to furthest. A chosen share rank only their first choice; the rest rank between two and all of them, every length equally likely. A chosen share leave a blank after their first choice, and a chosen share mark two candidates at one ranking chosen at random, so the rules for irregular ballots have something to act on.</p>
+      <h3>Export</h3>
+      <p>The results download as CSV, one row per candidate per round, and the ballots as CSV in the format above. Any name that a spreadsheet would run as a formula, one starting with =, +, - or @, is written with an apostrophe in front, and the apostrophe is removed again when the file is read back, so a downloaded file reloads unchanged.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>How a ballot paper was read.</strong> The real ballots are the Commission's interpretation of each paper's markings, from its check count. The tool counts those interpretations; it does not re-examine the papers, and it takes no position on informal votes.</li>
+        <li><strong>Every jurisdiction's rules.</strong> The options cover common variants, not any one law in full. Places differ on batch elimination of hopeless candidates, on overvotes involving eliminated candidates, on write-ins, and on how ties are drawn; check the law before treating a count here as official.</li>
+        <li><strong>What exhausted voters wanted.</strong> A ballot that numbers one square says nothing about the final two candidates. Treating exhausted voters as abstaining is a rule, not a fact about them.</li>
+        <li><strong>Whether instant runoff picks the right winner.</strong> It can eliminate a candidate who would beat every rival head to head, and it is not monotonic: a candidate can lose by gaining support (Pacuit, section 3.2). Day 89 compares it with other methods on the same ballots.</li>
+        <li><strong>Several winners.</strong> This engine elects one candidate. Proportional systems that fill several seats with ranked ballots, such as the single transferable vote, transfer surpluses as well and need more machinery.</li>
+        <li><strong>What real electorates look like.</strong> The simulated voters live on one line and make mistakes at fixed rates; they exercise the rules, they do not predict anything.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Read cast vote record files in the formats election offices publish, and choose the rules of a named jurisdiction in one step.</li>
+        <li>Add the single transferable vote for several seats, with its surplus transfers, and check it against a published multi-member count.</li>
+        <li>Draw the transfers as a flow diagram, so a reader can follow one candidate's ballots through every round.</li>
+        <li>Show the margin of victory as the fewest ballots that would have to change to alter the winner, a natural basis for deciding when to audit or recount.</li>
+        <li>Compare the instant-runoff winner with the head-to-head winner on the same ballots, as day 89 does for complete rankings, treating unranked candidates as tied last.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>NSW Electoral Commission. 2023 NSW State Election, Legislative Assembly, districts of Wollondilly and Penrith (election held 25 March 2023): the distribution of preferences (pastvtr.elections.nsw.gov.au/SG2301/LA/wollondilly/dop/dop and /LA/penrith/dop/dop) and the preference data for each ballot paper (/LA/wollondilly/preferences and /LA/penrith/preferences), on the Commission's <a href="https://pastvtr.elections.nsw.gov.au/SG2301" target="_blank" rel="noopener">2023 results site</a>. © State of New South Wales through the NSW Electoral Commission, licensed under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a> (<a href="https://elections.nsw.gov.au/copyright" target="_blank" rel="noopener">terms</a>). Retrieved 15 October 2026. Changed here: identical preference sequences are grouped and counted, and markings are reduced to the counted order of preferences, by <code>scripts/data/nsw_preferences.py</code>.</li>
+        <li>NSW Electoral Commission. How votes are counted in a state election, under Elections, How counting works, on <a href="https://elections.nsw.gov.au/" target="_blank" rel="noopener">elections.nsw.gov.au</a>: the optional preferential system, the absolute majority, exhausted ballot papers, and the distribution until two candidates remain. It and each district's preference data page name the Seventh Schedule of the Constitution Act 1902 (NSW) as the legislation that sets the count. Checked 15 October 2026.</li>
+        <li>Pacuit, E. Voting methods. <em>The Stanford Encyclopedia of Philosophy</em>, revised 24 June 2019. Section 2.1 defines the Hare rule and lists its other names; section 3.2 shows its failure of monotonicity.</li>
+        <li>Burnett, C. M., and Kogan, V. (2015). Ballot (and voter) "exhaustion" under instant runoff voting: an examination of four ranked-choice elections. <em>Electoral Studies</em>, 37, 41-49.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
