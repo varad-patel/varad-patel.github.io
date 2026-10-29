@@ -19,11 +19,11 @@ jobs:
   prices:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: "22"
       - run: python scripts/data/prices.py
@@ -46,17 +46,23 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
       # Day 61 (Gold Price Forecaster) reads the World Bank Pink Sheet's monthly gold price, updated in the first days
-      # of each month. These steps run even if the consumer-price steps above failed, and a failure here cannot undo
-      # a price refresh that has already been pushed.
+      # of each month. These steps run even if the consumer-price steps above failed. A price refresh that was not
+      # committed is put back first, so the gold refresh is tested against the published prices, and the gold
+      # snapshot is committed only if its own tests pass.
+      - name: Put back a price refresh that was not committed
+        if: ${{ !cancelled() }}
+        run: git checkout -- 365projects/data/prices.js
       - name: Refresh the gold price
+        id: gold_refresh
         if: ${{ !cancelled() }}
         run: python scripts/data/gold.py
       - name: Test with the new gold prices
-        if: ${{ !cancelled() }}
+        id: gold_test
+        if: ${{ !cancelled() && steps.gold_refresh.outcome == 'success' }}
         run: node --test "365projects/**/*.test.mjs" && pip install pytest && python scripts/build_data.py && pytest -q
       - name: Commit the new gold snapshot if it changed
         id: gold
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.gold_test.outcome == 'success' }}
         run: |
           if git diff --quiet -- 365projects/61/data.js; then echo "no change"; exit 0; fi
           git config user.name "github-actions[bot]"
