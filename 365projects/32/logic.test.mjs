@@ -405,7 +405,10 @@ test("the gap is reported as spending plus method, and the method part is said o
   assert.equal(n, 2961);
   assert.equal(far, 28); // more than half a point from the rate the index gives
   assert.equal(warned, 125); // 0.3 points or more as displayed: the tool then shows its warning
-  assert.equal(same, 1890); // the same as the official rate to one decimal place
+  // The same as the official rate to one decimal place: 1,890 in the snapshot of 11 October 2026, 1,889 after
+  // Eurostat revised Austria's August figures. Not quoted on the page, so it is held to a range, not pinned: the
+  // monthly refresh must not fail on a revision that changes nothing the page says.
+  assert.ok(same > 1800 && same < 2000, `${same}`);
   assert.deepEqual(large, ["NL September 2023 1.2", "NL October 2023 1.1"]);
   // The series for the chart carries the benchmark for every month.
   const s = series(PRICES, country("NL"), household("renter"));
