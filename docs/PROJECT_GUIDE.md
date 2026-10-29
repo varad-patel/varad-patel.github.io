@@ -166,6 +166,12 @@ report. Do not edit the kit.
 * A test checks at least three values against the source, with the source's own figure written in the test,
   and pins every number quoted on the page.
 * Say what each figure is: the unit, the year or window it covers, and anything averaged or filled in.
+* If a scheduled job refreshes the data (`.github/workflows/refresh-data.yml`), every test runs on the new
+  download and nothing is published unless all pass. So pin only what the page quotes, over a fixed window,
+  and hold anything else to a range: statistics offices revise their latest month or two, and in October 2026 a
+  revision of a hundredth to Austria's August prices broke a test on day 32 and stopped the consumer-price refresh
+  for two runs. The data script
+  should leave its file alone when nothing but the retrieval date would change.
 
 ## What the reviews of the first 30 pages found
 
