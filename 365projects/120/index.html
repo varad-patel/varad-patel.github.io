@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bayesian Event Forecaster · 365 projects</title>
+  <meta name="description" content="Start a forecast from the base rate of a reference class, update it as news arrives, then see how it scored against what happened, with a calibration view over many saved forecasts.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .ef-ref, .ef-newsform { padding: 14px; border: 1px solid var(--grid); background: #fff; }
+    .ef-data, .ef-banner { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; gap: 10px; }
+    .ef-banner:empty { display: none; }
+    .tool p.ef-base { line-height: 1.5; overflow-wrap: anywhere; }
+    .ef-jump { display: none; }
+    @media (max-width: 1040px) { .ef-jump { display: block; } }
+    #ef-out:focus, .ef-log:focus { outline: none; }
+    .tool h2.ef-h { font: 600 1.3rem/1.25 var(--serif); }
+    .tool h2.ef-sep { padding-top: 16px; border-top: 1px solid var(--rule); }
+    .ef-news { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; font-size: 0.92rem; }
+    .ef-news li { overflow-wrap: anywhere; }
+    .ef-news .btn { margin-left: 4px; }
+    .ef-loghead { justify-content: space-between; }
+    .ef-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--grid); }
+    .ef-item { display: grid; grid-template-columns: 4.6rem minmax(0, 1fr); gap: 4px 14px; padding: 10px 0; border-bottom: 1px solid var(--grid); }
+    .ef-p { font-weight: 650; font-size: 1.25rem; text-align: right; line-height: 1.3; }
+    .tool p.ef-event { font-weight: 600; overflow-wrap: anywhere; }
+    .ef-item .small { margin-top: 2px; overflow-wrap: anywhere; }
+    .ef-actions { margin-top: 6px; gap: 8px; }
+    .ef-pill { display: inline-block; margin-right: 6px; padding: 0 9px; border: 1.5px solid var(--ink); border-radius: 999px; font-size: 0.76rem; font-weight: 700; line-height: 1.55; white-space: nowrap; }
+    .ef-pill.yes { background: var(--ink); color: var(--paper); }
+    .ef-cal > div { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; align-content: start; min-width: 0; }
+    /* The class comparison and the calibration table may wrap their headings and counts, so that they fit a 320 px phone. */
+    .ef-ref .tbl th, .ef-ref .tbl .num, .ef-cal .tbl th, .ef-cal .tbl .num { white-space: normal; }
+    .ef-ref .tbl th, .ef-ref .tbl td, .ef-cal .tbl th, .ef-cal .tbl td { padding-left: 6px; padding-right: 6px; }
+    @media (max-width: 560px) {
+      .ef-item { grid-template-columns: minmax(0, 1fr); }
+      .ef-p { text-align: left; font-size: 1.1rem; }
+    }
+  </style>
+</head>
+<body class="proj" data-day="120">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Bayesian Event Forecaster</h1>
+      <p class="lede">Start a forecast where history says it should start, from the base rate of events like it. Update it as news arrives, then see how it fared against what happened, and how a whole list of forecasts holds up.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Bayesian event forecaster">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>The example list, shown on a first visit, forecasts each of the 161 first orbital attempts of a new rocket type from 2000 to 2025 with nothing but the base rate known the day before. The 44 new rocket families were given 54.0% on average and 21 of them (47.7%) reached orbit; the 117 new versions of existing rockets were given 82.5% and 97 (82.9%) did. That scores 0.173 on the Brier score, against 0.197 with one base rate for every first flight and 0.25 for always saying 50%: choosing the narrower reference class is worth something before any news arrives.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Asked how likely something is, people usually start from the case in front of them: this rocket's engines, this team's form, this candidate's speeches. Kahneman and Lovallo called that the inside view and argued that it produces over-optimistic forecasts, because it anchors on plans and scenarios and neglects the statistics of the past. The outside view starts instead from a reference class, the record of cases like this one, and asks how often they turned out one way or the other. Flyvbjerg turned this into a method, reference class forecasting, first used for the costs of large transport projects.</p>
+      <p>The two views fit together through Bayes' rule. The base rate of the reference class is the prior; each piece of news about this particular case multiplies the odds by its likelihood ratio, as on day 119. In a two-year geopolitical forecasting tournament, Mellers and colleagues found that training forecasters in probability, which encouraged them to use reference classes, improved both their calibration and their resolution. And the result can be scored, as day 24 scores a personal forecast log.</p>
+      <p>The hard part is choosing the class. A first flight of a new rocket is also a launch, and more than nine in ten launches reach orbit; it is also a first flight, and about three in four of those succeed; and if the rocket is a new design rather than a new version of an old one, it is closer to a coin toss. Every frequency is relative to a class, and the same case belongs to many classes: the tool shows all four side by side for any date, so you can see how much the choice matters before you make it. The launch records make the point with real outcomes, but the method is general: the tool also takes a reference class of your own, as counts or as a percentage, for any event.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The reference classes</h3>
+      <p>The launch data are every orbital launch attempt in Jonathan McDowell's General Catalog of Artificial Space Objects (GCAT) from Sputnik on 4 October 1957 onwards. A launch counts as a success if GCAT records it as one; GCAT marks a launch a failure when its success fraction is below 0.75, for example when the payload reached an orbit it could not use. The four classes are: any orbital launch attempt; the first orbital attempt of a new rocket type, as GCAT names types; the first attempt of a type whose family is new; and the first attempt of a new version of a family that has flown before. Families are GCAT's: it places Ariane 6 in its Ariane5 family and H3 in its H2B family, so those first flights count as new versions. Types are GCAT's too, and fine-grained: each configuration is a type, so the first Proton-M without an upper stage, in 2021, is a new version. A type's first orbital attempt is not always its first flight: a few of the 161 types in the example had flown before on missile, test, suborbital or near-orbital flights, which are not counted. Volna, the GSLV Mk III and Simorgh are among them, and so is Starship, whose first three flights, two of them failures, GCAT counts as near-orbital, so that its first orbital attempt in the data is its fourth flight, on 6 June 2024.</p>
+      <h3>No looking ahead</h3>
+      <p>For a past event the base rate counts only launches before the event's date, so the forecast for Falcon 9's first flight on 4 June 2010 uses the 50 new families that had flown by 3 June 2010. "The 20 years before" drops older launches, for a class whose record may have changed.</p>
+      <h3>From counts to a base rate</h3>
+      <p>After <var>k</var> successes in <var>n</var> cases the base rate is Laplace's rule of succession, from day 30:</p>
+      <p class="eq"><var>p</var><sub>0</sub> = (<var>k</var> + 1) / (<var>n</var> + 2)</p>
+      <p>which is the raw share <var>k</var>/<var>n</var> pulled slightly towards one half, and never exactly 0 or 1, so news can still move it. After 27 successes in 50 it gives 28/52 = 53.8%. With no cases at all it gives 50%. A reference class of your own can be given as counts, treated the same way, or as a percentage between 0.1% and 99.9%.</p>
+      <h3>Updating on news</h3>
+      <p>Each news item has a likelihood ratio <var>R</var>: how many times more likely the news is if the event is going to happen than if it is not. The forecast is</p>
+      <p class="eq">odds(<var>p</var>) = odds(<var>p</var><sub>0</sub>) × <var>R</var><sub>1</sub> × <var>R</var><sub>2</sub> × … , &nbsp;&nbsp; odds(<var>p</var>) = <var>p</var> / (1 − <var>p</var>)</p>
+      <p>computed with logarithms so that it never rounds to 0 or 1. Ratios must be between 1 in 10,000 and 10,000; 0 or an unlimited ratio would settle the question, and is refused with the reason. Multiplying ratios assumes each news item adds something the others did not; day 119 shows what goes wrong when they overlap.</p>
+      <h3>Scoring</h3>
+      <p>When the outcome <var>o</var> is known (1 if it happened, 0 if not), a forecast <var>p</var> gets two scores:</p>
+      <p class="eq">Brier = (<var>p</var> − <var>o</var>)², &nbsp;&nbsp; log score = ln <var>p</var> if it happened, ln(1 − <var>p</var>) if not</p>
+      <p>The Brier score runs from 0 (perfect) to 1, and always saying 50% scores 0.25. The log score runs from 0 down, always saying 50% scores ln 0.5 = −0.69, and it punishes confident mistakes far harder: 99% on something that does not happen scores −4.6. Both are proper: you cannot expect to improve either by saying something other than what you believe. The scorecard gives the mean of each over the resolved forecasts, and also the Brier score the base rates alone would have earned, so you can see whether your news made the forecasts better or worse.</p>
+      <h3>Calibration</h3>
+      <p>The resolved forecasts are grouped by the probability given, in five bands 20 points wide, or ten bands 10 points wide once 60 are resolved. For each band the chart plots the average forecast against the share that happened. On the diagonal, events given 70% happened 70% of the time.</p>
+      <h3>The presets and the example</h3>
+      <p>The named rockets are past first flights with known outcomes: Ariane 5 (4 June 1996), Falcon 9 (4 June 2010), Electron (25 May 2017), H3 (7 March 2023) and Vulcan Centaur (8 January 2024). The outcome is hidden until you save, and saving records it, so your score is for the forecast you made before you knew. The illustration is a made-up rocket with made-up news, labelled as such; only its base rate is real. The example list is computed, not typed in: every first orbital attempt of a new type in the data from 2000 to 2025, each forecast with the base rate of its narrower class (new family or new version) from the launches before it.</p>
+      <h3>Saving</h3>
+      <p>Saved forecasts stay in this browser's local storage and are sent nowhere. Each keeps the base rate it was made with, so a later change in the data cannot rewrite it. Another open tab of the page follows any change at once. Export writes every forecast exactly; import reads such a file back without loss, adds only forecasts you do not already have, refuses files written by a later version of the page, and says which records it could not read.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Which reference class is right.</strong> The tool shows how much the choice matters; it cannot make it. A narrower class is more like the case but has fewer members and a noisier rate.</li>
+        <li><strong>How strong your news is.</strong> Likelihood ratios are judgements. The presets' news strengths would be invented, so the real launches start with none; the illustration's strengths are made up and labelled so.</li>
+        <li><strong>Whether GCAT's families are the families you mean.</strong> They are one expert's grouping: GCAT places Antares in its Zenit family and Epsilon in its H2.SRB family, for example. A different grouping changes which flights count as new families, and GCAT's line between orbital and near-orbital flights decides which of a type's flights counts as its first orbital attempt.</li>
+        <li><strong>A fair test of you on the presets.</strong> These launches are history; you may already know how they went. Your scores on them say little about your forecasting. The example list avoids this by using no judgement at all.</li>
+        <li><strong>Much from a few forecasts.</strong> With a handful resolved, the scores and the calibration chart are mostly luck. Day 24 has an exact test for whether a gap between confidence and results could be chance.</li>
+        <li><strong>Any prediction of a future launch.</strong> Nothing on this page forecasts a real future event; the data are a snapshot that ends on 27 October 2026.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Add reference classes from other open records, such as elections, court decisions or clinical trial phases, each with its source and window.</li>
+        <li>Blend several reference classes, weighting each by how alike its members are to the case, instead of picking one.</li>
+        <li>Replace Laplace's rule with a prior fitted across classes (a hierarchical model), so a small class borrows strength from related ones.</li>
+        <li>Record a forecast's history over time, each update with its date, and score the forecast at every date, not only the last.</li>
+        <li>Add the Murphy decomposition of the Brier score, to separate calibration from the ability to tell events apart.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>McDowell, J. C. (2020). General Catalog of Artificial Space Objects, Release 1.8.8 (data update of 29 October 2026). <a href="https://planet4589.org/space/gcat">planet4589.org/space/gcat</a>. Launch list (launch.tsv) and launch vehicle table (lv.tsv). <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Retrieved 29 October 2026. Changes: reduced to orbital launch attempts (launch codes beginning O or D, success or failure only), with each launch's date and outcome and marks for the first orbital attempt of each type and of each family; pad explosions, pad aborts, and suborbital and near-orbital flights left out.</li>
+        <li>Kahneman, D., and Lovallo, D. (1993). Timid choices and bold forecasts: a cognitive perspective on risk taking. <em>Management Science</em>, 39(1), 17-31.</li>
+        <li>Flyvbjerg, B. (2006). From Nobel Prize to project management: getting risks right. <em>Project Management Journal</em>, 37(3), 5-15.</li>
+        <li>Hájek, A. (2023). Interpretations of probability. In E. N. Zalta and U. Nodelman (eds.), <em>The Stanford Encyclopedia of Philosophy</em>. Section 3.4 on frequencies relative to a reference class.</li>
+        <li>Laplace, P.-S. (1814). <em>Essai philosophique sur les probabilités</em>. The rule of succession, as on day 30.</li>
+        <li>Brier, G. W. (1950). Verification of forecasts expressed in terms of probability. <em>Monthly Weather Review</em>, 78(1), 1-3.</li>
+        <li>Gneiting, T., and Raftery, A. E. (2007). Strictly proper scoring rules, prediction, and estimation. <em>Journal of the American Statistical Association</em>, 102(477), 359-378.</li>
+        <li>Mellers, B., and others (2014). Psychological strategies for winning a geopolitical forecasting tournament. <em>Psychological Science</em>, 25(5), 1106-1115.</li>
+        <li>Wilander, J. (2020). Full third-party cookie blocking and more. <em>WebKit blog</em>, 24 March 2020. Safari's seven-day limit on stored data.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

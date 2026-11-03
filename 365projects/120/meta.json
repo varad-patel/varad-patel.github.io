@@ -1,0 +1,7 @@
+{
+  "question": "How far does the base rate of a well-chosen reference class get a forecast before any news arrives, and how do the forecasts score once the outcomes are known?",
+  "finding": "Forecasting each of the 161 first orbital attempts of a new rocket type from 2000 to 2025 with only the base rate known the day before, 54.0% for new families and 82.5% for new versions, scores 0.173 on the Brier score, against 0.197 with one rate for all and 0.25 for always saying 50%.",
+  "limit": "The choice of reference class and the strength of each piece of news are judgements, and GCAT's grouping of rockets into families is one expert's.",
+  "sources": ["GCAT (J. McDowell)"],
+  "built": "2026-10-29"
+}
