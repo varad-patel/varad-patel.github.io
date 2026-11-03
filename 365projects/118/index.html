@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Regression to the Mean Simulator · 365 projects</title>
+  <meta name="description" content="Pick the worst performers, the best rookies, the most dangerous junctions or the sickest patients, measure them again, and watch them move towards the average with no cause at all.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .tool p.rm-story { line-height: 1.5; }
+    .rm-control { padding: 12px; border: 1px solid var(--grid); background: #fff; }
+    .rm-jump { display: none; }
+    @media (max-width: 860px) { .rm-jump { display: block; } }
+    #rm-results:focus { outline: none; }
+    .tool h2.rm-h { font: 600 1.15rem/1.25 var(--serif); margin-bottom: 10px; }
+    .rm-panel { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    .rm-panel .stats { margin-top: 2px; }
+    .rm-sweepwrap { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; gap: 8px; padding-top: 16px; border-top: 1px solid var(--rule); }
+    .tool p.rm-progress:empty { display: none; }
+    .rm-story, .rm-panel p, .rm-sweepwrap p { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body class="proj" data-day="118">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Regression to the Mean Simulator</h1>
+      <p class="lede">Pick the worst pupils, the best rookies, the deadliest junctions or the sickest patients, measure them again, and watch them drift back towards the average with nothing done to them at all.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Regression to the mean simulator">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>Choose "Galton's families" and keep the tallest 10% picked on the parents: the mid-parent heights of those 94 children (90 plus the ties at the cut) average 72.5 inches, 3.3 above the mean of 69.2, and the children average 71.7, only 2.5 above theirs. Press "The children" instead: the tallest 104 children average 73.6 inches, 4.3 above the mean, and their mid-parents 71.2, only 2.0 above. Each side is nearer the average than the side it was picked on, so the pull towards the mean cannot be something parents do to their children.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>In a paper of 1886, Francis Galton set out the heights of 205 couples and their grown-up children and showed that the children of unusually tall parents were tall, but less unusually so, and the children of short parents were short, but less so. He called it "regression towards mediocrity" and wrote it as a law: the child's height deviate is, on the average, two-thirds of the deviate of its mid-parentage. He thought at first that he had found something about heredity. He had found something about any two measurements that are not perfectly correlated.</p>
+      <p>Whenever a group is chosen because it is extreme on one measurement, part of what made it extreme is luck: a good day, a bad year, a reading taken just after climbing the stairs. The luck does not come back on the next measurement, so the group moves towards the average. Nothing caused that move. The trouble is that something usually happens to the group in between, because it was extreme: the weakest pupils get tutoring, the deadliest junctions get cameras, the sickest patients get a pill, the star rookie gets a magazine cover. The move towards the mean is then credited to the tutoring, the camera or the pill, or, when the group was picked for being the best, blamed on the cover.</p>
+      <p>This is one of the commonest errors in reading evidence about policies, because policies are so often aimed at the places and people where a problem has just looked worst. Barnett, van der Pols and Dobson (2005) put it plainly: regression to the mean can make natural variation in repeated data look like real change, and it is most noticeable when measurements are noisy and when the follow-up looks only at a group selected on its first value. The remedy is old and simple. Hold back a randomly chosen part of the extreme group and compare the two parts at the end. Both regress alike, so whatever difference is left is the effect.</p>
+      <p>The four simulated scenarios show the error with a stated model in which the intervention does nothing. Galton's own records, the last scenario, show the same pull in real data, and show that it runs in both directions: the parents of the tallest children were nearer the average too, though no child makes its parents shorter.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>The model with no cause in it</h3>
+      <p>In the pupils, players and patients scenarios each unit <var>i</var> has a lasting level <var>T</var><sub><var>i</var></sub> and two measurements, each with its own luck:</p>
+      <p class="eq"><var>X</var><sub><var>i</var></sub> = <var>μ</var> + <var>σ</var> (√<var>r</var> <var>T</var><sub><var>i</var></sub> + √(1 − <var>r</var>) <var>E</var><sub>1<var>i</var></sub>)<br><var>Y</var><sub><var>i</var></sub> = <var>μ</var> + <var>σ</var> (√<var>r</var> <var>T</var><sub><var>i</var></sub> + √(1 − <var>r</var>) <var>E</var><sub>2<var>i</var></sub>)</p>
+      <p>where <var>T</var>, <var>E</var><sub>1</sub> and <var>E</var><sub>2</sub> are independent standard normal draws. Both measurements have mean <var>μ</var> and standard deviation <var>σ</var>, nothing about any unit changes between them, and their correlation is exactly <var>r</var>, the share of the spread that is lasting. The pupils' scores have <var>μ</var> = 100 and <var>σ</var> = 15, the players' ratings 50 and 10, the patients' blood pressure 130 and 15 mmHg. These are illustrations, not measurements of any real test, sport or clinic.</p>
+      <p>The junctions are counts, so they get a count model. Each junction has a crash rate <var>λ</var><sub><var>i</var></sub> drawn from a gamma distribution with shape <var>α</var> and rate <var>β</var>, and the crashes in each year are independent Poisson draws from that rate:</p>
+      <p class="eq"><var>λ</var><sub><var>i</var></sub> ~ Gamma(<var>α</var>, <var>β</var>), &nbsp; <var>X</var><sub><var>i</var></sub>, <var>Y</var><sub><var>i</var></sub> ~ Poisson(<var>λ</var><sub><var>i</var></sub>), &nbsp; <var>β</var> = 1/<var>r</var> − 1, &nbsp; <var>α</var> = <var>μ</var> <var>β</var></p>
+      <p>With these choices the mean count is <var>μ</var> = 3 a year and the correlation between the two years is 1/(1 + <var>β</var>) = <var>r</var>. At <var>r</var> = 0 every junction has the same rate; <var>r</var> stops at 0.95, because at 1 the rates would need an infinite spread.</p>
+      <h3>The formula</h3>
+      <p>In both models the expected second measurement of a unit whose first was <var>x</var> is a straight line:</p>
+      <p class="eq">E[<var>Y</var> | <var>X</var> = <var>x</var>] = <var>μ</var> + <var>r</var> (<var>x</var> − <var>μ</var>)</p>
+      <p>For the normal model this is the regression line of two normal variables with equal spread. For the count model it is the gamma-Poisson result: given <var>k</var> crashes, the rate has a gamma distribution with shape <var>α</var> + <var>k</var> and rate <var>β</var> + 1, whose mean (<var>α</var> + <var>k</var>)/(<var>β</var> + 1) works out to <var>μ</var> + <var>r</var> (<var>k</var> − <var>μ</var>). Averaging over a picked group whose first measurements average <var>x̄</var>,</p>
+      <p class="eq">expected move back towards the mean = (1 − <var>r</var>) × (<var>x̄</var> − <var>μ</var>)</p>
+      <p>The group gets back a share 1 − <var>r</var> of its distance from the mean. With <var>r</var> = 0.7 and pupils 26 points below average, that is 7.9 points of improvement from nothing. The rule holds for any way of picking that looks only at the first measurement: lowest, highest or anything else.</p>
+      <h3>Testing the simulation against the formula</h3>
+      <p>The tool draws the population with the seeded generator, picks the lowest or highest share on the first measurement (ties between equal counts are broken at random), and compares the group's mean second measurement with the formula. Given the first measurements, the group's mean second measurement has standard error <var>σ</var> √(1 − <var>r</var>²) / √<var>m</var> in the normal model, for a group of <var>m</var>, and √(Σ<sub><var>i</var></sub> E<sub><var>i</var></sub> (1 + <var>r</var>)) / <var>m</var> in the count model, where E<sub><var>i</var></sub> is each picked junction's expected count. The verdict under the tiles says whether the simulation is within two standard errors of the formula. The chart at the bottom repeats the test at <var>r</var> = 0, 0.05, …, 1, each time with fresh random numbers and at most 20,000 units, and plots the share of the distance won back against the line 1 − <var>r</var>. About 1 check in 20 should fall outside two standard errors by chance, so the verdict under the chart gives the binomial chance that as many checks as did would fall outside if the formula were right; the tests that come with the page check that the standardised gaps behave like draws from a standard normal distribution over hundreds of seeds.</p>
+      <h3>A real effect and a control group</h3>
+      <p>The "real effect" slider adds an effect to every treated unit's second measurement (a number of points or mmHg), or multiplies a treated junction's crash rate (−20% means a fifth fewer crashes). The tick box gives the intervention to a random half of the picked group only, chosen by a shuffle, and holds the other half back. The two halves were alike at the start because chance alone split them, so their difference at the second measurement estimates the effect: a difference of means with Welch's standard error for the normal scenarios, and a ratio of mean counts, with its interval worked out on the log scale, for the junctions. The interval is the estimate plus or minus 1.96 standard errors.</p>
+      <h3>Galton's families</h3>
+      <p>Each child in Galton's records is one pair. Following Galton, the mid-parent height is (father + 1.08 × mother) / 2 and a daughter's height is multiplied by 1.08, which he said was equivalent to adding a little less than a twelfth, so that sons and daughters are on one scale. The father-and-son and mother-and-daughter pairings use the heights as recorded. Heights were written to the half inch or tenth of an inch, so many are tied; every pair tied with the last one picked is picked too, and the tool says how many that makes.</p>
+      <p>The two sides do not have the same spread (a mid-parent is an average of two people, so it varies less than a child), so the rule is stated in standard units, each height minus its mean and divided by its standard deviation. There the regression line is <var>z</var><sub>other</sub> = <var>r</var> <var>z</var><sub>picked</sub>, and the expected share won back is again 1 − <var>r</var>. In inches the line's slope is <var>r</var> times the ratio of the standard deviations: 0.73 for children on mid-parents, close to Galton's two-thirds. The standard error of the gap between the group's mean and the line sums the gaps within each family first, because brothers and sisters share their parents' heights.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>How large r is in a real case.</strong> The simulated correlations are illustrations. The amount of regression depends entirely on how much of a measurement is lasting, and that has to be measured, for example by testing the same people twice with nothing in between.</li>
+        <li><strong>Whether a real intervention worked.</strong> A before-and-after change in an extreme group is regression plus any effect, and the two cannot be separated without a comparison group, or at least a good estimate of <var>r</var> and the population mean.</li>
+        <li><strong>Anything about models where the line is not straight.</strong> The formula is exact for the two models here. Real data can have skewed distributions, a mean that shifts between measurements, or luck that depends on the level; then the expected move is still towards the mean, but not exactly (1 − <var>r</var>) of the distance.</li>
+        <li><strong>Galton's full records.</strong> The data are 898 children in 197 families: the heights written as numbers in Hanley's 2004 transcription, which leaves 8 families blank on purpose and has 27 heights written in words ("tall", "medium"), less one son in family 130 that the Dataverse copy does not contain. Galton's own table used 928 children of 205 couples (his text says 930). He also warned that his data were imprecise, partly because it was often unknown whether a height had been measured with shoes on or off.</li>
+        <li><strong>Why heights run in families.</strong> The correlation between parents and children mixes genes and shared upbringing. Regression to the mean says nothing about either; it only says that a correlation below 1 brings extreme groups back.</li>
+        <li><strong>Small groups.</strong> With few units picked, chance can hide the regression or exaggerate it. The verdicts say when a result is within two standard errors; they do not make a small sample reliable.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Estimate the effect by analysis of covariance, adjusting the follow-up for the first measurement, which gives a narrower interval than the simple comparison used here.</li>
+        <li>Let the visitor upload two columns of their own measurements and show how far an extreme group would be expected to regress.</li>
+        <li>Add a mean that drifts between the two measurements (a trend), to show how regression and a real trend combine.</li>
+        <li>Add a third measurement, to show that a group picked on the first measurement does not keep regressing: it stays at the second level on average.</li>
+        <li>Add real year-to-year data for sport or for road crashes under an open licence, with the reliability estimated from the data.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Data and sources</h2>
+      <ul class="refs">
+        <li>Galton height data. Harvard Dataverse, <a href="https://doi.org/10.7910/DVN/T0HSJ1">doi:10.7910/DVN/T0HSJ1</a>, deposited by J. Freese, 2017. <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>. Retrieved 29 October 2026. Changes: two sons of 67.0 and 66.0 inches moved from family 101 to family 103, following the erratum by K. F. Widaman (2005) published with Hanley's transcription; the column of family sizes dropped. The rows are the numeric heights of Hanley's August 2004 datafile, less one son of 66.2 inches in family 130.</li>
+        <li>Galton, F. (1886). Regression towards mediocrity in hereditary stature. <em>Journal of the Anthropological Institute of Great Britain and Ireland</em>, 15, 246-263. The factor 1.08 is on p. 247 and the two-thirds law on p. 252.</li>
+        <li>Hanley, J. A. (2004). "Transmuting" women into men: Galton's family data on human stature. <em>The American Statistician</em>, 58(3), 237-243.</li>
+        <li>Stigler, S. M. (1997). Regression towards the mean, historically considered. <em>Statistical Methods in Medical Research</em>, 6(2), 103-114.</li>
+        <li>Barnett, A. G., van der Pols, J. C., and Dobson, A. J. (2005). Regression to the mean: what it is and how to deal with it. <em>International Journal of Epidemiology</em>, 34(1), 215-220, with a correction in 44(5), 1748 (2015).</li>
+        <li>Marsaglia, G., and Tsang, W. W. (2000). A simple method for generating gamma variables. <em>ACM Transactions on Mathematical Software</em>, 26(3), 363-372. The gamma draws.</li>
+        <li>Hörmann, W. (1993). The transformed rejection method for generating Poisson random variables. <em>Insurance: Mathematics and Economics</em>, 12(1), 39-45. The Poisson draws for rates of 10 and more.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

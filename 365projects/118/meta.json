@@ -1,0 +1,7 @@
+{
+  "question": "Why does a group picked for being extreme look better or worse the next time it is measured, even when nothing has been done to it?",
+  "finding": "In Galton's records the 94 children whose mid-parents were in the tallest tenth were 2.5 inches above average against their mid-parents' 3.3, and the tallest tenth of children had mid-parents only 2.0 inches above average against their own 4.3: the pull towards the mean runs both ways, so it cannot be caused by the parents.",
+  "limit": "The simulated scenarios use illustrative correlations, and the amount of regression in a real case depends on a correlation that has to be measured.",
+  "sources": ["Galton height data (Harvard Dataverse)"],
+  "built": "2026-10-29"
+}
