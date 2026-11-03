@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { rng, csv } from "../kit/kit.js";
 import {
+  isNewer,
   COIN, LUCK, LIMITS, FORMAT, VERSION, isDate, dayNumber, addDays, daysBetween, localToday, brier, expectedBrier, hitChances, scorecard,
   emptyLog, parseTags, addForecast, editForecast, resolveForecast, reopenForecast, deleteForecast, statusOf, arrange, allTags,
   toJSON, toCSV, parseImport, mergeInto, restore, exampleLog, CSV_COLUMNS,
@@ -340,6 +341,12 @@ test("restoring from storage keeps sound forecasts and drops broken ones", () =>
   const damaged = { version: 1, forecasts: [log.forecasts[0], { id: "x", statement: "", p: 2 }, null, log.forecasts[1]] };
   assert.equal(restore(damaged, { today: TODAY }).forecasts.length, 2);
   assert.deepEqual(restore({ forecasts: [] }, { today: TODAY }), emptyLog());
+  // A log written by a later version is not read, so nothing can save it back in this version's format.
+  const later = { version: 2, forecasts: log.forecasts };
+  assert.equal(restore(later, { today: TODAY }), null);
+  assert.equal(isNewer(later), true);
+  assert.equal(isNewer(log), false);
+  assert.equal(isNewer(null), false);
 });
 
 test("the example log always has resolved, overdue and open predictions, and its scorecard is as quoted", () => {

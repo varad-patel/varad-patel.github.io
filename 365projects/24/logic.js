@@ -309,9 +309,15 @@ export function mergeInto(log, incoming) {
   return { log: { ...log, forecasts: [...log.forecasts, ...added] }, added: added.length, duplicates, overLimit };
 }
 
-/** Read whatever is in storage, keeping every forecast that is still sound. Returns null if there is no log. */
+/** True when stored data was written by a later version of this page, whose format this one cannot know. */
+export const isNewer = (saved) => typeof saved?.version === "number" && saved.version > VERSION;
+
+/**
+ * Read whatever is in storage, keeping every forecast that is still sound. Returns null if there is no log, and for a
+ * log written by a later version: reading that as this version could drop fields that the next save would then lose.
+ */
 export function restore(saved, { today }) {
-  if (!saved || !Array.isArray(saved.forecasts)) return null;
+  if (!saved || !Array.isArray(saved.forecasts) || isNewer(saved)) return null;
   const forecasts = saved.forecasts.map((raw) => readRecord(raw, today).forecast).filter(Boolean);
   return { version: VERSION, forecasts };
 }

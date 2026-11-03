@@ -1,6 +1,7 @@
 // Day 24: Personal Forecast Log. Interface.
 import { $, $$, el, fmt, mount, slider, numberField, select, textField, textArea, button, stat, note, table, chart, store, download } from "../kit/kit.js";
 import {
+  isNewer,
   COIN, LUCK, LIMITS, localToday, addDays, daysBetween, dayNumber, brier, expectedBrier, scorecard, emptyLog,
   addForecast, editForecast, resolveForecast, reopenForecast, deleteForecast, statusOf, arrange, allTags,
   toJSON, toCSV, parseImport, mergeInto, restore, exampleLog,
@@ -28,9 +29,13 @@ if (state.mine) state.view = "mine";
 // Whatever is in storage and cannot be read in full is copied to a second key before any save can overwrite it.
 {
   let raw = null, had = null;
-  try { raw = localStorage.getItem(STORAGE_KEY); had = JSON.parse(raw)?.forecasts?.length ?? null; } catch { /* storage is switched off, or the text is not JSON */ }
+  let parsed = null;
+  try { raw = localStorage.getItem(STORAGE_KEY); parsed = JSON.parse(raw); had = parsed?.forecasts?.length ?? null; } catch { /* storage is switched off, or the text is not JSON */ }
   const kept = state.mine ? state.mine.forecasts.length : null;
-  if (raw != null && (kept === null || kept !== had)) {
+  if (isNewer(parsed)) {
+    state.newer = true;
+    state.flash = { kind: "bad", text: "The log saved in this browser was written by a newer version of this page, which this copy cannot read. It has not been changed and will not be overwritten. Reload the page to get the newer version." };
+  } else if (raw != null && (kept === null || kept !== had)) {
     try { localStorage.setItem(`${STORAGE_KEY}-unread`, raw); } catch { /* nothing more can be done */ }
     state.flash = { kind: "bad", text: kept === null
       ? `The log saved in this browser could not be read, so the example is shown. The saved data has not been deleted: a copy is under the storage key ${STORAGE_KEY}-unread.`
@@ -78,6 +83,12 @@ function dateField({ label, value, hint }) {
 
 /* ---------- saving ---------- */
 function save() {
+  if (state.newer || isNewer(db.get("log"))) {
+    state.newer = true;
+    state.unsaved = true;
+    state.flash = { kind: "bad", text: "Not saved: this browser holds a log written by a newer version of this page, and it has not been overwritten. Reload the page to get the newer version, or export what you see here." };
+    return;
+  }
   state.unsaved = !db.set("log", state.mine);
   if (state.unsaved) state.flash = { kind: "bad", text: "This browser would not save the change, perhaps because storage is full or switched off. Export your log now so that nothing is lost." };
 }
@@ -104,6 +115,12 @@ function startOwn() {
 // Another tab or window changed the log. Take its version, so that this one cannot overwrite it with an older copy.
 function syncFromStorage() {
   if (state.unsaved) return; // storage is not working here; what is in memory is all there is
+  if (isNewer(db.get("log"))) {
+    state.newer = true;
+    state.flash = { kind: "bad", text: "A newer version of this page has saved a log in another tab. This copy cannot read it and will not overwrite it. Reload the page to get the newer version." };
+    render();
+    return;
+  }
   const theirs = restore(db.get("log"), { today: localToday() });
   if (JSON.stringify(theirs) === JSON.stringify(state.mine)) return;
   state.mine = theirs;
@@ -202,7 +219,7 @@ const eraseBtn = button("Erase my log", () => {
   if (!confirm(`Erase all ${plural(state.mine.forecasts.length, "prediction")} from this browser? Export a copy first if you want to keep them. This cannot be undone.`)) return;
   state.mine = null;
   state.unsaved = false;
-  db.remove("log");
+  if (!isNewer(db.get("log"))) db.remove("log");
   db.remove("exported");
   state.view = "example";
   state.tag = "";
