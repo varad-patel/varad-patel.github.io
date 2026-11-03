@@ -1,0 +1,7 @@
+{
+  "question": "How should a belief move as evidence arrives one piece at a time, and what goes wrong when the pieces are not independent?",
+  "finding": "With a 1% prior, one positive medical test gives 7.8% and a second gives 41.2%, but if the second test only repeats the first, counting its likelihood ratio again makes the belief more than five times what the evidence supports.",
+  "limit": "The arithmetic is exact, but the prior and every likelihood ratio are the visitor's judgements, and the tool cannot measure how dependent the pieces of evidence really are.",
+  "sources": [],
+  "built": "2026-10-29"
+}

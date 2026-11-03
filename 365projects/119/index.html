@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Belief Updater · 365 projects</title>
+  <meta name="description" content="Write down a claim and how likely you think it is, add evidence one piece at a time, and watch your confidence move by Bayes' rule, with a history saved in your browser.">
+  <link rel="preload" href="../../assets/fonts/literata.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/site.css">
+  <link rel="stylesheet" href="../kit/kit.css">
+  <style>
+    .bu-banner, .bu-data, .bu-history { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; }
+    .bu-banner { gap: 10px; }
+    .bu-banner:empty { display: none; }
+    .bu-form { padding: 14px; border: 1px solid var(--grid); background: #fff; }
+    .bu-data { gap: 10px; }
+    .bu-jump { display: none; }
+    @media (max-width: 1040px) { .bu-jump { display: block; } }
+    #bu-out:focus { outline: none; }
+    .tool h2.bu-claimtitle { font: 600 1.3rem/1.3 var(--serif); overflow-wrap: anywhere; }
+    .bu-history { gap: 8px; }
+    .bu-history h2:focus { outline: none; }
+    .bu-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--grid); }
+    .bu-step { display: grid; grid-template-columns: 2.2rem minmax(0, 1fr); gap: 4px 10px; padding: 10px 0; border-bottom: 1px solid var(--grid); }
+    .bu-step.bu-editing { background: color-mix(in srgb, var(--h, var(--ink)) 8%, transparent); }
+    .bu-n { font-weight: 700; font-size: 1.1rem; text-align: right; }
+    .tool p.bu-text { font-weight: 600; overflow-wrap: anywhere; }
+    .bu-step .small { overflow-wrap: anywhere; margin-top: 2px; }
+    .bu-actions { margin-top: 6px; gap: 8px; }
+    #bu-claim { width: 100%; }
+  </style>
+</head>
+<body class="proj" data-day="119">
+  <main class="wrap">
+    <header class="p-head">
+      <h1>Belief Updater</h1>
+      <p class="lede">Write down a claim and how likely you think it is. Add evidence one piece at a time, say how much more likely each piece is if the claim is true, and watch your confidence move by Bayes' rule, with the whole history kept in your browser.</p>
+    </header>
+
+    <section class="tool" id="app" aria-label="Belief updater">
+      <noscript><p>This tool needs JavaScript to run.</p></noscript>
+    </section>
+
+    <section class="p-sec finding">
+      <h2>One finding</h2>
+      <p>In the example "A medical test, taken twice", shown first on a new visit, a 1% prior becomes 7.8% after one positive test and 41.2% after a second. That second step is right only if the two tests make their mistakes independently. If the second test merely repeats the first, say on the same sample, the tool's overlap check shows that the belief should stay at 7.8%: counting the same likelihood ratio of 8.3 twice makes the belief more than five times what the evidence supports.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>The idea</h2>
+      <p>Bayesian epistemology treats belief as a matter of degree. You do not simply believe or disbelieve that it will rain tomorrow; you are 30% or 70% sure. Evidence should move that number, and Bayes' rule says by how much: in proportion to how much more likely the evidence is if the claim is true than if it is false. That ratio, the likelihood ratio, is the whole of what a piece of evidence says about the claim. A clue that is just as likely either way is no clue at all, however vivid.</p>
+      <p>Day 4 of this series showed one update, a positive medical test, and how the base rate dominates it. Day 27 measured how much a single observation confirms a generalisation. This page is for the longer case, which is how most beliefs about politics, history or a court case are actually formed: a claim, a starting point, and a run of evidence arriving one item at a time. Writing the run down, with the strength you gave each item, makes your reasoning something you can inspect and argue about later, and the saved history shows how you got where you are.</p>
+      <p>Two things go wrong in practice, and the tool is built to show both. The first is certainty. A prior of 0% or 100%, or a piece of evidence treated as impossible under one side, ends the inquiry: no later evidence can move the number. Bayesian epistemologists call the requirement that a consistent claim keep some credence "regularity", and the tool refuses priors and ratios that would break it, with the reason. The second is double counting. The rule multiplies likelihood ratios one after another, and that is right only if each new item tells you nothing more once you know whether the claim is true. Two newspapers repeating one agency report, two witnesses who talked before giving statements, or a test repeated on the same sample are not independent, and multiplying them as if they were inflates confidence. Much of what goes wrong in echo chambers is this mistake.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>How it works</h2>
+      <h3>One piece of evidence</h3>
+      <p>For a claim <var>H</var> and evidence <var>E</var>, Bayes' theorem in odds form is</p>
+      <p class="eq"><var>P</var>(<var>H</var> | <var>E</var>) / <var>P</var>(not <var>H</var> | <var>E</var>) = [<var>P</var>(<var>H</var>) / <var>P</var>(not <var>H</var>)] × [<var>P</var>(<var>E</var> | <var>H</var>) / <var>P</var>(<var>E</var> | not <var>H</var>)]</p>
+      <p>posterior odds equal prior odds times the likelihood ratio. You can give the ratio directly (3 means the evidence is three times as likely if the claim is true; 1/4 means four times less likely), or give the two chances and let the tool divide them. With a prior of 20%, odds of 1 to 4, a ratio of 6 makes the odds 6 to 4, or 60%.</p>
+      <h3>A run of evidence</h3>
+      <p>After items <var>E</var><sub>1</sub>, …, <var>E</var><sub><var>k</var></sub> the tool multiplies the odds by each ratio in turn. It works with the natural logarithm of the odds, <var>L</var> = ln(<var>p</var> / (1 − <var>p</var>)), so the ratios become additions:</p>
+      <p class="eq"><var>L</var><sub><var>k</var></sub> = <var>L</var><sub><var>k</var>−1</sub> + ln <var>R</var><sub><var>k</var></sub>, &nbsp;&nbsp; <var>p</var><sub><var>k</var></sub> = 1 / (1 + e<sup>−<var>L</var><sub><var>k</var></sub></sup>)</p>
+      <p>Working in logs means no run of strong evidence can round a belief to exactly 0 or 1. Each item's weight is also shown in decibans, ten times the base-10 logarithm of its ratio, so that weights add where ratios multiply: a ratio of 10 is +10 decibans, a ratio of 1/2 about −3. The order of independent items does not change where you end up, only the path; the chart shows the path, on a probability scale or on a log-odds scale where every step is the item's weight.</p>
+      <h3>When multiplying is wrong</h3>
+      <p>Chaining the ratios is exact only under conditional independence: for every item,</p>
+      <p class="eq"><var>P</var>(<var>E</var><sub><var>k</var></sub> | <var>H</var>, <var>E</var><sub>1</sub>, …, <var>E</var><sub><var>k</var>−1</sub>) = <var>P</var>(<var>E</var><sub><var>k</var></sub> | <var>H</var>) &nbsp; and the same with not <var>H</var></p>
+      <p>Once you know whether the claim is true, the earlier items must tell you nothing about the next. Coin tosses meet this; two witnesses who talked do not. There are two honest ways round it. The exact one is to give each item's chances given everything above it, which is what the box "These numbers already allow for the evidence above it" records: in the witness example, witness A picks out the suspect with chance 60% if the suspect was there and 5% if not, a ratio of 12, but once A has spoken, witness B agrees with chance 90% against 60%, a ratio of only 1.5. The rough one is to see how much the conclusion leans on independence. The tile "If the evidence overlaps" assumes the opposite extreme for every item not so marked: all the items pointing towards the claim are one piece of evidence seen several times, and likewise all the items pointing against it, so only the strongest each way counts:</p>
+      <p class="eq"><var>L</var><sub>overlap</sub> = <var>L</var><sub>0</sub> + max<sub><var>k</var></sub> ln <var>R</var><sub><var>k</var></sub> (for <var>R</var><sub><var>k</var></sub> &gt; 1) + min<sub><var>k</var></sub> ln <var>R</var><sub><var>k</var></sub> (for <var>R</var><sub><var>k</var></sub> &lt; 1) + the marked items</p>
+      <p>The true belief lies wherever the real dependence puts it. Usually that is between the two numbers, but not always: dependence can also make evidence stronger together than apart, as when two clues are each weak but rarely occur together unless the claim is true.</p>
+      <h3>Guarding the extremes</h3>
+      <p>Priors must lie between 0.0001% and 99.9999%; a prior of exactly 0% or 100% is refused with the reason. A likelihood ratio of 0, or a chance of 0 if the claim is true, says the evidence refutes the claim outright; an unlimited ratio, or a chance of 0 if the claim is false, says it proves it. Neither is weighing evidence, and either would make every later item pointless, so both are refused, and ratios are kept between one in a million and a million. Probabilities can be typed as 30%, 0.5%, 1/1000 or 1 in 1000, ratios as 3, 0.25, 1/4 or 3:1. Beliefs are never shown as 0% or 100%: past 99.9% the tool adds decimals (99.9987%), and past a millionth it says "more than 99.9999%".</p>
+      <h3>The saved history</h3>
+      <p>On a first visit the list holds three examples, which are not saved. The first change you make, or the first claim you start, saves the whole list in this browser's local storage, with the date each claim was started and each piece of evidence added. Nothing is sent anywhere. Another open tab of this page picks up the change at once. "Export JSON" writes every claim and every number exactly as stored; "Import a file" reads such a file back without loss, adds only the claims you do not already have, refuses a file written by a later version of the page, and says which records it could not read and why.</p>
+    </section>
+
+    <section class="p-sec">
+      <h2>What this cannot tell you</h2>
+      <ul>
+        <li><strong>Whether your numbers are right.</strong> The arithmetic is exact, but a prior and a likelihood ratio are judgements. The tool makes them explicit; it cannot check them against the world. Day 24's forecast log and day 120's forecaster are where your judgements get scored.</li>
+        <li><strong>How dependent your evidence is.</strong> The overlap check shows how much the conclusion rests on independence. It does not measure the dependence, and the real answer can lie outside the two numbers it shows.</li>
+        <li><strong>Anything beyond true or false.</strong> Each claim is set against its negation. Several rival hypotheses, or a quantity to estimate, need a prior spread over all of them.</li>
+        <li><strong>Evidence you are unsure you saw.</strong> Bayes' rule assumes the evidence itself is certain. Uncertain observations need Jeffrey conditionalisation, which this page does not do.</li>
+        <li><strong>Your data if the browser forgets it.</strong> Clearing site data deletes the history, and Safari deletes it after seven days of use in which this site is not visited. Export a copy.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Improvements and extensions</h2>
+      <ul>
+        <li>Let an item be marked as a copy of an earlier one, so that its ratio is dropped automatically from the overlap check.</li>
+        <li>Allow more than two hypotheses, with a likelihood for each, and show the posterior over all of them.</li>
+        <li>Add Jeffrey conditionalisation for evidence that is itself uncertain.</li>
+        <li>Show a sensitivity view: how far each item's ratio would have to change to bring the belief back across 50%.</li>
+        <li>Let claims be resolved as true or false later and scored, linking this page to the forecast log of day 24.</li>
+      </ul>
+    </section>
+
+    <section class="p-sec">
+      <h2>Sources</h2>
+      <ul class="refs">
+        <li>Bayes, T. (1763). An essay towards solving a problem in the doctrine of chances. <em>Philosophical Transactions of the Royal Society of London</em>, 53, 370-418.</li>
+        <li>Joyce, J. (2003). Bayes' theorem. In E. N. Zalta (ed.), <em>The Stanford Encyclopedia of Philosophy</em>. The theorem and its odds form with likelihood ratios.</li>
+        <li>Lin, H. (2022). Bayesian epistemology. In E. N. Zalta and U. Nodelman (eds.), <em>The Stanford Encyclopedia of Philosophy</em>. Section 3.3 states regularity: a credence in a logically consistent proposition ought to be greater than 0.</li>
+        <li>Gigerenzer, G., and Hoffrage, U. (1995). How to improve Bayesian reasoning without instruction: frequency formats. <em>Psychological Review</em>, 102(4), 684-704. Source of the medical-test numbers, as on day 4.</li>
+        <li>Wilander, J. (2020). Full third-party cookie blocking and more. <em>WebKit blog</em>, 24 March 2020. Safari deletes a site's script-writable storage after seven days of Safari use without interaction with the site.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="../challenge-data.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
