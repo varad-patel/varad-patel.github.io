@@ -1891,7 +1891,16 @@ window.CHALLENGE = {
    "concept": "Causal reasoning",
    "skills": "Simulation, correlation",
    "section": 5,
-   "date": "2027-02-04"
+   "date": "2027-02-04",
+   "built": "2026-10-29",
+   "question": "Why does a group picked for being extreme look better or worse the next time it is measured, even when nothing has been done to it?",
+   "finding": "In Galton's records the 94 children whose mid-parents were in the tallest tenth were 2.5 inches above average against their mid-parents' 3.3, and the tallest tenth of children had mid-parents only 2.0 inches above average against their own 4.3: the pull towards the mean runs both ways, so it cannot be caused by the parents.",
+   "limit": "The simulated scenarios use illustrative correlations, and the amount of regression in a real case depends on a correlation that has to be measured.",
+   "sources": [
+    "Galton height data (Harvard Dataverse)"
+   ],
+   "img": "img/118.jpg",
+   "url": "118/"
   },
   {
    "id": 119,
@@ -1900,7 +1909,14 @@ window.CHALLENGE = {
    "concept": "Bayesian epistemology",
    "skills": "Sequential Bayesian updating",
    "section": 5,
-   "date": "2027-02-05"
+   "date": "2027-02-05",
+   "built": "2026-10-29",
+   "question": "How should a belief move as evidence arrives one piece at a time, and what goes wrong when the pieces are not independent?",
+   "finding": "With a 1% prior, one positive medical test gives 7.8% and a second gives 41.2%, but if the second test only repeats the first, counting its likelihood ratio again makes the belief more than five times what the evidence supports.",
+   "limit": "The arithmetic is exact, but the prior and every likelihood ratio are the visitor's judgements, and the tool cannot measure how dependent the pieces of evidence really are.",
+   "sources": [],
+   "img": "img/119.jpg",
+   "url": "119/"
   },
   {
    "id": 120,
@@ -1909,7 +1925,16 @@ window.CHALLENGE = {
    "concept": "Forecasting",
    "skills": "Bayesian updating",
    "section": 5,
-   "date": "2027-02-06"
+   "date": "2027-02-06",
+   "built": "2026-10-29",
+   "question": "How far does the base rate of a well-chosen reference class get a forecast before any news arrives, and how do the forecasts score once the outcomes are known?",
+   "finding": "Forecasting each of the 161 first orbital attempts of a new rocket type from 2000 to 2025 with only the base rate known the day before, 54.0% for new families and 82.5% for new versions, scores 0.173 on the Brier score, against 0.197 with one rate for all and 0.25 for always saying 50%.",
+   "limit": "The choice of reference class and the strength of each piece of news are judgements, and GCAT's grouping of rockets into families is one expert's.",
+   "sources": [
+    "GCAT (J. McDowell)"
+   ],
+   "img": "img/120.jpg",
+   "url": "120/"
   },
   {
    "id": 121,
